@@ -64,3 +64,11 @@ typings/
 .idea
 .project
 .settings
+
+
+# Directories
+
+tmp/
+build/
+dist/
+archive/

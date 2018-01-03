@@ -1,5 +1,5 @@
 import * as _ from 'lodash'
-import {EventBus} from "../events/EventBus";
+import {EventBus} from "commons-eventbus";
 import * as moment from "moment";
 import {Log} from "./Log";
 

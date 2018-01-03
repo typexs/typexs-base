@@ -20,6 +20,7 @@
     "@types/mocha": "^2.2.38",
     "@types/node": "^7.0.18",
     "@types/winston": "^2.3.3",
+    "@types/nsqjs": "^0.9.0",
     "chai": "^4.1.2",
     "codecov": "^2.1.0",
     "del": "^3.0.0",
@@ -44,7 +45,10 @@
     "typescript-require": "^0.2.9-1"
   },
   "dependencies": {
+
     "commons-config": "^0.4.4",
+    "commons-eventbus": "^0.9.3",
+    "commons-moduls": "^0.1.1",
     "lodash": "^4.17.4",
     "moment": "^2.19.1",
     "typeorm": "^0.1.2",

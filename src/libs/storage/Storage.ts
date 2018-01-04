@@ -13,7 +13,7 @@ import {SqliteConnectionOptions} from "typeorm/driver/sqlite/SqliteConnectionOpt
 
 import {Runtime} from "../Runtime";
 import {PlatformUtils} from "../utils/PlatformUtils";
-import TodoException from "../exceptions/TodoException";
+import {TodoException} from "../exceptions/TodoException";
 import {Log} from "../logging/Log";
 import {EntitySchema} from "typeorm/entity-schema/EntitySchema";
 import {TableMetadataArgs} from "typeorm/metadata-args/TableMetadataArgs";

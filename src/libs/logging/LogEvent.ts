@@ -1,10 +1,10 @@
 import * as _ from 'lodash'
 import {EventBus} from "commons-eventbus";
 import * as moment from "moment";
-import {Log} from "./Log";
 
 
-export default class LogEvent {
+
+export class LogEvent {
 
   private level: 'INFO';
 

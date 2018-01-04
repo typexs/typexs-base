@@ -23,6 +23,6 @@ export * from  "./libs/queue/IQueueWorkload";
 export * from  "./libs/queue/QueueJob";
 export * from  "./libs/queue/IAsyncQueueOptions";
 export * from  "./libs/queue/IQueueProcessor";
-export * from  "./libs/queue/IQueue.d";
+export * from  "./libs/queue/IQueue";
 export * from  "./libs/queue/AsyncWorkerQueue";
 export * from  "./libs/Runtime";

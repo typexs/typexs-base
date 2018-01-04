@@ -19,8 +19,8 @@
     "@types/lodash": "^4.14.66",
     "@types/mocha": "^2.2.38",
     "@types/node": "^7.0.18",
-    "@types/winston": "^2.3.3",
     "@types/nsqjs": "^0.9.0",
+    "@types/winston": "^2.3.3",
     "chai": "^4.1.2",
     "codecov": "^2.1.0",
     "del": "^3.0.0",
@@ -35,7 +35,7 @@
     "gulp-watch": "^4.3.10",
     "gulpclass": "^0.1.2",
     "mocha": "^3.5.3",
-    "mocha-typescript": "^1.1.11",
+    "mocha-typescript": "^1.1.12",
     "source-map-support": "^0.4.15",
     "ts-node": "^3.2.0",
     "tslint": "^5.8.0",
@@ -45,9 +45,8 @@
     "typescript-require": "^0.2.9-1"
   },
   "dependencies": {
-
-    "commons-config": "^0.4.4",
-    "commons-eventbus": "^0.9.3",
+    "commons-config": "^0.4.11",
+    "commons-eventbus": "^0.9.4",
     "commons-moduls": "^0.1.1",
     "lodash": "^4.17.4",
     "moment": "^2.19.1",
@@ -73,5 +72,8 @@
     "sourceMap": true,
     "instrument": true,
     "cache": false
+  },
+  "typexs": {
+    "name": "base"
   }
 }

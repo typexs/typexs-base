@@ -9,7 +9,7 @@ export * from  "./libs/utils/ClassLoader";
 export * from  "./libs/utils/PlatformUtils";
 export * from  "./libs/utils/Utils";
 export * from  "./libs/utils/DomainUtils";
-export * from  "./libs/types";
+export * from  "./types";
 export * from  "./libs/storage/IStorageOptions";
 export * from  "./libs/storage/EntitySchemaType";
 export * from  "./libs/storage/EntitySchemaColumnOptions";
@@ -26,3 +26,4 @@ export * from  "./libs/queue/IQueueProcessor";
 export * from  "./libs/queue/IQueue";
 export * from  "./libs/queue/AsyncWorkerQueue";
 export * from  "./libs/Runtime";
+

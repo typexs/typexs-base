@@ -1,4 +1,4 @@
-// import {merge, mergeDeep} from "typescript-object-utils";
+
 import * as merge from 'deepmerge'
 import * as _ from 'lodash'
 import {InterpolationSupport} from "commons-config";

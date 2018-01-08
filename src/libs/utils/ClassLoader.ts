@@ -6,7 +6,7 @@
 
 
 import {PlatformUtils} from "./PlatformUtils";
-import {StringOrFunction} from "../types";
+import {StringOrFunction} from "../../types";
 import {Utils} from "./Utils";
 
 

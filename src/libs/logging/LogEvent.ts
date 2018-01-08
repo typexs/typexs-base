@@ -2,25 +2,24 @@ import * as _ from 'lodash'
 import {EventBus} from "commons-eventbus";
 import * as moment from "moment";
 
-
-
 export class LogEvent {
 
   private level: 'INFO';
 
   private _message: string = '';
 
-  private prefix:string = ''
+  private prefix: string = ''
 
   private args: any[] = [];
 
   private time: Date;
 
+
   constructor(opts: { level?: string, message?: string, args?: any[], time?: Date, [k: string]: any }) {
     if (opts.time) {
       opts.time = new Date()
     }
-    this.prefix = _.get(opts,'prefix','')
+    this.prefix = _.get(opts, 'prefix', '')
     this._message = opts.message;
     _.assign(this, opts)
   }
@@ -57,7 +56,7 @@ export class LogEvent {
 
   fullOut(): string {
     let msg = this.message();
-    return '[' + moment(this.time).format('YYYY.MM.DD HH:mm:ss.SSS') + '] ' +this.prefix+''+ this.level + ' ' + msg
+    return '[' + moment(this.time).format('YYYY.MM.DD HH:mm:ss.SSS') + '] ' + this.prefix + '' + this.level + ' ' + msg
   }
 
 }

@@ -4,7 +4,6 @@
 
 
 import {Gulpclass, Task, SequenceTask, MergedTask} from "gulpclass";
-import tslint from "gulp-tslint";
 
 const gulp = require("gulp");
 const bump = require('gulp-bump');
@@ -146,7 +145,6 @@ export class Gulpfile {
     return gulp.src('package.json')
       .pipe(bump({type: "patch"}))
       .pipe(gulp.dest('./'));
-
   }
 
   @Task()
@@ -154,7 +152,6 @@ export class Gulpfile {
     return gulp.src('package.json')
       .pipe(bump({type: "minor"}))
       .pipe(gulp.dest('./'));
-
   }
 
   @Task()
@@ -162,21 +159,7 @@ export class Gulpfile {
     return gulp.src('package.json')
       .pipe(bump({type: "major"}))
       .pipe(gulp.dest('./'));
-
   }
 
-  // -------------------------------------------------------------------------
-  // Run tests tasks
-  // -------------------------------------------------------------------------
-
-  /**
-   * Runs ts linting to validate source code.
-   */
-  @Task()
-  tslint() {
-    return gulp.src(["./src/**/*.ts", "./test/**/*.ts"])
-      .pipe(tslint())
-      .pipe(tslint.report());
-  }
 
 }

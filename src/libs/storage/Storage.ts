@@ -5,7 +5,7 @@ import {IStorageOptions} from "./IStorageOptions";
 
 
 import {Config} from "commons-config";
-import {K_WORKDIR} from "../types";
+import {K_WORKDIR} from "../../types";
 import {Utils} from "../utils/Utils";
 import {ConnectionWrapper} from "./ConnectionWrapper";
 import {SqliteConnectionOptions} from "typeorm/driver/sqlite/SqliteConnectionOptions";

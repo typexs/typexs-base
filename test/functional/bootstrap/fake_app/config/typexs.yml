@@ -1,0 +1,8 @@
+app:
+  name: fake_app
+
+modules:
+  libs:
+    - topic: flow
+      refs:
+      - flow

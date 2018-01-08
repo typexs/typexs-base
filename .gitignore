@@ -72,3 +72,6 @@ tmp/
 build/
 dist/
 archive/
+
+# lock
+package-lock.json

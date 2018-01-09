@@ -1,10 +1,23 @@
 import * as _ from 'lodash';
 import {suite, test} from "mocha-typescript";
 import {expect} from "chai";
-import {IStorageOptions} from "../../../src";
+import {IStorageOptions, StorageRef} from "../../../src";
 import * as path from "path";
 import {Bootstrap} from "../../../src/Bootstrap";
 import {Config} from "commons-config";
+import {Entity, PrimaryColumn} from "typeorm";
+import {SqliteConnectionOptions} from "typeorm/driver/sqlite/SqliteConnectionOptions";
+
+
+export const TEST_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
+  name: 'default',
+  type: "sqlite",
+  database: ":memory:",
+  synchronize: true,
+
+  // tablesPrefix: ""
+
+};
 
 
 @suite('functional/storage/general')
@@ -48,6 +61,29 @@ class GeneralSpec {
     expect(entityNames).to.be.deep.eq([
       'ModuleEntity', 'TestEntity'
     ]);
+  }
+
+  @test
+  async 'dynamically add entity class'() {
+
+
+
+    class X {
+      @PrimaryColumn()
+      id: number;
+    }
+
+    let storage = new StorageRef(TEST_STORAGE_OPTIONS);
+    await storage.prepare();
+
+    storage.addEntityClass(X,"xtable");
+    await storage.reload();
+    expect(storage['options'].entities).has.length(1);
+
+    let c = await storage.connect();
+    let q = await c.manager.query('SELECT * FROM sqlite_master WHERE type=\'table\';');
+    expect(q).has.length(1);
+
   }
 
 

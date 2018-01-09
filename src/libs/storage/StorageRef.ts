@@ -17,7 +17,6 @@ import * as _ from "lodash";
 
 export class StorageRef {
 
-  private _name: string = 'default';
 
   // if memory then on connection must be permanent
   private singleConnection: boolean = false;
@@ -68,7 +67,7 @@ export class StorageRef {
     }
 
     this.options = Object.assign({}, DEFAULT_STORAGE_OPTIONS, options);
-    this._name = this.options.name;
+
 
     if (this.options.type == 'sqlite') {
       this.singleConnection = true;
@@ -88,7 +87,7 @@ export class StorageRef {
   }
 
   get name() {
-    return this._name
+    return this.options.name
   }
 
   get dbType() {
@@ -187,10 +186,11 @@ export class StorageRef {
 
   async remove(wrapper: ConnectionWrapper) {
     _.remove(this.connections, {inc: wrapper.inc});
-    if (_.isEmpty(this.connections)) {
+    if (_.isEmpty(this.connections) && !this.isOnlyMemory()) {
       try {
         await getConnectionManager().get(this.name).close()
       } catch (err) {
+        Log.error(err);
       }
     }
   }
@@ -204,7 +204,7 @@ export class StorageRef {
   private async closeConnections(): Promise<any> {
     let ps: Promise<any> [] = [];
     while (this.connections.length > 0) {
-      ps.push(this.connections.shift().close(true));
+      ps.push(this.connections.shift().close());
     }
     return Promise.all(ps)
   }

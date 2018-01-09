@@ -16,6 +16,7 @@ export * from  "./libs/utils/DomainUtils";
 export * from  "./libs/storage/IStorageOptions";
 export * from  "./libs/storage/EntitySchemaType";
 export * from  "./libs/storage/EntitySchemaColumnOptions";
+export * from  "./libs/storage/StorageRef";
 export * from  "./libs/storage/Storage";
 export * from  "./libs/storage/EntitySchemaRelationOptions";
 export * from  "./libs/storage/ConnectionWrapper";
@@ -29,8 +30,8 @@ export * from  "./libs/queue/IAsyncQueueOptions";
 export * from  "./libs/queue/IQueueProcessor";
 export * from  "./libs/queue/AsyncWorkerQueue";
 export * from  "./libs/Runtime";
-export * from  "./base/cli";
 export * from  "./base/RuntimeLoader";
 export * from  "./base/IRuntimeLoaderOptions";
+export * from  "./base/cli";
 export * from  "./Bootstrap";
 

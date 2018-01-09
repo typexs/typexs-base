@@ -1,0 +1,9 @@
+app:
+  name: fake_app
+
+
+storage:
+  default:
+    synchronize: true
+    type: sqlite
+    database: ':memory:'

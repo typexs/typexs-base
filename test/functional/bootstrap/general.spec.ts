@@ -102,13 +102,14 @@ class BootstrapGeneralSpec {
               {topic: 'flow', refs: ['flow']}
             ],
           paths: []
-
         }
     });
 
 
     bootstrap = await bootstrap.prepareRuntime();
     await bootstrap.startup();
+
   }
+
 }
 

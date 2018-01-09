@@ -282,7 +282,7 @@ export class Bootstrap {
 
     // todo before create injector and pass as parameter
     for (let clz of classes) {
-      this.activators.push(<IActivator>ClassLoader.createObjectByType(clz));
+      this.activators.push(Container.get(clz));
     }
     return this;
 
@@ -300,7 +300,7 @@ export class Bootstrap {
   getCommands() {
     let commands = []
     for (let clz of this.runtimeLoader.getClasses('commands')) {
-      commands.push(<IActivator>ClassLoader.createObjectByType(clz));
+      commands.push(Container.get(clz));
     }
     return commands;
   }

@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 import {CryptUtils} from "./libs/utils/CryptUtils";
 import {ILoggerOptions, K_LOGGING} from "./libs/logging/ILoggerOptions";
 import {Log} from "./libs/logging/Log";
-import {IOptions, IFileConfigOptions} from "commons-config";
+import {IOptions} from "commons-config";
 import {PlatformUtils} from "./libs/utils/PlatformUtils";
 import {Utils} from "./libs/utils/Utils";
 import {RuntimeLoader} from "./base/RuntimeLoader";
@@ -11,11 +11,24 @@ import {ClassLoader} from "./libs/utils/ClassLoader";
 import {IActivator} from "./api/IActivator";
 import {Config} from "commons-config/config/Config";
 import {IModule} from "./api/IModule";
+import {Container} from "typedi";
+import {IStorageOptions, K_STORAGE} from "./libs/storage/IStorageOptions";
+import {DEFAULT_STORAGE_OPTIONS, Storage} from "./libs/storage/Storage";
+
+
+const CONFIG_NAMESPACE = 'typexs';
 
 const DEFAULT_CONFIG_LOAD_ORDER = [
   {type: 'file', file: '${argv.configfile}'},
   {type: 'file', file: '${env.configfile}'},
-  <IFileConfigOptions>{type: 'file', file: {dirname: './config', filename: 'typexs'}, prefix: 'typexs'},
+  {
+    type: 'file',
+    file: {dirname: './config', filename: 'typexs'},
+    namespace: CONFIG_NAMESPACE,
+    pattern: [
+      'typexs--${os.hostname}'
+    ]
+  },
   {
     type: 'file',
     file: {dirname: './config', filename: '${typexs.app.name}'},
@@ -33,9 +46,13 @@ export interface ITypexsOptions {
   app?: {
     name?: string
     path?: string
-  },
+  }
 
   modules?: IRuntimeLoaderOptions
+
+  logging?: ILoggerOptions
+
+  storage?: { [name: string]: IStorageOptions }
 
 }
 
@@ -50,7 +67,8 @@ export const DEFAULT_RUNTIME_OPTIONS: IRuntimeLoaderOptions = {
   libs: [
     {topic: K_CLS_ACTIVATOR, refs: ['Activator', 'src/Activator']},
     {topic: 'commands', refs: ['commands', 'src/commands']},
-    {topic: 'generators', refs: ['generators', 'src/generators']}
+    {topic: 'generators', refs: ['generators', 'src/generators']},
+    {topic: 'entity.default', refs: ['entity', 'src/entity', 'shared/entity', 'src/shared/entity']},
   ]
 
 }
@@ -62,8 +80,15 @@ const DEFAULT_OPTIONS = {
     path: '.'
   },
 
-  modules: DEFAULT_RUNTIME_OPTIONS
+  modules: DEFAULT_RUNTIME_OPTIONS,
+
+  logging: {enable: false, events: false},
+
+  storage: {
+    'default': DEFAULT_STORAGE_OPTIONS
+  }
 }
+
 
 export class Bootstrap {
 
@@ -81,6 +106,8 @@ export class Bootstrap {
 
   private activators: IActivator[] = [];
 
+  private storage: Storage;
+
   private _options: ITypexsOptions;
 
 
@@ -88,6 +115,7 @@ export class Bootstrap {
     this._options = _.defaults(options, DEFAULT_OPTIONS);
     let config_load_order = _.cloneDeep(DEFAULT_CONFIG_LOAD_ORDER);
     this.cfgOptions = {configs: config_load_order};
+
   }
 
 
@@ -103,17 +131,35 @@ export class Bootstrap {
     this.$self = null;
   }
 
-  initializeLogger() {
-    let o_logging: ILoggerOptions = Config.get(K_LOGGING, {});
+
+  activateLogger() {
+    let o_logging: ILoggerOptions = Config.get(K_LOGGING, CONFIG_NAMESPACE);
     Log.prefix = Bootstrap.nodeId + ' ';
     Log.options(o_logging);
+    return this;
   }
 
 
   activateErrorHandling() {
     process.on('unhandledRejection', this.throwedUnhandledRejection.bind(this));
     process.on('uncaughtException', this.throwedUncaughtException.bind(this));
-    process.on('warning', Log.warn.bind(Log))
+    process.on('warning', Log.warn.bind(Log));
+    return this;
+  }
+
+  async activateStorage() {
+    this.storage = new Storage();
+    Container.set(Storage, this.storage);
+
+    let o_storage: { [name: string]: IStorageOptions } = Config.get(K_STORAGE, CONFIG_NAMESPACE);
+
+    for (let name in o_storage) {
+      let settings = o_storage[name];
+      let entities = this.runtimeLoader.getClasses(['entity', name].join('.'));
+      let _settings: IStorageOptions = _.merge(settings, {entities: entities}, {name: name});
+      await this.storage.register(name, _settings).prepare();
+    }
+
     return this;
   }
 
@@ -135,15 +181,13 @@ export class Bootstrap {
       Log.options({
         enable: true,
         level: 'debug',
-        transports: [
-          {
-            console: {
-              name: 'stderr',
-              defaultFormatter: true,
-              stderrLevels: ['info', 'debug', 'error', 'warn']
-            }
+        transports: [{
+          console: {
+            name: 'stderr',
+            defaultFormatter: true,
+            stderrLevels: ['info', 'debug', 'error', 'warn']
           }
-        ]
+        }]
       }, true)
     }
   }
@@ -218,7 +262,7 @@ export class Bootstrap {
       process.exit(1)
     }
 
-    let typexs = Config.get('typexs', {});
+    let typexs = Config.jar(CONFIG_NAMESPACE).data;
     this._options = Utils.merge(this._options, typexs);
 
     return this;
@@ -242,7 +286,6 @@ export class Bootstrap {
     }
     return this;
 
-    // ...
   }
 
 
@@ -267,13 +310,14 @@ export class Bootstrap {
   }
 
 
-  getModules():IModule[]{
+  getModules(): IModule[] {
     return this.runtimeLoader.registry.modules();
   }
 
 
-
-
+  getStorage() {
+    return this.storage;
+  }
 
   //
   // async initStorage(): Promise<InternStorage> {

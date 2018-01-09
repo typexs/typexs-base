@@ -29,7 +29,8 @@ export * from  "./libs/queue/IAsyncQueueOptions";
 export * from  "./libs/queue/IQueueProcessor";
 export * from  "./libs/queue/AsyncWorkerQueue";
 export * from  "./libs/Runtime";
+export * from  "./base/cli";
 export * from  "./base/RuntimeLoader";
 export * from  "./base/IRuntimeLoaderOptions";
 export * from  "./Bootstrap";
-export * from  "./cli";
+

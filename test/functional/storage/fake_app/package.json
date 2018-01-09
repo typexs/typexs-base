@@ -1,0 +1,12 @@
+{
+  "name": "fake_app",
+  "version": "0.0.1",
+  "typexs": {
+    "name": "fake_app"
+  },
+  "dependencies": {
+    "module1": "^0.0.1",
+    "module2": "^0.0.1",
+    "module3": "^0.0.1"
+  }
+}

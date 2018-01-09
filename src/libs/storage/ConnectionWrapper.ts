@@ -1,7 +1,7 @@
 import {Connection, EntityManager, getConnectionManager} from "typeorm";
-import {Storage} from "./Storage";
 import {Log} from "../logging/Log";
 import {Progress} from "../Progress";
+import {StorageRef} from "./StorageRef";
 
 export class ConnectionWrapper {
 
@@ -13,11 +13,11 @@ export class ConnectionWrapper {
 
     private static _LOCK = new Progress();
 
-    storage: Storage;
+    storage: StorageRef;
 
     connection: Connection;
 
-    constructor(s: Storage, conn?: Connection) {
+    constructor(s: StorageRef, conn?: Connection) {
         this.storage = s;
         this.connection = conn;
         this.name = this.storage.name

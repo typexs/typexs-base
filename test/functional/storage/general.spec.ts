@@ -9,11 +9,13 @@ import {Config} from "commons-config";
 
 @suite('functional/storage/general')
 class GeneralSpec {
-  before() {
 
+
+  before() {
     Bootstrap.reset();
     Config.clear();
   }
+
 
   @test
   async 'storage options override'() {
@@ -22,6 +24,7 @@ class GeneralSpec {
     let options: IStorageOptions = _.merge(opt1, opt2);
     expect(options).to.be.deep.eq({name: 'default2', type: 'postgres', entityPrefix: 'test'});
   }
+
 
   @test
   async 'storage bootstrap'() {
@@ -38,17 +41,13 @@ class GeneralSpec {
       database: ':memory:'
     });
 
-    let entityNames = []
+    let entityNames = [];
     for (let fn of storage['options']['entities']) {
       entityNames.push((<Function>fn).prototype.constructor.name);
     }
-
-    expect(entityNames).to.be.deep.eq(['ModuleEntity', 'TestEntity']);
-
-
-    // storage.connect();
-
-
+    expect(entityNames).to.be.deep.eq([
+      'ModuleEntity', 'TestEntity'
+    ]);
   }
 
 

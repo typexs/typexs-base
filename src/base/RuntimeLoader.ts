@@ -18,9 +18,9 @@ export class RuntimeLoader {
 
 
   constructor(options: IRuntimeLoaderOptions) {
-    _.defaults(options, DEFAULT_RUNTIME_OPTIONS);
+    _.defaults(options, _.cloneDeep(DEFAULT_RUNTIME_OPTIONS));
     this._options = options;
-    if (this._options.appdir) {
+    if (this._options.appdir && this._options.paths.indexOf(this._options.appdir) === -1) {
       this._options.paths.unshift(this._options.appdir);
     }
   }

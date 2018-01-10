@@ -31,12 +31,12 @@ const DEFAULT_CONFIG_LOAD_ORDER = [
   },
   {
     type: 'file',
-    file: {dirname: './config', filename: '${typexs.app.name}'},
+    file: {dirname: './config', filename: '${app.name}'},
     pattern: [
       'secrets',
-      '${typexs.app.name}--${os.hostname}',
-      '${typexs.app.name}--${env.stage}',
-      '${typexs.app.name}--${argv.stage}'
+      '${app.name}--${os.hostname}',
+      '${app.name}--${env.stage}',
+      '${app.name}--${argv.stage}'
     ]
   }
 ];
@@ -74,7 +74,7 @@ export const DEFAULT_RUNTIME_OPTIONS: IRuntimeLoaderOptions = {
 }
 
 
-const DEFAULT_OPTIONS = {
+const DEFAULT_OPTIONS : ITypexsOptions = {
   app: {
     name: 'app',
     path: '.'
@@ -112,7 +112,7 @@ export class Bootstrap {
 
 
   private constructor(options: ITypexsOptions = {}) {
-    this._options = _.defaults(options, DEFAULT_OPTIONS);
+    this._options = _.defaults(options, _.cloneDeep(DEFAULT_OPTIONS));
     let config_load_order = _.cloneDeep(DEFAULT_CONFIG_LOAD_ORDER);
     this.cfgOptions = {configs: config_load_order};
 
@@ -147,6 +147,7 @@ export class Bootstrap {
     return this;
   }
 
+
   async activateStorage() {
     this.storage = new Storage();
     Container.set(Storage, this.storage);
@@ -159,7 +160,6 @@ export class Bootstrap {
       let _settings: IStorageOptions = _.merge(settings, {entities: entities}, {name: name});
       await this.storage.register(name, _settings).prepare();
     }
-
     return this;
   }
 

@@ -112,7 +112,7 @@ class GeneralSpec {
     if (fs.existsSync(dbfile)) {
       fs.unlinkSync(dbfile);
     }
-
+    await storage.shutdown(true);
   }
 
   @test
@@ -163,6 +163,7 @@ class GeneralSpec {
     y = await repo.save(y);
     expect(y.test).to.be.true;
     expect(y.test2).to.be.true;
+    await storage.shutdown(true);
   }
 
 
@@ -187,7 +188,7 @@ class GeneralSpec {
     y = await repo.save(y);
     expect(y.test).to.be.true;
     expect(y.test2).to.be.true;
-
+    await storage.shutdown(true);
   }
 }
 

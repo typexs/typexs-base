@@ -13,11 +13,9 @@ import {inspect} from "util";
 class BootstrapGeneralSpec {
 
   before() {
-
     Bootstrap.reset();
     Config.clear();
   }
-
 
   @test
   async 'add additional config options'() {
@@ -39,9 +37,20 @@ class BootstrapGeneralSpec {
 
     Bootstrap.configure();
 
-    let data = Config.jar().get('');
+    let data = Config.get('', 'typexs');
+    expect(data).to.deep.eq(
+      {app: {name: 'boottest'}}
+    );
+
+    data = Config.get('', 'default');
     expect(data).to.deep.eq({
-      typexs: {app: {name: 'boottest'}},
+      appdata: {loaded: true},
+      super: 'yes'
+    });
+
+    data = Config.get();
+    expect(data).to.deep.eq({
+      app: {name: 'boottest'},
       appdata: {loaded: true},
       super: 'yes'
     });
@@ -53,15 +62,14 @@ class BootstrapGeneralSpec {
 
     let p = path.join(__dirname, 'fake_app');
     let loader = new RuntimeLoader({
-      appdir: p,
-      paths: [path.join(p, 'node_modules')]
+      appdir: p
     });
 
     await loader.rebuild();
     let modules = loader.registry.modules();
-    expect(modules).to.have.length(2);
+    expect(modules).to.have.length(3);
     expect(_.find(modules, {name: 'module1'})).to.exist
-
+    expect(_.find(modules, {name: 'module2'})).to.not.exist
 
     let activators = loader.classesLoader.getClasses('activator.js');
     expect(activators).to.have.length(1);
@@ -74,39 +82,54 @@ class BootstrapGeneralSpec {
     let builders = loader.classesLoader.getClasses('builder');
     expect(builders).to.have.length(1);
     expect(builders.shift().prototype.constructor.name).to.eq('UnitBuilder');
+
+    loader = null;
   }
 
 
   @test
   async 'bootstrap app with modules'() {
+    Bootstrap.reset();
+    Config.clear();
     let appdir = path.join(__dirname, 'fake_app');
 
-    Bootstrap.configure({app: {path: appdir}});
+    let bootstrap = Bootstrap.configure({app: {path: appdir}});
+    bootstrap = await bootstrap.prepareRuntime();
 
-    let bootstrap = Bootstrap._();
-    expect(bootstrap['_options']).to.be.deep.eq({
-      app:
-        {
-          path: appdir,
-          name: 'fake_app'
-        },
-      modules:
-        {
-          appdir: '.',
-          libs:
-            [
-              {topic: 'activator.js', refs: ['Activator', 'src/Activator']},
-              {topic: 'commands', refs: ['commands', 'src/commands']},
-              {topic: 'generators', refs: ['generators', 'src/generators']},
-              {topic: 'builder', refs: ['builder']},
-              {topic: 'flow', refs: ['flow']}
-            ],
-          paths: []
-        }
+    expect(bootstrap['_options']).to.be.deep.include({
+      app: {
+        path: appdir,
+        name: 'fake_app'
+      },
+      modules: {
+        appdir: appdir,
+        libs:
+          [
+            {topic: 'activator.js', refs: ['Activator', 'src/Activator']},
+            {topic: 'commands', refs: ['commands', 'src/commands']},
+            {topic: 'generators', refs: ['generators', 'src/generators']},
+            {
+              "refs": [
+                "entity",
+                "src/entity",
+                "shared/entity",
+                "src/shared/entity",
+              ],
+              "topic": "entity.default"
+            },
+            {topic: 'flow', refs: ['flow']},
+            {
+              "refs": [
+                "builder"
+              ],
+              "topic": "builder",
+            }
+          ],
+        paths: [appdir]
+      }
     });
 
 
-    bootstrap = await bootstrap.prepareRuntime();
     await bootstrap.startup();
 
   }

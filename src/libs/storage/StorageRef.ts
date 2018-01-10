@@ -105,10 +105,12 @@ export class StorageRef {
   addEntityClass(type: Function, name: string, options: EntityOptions = {}) {
     const args: TableMetadataArgs = {
       target: type,
-      name: name.toLocaleLowerCase(),
+      name: name,
       type: "regular",
       orderBy: options && options.orderBy ? options.orderBy : undefined,
       engine: options && options.engine ? options.engine : undefined,
+      database: options && options.database ? options.database : undefined,
+      schema: options && options.schema ? options.schema : undefined,
       skipSync: !!(options && options.skipSync === true)
     };
     getMetadataArgsStorage().tables.push(args);

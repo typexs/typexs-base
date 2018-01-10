@@ -156,8 +156,12 @@ export class Bootstrap {
 
     for (let name in o_storage) {
       let settings = o_storage[name];
-      let entities = this.runtimeLoader.getClasses(['entity', name].join('.'));
+      let entities:Function[] = [];
+      if(this.runtimeLoader){
+        entities = this.runtimeLoader.getClasses(['entity', name].join('.'));
+      }
       let _settings: IStorageOptions = _.merge(settings, {entities: entities}, {name: name});
+
       await this.storage.register(name, _settings).prepare();
     }
     return this;

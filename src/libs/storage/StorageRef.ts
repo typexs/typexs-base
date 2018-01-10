@@ -105,7 +105,7 @@ export class StorageRef {
   addEntityClass(type: Function, name: string, options: EntityOptions = {}) {
     const args: TableMetadataArgs = {
       target: type,
-      name: name,
+      name: name.toLowerCase(),
       type: "regular",
       orderBy: options && options.orderBy ? options.orderBy : undefined,
       engine: options && options.engine ? options.engine : undefined,

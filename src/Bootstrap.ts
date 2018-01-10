@@ -133,9 +133,8 @@ export class Bootstrap {
 
 
   activateLogger() {
-    let o_logging: ILoggerOptions = Config.get(K_LOGGING, CONFIG_NAMESPACE);
     Log.prefix = Bootstrap.nodeId + ' ';
-    Log.options(o_logging);
+    Log.options(this._options.logging || {enable:false});
     return this;
   }
 

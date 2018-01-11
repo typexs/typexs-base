@@ -10,17 +10,9 @@ const bump = require('gulp-bump');
 const del = require("del");
 const shell = require("gulp-shell");
 const replace = require("gulp-replace");
-//const rename = require("gulp-rename");
-//const file = require("gulp-file");
-//const uglify = require("gulp-uglify");
-//const mocha = require("gulp-mocha");
-
-// const stylish = require("tslint-stylish");
 const sourcemaps = require("gulp-sourcemaps");
-//const istanbul = require("gulp-istanbul");
 const ts = require("gulp-typescript");
-//const args = require('yargs').argv;
-var tsProject = ts.createProject("tsconfig.json");
+
 
 @Gulpclass()
 export class Gulpfile {

@@ -14,6 +14,7 @@ import {SqliteConnectionOptions} from "typeorm/driver/sqlite/SqliteConnectionOpt
 import {Runtime} from "../Runtime";
 import * as path from "path";
 import * as _ from "lodash";
+import {CannotExecuteNotConnectedError} from "typeorm/error/CannotExecuteNotConnectedError";
 
 export class StorageRef {
 
@@ -188,11 +189,14 @@ export class StorageRef {
 
   async remove(wrapper: ConnectionWrapper) {
     _.remove(this.connections, {inc: wrapper.inc});
-    if (_.isEmpty(this.connections) && !this.isOnlyMemory()) {
-      try {
-        await getConnectionManager().get(this.name).close()
-      } catch (err) {
-        Log.error(err);
+    if (_.isEmpty(this.connections) && !this.isOnlyMemory()){
+
+      if(getConnectionManager().has(this.name) && getConnectionManager().get(this.name).isConnected){
+        try {
+          await getConnectionManager().get(this.name).close()
+        } catch (err) {
+          Log.error(err);
+        }
       }
     }
   }

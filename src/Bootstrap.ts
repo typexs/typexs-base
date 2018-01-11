@@ -220,7 +220,7 @@ export class Bootstrap {
 
   configure(c: any = null) {
     if (this.CONFIG_LOADED) {
-      Log.warn('already configured')
+      Log.warn('already configured');
       return this;
     }
     this.CONFIG_LOADED = true;
@@ -275,8 +275,9 @@ export class Bootstrap {
       process.exit(1)
     }
 
+    this._options = Utils.merge(this._options,Config.jar(CONFIG_NAMESPACE).get(''));
     Config.jar(CONFIG_NAMESPACE).merge(this._options);
-    this._options = Config.jar(CONFIG_NAMESPACE).get('');
+    //this._options = Config.jar(CONFIG_NAMESPACE).get('');
 
     return this;
   }

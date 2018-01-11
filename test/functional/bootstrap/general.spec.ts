@@ -93,7 +93,7 @@ class BootstrapGeneralSpec {
     Config.clear();
     let appdir = path.join(__dirname, 'fake_app');
 
-    let bootstrap = Bootstrap.configure({app: {path: appdir}});
+    let bootstrap = Bootstrap.configure({app: {name:'test',path: appdir}});
     bootstrap = await bootstrap.prepareRuntime();
 
     expect(bootstrap['_options']).to.be.deep.include({

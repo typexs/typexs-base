@@ -38,8 +38,8 @@ class BootstrapGeneralSpec {
     Bootstrap.configure();
 
     let data = Config.get('', 'typexs');
-    expect(data).to.deep.eq(
-      {app: {name: 'boottest'}}
+    expect(data).to.deep.include(
+      {app: {name: 'boottest', path: __dirname}}
     );
 
     data = Config.get('', 'default');
@@ -49,8 +49,8 @@ class BootstrapGeneralSpec {
     });
 
     data = Config.get();
-    expect(data).to.deep.eq({
-      app: {name: 'boottest'},
+    expect(data).to.deep.include({
+      app: {name: 'boottest', path: __dirname},
       appdata: {loaded: true},
       super: 'yes'
     });
@@ -106,8 +106,13 @@ class BootstrapGeneralSpec {
         libs:
           [
             {topic: 'activator.js', refs: ['Activator', 'src/Activator']},
+            {
+              "refs": [
+                "builder"
+              ],
+              "topic": "builder",
+            },
             {topic: 'commands', refs: ['commands', 'src/commands']},
-            {topic: 'generators', refs: ['generators', 'src/generators']},
             {
               "refs": [
                 "entity",
@@ -118,12 +123,9 @@ class BootstrapGeneralSpec {
               "topic": "entity.default"
             },
             {topic: 'flow', refs: ['flow']},
-            {
-              "refs": [
-                "builder"
-              ],
-              "topic": "builder",
-            }
+            {topic: 'generators', refs: ['generators', 'src/generators']},
+
+
           ],
         paths: [appdir]
       }

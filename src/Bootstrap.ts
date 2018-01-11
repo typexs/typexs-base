@@ -260,7 +260,7 @@ export class Bootstrap {
       this.cfgOptions = Config.options(this.cfgOptions);
 
       if (_.isObject(additionalData)) {
-        Config.jar().merge(additionalData);
+        Config.jar(CONFIG_NAMESPACE).merge(additionalData);
       }
 
       this.cfgOptions.configs.forEach(_c => {
@@ -274,8 +274,8 @@ export class Bootstrap {
       process.exit(1)
     }
 
-    let typexs = Config.jar(CONFIG_NAMESPACE).data;
-    this._options = Utils.merge(this._options, typexs);
+    Config.jar(CONFIG_NAMESPACE).merge(this._options);
+    this._options = Config.jar(CONFIG_NAMESPACE).get('');
 
     return this;
   }

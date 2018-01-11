@@ -60,6 +60,8 @@ export class RuntimeLoader {
       }
     }
 
+   this._options.libs =  _.sortBy(this._options.libs,['topic']);
+
     this.classesLoader = await this.registry.loader<ClassesLoader, IClassesOptions>(ClassesLoader, {libs: this._options.libs})
   }
 

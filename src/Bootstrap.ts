@@ -1,19 +1,20 @@
 import * as _ from 'lodash';
 import {CryptUtils} from "./libs/utils/CryptUtils";
-import {ILoggerOptions, K_LOGGING} from "./libs/logging/ILoggerOptions";
+import {ILoggerOptions} from "./libs/logging/ILoggerOptions";
 import {Log} from "./libs/logging/Log";
 import {IOptions} from "commons-config";
 import {PlatformUtils} from "./libs/utils/PlatformUtils";
 import {Utils} from "./libs/utils/Utils";
 import {RuntimeLoader} from "./base/RuntimeLoader";
 import {IRuntimeLoaderOptions} from "./base/IRuntimeLoaderOptions";
-import {ClassLoader} from "./libs/utils/ClassLoader";
 import {IActivator} from "./api/IActivator";
 import {Config} from "commons-config/config/Config";
 import {IModule} from "./api/IModule";
-import {Container} from "typedi";
+
 import {IStorageOptions, K_STORAGE} from "./libs/storage/IStorageOptions";
 import {DEFAULT_STORAGE_OPTIONS, Storage} from "./libs/storage/Storage";
+//import {getFromContainer, getFromContainer} from "./container";
+import {Container} from "typedi";
 
 
 const CONFIG_NAMESPACE = 'typexs';
@@ -151,8 +152,8 @@ export class Bootstrap {
     this.storage = new Storage();
     this.storage.nodeId = Bootstrap.nodeId;
 
-    Bootstrap.getContainer().set(Storage, this.storage);
-    Bootstrap.getContainer().set('storage', this.storage);
+    Container.set(Storage, this.storage);
+    Container.set('storage', this.storage);
 
     let o_storage: { [name: string]: IStorageOptions } = Config.get(K_STORAGE, CONFIG_NAMESPACE);
 

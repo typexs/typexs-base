@@ -149,7 +149,10 @@ export class Bootstrap {
 
   async activateStorage() {
     this.storage = new Storage();
-    Container.set(Storage, this.storage);
+    this.storage.nodeId = Bootstrap.nodeId;
+
+    Bootstrap.getContainer().set(Storage, this.storage);
+    Bootstrap.getContainer().set('storage', this.storage);
 
     let o_storage: { [name: string]: IStorageOptions } = Config.get(K_STORAGE, CONFIG_NAMESPACE);
 
@@ -160,7 +163,7 @@ export class Bootstrap {
         entities = this.runtimeLoader.getClasses(['entity', name].join('.'));
       }
       let _settings: IStorageOptions = _.merge(settings, {entities: entities}, {name: name});
-
+      Log.debug('storage register '+name);
       await this.storage.register(name, _settings).prepare();
     }
     return this;
@@ -200,6 +203,11 @@ export class Bootstrap {
     let opts = this._().cfgOptions;
     this._().cfgOptions = Utils.merge(opts, options);
     return this._().cfgOptions;
+  }
+
+
+  static getContainer(){
+    return Container;
   }
 
 
@@ -285,7 +293,7 @@ export class Bootstrap {
 
     // todo before create injector and pass as parameter
     for (let clz of classes) {
-      this.activators.push(Container.get(clz));
+      this.activators.push(Bootstrap.getContainer().get(clz));
     }
     return this;
 
@@ -303,7 +311,7 @@ export class Bootstrap {
   getCommands() {
     let commands = []
     for (let clz of this.runtimeLoader.getClasses('commands')) {
-      commands.push(Container.get(clz));
+      commands.push(Bootstrap.getContainer().get(clz));
     }
     return commands;
   }

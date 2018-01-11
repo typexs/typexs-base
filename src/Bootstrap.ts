@@ -13,9 +13,10 @@ import {IModule} from "./api/IModule";
 
 import {IStorageOptions, K_STORAGE} from "./libs/storage/IStorageOptions";
 import {DEFAULT_STORAGE_OPTIONS, Storage} from "./libs/storage/Storage";
-//import {getFromContainer, getFromContainer} from "./container";
 import {Container} from "typedi";
 
+import {useContainer} from "typeorm";
+useContainer(Container);
 
 const CONFIG_NAMESPACE = 'typexs';
 

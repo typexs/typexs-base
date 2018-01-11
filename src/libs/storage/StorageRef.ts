@@ -221,10 +221,7 @@ export class StorageRef {
 
 
   async shutdown(full: boolean = true): Promise<void> {
-    //let name = this.name
-    Log.debug('storage shutdown');
-
-    if (!this.isOnlyMemory()) {
+    if (!this.isOnlyMemory() || full) {
       await this.closeConnections();
     }
 

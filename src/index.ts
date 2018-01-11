@@ -1,7 +1,6 @@
 export * from "typedi";
 
 
-// export * from "./container";
 export * from "./commands/ModulesCommand";
 export * from "./api/IActivator";
 export * from "./api/IModule";

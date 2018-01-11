@@ -35,7 +35,29 @@ export function cli(){
         .usage("Usage: $0 <command> [options]");
 
       for (let command of bootstrap.getCommands()) {
-        yargs.command(command);
+        let yargsCommand:any = {}
+
+        if(command.command){
+          yargsCommand.command = command.command
+        }
+
+        if(command.aliases){
+          yargsCommand.aliases = command.aliases
+        }
+
+        if(command.describe){
+          yargsCommand.describe = command.describe
+        }
+
+        if(command.builder){
+          yargsCommand.builder = command.builder.bind(command)
+        }
+
+        if(command.handler){
+          yargsCommand.handler = command.handler.bind(command)
+        }
+
+        yargs.command(yargsCommand);
       }
 
       yargs

@@ -1,5 +1,6 @@
 
 
+export const TYPEXS_NAME = 'typexs';
 
 export type StringOrFunction = string | Function
 

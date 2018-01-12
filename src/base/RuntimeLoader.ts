@@ -4,6 +4,7 @@ import {ClassesLoader, IClassesOptions, ISettingsOptions, SettingsLoader} from "
 import {IRuntimeLoaderOptions} from "./IRuntimeLoaderOptions";
 import {Log, PlatformUtils} from "../";
 import {DEFAULT_RUNTIME_OPTIONS, K_CLS_ACTIVATOR} from "../Bootstrap";
+import {TYPEXS_NAME} from "../types";
 
 
 export class RuntimeLoader {
@@ -32,18 +33,23 @@ export class RuntimeLoader {
 
 
   async rebuild() {
+    let modulePackageJsonKeys = [TYPEXS_NAME];
+    if (this._options.packageKeys) {
+      modulePackageJsonKeys = modulePackageJsonKeys.concat(this._options.packageKeys);
+    }
+
     let modulPaths = [];
-    for(let _path of this._options.paths){
-      if(PlatformUtils.fileExist(_path)){
+    for (let _path of this._options.paths) {
+      if (PlatformUtils.fileExist(_path)) {
         modulPaths.push(_path);
-      }else{
-        Log.debug('skipping modul path '+_path+', because it does not exists.');
+      } else {
+        Log.debug('skipping modul path ' + _path + ', because it does not exists.');
       }
     }
 
     this.registry = new ModuleRegistry({
-      packageFilter: (json) => {
-        return _.has(json, 'typexs')
+      packageFilter: (json: any) => {
+        return _.intersection(Object.keys(json), modulePackageJsonKeys).length > 0;
       },
       module: module,
       paths: modulPaths
@@ -70,8 +76,16 @@ export class RuntimeLoader {
     }
 
     this._options.libs = _.sortBy(this._options.libs, ['topic']);
-
     this.classesLoader = await this.registry.loader<ClassesLoader, IClassesOptions>(ClassesLoader, {libs: this._options.libs})
+  }
+
+
+  async getSettings(key: string) {
+    let settingsLoader = await this.registry.loader<SettingsLoader, ISettingsOptions>(SettingsLoader, {
+      ref: 'package.json',
+      path: key
+    });
+    return settingsLoader.getSettings();
   }
 
   getClasses(topic: string) {

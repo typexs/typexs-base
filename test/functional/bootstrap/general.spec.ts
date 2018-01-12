@@ -144,6 +144,19 @@ class BootstrapGeneralSpec {
     expect(activators[0]['done']).to.be.true;
     expect(activators[1]['done']).to.be.true;
 
+  }
+
+
+  @test
+  async 'additional package keys'() {
+    let appdir = path.join(__dirname, 'fake_app');
+    let bootstrap = Bootstrap.configure({
+      app: {name: 'test', path: appdir},
+      modules: {packageKeys: ['pkg']}
+    });
+    bootstrap = await bootstrap.prepareRuntime();
+    let modules = bootstrap.getModules();
+    expect(modules).to.have.length(4);
 
   }
 }

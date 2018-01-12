@@ -16,6 +16,7 @@ import {DEFAULT_STORAGE_OPTIONS, Storage} from "./libs/storage/Storage";
 import {Container} from "typedi";
 
 import {useContainer} from "typeorm";
+
 useContainer(Container);
 
 const CONFIG_NAMESPACE = 'typexs';
@@ -76,7 +77,7 @@ export const DEFAULT_RUNTIME_OPTIONS: IRuntimeLoaderOptions = {
 }
 
 
-const DEFAULT_OPTIONS : ITypexsOptions = {
+const DEFAULT_OPTIONS: ITypexsOptions = {
   app: {
     name: 'app',
     path: '.'
@@ -134,14 +135,14 @@ export class Bootstrap {
   }
 
 
-  activateLogger() {
+  activateLogger(): Bootstrap {
     Log.prefix = Bootstrap.nodeId + ' ';
-    Log.options(this._options.logging || {enable:false});
+    Log.options(this._options.logging || {enable: false});
     return this;
   }
 
 
-  activateErrorHandling() {
+  activateErrorHandling(): Bootstrap {
     process.on('unhandledRejection', this.throwedUnhandledRejection.bind(this));
     process.on('uncaughtException', this.throwedUncaughtException.bind(this));
     process.on('warning', Log.warn.bind(Log));
@@ -149,7 +150,7 @@ export class Bootstrap {
   }
 
 
-  async activateStorage() {
+  async activateStorage(): Promise<Bootstrap> {
     this.storage = new Storage();
     this.storage.nodeId = Bootstrap.nodeId;
 
@@ -160,12 +161,12 @@ export class Bootstrap {
 
     for (let name in o_storage) {
       let settings = o_storage[name];
-      let entities:Function[] = [];
-      if(this.runtimeLoader){
+      let entities: Function[] = [];
+      if (this.runtimeLoader) {
         entities = this.runtimeLoader.getClasses(['entity', name].join('.'));
       }
       let _settings: IStorageOptions = _.merge(settings, {entities: entities}, {name: name});
-      Log.debug('storage register '+name);
+      Log.debug('storage register ' + name);
       await this.storage.register(name, _settings).prepare();
     }
     return this;
@@ -208,7 +209,7 @@ export class Bootstrap {
   }
 
 
-  static getContainer(){
+  static getContainer() {
     return Container;
   }
 
@@ -275,7 +276,7 @@ export class Bootstrap {
       process.exit(1)
     }
 
-    this._options = Utils.merge(this._options,Config.jar(CONFIG_NAMESPACE).get(''));
+    this._options = Utils.merge(this._options, Config.jar(CONFIG_NAMESPACE).get(''));
     Config.jar(CONFIG_NAMESPACE).merge(this._options);
     //this._options = Config.jar(CONFIG_NAMESPACE).get('');
 
@@ -303,7 +304,7 @@ export class Bootstrap {
   }
 
 
-  startup() : Promise<Bootstrap>{
+  startup(): Promise<Bootstrap> {
     let activators = this.getActivators();
     return Promise.all(_.map(activators, async (a) => {
       return a.startup();
@@ -312,8 +313,8 @@ export class Bootstrap {
     })
   }
 
-  getActivators():IActivator[] {
-    if(!this.activators){
+  getActivators(): IActivator[] {
+    if (!this.activators) {
       return this.createActivatorInstances();
     }
     return this.activators;

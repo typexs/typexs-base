@@ -5,7 +5,7 @@ import {Bootstrap} from "./../Bootstrap";
 import {ConfigHandler, SystemConfig} from "commons-config";
 import {Log} from "./../libs/logging/Log";
 
-export function cli(){
+export function cli():Promise<Bootstrap>{
 // todo ... make this configurable
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
@@ -15,19 +15,19 @@ export function cli(){
   let sysCfg = new SystemConfig();
   let jar = sysCfg.create();
   let cfg = jar.get('argv.config');
+  let bootstrap = Bootstrap.configure(cfg);
 
-  return Bootstrap
-    .configure(cfg)
+  return bootstrap
     .activateLogger()
     .activateErrorHandling()
     .prepareRuntime()
-    .then(bootstrap => {
-      return bootstrap.activateStorage();
+    .then(_bootstrap => {
+      return _bootstrap.activateStorage();
     })
-    .then(bootstrap => {
-      return bootstrap.startup();
+    .then(_bootstrap => {
+      return _bootstrap.startup();
     })
-    .then(bootstrap => {
+    .then(_bootstrap => {
       require("yargonaut")
         .style("blue")
         .style("yellow", "required")
@@ -37,8 +37,8 @@ export function cli(){
       let yargs = require("yargs")
         .usage("Usage: $0 <command> [options]");
 
-      for (let command of bootstrap.getCommands()) {
-        let yargsCommand:any = {}
+      for (let command of _bootstrap.getCommands()) {
+        let yargsCommand:any = {};
 
         if(command.command){
           yargsCommand.command = command.command
@@ -82,10 +82,11 @@ export function cli(){
         .alias("h", "help")
         .argv;
 
-      return bootstrap;
+      return _bootstrap;
     })
     .catch(err => {
-      Log.error(err)
+      Log.error(err);
+      throw err;
     });
 
 }

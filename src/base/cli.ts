@@ -25,6 +25,9 @@ export function cli(){
       return bootstrap.activateStorage();
     })
     .then(bootstrap => {
+      return bootstrap.startup();
+    })
+    .then(bootstrap => {
       require("yargonaut")
         .style("blue")
         .style("yellow", "required")

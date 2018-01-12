@@ -303,11 +303,13 @@ export class Bootstrap {
   }
 
 
-  async startup() {
+  startup() : Promise<Bootstrap>{
     this.createActivatorInstances();
-    await Promise.all(_.map(this.activators, async (a) => {
+    return Promise.all(_.map(this.activators, async (a) => {
       return a.startup()
-    }))
+    })).then((res) => {
+      return this;
+    })
   }
 
 

@@ -167,7 +167,9 @@ export class Bootstrap {
       }
       let _settings: IStorageOptions = _.merge(settings, {entities: entities}, {name: name});
       Log.debug('storage register ' + name);
-      await this.storage.register(name, _settings).prepare();
+      let storageRef = this.storage.register(name, _settings);
+      await storageRef.prepare();
+      Container.set('storage.' + name, storageRef);
     }
     return this;
   }
@@ -287,6 +289,7 @@ export class Bootstrap {
   async prepareRuntime(): Promise<Bootstrap> {
     this._options.modules.appdir = this._options.app.path;
     this.runtimeLoader = new RuntimeLoader(this._options.modules);
+    Container.set(RuntimeLoader, this.runtimeLoader);
     await this.runtimeLoader.prepare();
     return this;
   }
@@ -335,7 +338,11 @@ export class Bootstrap {
 
 
   getModules(): IModule[] {
-    return this.runtimeLoader.registry.modules();
+    return this.getLoader().registry.modules();
+  }
+
+  getLoader(): RuntimeLoader {
+    return this.runtimeLoader;
   }
 
 

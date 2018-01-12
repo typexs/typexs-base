@@ -82,6 +82,7 @@ export function cli(){
         .alias("h", "help")
         .argv;
 
+      return bootstrap;
     })
     .catch(err => {
       Log.error(err)

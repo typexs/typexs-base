@@ -106,7 +106,7 @@ export class Bootstrap {
 
   private runtimeLoader: RuntimeLoader = null;
 
-  private activators: IActivator[] = [];
+  private activators: IActivator[] = null;
 
   private storage: Storage;
 
@@ -293,23 +293,30 @@ export class Bootstrap {
 
   private createActivatorInstances() {
     let classes = this.runtimeLoader.getClasses(K_CLS_ACTIVATOR);
-
+    this.activators = [];
     // todo before create injector and pass as parameter
     for (let clz of classes) {
       this.activators.push(Bootstrap.getContainer().get(clz));
     }
-    return this;
+    return this.activators;
 
   }
 
 
   startup() : Promise<Bootstrap>{
-    this.createActivatorInstances();
-    return Promise.all(_.map(this.activators, async (a) => {
-      return a.startup()
+    let activators = this.getActivators();
+    return Promise.all(_.map(activators, async (a) => {
+      return a.startup();
     })).then((res) => {
       return this;
     })
+  }
+
+  getActivators():IActivator[] {
+    if(!this.activators){
+      return this.createActivatorInstances();
+    }
+    return this.activators;
   }
 
 

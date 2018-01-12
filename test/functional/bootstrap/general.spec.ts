@@ -89,11 +89,9 @@ class BootstrapGeneralSpec {
 
   @test
   async 'bootstrap app with modules'() {
-    Bootstrap.reset();
-    Config.clear();
     let appdir = path.join(__dirname, 'fake_app');
 
-    let bootstrap = Bootstrap.configure({app: {name:'test',path: appdir}});
+    let bootstrap = Bootstrap.configure({app: {name: 'test', path: appdir}});
     bootstrap = await bootstrap.prepareRuntime();
 
     expect(bootstrap['_options']).to.be.deep.include({
@@ -132,9 +130,21 @@ class BootstrapGeneralSpec {
     });
 
 
-    await bootstrap.startup();
-
   }
 
+  @test
+  async 'activator startups'() {
+    let appdir = path.join(__dirname, 'fake_app');
+    let bootstrap = Bootstrap.configure({app: {name: 'test', path: appdir}});
+    bootstrap = await bootstrap.prepareRuntime();
+    await bootstrap.startup();
+    let activators = bootstrap.getActivators();
+
+    expect(activators).to.have.length(2);
+    expect(activators[0]['done']).to.be.true;
+    expect(activators[1]['done']).to.be.true;
+
+
+  }
 }
 

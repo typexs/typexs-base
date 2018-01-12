@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 import {ModuleRegistry} from "commons-moduls/registry/ModuleRegistry";
 import {ClassesLoader, IClassesOptions, ISettingsOptions, SettingsLoader} from "commons-moduls";
 import {IRuntimeLoaderOptions} from "./IRuntimeLoaderOptions";
-import {Log} from "../";
+import {Log, PlatformUtils} from "../";
 import {DEFAULT_RUNTIME_OPTIONS, K_CLS_ACTIVATOR} from "../Bootstrap";
 
 
@@ -32,12 +32,21 @@ export class RuntimeLoader {
 
 
   async rebuild() {
+    let modulPaths = [];
+    for(let _path of this._options.paths){
+      if(PlatformUtils.fileExist(_path)){
+        modulPaths.push(_path);
+      }else{
+        Log.debug('skipping modul path '+_path+', because it does not exists.');
+      }
+    }
+
     this.registry = new ModuleRegistry({
       packageFilter: (json) => {
         return _.has(json, 'typexs')
       },
       module: module,
-      paths: this._options.paths
+      paths: modulPaths
     });
     await this.registry.rebuild();
 

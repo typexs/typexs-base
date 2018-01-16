@@ -2,10 +2,10 @@ import {LogEvent} from "./LogEvent";
 import * as winston from "winston";
 import * as _ from 'lodash'
 import {ILoggerOptions} from "./ILoggerOptions";
-import {TodoException} from "../exceptions/TodoException";
 import {LoggerOptions, TransportInstance, TransportOptions} from "winston";
 import * as moment from "moment";
-import {Utils} from "../utils/Utils";
+import {BaseUtils} from "../../";
+import {TodoException} from "commons-base";
 
 const DEFAULT_TRANSPORT_OPTIONS: TransportOptions = {
   timestamp: true,
@@ -85,7 +85,7 @@ export class Log {
 
   private options(options: ILoggerOptions, append: boolean = false) {
     if (append && this._options) {
-      options = Utils.merge(this._options, options)
+      options = BaseUtils.merge(this._options, options)
     }
 
     this._options = _.defaults(options, DEFAULT_OPTIONS);

@@ -3,7 +3,7 @@
 
 
 import {BaseConnectionOptions} from "typeorm/connection/BaseConnectionOptions";
-import {StringOrFunction} from "../../types";
+import {StringOrFunction} from "commons-base";
 
 
 export const K_STORAGE:string = 'storage';

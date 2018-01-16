@@ -4,7 +4,7 @@ import {InterpolationSupport} from "commons-config";
 import {Options} from "deepmerge";
 
 
-export class Utils {
+export class BaseUtils {
 
 
   static wait(time: number): Promise<any> {
@@ -58,7 +58,7 @@ export class Utils {
 
   static mergeArray(dest: any[], source: any[], options?: merge.Options) {
     let res = _.concat(dest, source);
-    return Utils.uniqArr(res)
+    return BaseUtils.uniqArr(res)
   }
 
   static uniqArr(res: any[]) {
@@ -138,7 +138,7 @@ export class Utils {
         if (paths.length === 0) {
           return pointer
         } else {
-          return Utils.get(pointer, paths.join('.'))
+          return BaseUtils.get(pointer, paths.join('.'))
         }
       } else {
         // not found
@@ -169,7 +169,7 @@ export class Utils {
     let first: string | number = null;
 
     if (typeof path === 'string') {
-      paths = Utils.splitTyped(path)
+      paths = BaseUtils.splitTyped(path)
     } else {
       paths = path
     }
@@ -194,9 +194,9 @@ export class Utils {
         if (!(typeof next === 'number')) {
           return false
         }
-      } else if (!Utils.isObject(arr[first])) {
+      } else if (!BaseUtils.isObject(arr[first])) {
         // primative
-        if (Utils.isObject(value)) {
+        if (BaseUtils.isObject(value)) {
           return false
         }
       } else {
@@ -210,7 +210,7 @@ export class Utils {
     }
 
     if (paths.length > 0) {
-      return Utils.set(arr[first], paths, value)
+      return BaseUtils.set(arr[first], paths, value)
     } else {
       arr[first] = value;
       return true

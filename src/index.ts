@@ -1,19 +1,17 @@
 export * from "typedi";
+export * from "commons-config";
 
 
 export * from "./commands/ModulesCommand";
 export * from "./api/IActivator";
 export * from "./api/IModule";
-export * from "./types";
-export * from "./libs/exceptions/TodoException";
+
 export * from "./libs/IUrlBase";
 export * from "./libs/logging/Log";
 export * from "./libs/logging/LogEvent";
 export * from "./libs/logging/ILoggerOptions";
 export * from "./libs/utils/CryptUtils";
-export * from "./libs/utils/ClassLoader";
-export * from "./libs/utils/PlatformUtils";
-export * from "./libs/utils/Utils";
+export * from "./libs/utils/BaseUtils";
 export * from "./libs/utils/DomainUtils";
 export * from "./libs/storage/IStorageOptions";
 export * from "./libs/storage/EntitySchemaType";
@@ -37,3 +35,4 @@ export * from "./base/IRuntimeLoaderOptions";
 export * from "./base/cli";
 export * from "./Bootstrap";
 
+export * from "./types";

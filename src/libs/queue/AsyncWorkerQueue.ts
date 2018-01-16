@@ -5,7 +5,7 @@ import {IQueueProcessor} from "./IQueueProcessor";
 import {IQueueWorkload} from "./IQueueWorkload";
 import {QueueJob} from "./QueueJob";
 import {Log} from "../logging/Log";
-import {Utils} from "../utils/Utils";
+import {BaseUtils} from "../../";
 
 
 const ASYNC_QUEUE_DEFAULT: IAsyncQueueOptions = {
@@ -41,7 +41,7 @@ export class AsyncWorkerQueue<T extends IQueueWorkload> extends events.EventEmit
   constructor(processor: IQueueProcessor<T>, options: IAsyncQueueOptions = {name: 'none'}) {
     super();
     this.setMaxListeners(1000);
-    this.options = Utils.merge(ASYNC_QUEUE_DEFAULT, options);
+    this.options = BaseUtils.merge(ASYNC_QUEUE_DEFAULT, options);
     this.processor = processor;
     this.on(AsyncWorkerQueue.E_DO_PROCESS, this.process.bind(this));
     this.on(AsyncWorkerQueue.E_ENQUEUE, this.enqueue.bind(this));

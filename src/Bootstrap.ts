@@ -3,8 +3,6 @@ import {CryptUtils} from "./libs/utils/CryptUtils";
 import {ILoggerOptions} from "./libs/logging/ILoggerOptions";
 import {Log} from "./libs/logging/Log";
 import {IOptions} from "commons-config";
-import {PlatformUtils} from "./libs/utils/PlatformUtils";
-import {Utils} from "./libs/utils/Utils";
 import {RuntimeLoader} from "./base/RuntimeLoader";
 import {IRuntimeLoaderOptions} from "./base/IRuntimeLoaderOptions";
 import {IActivator} from "./api/IActivator";
@@ -16,6 +14,8 @@ import {DEFAULT_STORAGE_OPTIONS, Storage} from "./libs/storage/Storage";
 import {Container} from "typedi";
 
 import {useContainer} from "typeorm";
+import {BaseUtils} from "./libs/utils/BaseUtils";
+import {PlatformUtils} from "commons-base";
 
 useContainer(Container);
 
@@ -206,7 +206,7 @@ export class Bootstrap {
 
   static addConfigOptions(options: IOptions) {
     let opts = this._().cfgOptions;
-    this._().cfgOptions = Utils.merge(opts, options);
+    this._().cfgOptions = BaseUtils.merge(opts, options);
     return this._().cfgOptions;
   }
 
@@ -278,7 +278,7 @@ export class Bootstrap {
       process.exit(1)
     }
 
-    this._options = Utils.merge(this._options, Config.jar(CONFIG_NAMESPACE).get(''));
+    this._options = BaseUtils.merge(this._options, Config.jar(CONFIG_NAMESPACE).get(''));
     Config.jar(CONFIG_NAMESPACE).merge(this._options);
     //this._options = Config.jar(CONFIG_NAMESPACE).get('');
 

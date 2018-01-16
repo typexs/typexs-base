@@ -2,9 +2,11 @@ import * as _ from 'lodash';
 import {ModuleRegistry} from "commons-moduls/registry/ModuleRegistry";
 import {ClassesLoader, IClassesOptions, ISettingsOptions, SettingsLoader} from "commons-moduls";
 import {IRuntimeLoaderOptions} from "./IRuntimeLoaderOptions";
-import {Log, PlatformUtils} from "../";
+
 import {DEFAULT_RUNTIME_OPTIONS, K_CLS_ACTIVATOR} from "../Bootstrap";
 import {TYPEXS_NAME} from "../types";
+import {PlatformUtils} from "commons-base";
+import {Log} from "./../libs/logging/Log";
 
 
 export class RuntimeLoader {

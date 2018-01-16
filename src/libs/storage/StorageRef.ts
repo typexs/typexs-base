@@ -3,10 +3,7 @@ import {TableMetadataArgs} from "typeorm/metadata-args/TableMetadataArgs";
 import {Connection, ConnectionOptions, EntityOptions, getConnectionManager, getMetadataArgsStorage} from "typeorm";
 import {ConnectionWrapper} from "./ConnectionWrapper";
 import {Config} from "commons-config";
-import {TodoException} from "../exceptions/TodoException";
 import {DEFAULT_STORAGE_OPTIONS} from "./Storage";
-import {PlatformUtils} from "../utils/PlatformUtils";
-import {Utils} from "../utils/Utils";
 import {EntitySchema} from "typeorm/entity-schema/EntitySchema";
 import {K_WORKDIR} from "../../types";
 import {IStorageOptions} from "./IStorageOptions";
@@ -14,7 +11,8 @@ import {SqliteConnectionOptions} from "typeorm/driver/sqlite/SqliteConnectionOpt
 import {Runtime} from "../Runtime";
 import * as path from "path";
 import * as _ from "lodash";
-import {CannotExecuteNotConnectedError} from "typeorm/error/CannotExecuteNotConnectedError";
+import {PlatformUtils, TodoException} from "commons-base";
+import {BaseUtils} from "../../";
 
 export class StorageRef {
 
@@ -55,7 +53,7 @@ export class StorageRef {
         let found = false;
         for (let test of possibleFiles) {
           if (PlatformUtils.fileExist(test) || PlatformUtils.fileExist(PlatformUtils.directory(test))) {
-            options = Utils.merge(options, {type: 'sqlite', database: test});
+            options = BaseUtils.merge(options, {type: 'sqlite', database: test});
             found = true
           }
         }

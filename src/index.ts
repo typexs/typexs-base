@@ -3,7 +3,6 @@ export * from "commons-base";
 export * from "commons-config";
 export * from "commons-moduls";
 
-
 export * from "./commands/ModulesCommand";
 export * from "./api/IActivator";
 export * from "./api/IModule";

@@ -68,10 +68,26 @@ export const DEFAULT_RUNTIME_OPTIONS: IRuntimeLoaderOptions = {
   paths: [],
 
   libs: [
-    {topic: K_CLS_ACTIVATOR, refs: ['Activator', 'src/Activator']},
-    {topic: 'commands', refs: ['commands', 'src/commands']},
-    {topic: 'generators', refs: ['generators', 'src/generators']},
-    {topic: 'entity.default', refs: ['entity', 'src/entity', 'shared/entity', 'src/shared/entity']},
+    {
+      topic: K_CLS_ACTIVATOR,
+      refs: ['Activator', 'src/Activator']
+    },
+    {
+      topic: 'commands',
+      refs: ['commands', 'src/commands']
+    },
+    {
+      topic: 'generators',
+      refs: ['generators', 'src/generators']
+    },
+    {
+      topic: 'entity.default',
+      refs: [
+        'entities', 'src/entities',
+        'shared/entities', 'src/shared/entities',
+        'components/*/entities', 'src/components/*/entities'
+      ]
+    },
   ]
 
 }

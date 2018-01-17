@@ -1,5 +1,6 @@
 export * from "typedi";
 export * from "commons-config";
+export * from "commons-moduls";
 
 
 export * from "./commands/ModulesCommand";

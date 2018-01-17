@@ -1,6 +1,6 @@
 {
   "name": "typexs-base",
-  "version": "0.2.30",
+  "version": "0.2.31",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -47,7 +47,7 @@
     "commons-base": "^1.0.1",
     "commons-config": "^0.4.16",
     "commons-eventbus": "^0.9.8",
-    "commons-moduls": "^1.0.10",
+    "commons-moduls": "^1.0.11",
     "deepmerge": "^2.0.1",
     "lodash": "^4.17.4",
     "moment": "^2.20.1",

@@ -9,8 +9,8 @@ import {Bootstrap} from "../../../src/Bootstrap";
 import {Config} from "commons-config";
 import {BeforeInsert, Column, Entity, PrimaryColumn} from "typeorm";
 import {SqliteConnectionOptions} from "typeorm/driver/sqlite/SqliteConnectionOptions";
-import {X1} from "./entity/X1";
-import {Y1} from "./entity/Y1";
+import {X1} from "./entities/X1";
+import {Y1} from "./entities/Y1";
 
 
 export const TEST_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{

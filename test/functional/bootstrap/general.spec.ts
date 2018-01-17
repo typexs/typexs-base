@@ -112,13 +112,12 @@ class BootstrapGeneralSpec {
             },
             {topic: 'commands', refs: ['commands', 'src/commands']},
             {
-              "refs": [
-                "entity",
-                "src/entity",
-                "shared/entity",
-                "src/shared/entity",
-              ],
-              "topic": "entity.default"
+              topic: 'entity.default',
+              refs: [
+                'entities', 'src/entities',
+                'shared/entities', 'src/shared/entities',
+                'components/*/entities', 'src/components/*/entities'
+              ]
             },
             {topic: 'flow', refs: ['flow']},
             {topic: 'generators', refs: ['generators', 'src/generators']},

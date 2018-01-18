@@ -78,17 +78,18 @@ export class RuntimeLoader {
     }
 
     this._options.libs = _.sortBy(this._options.libs, ['topic']);
-    this.classesLoader = await this.registry.loader<ClassesLoader, IClassesOptions>(ClassesLoader, {libs: this._options.libs})
+    this.classesLoader = await this.registry.createClassesLoader({libs: this._options.libs});
   }
 
 
   async getSettings(key: string) {
-    let settingsLoader = await this.registry.loader<SettingsLoader, ISettingsOptions>(SettingsLoader, {
+    let settingsLoader = await this.registry.createSettingsLoader({
       ref: 'package.json',
       path: key
     });
     return settingsLoader.getSettings();
   }
+
 
   getClasses(topic: string) {
     return this.classesLoader.getClasses(topic);

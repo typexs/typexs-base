@@ -87,12 +87,18 @@ export class RuntimeLoader {
       ref: 'package.json',
       path: key
     });
-    return settingsLoader.getSettings();
+    if(settingsLoader){
+      return settingsLoader.getSettings();
+    }
+    return {};
   }
 
 
   getClasses(topic: string) {
-    return this.classesLoader.getClasses(topic);
+    if(this.classesLoader){
+      return this.classesLoader.getClasses(topic);
+    }
+    return [];
   }
 
 

@@ -1,15 +1,6 @@
 export * from "typedi";
 export * from "commons-base";
-
-export {
-  Config,
-  ConfigJar,
-  IFileConfigOptions,
-  IDirectoryConfigOptions,
-  SystemConfig,
-  FileConfig,
-  DirectoryConfig} from "commons-config";
-
+export * from "commons-config";
 export * from "commons-moduls";
 
 export * from "./commands/ModulesCommand";

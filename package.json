@@ -34,7 +34,7 @@
     "gulp-util": "^3.0.8",
     "gulp-watch": "^5.0.0",
     "gulpclass": "^0.1.2",
-    "mocha": "^4.1.0",
+    "mocha": "^5.0.0",
     "mocha-typescript": "^1.1.12",
     "nyc": "^11.4.1",
     "source-map-support": "^0.5.1",
@@ -56,7 +56,7 @@
     "typeorm": "^0.1.11",
     "winston": "^2.4.0",
     "yargonaut": "^1.1.2",
-    "yargs": "^10.1.1"
+    "yargs": "^11.0.0"
   },
   "private": true,
   "nyc": {

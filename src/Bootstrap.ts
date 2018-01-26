@@ -39,7 +39,9 @@ const DEFAULT_CONFIG_LOAD_ORDER = [
       'secrets',
       '${app.name}--${os.hostname}',
       '${app.name}--${env.stage}',
-      '${app.name}--${argv.stage}'
+      '${app.name}--${argv.stage}',
+      '${app.name}--${os.hostname}--${argv.stage}',
+      '${app.name}--${os.hostname}--${env.stage}'
     ]
   }
 ];
@@ -170,8 +172,9 @@ export class Bootstrap {
     this.storage = new Storage();
     this.storage.nodeId = Bootstrap.nodeId;
 
-    Container.set(Storage, this.storage);
-    Container.set('storage', this.storage);
+    Bootstrap.getContainer().set(Storage, this.storage);
+    Bootstrap.getContainer().set(Storage.name, this.storage);
+    Bootstrap.getContainer().set(K_STORAGE, this.storage);
 
     let o_storage: { [name: string]: IStorageOptions } = Config.get(K_STORAGE, CONFIG_NAMESPACE);
 
@@ -185,7 +188,7 @@ export class Bootstrap {
       Log.debug('storage register ' + name);
       let storageRef = this.storage.register(name, _settings);
       await storageRef.prepare();
-      Container.set('storage.' + name, storageRef);
+      Bootstrap.getContainer().set([K_STORAGE,name].join('.'), storageRef);
     }
     return this;
   }
@@ -305,9 +308,14 @@ export class Bootstrap {
   async prepareRuntime(): Promise<Bootstrap> {
     this._options.modules.appdir = this._options.app.path;
     this.runtimeLoader = new RuntimeLoader(this._options.modules);
-    Container.set(RuntimeLoader, this.runtimeLoader);
+    Bootstrap.getContainer().set(RuntimeLoader, this.runtimeLoader);
+    Bootstrap.getContainer().set(RuntimeLoader.name, this.runtimeLoader);
     await this.runtimeLoader.prepare();
     return this;
+  }
+
+  private configureModules() {
+    // execute static method config on Activators if it exists
   }
 
 

@@ -13,9 +13,12 @@ export class RuntimeLoader {
 
   _options: IRuntimeLoaderOptions;
 
+
   registry: ModuleRegistry;
 
+
   settings: { [moduleName: string]: any };
+
 
   classesLoader: ClassesLoader;
 

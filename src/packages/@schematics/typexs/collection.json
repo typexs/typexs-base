@@ -1,0 +1,9 @@
+{
+  "schematics": {
+    "gulp": {
+      "factory": "./gulp",
+      "schema": "./gulp/schema.json",
+      "description": "Create gulp tasks"
+    }
+  }
+}

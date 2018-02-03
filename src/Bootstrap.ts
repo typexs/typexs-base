@@ -16,6 +16,7 @@ import {Container} from "typedi";
 import {useContainer} from "typeorm";
 import {BaseUtils} from "./libs/utils/BaseUtils";
 import {PlatformUtils} from "commons-base";
+import {ISchematicsInfo} from "./libs/schematics/ISchematicsInfo";
 
 useContainer(Container);
 
@@ -67,7 +68,10 @@ export const DEFAULT_RUNTIME_OPTIONS: IRuntimeLoaderOptions = {
 
   appdir: '.',
 
-  paths: [],
+  paths: [
+    'packages',
+    'src/packages'
+  ],
 
   libs: [
     {
@@ -188,7 +192,7 @@ export class Bootstrap {
       Log.debug('storage register ' + name);
       let storageRef = this.storage.register(name, _settings);
       await storageRef.prepare();
-      Bootstrap.getContainer().set([K_STORAGE,name].join('.'), storageRef);
+      Bootstrap.getContainer().set([K_STORAGE, name].join('.'), storageRef);
     }
     return this;
   }
@@ -316,6 +320,34 @@ export class Bootstrap {
 
   private configureModules() {
     // execute static method config on Activators if it exists
+  }
+
+
+  async getSchematicsInfos() {
+    let infos = [];
+    let schematics = await this.getLoader().getSettings('schematics');
+    for (let moduleName in schematics) {
+      let schematic = schematics[moduleName];
+      if (schematic) {
+        let module = this.getLoader().getModule(moduleName);
+        let coll = await PlatformUtils.readFile(PlatformUtils.join(module.path, schematic));
+        let collectionContent = {}
+        if (coll) {
+          try {
+            collectionContent = JSON.parse(coll.toString('utf-8'))
+          } catch (err) {
+          }
+        }
+        infos.push(<ISchematicsInfo>{
+          name: moduleName,
+          internal: module.internal,
+          path: module.path,
+          collectionSource: schematic,
+          collection: collectionContent
+        })
+      }
+    }
+    return infos;
   }
 
 

@@ -1,0 +1,10 @@
+{
+  "schematics": {
+
+    "exp": {
+      "factory": "./exp",
+      "schema": "./exp/schema.json",
+      "description": "Dummy exp schema"
+    }
+  }
+}

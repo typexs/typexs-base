@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import {ModuleRegistry} from "commons-moduls/registry/ModuleRegistry";
-import {ClassesLoader, IClassesOptions, ISettingsOptions, SettingsLoader} from "commons-moduls";
+import {ClassesLoader, IClassesOptions, ISettingsOptions, Module, SettingsLoader} from "commons-moduls";
 import {IRuntimeLoaderOptions} from "./IRuntimeLoaderOptions";
 
 import {DEFAULT_RUNTIME_OPTIONS, K_CLS_ACTIVATOR} from "../Bootstrap";
@@ -26,9 +26,19 @@ export class RuntimeLoader {
   constructor(options: IRuntimeLoaderOptions) {
     _.defaults(options, _.cloneDeep(DEFAULT_RUNTIME_OPTIONS));
     this._options = options;
-    if (this._options.appdir && this._options.paths.indexOf(this._options.appdir) === -1) {
-      this._options.paths.unshift(this._options.appdir);
+    let appdir = this._options.appdir || PlatformUtils.pathResolve('.');
+    if (appdir && this._options.paths.indexOf(appdir) === -1) {
+      this._options.paths.unshift(appdir);
     }
+
+    this._options.paths = this._options.paths.map(p => {
+      if (PlatformUtils.isAbsolute(p)) {
+        return p;
+      } else {
+        return PlatformUtils.join(appdir, p);
+      }
+    })
+
   }
 
 
@@ -90,15 +100,21 @@ export class RuntimeLoader {
       ref: 'package.json',
       path: key
     });
-    if(settingsLoader){
-      return settingsLoader.getSettings();
+    if (settingsLoader) {
+      let list = settingsLoader.getSettings();
+      return list;
     }
     return {};
   }
 
+  
+  getModule(modulName: string): Module {
+    return this.registry.modules().find(m => m.name === modulName);
+  }
+
 
   getClasses(topic: string) {
-    if(this.classesLoader){
+    if (this.classesLoader) {
       return this.classesLoader.getClasses(topic);
     }
     return [];

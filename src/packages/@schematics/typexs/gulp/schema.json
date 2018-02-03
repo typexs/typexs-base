@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "id": "GulpClass",
+  "title": "Typexs gulp options",
+  "type": "object",
+  "properties": {
+    "name": {
+      "description": "The name of the application.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

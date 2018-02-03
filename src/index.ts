@@ -4,6 +4,8 @@ export * from "commons-config";
 export * from "commons-moduls";
 
 export * from "./commands/ModulesCommand";
+export * from "./commands/GenerateCommand";
+
 export * from "./api/IActivator";
 export * from "./api/IModule";
 
@@ -11,9 +13,15 @@ export * from "./libs/IUrlBase";
 export * from "./libs/logging/Log";
 export * from "./libs/logging/LogEvent";
 export * from "./libs/logging/ILoggerOptions";
+
 export * from "./libs/utils/CryptUtils";
 export * from "./libs/utils/BaseUtils";
 export * from "./libs/utils/DomainUtils";
+
+export * from "./libs/schematics/ISchematicsInfo";
+export * from "./libs/schematics/FileSystemEngineHost";
+export * from "./libs/schematics/SchematicsExecutor";
+
 export * from "./libs/storage/IStorageOptions";
 export * from "./libs/storage/EntitySchemaType";
 export * from "./libs/storage/EntitySchemaColumnOptions";

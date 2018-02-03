@@ -49,8 +49,6 @@ class BootstrapGeneralSpec {
     let bootstrap = Bootstrap.configure({app: {path: appdir}});
     await bootstrap.prepareRuntime();
 
-    console.log('ASDASD')
-
     let schematicsInfos = await bootstrap.getLoader().getSchematicsInfos();
     let schematics = schematicsInfos.find(x => x.name === '@schematics/typexs');
 
@@ -60,6 +58,7 @@ class BootstrapGeneralSpec {
       collectionName: schematics.internal ? schematics.path : schematics.name,
       schematicName: 'gulp',
       argv: {
+        appdir: workdir,
         name: 'typexs-gulp-test'
       }
     });
@@ -67,7 +66,6 @@ class BootstrapGeneralSpec {
 
     try {
       await executor.run();
-
     } catch (e) {
     }
 

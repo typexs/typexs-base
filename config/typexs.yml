@@ -1,0 +1,13 @@
+
+app:
+  name: typexs-base
+
+
+
+logging:
+  enable: true
+  level: debug
+  transports:
+  - console: {}
+
+

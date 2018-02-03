@@ -16,6 +16,7 @@ export * from "./libs/logging/ILoggerOptions";
 
 export * from "./libs/utils/CryptUtils";
 export * from "./libs/utils/BaseUtils";
+export * from "./libs/utils/FileUtils";
 export * from "./libs/utils/DomainUtils";
 
 export * from "./libs/schematics/ISchematicsInfo";

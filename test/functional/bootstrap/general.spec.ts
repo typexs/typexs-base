@@ -124,7 +124,11 @@ class BootstrapGeneralSpec {
 
 
           ],
-        paths: [appdir]
+        paths: [
+          appdir,
+          appdir + '/packages',
+          appdir + '/src/packages'
+        ]
       }
     });
 

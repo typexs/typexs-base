@@ -7,22 +7,14 @@ import {
   DryRunSink,
   FileSystemSink,
   FileSystemTree,
+  formats,
   SchematicEngine,
   Tree,
-  formats,
 } from '@angular-devkit/schematics';
 import {BuiltinTaskExecutor} from '@angular-devkit/schematics/tasks/node';
-import {
-  FileSystemHost,
-  NodeModulesEngineHost,
-  validateOptionsWithSchema,
-} from '@angular-devkit/schematics/tools';
-import {
-  schema,
-  tags,
-  terminal,
-} from '@angular-devkit/core';
-import {Log} from "../../";
+import {FileSystemHost, validateOptionsWithSchema,} from '@angular-devkit/schematics/tools';
+import {schema, tags, terminal,} from '@angular-devkit/core';
+import {Log} from "../logging/Log";
 import {ISchematicsOptions} from "./ISchematicsOptions";
 import * as _ from 'lodash';
 
@@ -91,10 +83,10 @@ export class SchematicsExecutor {
     };
 */
     let error: boolean = false;
-    let nothingDone: boolean = false;
+    let nothingDone: boolean = true;
     let dryRun: boolean = false;
 
-    const loggingQueue: string[] = [];
+    let loggingQueue: string[] = [];
 
 // Logs out dry run events.
     drySink.reporter.subscribe((event: DryRunEvent) => {
@@ -128,7 +120,6 @@ export class SchematicsExecutor {
 
     const debug = true;
     await new Promise((resolve, reject) => {
-
       schematic
         .call(this._options.argv, host)
         .pipe(
@@ -157,16 +148,14 @@ export class SchematicsExecutor {
               ignoreElements(),
               concat(observableOf(tree)));
           }),
-
           concatMap(() => engine.executePostTasks())
         )
         .subscribe({
           complete() {
-            Log.info('Done')
+            Log.info('Done');
             resolve();
           },
           error(err: Error) {
-
             if (debug) {
               Log.error('An error occured:\n' + err.stack);
             } else {
@@ -176,7 +165,6 @@ export class SchematicsExecutor {
           },
         });
     })
-
 
   }
 

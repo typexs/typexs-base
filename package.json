@@ -7,6 +7,9 @@
     "test": "nyc mocha --opts test/mocha.all.opts",
     "posttest": "nyc report --reporter=json && codecov -f coverage/*.json"
   },
+  "bin": {
+    "typexs": "./cli.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/typexs/typexs-base.git"
@@ -20,6 +23,7 @@
     "@types/mocha": "^2.2.48",
     "@types/node": "^9.4.0",
     "@types/nsqjs": "^0.9.0",
+    "@types/source-map": "^0.5.7",
     "@types/winston": "^2.3.7",
     "chai": "^4.1.2",
     "codecov": "^3.0.0",

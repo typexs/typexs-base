@@ -7,6 +7,7 @@ import {DEFAULT_RUNTIME_OPTIONS, K_CLS_ACTIVATOR} from "../Bootstrap";
 import {TYPEXS_NAME} from "../types";
 import {PlatformUtils} from "commons-base";
 import {Log} from "./../libs/logging/Log";
+import {ISchematicsInfo} from "../libs/schematics/ISchematicsInfo";
 
 
 export class RuntimeLoader {
@@ -107,7 +108,7 @@ export class RuntimeLoader {
     return {};
   }
 
-  
+
   getModule(modulName: string): Module {
     return this.registry.modules().find(m => m.name === modulName);
   }
@@ -118,6 +119,33 @@ export class RuntimeLoader {
       return this.classesLoader.getClasses(topic);
     }
     return [];
+  }
+
+  async getSchematicsInfos(): Promise<ISchematicsInfo[]> {
+    let infos:ISchematicsInfo[] = [];
+    let schematics = await this.getSettings('schematics');
+    for (let moduleName in schematics) {
+      let schematic = schematics[moduleName];
+      if (schematic) {
+        let module = this.getModule(moduleName);
+        let coll = await PlatformUtils.readFile(PlatformUtils.join(module.path, schematic));
+        let collectionContent = {}
+        if (coll) {
+          try {
+            collectionContent = JSON.parse(coll.toString('utf-8'))
+          } catch (err) {
+          }
+        }
+        infos.push(<ISchematicsInfo>{
+          name: moduleName,
+          internal: module.internal,
+          path: module.path,
+          collectionSource: schematic,
+          collection: collectionContent
+        })
+      }
+    }
+    return infos;
   }
 
 

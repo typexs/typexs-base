@@ -154,6 +154,7 @@ export class Bootstrap {
 
   static reset() {
     this.$self = null;
+    Container.reset();
   }
 
 
@@ -323,32 +324,6 @@ export class Bootstrap {
   }
 
 
-  async getSchematicsInfos() {
-    let infos = [];
-    let schematics = await this.getLoader().getSettings('schematics');
-    for (let moduleName in schematics) {
-      let schematic = schematics[moduleName];
-      if (schematic) {
-        let module = this.getLoader().getModule(moduleName);
-        let coll = await PlatformUtils.readFile(PlatformUtils.join(module.path, schematic));
-        let collectionContent = {}
-        if (coll) {
-          try {
-            collectionContent = JSON.parse(coll.toString('utf-8'))
-          } catch (err) {
-          }
-        }
-        infos.push(<ISchematicsInfo>{
-          name: moduleName,
-          internal: module.internal,
-          path: module.path,
-          collectionSource: schematic,
-          collection: collectionContent
-        })
-      }
-    }
-    return infos;
-  }
 
 
   private createActivatorInstances() {

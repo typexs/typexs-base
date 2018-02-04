@@ -1,6 +1,6 @@
 {
   "name": "typexs-base",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -8,7 +8,7 @@
     "posttest": "nyc report --reporter=json && codecov -f coverage/*.json"
   },
   "bin": {
-    "typexs": "./cli.js"
+    "typexs": "./bin/typexs.sh"
   },
   "repository": {
     "type": "git",

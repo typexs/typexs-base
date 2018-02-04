@@ -71,6 +71,16 @@ export class Gulpfile {
       .pipe(gulp.dest("./build/package"));
   }
 
+
+  /**
+   * Copies Bin files.
+   */
+  @Task()
+  packageCopyBin() {
+    return gulp.src("./bin/*").pipe(gulp.dest("./build/package/bin"));
+  }
+
+
   /**
    * Copy package.json file to the package.
    */
@@ -90,6 +100,7 @@ export class Gulpfile {
       "clean",
       "packageCompile",
       [
+        "packageCopyBin",
         "packageReplaceReferences",
         "packagePreparePackageFile",
         "packageCopyReadme",
@@ -130,7 +141,7 @@ export class Gulpfile {
 
   @Task()
   buildIndexTs() {
-    
+
   }
 
   // -------------------------------------------------------------------------

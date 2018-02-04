@@ -68,12 +68,12 @@ export class RuntimeLoader {
         return _.intersection(Object.keys(json), modulePackageJsonKeys).length > 0;
       },
       module: module,
-      paths: modulPaths
+      paths: modulPaths,
+      pattern: this._options.subModulPattern ? this._options.subModulPattern : []
     });
     await this.registry.rebuild();
 
-
-    let settingsLoader = await this.registry.loader<SettingsLoader, ISettingsOptions>(SettingsLoader, {
+    let settingsLoader = await this.registry.createSettingsLoader({
       ref: 'package.json',
       path: 'typexs'
     });
@@ -122,7 +122,7 @@ export class RuntimeLoader {
   }
 
   async getSchematicsInfos(): Promise<ISchematicsInfo[]> {
-    let infos:ISchematicsInfo[] = [];
+    let infos: ISchematicsInfo[] = [];
     let schematics = await this.getSettings('schematics');
     for (let moduleName in schematics) {
       let schematic = schematics[moduleName];

@@ -16,11 +16,10 @@ import {Container} from "typedi";
 import {useContainer} from "typeorm";
 import {BaseUtils} from "./libs/utils/BaseUtils";
 import {PlatformUtils} from "commons-base";
-import {ISchematicsInfo} from "./libs/schematics/ISchematicsInfo";
+import {CONFIG_NAMESPACE} from "./types";
 
 useContainer(Container);
 
-const CONFIG_NAMESPACE = 'typexs';
 
 const DEFAULT_CONFIG_LOAD_ORDER = [
   {type: 'file', file: '${argv.configfile}'},
@@ -69,6 +68,11 @@ export const DEFAULT_RUNTIME_OPTIONS: IRuntimeLoaderOptions = {
   appdir: '.',
 
   paths: [
+    'packages',
+    'src/packages'
+  ],
+
+  subModulPattern:[
     'packages',
     'src/packages'
   ],
@@ -178,7 +182,7 @@ export class Bootstrap {
     this.storage.nodeId = Bootstrap.nodeId;
 
     Bootstrap.getContainer().set(Storage, this.storage);
-    Bootstrap.getContainer().set(Storage.name, this.storage);
+    Bootstrap.getContainer().set('Storage', this.storage);
     Bootstrap.getContainer().set(K_STORAGE, this.storage);
 
     let o_storage: { [name: string]: IStorageOptions } = Config.get(K_STORAGE, CONFIG_NAMESPACE);
@@ -314,16 +318,15 @@ export class Bootstrap {
     this._options.modules.appdir = this._options.app.path;
     this.runtimeLoader = new RuntimeLoader(this._options.modules);
     Bootstrap.getContainer().set(RuntimeLoader, this.runtimeLoader);
-    Bootstrap.getContainer().set(RuntimeLoader.name, this.runtimeLoader);
+    Bootstrap.getContainer().set('RuntimeLoader', this.runtimeLoader);
     await this.runtimeLoader.prepare();
     return this;
   }
 
+
   private configureModules() {
     // execute static method config on Activators if it exists
   }
-
-
 
 
   private createActivatorInstances() {

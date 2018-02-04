@@ -10,7 +10,7 @@ import {SchematicsExecutor} from "../index";
 export class GenerateCommand {
 
 
-  @Inject(RuntimeLoader.name)
+  @Inject('RuntimeLoader')
   loader: RuntimeLoader;
 
 

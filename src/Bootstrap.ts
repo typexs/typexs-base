@@ -67,12 +67,9 @@ export const DEFAULT_RUNTIME_OPTIONS: IRuntimeLoaderOptions = {
 
   appdir: '.',
 
-  paths: [
-    'packages',
-    'src/packages'
-  ],
+  paths: [],
 
-  subModulPattern:[
+  subModulPattern: [
     'packages',
     'src/packages'
   ],

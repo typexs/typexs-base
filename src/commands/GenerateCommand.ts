@@ -83,7 +83,7 @@ export class GenerateCommand {
             let executor = new SchematicsExecutor({
               workdir: PlatformUtils.pathResolve(workdir),
               basedir: PlatformUtils.pathResolve(appdir),
-              collectionName: info.internal ? info.path : info.name,
+              collectionName: info.internal || info.submodule ? info.path : info.name,
               schematicName: argv.schematic,
               argv: _argv
             });

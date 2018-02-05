@@ -1,9 +1,9 @@
 import * as _ from 'lodash';
 import {ModuleRegistry} from "commons-moduls/registry/ModuleRegistry";
-import {ClassesLoader, IClassesOptions, ISettingsOptions, Module, SettingsLoader} from "commons-moduls";
+import {ClassesLoader, Module} from "commons-moduls";
 import {IRuntimeLoaderOptions} from "./IRuntimeLoaderOptions";
 
-import {DEFAULT_RUNTIME_OPTIONS, K_CLS_ACTIVATOR} from "../Bootstrap";
+import {DEFAULT_RUNTIME_OPTIONS} from "../Bootstrap";
 import {TYPEXS_NAME} from "../types";
 import {PlatformUtils} from "commons-base";
 import {Log} from "./../libs/logging/Log";
@@ -11,6 +11,7 @@ import {ISchematicsInfo} from "../libs/schematics/ISchematicsInfo";
 
 
 export class RuntimeLoader {
+
 
   _options: IRuntimeLoaderOptions;
 
@@ -28,6 +29,7 @@ export class RuntimeLoader {
     _.defaults(options, _.cloneDeep(DEFAULT_RUNTIME_OPTIONS));
     this._options = options;
     let appdir = this._options.appdir || PlatformUtils.pathResolve('.');
+
     if (appdir && this._options.paths.indexOf(appdir) === -1) {
       this._options.paths.unshift(appdir);
     }
@@ -136,9 +138,11 @@ export class RuntimeLoader {
           } catch (err) {
           }
         }
+
         infos.push(<ISchematicsInfo>{
           name: moduleName,
           internal: module.internal,
+          submodule: module.submodule,
           path: module.path,
           collectionSource: schematic,
           collection: collectionContent

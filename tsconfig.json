@@ -25,6 +25,7 @@
     ]
   },
   "exclude": [
+    "**/files/*.ts",
     "archive",
     "build",
     "dist",

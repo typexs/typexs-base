@@ -1,4 +1,3 @@
-import * as path from 'path';
 import {Config} from "commons-config";
 import {Bootstrap} from "../Bootstrap";
 import {IModule} from "../";

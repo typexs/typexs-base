@@ -1,10 +1,11 @@
 import {Gulpclass, Task, SequenceTask, MergedTask} from "gulpclass";
+
 import * as fs from 'fs';
+import * as glob from 'glob';
 
 const gulp = require("gulp");
 const bump = require('gulp-bump');
 const del = require("del");
-const glob = require("glob");
 const shell = require("gulp-shell");
 const replace = require("gulp-replace");
 const sourcemaps = require("gulp-sourcemaps");
@@ -13,6 +14,8 @@ const ts = require("gulp-typescript");
 
 @Gulpclass()
 export class Gulpfile {
+
+
   /**
    * Cleans build folder.
    */
@@ -71,7 +74,10 @@ export class Gulpfile {
   @MergedTask()
   packageCompile() {
     const tsProject = ts.createProject("tsconfig.json", {typescript: require("typescript")});
-    const tsResult = gulp.src(["./src/**/*.ts", "./node_modules/@types/**/*.ts"])
+    const tsResult = gulp.src([
+      "./src/**/*.ts",
+      "!./src/**/files/*.ts",
+      "./node_modules/@types/**/*.ts"])
       .pipe(sourcemaps.init())
       .pipe(tsProject());
 
@@ -113,6 +119,14 @@ export class Gulpfile {
   }
 
   /**
+   * Copies README.md into the package.
+   */
+  @Task()
+  packageCopyFiles() {
+    return gulp.src("./src/**/files/*").pipe(gulp.dest("./build/package"));
+  }
+
+  /**
    * Copies Bin files.
    */
   @Task()
@@ -147,6 +161,7 @@ export class Gulpfile {
       [
         "packageCopyBin",
         "packageCopyJsons",
+        "packageCopyFiles",
         "packageReplaceReferences",
         "packagePreparePackageFile",
         "packageCopyReadme",

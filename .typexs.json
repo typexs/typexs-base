@@ -1,0 +1,8 @@
+{
+  "packageExports": [
+    "typedi",
+    "commons-base",
+    "commons-config",
+    "commons-moduls"
+  ]
+}

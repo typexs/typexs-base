@@ -1,4 +1,10 @@
 ## Issues
 
-*@TASK {counter:task} 20180205* +
-gulp task
+[.line-through]#*@ISSUE {counter:issue} 20180205*# +
+impl. gulp task generate index.ts
+
+@ISSUE {counter:issue} 20180205 +
+Impl. schematics for generation of new typexs instance or upgrade
+of an existing project.
+
+

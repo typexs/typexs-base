@@ -1,0 +1,14 @@
+
+
+## Using injections
+
+Singleton object must currently be injected, by giving fixed
+string name of the class. (Cross package runtime injection is
+tricky because loaded objects can be same but come from different
+source path or module loaders)
+```
+
+@Inject('Storage')
+storage: Storage;
+
+```

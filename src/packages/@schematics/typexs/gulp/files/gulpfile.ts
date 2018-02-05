@@ -104,6 +104,13 @@ export class Gulpfile {
       .pipe(gulp.dest("./build/package"));
   }
 
+  /**
+   * Copies README.md into the package.
+   */
+  @Task()
+  packageCopyJsons() {
+    return gulp.src("./src/**/*.json").pipe(gulp.dest("./build/package"));
+  }
 
   /**
    * Copies Bin files.
@@ -139,6 +146,7 @@ export class Gulpfile {
       "packageCompile",
       [
         "packageCopyBin",
+        "packageCopyJsons",
         "packageReplaceReferences",
         "packagePreparePackageFile",
         "packageCopyReadme",

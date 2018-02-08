@@ -7,4 +7,7 @@ impl. gulp task generate index.ts
 Impl. schematics for generation of new typexs instance or upgrade
 of an existing project.
 
+@ISSUE {counter:issue} 20180208 +
+Impl. Base Generator
 
+* add "typexs" to package.json

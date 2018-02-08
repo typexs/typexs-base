@@ -42,6 +42,9 @@ export class RuntimeLoader {
       }
     })
 
+
+
+
   }
 
 
@@ -88,7 +91,13 @@ export class RuntimeLoader {
       let modulSettings = this.settings[moduleName];
       if (_.has(modulSettings, 'declareLibs')) {
         for (let s of modulSettings['declareLibs']) {
-          this._options.libs.push(s);
+          let topicData = _.find(this._options.libs,(lib) => lib.topic === s.topic)
+          if(topicData){
+            topicData.refs.push(...s.refs)
+            topicData.refs = _.uniq(topicData.refs);
+          }else{
+            this._options.libs.push(s);
+          }
         }
       }
     }

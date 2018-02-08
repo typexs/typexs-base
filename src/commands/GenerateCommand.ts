@@ -97,8 +97,6 @@ export class GenerateCommand {
           }else{
             console.log('\nMissing required parameter. Processing skipped.\n');
           }
-
-
         }
 
       } else if (res.length > 1) {

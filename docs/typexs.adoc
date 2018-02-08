@@ -12,3 +12,25 @@ source path or module loaders)
 storage: Storage;
 
 ```
+
+
+## Package versions must be the same
+
+Version of same packages used by typexs-base must be the same,
+else it could lead to overlapping of functionality.
+
+```
+# example:
+
+wrong:
+
+node_modules/x@0.1.0
+node_modules/y/node_modules/x@0.2.0
+
+correct:
+
+node_modules/x@0.2.0
+node_modules/y (no node_modules, because dependent version is already present )
+
+
+```

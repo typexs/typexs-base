@@ -114,9 +114,8 @@ class BootstrapGeneralSpec {
             {
               topic: 'entity.default',
               refs: [
-                'entities', 'src/entities',
-                'shared/entities', 'src/shared/entities',
-                'components/*/entities', 'src/components/*/entities'
+                'entities', 'src/entities','shared/entities', 'src/shared/entities',
+                'components/*/entities', 'src/components/*/entities', "src/entitytest"
               ]
             },
             {topic: 'flow', refs: ['flow']},

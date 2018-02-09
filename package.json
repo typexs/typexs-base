@@ -1,6 +1,6 @@
 {
   "name": "typexs-base",
-  "version": "0.3.13",
+  "version": "0.3.14",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -53,7 +53,7 @@
   "dependencies": {
     "@angular-devkit/core": "^0.3.1",
     "@angular-devkit/schematics": "^0.3.1",
-    "commons-base": "^1.0.3",
+    "commons-base": "^1.0.5",
     "commons-config": "^0.4.17",
     "commons-eventbus": "^0.9.8",
     "commons-moduls": "^1.1.1",

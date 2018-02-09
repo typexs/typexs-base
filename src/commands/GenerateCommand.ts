@@ -3,8 +3,8 @@ import {Inject} from "typedi";
 import {Config} from "commons-config";
 import {terminal,} from '@angular-devkit/core';
 import * as _ from 'lodash';
-import {FileUtils} from "../";
-import {PlatformUtils} from "commons-base";
+
+import {PlatformUtils,FileUtils} from "commons-base";
 import {SchematicsExecutor} from "../index";
 
 export class GenerateCommand {

@@ -1,6 +1,6 @@
 import {suite, test, timeout} from "mocha-typescript";
 import {expect} from "chai";
-import {MetaArgs, SchematicsExecutor} from "../../../src";
+import {Log, MetaArgs, SchematicsExecutor} from "../../../src";
 import {Config} from "commons-config";
 import {Bootstrap} from "../../../src/Bootstrap";
 import * as path from "path";
@@ -72,9 +72,15 @@ class BootstrapGeneralSpec {
 
     let data = await PlatformUtils.readFile(__dirname + '/tmp/gulp/package.json');
     let gulpExists = PlatformUtils.fileExist(__dirname + '/tmp/gulp/gulpfile.ts');
-    let json = JSON.parse(data.toString('utf-8'));
-    expect(json.name).to.eq('typexs-gulp-test');
-    expect(gulpExists).to.be.true;
+    try{
+      let json = JSON.parse(data.toString('utf-8'));
+      expect(json.name).to.eq('typexs-gulp-test');
+      expect(gulpExists).to.be.true;
+
+    }catch(err){
+      Log.info(err);
+      expect(false).to.be.true;
+    }
 
     await PlatformUtils.deleteDirectory(__dirname + '/tmp');
 

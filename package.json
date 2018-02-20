@@ -1,6 +1,6 @@
 {
   "name": "typexs-base",
-  "version": "0.3.15",
+  "version": "0.3.16",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -45,7 +45,7 @@
     "nyc": "^11.4.1",
     "source-map": "^0.7.1",
     "source-map-support": "^0.5.3",
-    "ts-node": "^4.1.0",
+    "ts-node": "^5.0.0",
     "typescript": "^2.7.2",
     "typescript-compiler": "^1.4.1-2",
     "typescript-require": "^0.2.9-1"

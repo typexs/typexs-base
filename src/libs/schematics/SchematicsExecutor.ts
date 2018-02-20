@@ -5,18 +5,20 @@ import {of as observableOf} from 'rxjs/observable/of';
 import {
   DryRunEvent,
   DryRunSink,
-  FileSystemSink,
   FileSystemTree,
-  formats,
+  formats, HostSink,
   SchematicEngine,
   Tree,
 } from '@angular-devkit/schematics';
 import {BuiltinTaskExecutor} from '@angular-devkit/schematics/tasks/node';
 import {FileSystemHost, validateOptionsWithSchema,} from '@angular-devkit/schematics/tools';
-import {schema, tags, terminal,} from '@angular-devkit/core';
+import {schema, tags, terminal,virtualFs,normalize} from '@angular-devkit/core';
 import {Log} from "../logging/Log";
 import {ISchematicsOptions} from "./ISchematicsOptions";
 import * as _ from 'lodash';
+import {NodeJsSyncHost} from "@angular-devkit/core/node";
+import {PlatformUtils} from "commons-base";
+
 
 
 export class SchematicsExecutor {
@@ -56,6 +58,9 @@ export class SchematicsExecutor {
 
   async run() {
 
+    this._options.argv.__BASEDIR__ = this.basedir;
+    this._options.argv.__WORKDIR__ = this.workdir;
+
     const engineHost = new FileSystemEngineHost({basedir: this.basedir})
     const engine = new SchematicEngine(engineHost);
 
@@ -69,19 +74,13 @@ export class SchematicsExecutor {
     const collection = engine.createCollection(this.collectionName);
     const schematic = collection.createSchematic(this.schematicName);
 
-    const host = observableOf(new FileSystemTree(new FileSystemHost(this.workdir)));
-    let drySink = new DryRunSink(this.workdir, this._options.force);
-    let fsSink = new FileSystemSink(this.workdir, this._options.force);
-    /*
-    let options = {}
-    let commandOptions = {
-      skipGit: true,
-      skipCommit: true,
-      skipInstall: true,
-      name: appName,
-      directory: appName
-    };
-*/
+    const fsHost = new virtualFs.ScopedHost(new NodeJsSyncHost(),normalize(this.workdir));
+
+    // const host = observableOf(new FileSystemTree(new FileSystemHost(this.workdir)));
+    const host = observableOf(new FileSystemTree(fsHost));
+    let drySink = new DryRunSink(fsHost, this._options.force);
+    let fsSink = new HostSink(fsHost, this._options.force);
+
     let error: boolean = false;
     let nothingDone: boolean = true;
     let dryRun: boolean = false;

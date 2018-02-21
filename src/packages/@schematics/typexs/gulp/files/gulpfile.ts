@@ -77,10 +77,11 @@ export class Gulpfile {
    */
   @MergedTask()
   packageCompile() {
-    const tsProject = ts.createProject("tsconfig.json", {typescript: require("typescript")});
+    const tsProject = ts.createProject("tsconfig.json");
     const tsResult = gulp.src([
       "./src/**/*.ts",
       "!./src/**/files/*.ts",
+      "!./src/**/files/**/*.ts",
       "./node_modules/@types/**/*.ts"])
       .pipe(sourcemaps.init())
       .pipe(tsProject());
@@ -170,10 +171,30 @@ export class Gulpfile {
   }
 
 
+  /**
+   * Creates a package that can be published to npm.
+   */
+  @SequenceTask()
+  packageNoClean() {
+    return [
+
+      "packageCompile",
+      [
+        "packageCopyBin",
+        "packageCopyJsons",
+        "packageCopyFiles",
+        "packageReplaceReferences",
+        "packagePreparePackageFile",
+        "packageCopyReadme",
+      ],
+    ];
+  }
+
+
   @SequenceTask("watchPackage")
   watchPackage(): any {
-    return watch(["src/**/*.(ts|json|css|scss)"], {ignoreInitial: true, read: false}, (file: any) => {
-      sequence(["generateIndexTs", "package"]);
+    return watch(["src/**/*.(ts|json|css|scss)"], {ignoreInitial: false, read: false}, (file: any) => {
+      sequence([ "packageNoClean"]);
     })
 
   }
@@ -204,11 +225,6 @@ export class Gulpfile {
       ]));
   }
 
-
-  @Task()
-  buildIndexTs() {
-
-  }
 
   // -------------------------------------------------------------------------
   // Versioning

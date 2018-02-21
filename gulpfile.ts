@@ -1,10 +1,10 @@
 import {Gulpclass, Task, SequenceTask, MergedTask} from "gulpclass";
 
+
 import * as fs from 'fs';
 import * as glob from 'glob';
 import * as gulp from 'gulp';
 import * as watch from 'gulp-watch';
-
 
 
 const bump = require('gulp-bump');
@@ -135,7 +135,7 @@ export class Gulpfile {
    */
   @Task()
   packageCopyBin() {
-      return gulp.src("./bin/*").pipe(gulp.dest("./build/package/bin"));
+    return gulp.src("./bin/*").pipe(gulp.dest("./build/package/bin"));
   }
 
 
@@ -171,9 +171,9 @@ export class Gulpfile {
 
 
   @SequenceTask("watchPackage")
-  watchPackage() :any {
-    return watch(["src/**/*.(ts|json|css|scss)"],{ ignoreInitial: true, read: false },(file:any) => {
-      sequence(["package"]);
+  watchPackage(): any {
+    return watch(["src/**/*.(ts|json|css|scss)"], {ignoreInitial: true, read: false}, (file: any) => {
+      sequence(["generateIndexTs", "package"]);
     })
 
   }

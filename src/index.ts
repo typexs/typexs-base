@@ -1,7 +1,9 @@
+
 export * from "typedi";
 export * from "commons-base";
 export * from "commons-config";
 export * from "commons-moduls";
+
 export * from "./api/IActivator";
 export * from "./api/IModule";
 export * from "./base/cli";

@@ -2,14 +2,18 @@ import {Gulpclass, Task, SequenceTask, MergedTask} from "gulpclass";
 
 import * as fs from 'fs';
 import * as glob from 'glob';
+import * as gulp from 'gulp';
+import * as watch from 'gulp-watch';
 
-const gulp = require("gulp");
+
+
 const bump = require('gulp-bump');
 const del = require("del");
 const shell = require("gulp-shell");
 const replace = require("gulp-replace");
 const sourcemaps = require("gulp-sourcemaps");
 const ts = require("gulp-typescript");
+const sequence = require('run-sequence');
 
 
 @Gulpclass()
@@ -55,11 +59,11 @@ export class Gulpfile {
       }
     }
     _glob.forEach((f: string) => {
-      if(!/\/\/ index\.ts ignore/.test(fs.readFileSync(f).toString('utf-8'))){
-        forIndexTs.push(`export * from "./${f.replace(/(^src\/)|((\.d)?\.ts$)/g,'')}";`);
+      if (!/\/\/ index\.ts ignore/.test(fs.readFileSync(f).toString('utf-8'))) {
+        forIndexTs.push(`export * from "./${f.replace(/(^src\/)|((\.d)?\.ts$)/g, '')}";`);
       }
     });
-    fs.writeFileSync('./src/index.ts',forIndexTs.join('\n'));
+    fs.writeFileSync('./src/index.ts', forIndexTs.join('\n'));
     return;
   }
 
@@ -131,11 +135,7 @@ export class Gulpfile {
    */
   @Task()
   packageCopyBin() {
-    if (require('fs').existsSync('./bin')) {
       return gulp.src("./bin/*").pipe(gulp.dest("./build/package/bin"));
-    } else {
-      return;
-    }
   }
 
 
@@ -169,6 +169,15 @@ export class Gulpfile {
     ];
   }
 
+
+  @SequenceTask("watchPackage")
+  watchPackage() :any {
+    return watch(["src/**/*.(ts|json|css|scss)"],{ ignoreInitial: true, read: false },(file:any) => {
+      sequence(["package"]);
+    })
+
+  }
+
   // -------------------------------------------------------------------------
   // Main Packaging and Publishing tasks
   // -------------------------------------------------------------------------
@@ -194,7 +203,6 @@ export class Gulpfile {
         "cd ./build/package && npm publish --tag next"
       ]));
   }
-
 
 
   @Task()

@@ -92,12 +92,12 @@ export const DEFAULT_RUNTIME_OPTIONS: IRuntimeLoaderOptions = {
       refs: [
         'entities', 'src/entities',
         'shared/entities', 'src/shared/entities',
-        'components/*/entities', 'src/components/*/entities'
+        'modules/*/entities', 'src/modules/*/entities'
       ]
     },
   ]
-
 }
+
 
 
 const DEFAULT_OPTIONS: ITypexsOptions = {

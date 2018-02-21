@@ -23,3 +23,6 @@ Impl. Base Generator
       at _combinedTickCallback (internal/process/next_tick.js:138:11)
       at process._tickCallback (internal/process/next_tick.js:180:9)
 
+**@ISSUE {counter:issue} 20180221** +
+
+Check if "reflect-metadata" is installed.

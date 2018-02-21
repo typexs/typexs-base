@@ -74,12 +74,12 @@ class BootstrapGeneralSpec {
     let data = await PlatformUtils.readFile(__dirname + '/tmp/gulp/package.json');
     let gulpExists = PlatformUtils.fileExist(__dirname + '/tmp/gulp/gulpfile.ts');
     try{
-      let json = JSON.parse(data.toString('utf-8'));
+      let json = JSON.parse(data.toString());
       expect(json.name).to.eq('typexs-gulp-test');
       expect(gulpExists).to.be.true;
 
     }catch(err){
-      console.log(data.toString('utf-8'));
+      console.log(data.toString());
       console.error(err);
       expect(false).to.be.true;
     }

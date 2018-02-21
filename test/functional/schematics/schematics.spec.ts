@@ -79,6 +79,7 @@ class BootstrapGeneralSpec {
       expect(gulpExists).to.be.true;
 
     }catch(err){
+      console.log(data.toString('utf-8'));
       console.error(err);
       expect(false).to.be.true;
     }

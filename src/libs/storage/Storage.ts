@@ -12,7 +12,9 @@ export const DEFAULT_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions
 
 export class Storage {
 
-  nodeId:string;
+  static NAME: string = 'Storage';
+
+  nodeId: string;
 
   private refs: { [key: string]: StorageRef } = {};
 

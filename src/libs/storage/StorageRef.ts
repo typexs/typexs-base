@@ -17,6 +17,7 @@ import {BaseUtils} from "../../";
 export class StorageRef {
 
 
+
   // if memory then on connection must be permanent
   private singleConnection: boolean = false;
 

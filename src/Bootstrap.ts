@@ -179,7 +179,7 @@ export class Bootstrap {
     this.storage.nodeId = Bootstrap.nodeId;
 
     Bootstrap.getContainer().set(Storage, this.storage);
-    Bootstrap.getContainer().set('Storage', this.storage);
+    Bootstrap.getContainer().set(Storage.NAME, this.storage);
     Bootstrap.getContainer().set(K_STORAGE, this.storage);
 
     let o_storage: { [name: string]: IStorageOptions } = Config.get(K_STORAGE, CONFIG_NAMESPACE);
@@ -315,7 +315,7 @@ export class Bootstrap {
     this._options.modules.appdir = this._options.app.path;
     this.runtimeLoader = new RuntimeLoader(this._options.modules);
     Bootstrap.getContainer().set(RuntimeLoader, this.runtimeLoader);
-    Bootstrap.getContainer().set('RuntimeLoader', this.runtimeLoader);
+    Bootstrap.getContainer().set(RuntimeLoader.NAME, this.runtimeLoader);
     await this.runtimeLoader.prepare();
     return this;
   }
@@ -381,41 +381,6 @@ export class Bootstrap {
     return this.storage;
   }
 
-  //
-  // async initStorage(): Promise<InternStorage> {
-  //   let o_storage: IStorageOptions = Config.get(K_STORAGE, {});
-  //
-  //
-  //   // FIXME currently special config for postgres
-  //   /*
-  //   process.env.DB_TYPE_DATETIME = 'datetime';
-  //   process.env.DB_TYPE_JSON = 'text';
-  //
-  //   if (o_storage.type === 'postgres') {
-  //     process.env.DB_TYPE_DATETIME = 'timestamp without time zone';
-  //     process.env.DB_TYPE_JSON = 'jsonb'
-  //   }
-  //   */
-  //
-  //
-  //   this.storage = new InternStorage(o_storage);
-  //   await this.storage.prepare();
-  //   return this.storage;
-  //
-  //   // Support exit throw Ctrl+C
-  //   // process.on('exit', this.shutdown.bind(this))
-  //   // process.on('SIGINT', this.shutdown.bind(this))
-  // }
-  //
-  //
-  // async shutdown() {
-  //   Log.info("Shutdown ...");
-  //   try {
-  //     await this.storage.shutdown()
-  //   } catch (err) {
-  //     Log.error('Shutdown error', err)
-  //   }
-  // }
 
 
 }

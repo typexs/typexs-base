@@ -67,6 +67,7 @@ class BootstrapGeneralSpec {
     try {
       await executor.run();
     } catch (e) {
+      console.error(e);
     }
 
 
@@ -78,7 +79,7 @@ class BootstrapGeneralSpec {
       expect(gulpExists).to.be.true;
 
     }catch(err){
-      Log.info(err);
+      console.error(err);
       expect(false).to.be.true;
     }
 

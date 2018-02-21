@@ -12,6 +12,7 @@ import {ISchematicsInfo} from "../libs/schematics/ISchematicsInfo";
 
 export class RuntimeLoader {
 
+  static NAME: string = 'RuntimeLoader';
 
   _options: IRuntimeLoaderOptions;
 

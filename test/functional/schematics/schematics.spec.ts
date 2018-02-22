@@ -74,7 +74,8 @@ class BootstrapGeneralSpec {
       console.error(e);
     }
 
-
+    let data2 = PlatformUtils.readFileSync(__dirname + '/hallo.txt');
+    console.log(data2);
     let data = PlatformUtils.readFileSync(path.join(workdir , 'package.json'));
     let gulpExists = PlatformUtils.fileExist(path.join(workdir , 'gulpfile.ts'));
     let str:string = null;

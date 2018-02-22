@@ -77,12 +77,13 @@ class BootstrapGeneralSpec {
 
     let json = require(path.join(workdir , 'package.json'));
     let gulpExists = PlatformUtils.fileExist(path.join(workdir , 'gulpfile.ts'));
+    console.log(json);
     try{
       expect(json.name).to.eq('typexs-gulp-test');
       expect(gulpExists).to.be.true;
 
     }catch(err){
-      console.log(json);
+
       console.error(err);
       expect(false).to.be.true;
     }

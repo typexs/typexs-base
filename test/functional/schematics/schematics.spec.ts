@@ -71,7 +71,7 @@ class BootstrapGeneralSpec {
     }
 
 
-    let data = await PlatformUtils.readFile(__dirname + '/tmp/gulp/package.json');
+    let data = PlatformUtils.readFileSync(__dirname + '/tmp/gulp/package.json');
     let gulpExists = PlatformUtils.fileExist(__dirname + '/tmp/gulp/gulpfile.ts');
     try{
       let json = JSON.parse(data.toString());

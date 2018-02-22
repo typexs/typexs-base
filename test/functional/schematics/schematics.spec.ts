@@ -82,6 +82,7 @@ class BootstrapGeneralSpec {
       expect(gulpExists).to.be.true;
 
     }catch(err){
+      console.log(json);
       console.error(err);
       expect(false).to.be.true;
     }

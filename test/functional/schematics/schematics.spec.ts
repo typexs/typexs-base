@@ -67,41 +67,19 @@ class BootstrapGeneralSpec {
       }
     });
 
-
     try {
       await executor.run();
     } catch (e) {
       console.error(e);
     }
 
-    let data2 = PlatformUtils.readFileSync(__dirname + '/hallo.txt');
-    console.log(data2);
-    let data3 = PlatformUtils.readFileSync(__dirname + '/package.json');
-    console.log(data3);
-    let data = PlatformUtils.readFileSync(path.join(workdir , 'package.json'));
     let gulpExists = PlatformUtils.fileExist(path.join(workdir , 'gulpfile.ts'));
-    let str:string = null;
-    if(_.isString(data)){
-      str = data;
-    }else{
-      str = data.toString()
-    }
-    console.log(data);
-    console.log(str);
-    try{
-
-      let json = JSON.parse(str);
-      expect(json.name).to.eq('typexs-gulp-test');
-      expect(gulpExists).to.be.true;
-
-    }catch(err){
-      console.log(data);
-      console.error(err);
-      expect(false).to.be.true;
-    }
+    let packageExists = PlatformUtils.fileExist(path.join(workdir , 'package.json'));
 
     await PlatformUtils.deleteDirectory(workdir);
 
+    expect(gulpExists).to.be.true;
+    expect(packageExists).to.be.true;
   }
 
 

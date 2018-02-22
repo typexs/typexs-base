@@ -38,8 +38,8 @@ export default function (options: ApplicationOptions): Rule {
         if (PlatformUtils.fileExist(filepath)) {
           let path = '/package.json'
           let localPath = join(__dirname,'files', 'package.json');
-          let jsonNew = JSON.parse(fs.readFileSync(localPath).toString('utf-8'));
-          let json = JSON.parse(fs.readFileSync(filepath).toString('utf-8'));
+          let jsonNew = JSON.parse(fs.readFileSync(localPath).toString('utf8'));
+          let json = JSON.parse(fs.readFileSync(filepath).toString('utf8'));
 
           let updated = false;
           ['dependencies', 'devDependencies', 'scripts'].forEach(_key => {

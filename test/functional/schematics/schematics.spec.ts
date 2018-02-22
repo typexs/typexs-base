@@ -5,6 +5,7 @@ import {Config} from "commons-config";
 import {Bootstrap} from "../../../src/Bootstrap";
 import * as path from "path";
 import * as os from "os";
+import * as _ from "lodash";
 import {PlatformUtils} from "commons-base";
 
 
@@ -77,12 +78,18 @@ class BootstrapGeneralSpec {
     let data = PlatformUtils.readFileSync(path.join(workdir , 'package.json'));
     let gulpExists = PlatformUtils.fileExist(path.join(workdir , 'gulpfile.ts'));
     try{
-      let json = JSON.parse(data.toString());
+      let str:string = null;
+      if(_.isString(data)){
+        str = data;
+      }else{
+        str = data.toString()
+      }
+      let json = JSON.parse(str);
       expect(json.name).to.eq('typexs-gulp-test');
       expect(gulpExists).to.be.true;
 
     }catch(err){
-      console.log(data.toString());
+      console.log(data);
       console.error(err);
       expect(false).to.be.true;
     }

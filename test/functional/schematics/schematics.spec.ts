@@ -4,8 +4,11 @@ import {Log, MetaArgs, SchematicsExecutor} from "../../../src";
 import {Config} from "commons-config";
 import {Bootstrap} from "../../../src/Bootstrap";
 import * as path from "path";
+import * as os from "os";
 import {PlatformUtils} from "commons-base";
 
+
+const TMPDIR = os.tmpdir();
 
 @suite('functional/schematics')
 class BootstrapGeneralSpec {
@@ -42,7 +45,7 @@ class BootstrapGeneralSpec {
   @test @timeout(5000)
   async 'gulp task'() {
     let appdir = __dirname + '/../../..';
-    let workdir = __dirname + '/tmp/gulp';
+    let workdir = path.join(TMPDIR, 'gulp_test');
 
     PlatformUtils.mkdir(workdir);
 
@@ -71,8 +74,8 @@ class BootstrapGeneralSpec {
     }
 
 
-    let data = PlatformUtils.readFileSync(__dirname + '/tmp/gulp/package.json');
-    let gulpExists = PlatformUtils.fileExist(__dirname + '/tmp/gulp/gulpfile.ts');
+    let data = PlatformUtils.readFileSync(path.join(workdir , 'package.json'));
+    let gulpExists = PlatformUtils.fileExist(path.join(workdir , 'gulpfile.ts'));
     try{
       let json = JSON.parse(data.toString());
       expect(json.name).to.eq('typexs-gulp-test');
@@ -84,7 +87,7 @@ class BootstrapGeneralSpec {
       expect(false).to.be.true;
     }
 
-    await PlatformUtils.deleteDirectory(__dirname + '/tmp');
+    await PlatformUtils.deleteDirectory(workdir);
 
   }
 

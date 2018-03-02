@@ -61,7 +61,7 @@ export class SchematicsExecutor {
     this._options.argv.__BASEDIR__ = this.basedir;
     this._options.argv.__WORKDIR__ = this.workdir;
 
-    const engineHost = new FileSystemEngineHost({basedir: this.basedir})
+    const engineHost = new FileSystemEngineHost({basedir: this.basedir});
     const engine = new SchematicEngine(engineHost);
 
     // Add support for schemaJson.

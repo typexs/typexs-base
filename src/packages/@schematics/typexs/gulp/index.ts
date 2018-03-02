@@ -32,11 +32,11 @@ export default function (options: ApplicationOptions): Rule {
         ])),
       (tree: Tree, context: SchematicContext) => {
 
-        let overwrites: any[] = []
+        let overwrites: any[] = [];
         let filepath = join(appdir, 'package.json');
 
         if (PlatformUtils.fileExist(filepath)) {
-          let path = '/package.json'
+          let path = '/package.json';
           let localPath = join(__dirname,'files', 'package.json');
           let jsonNew = JSON.parse(fs.readFileSync(localPath).toString('utf8'));
           let json = JSON.parse(fs.readFileSync(filepath).toString('utf8'));

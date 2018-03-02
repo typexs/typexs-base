@@ -169,11 +169,28 @@ export class Gulpfile {
     ];
   }
 
+  /**
+   * Creates a package that can be published to npm.
+   */
+  @SequenceTask()
+  packageNoClean() {
+    return [
+      "packageCompile",
+      [
+        "packageCopyBin",
+        "packageCopyJsons",
+        "packageCopyFiles",
+        "packageReplaceReferences",
+        "packagePreparePackageFile",
+        "packageCopyReadme",
+      ],
+    ];
+  }
 
   @SequenceTask("watchPackage")
   watchPackage(): any {
     return watch(["src/**/*.(ts|json|css|scss)"], {ignoreInitial: true, read: false}, (file: any) => {
-      sequence(["generateIndexTs", "package"]);
+      sequence(["packageNoClean"]);
     })
 
   }

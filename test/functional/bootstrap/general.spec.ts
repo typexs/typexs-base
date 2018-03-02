@@ -68,8 +68,8 @@ class BootstrapGeneralSpec {
     await loader.rebuild();
     let modules = loader.registry.modules();
     expect(modules).to.have.length(3);
-    expect(_.find(modules, {name: 'module1'})).to.exist
-    expect(_.find(modules, {name: 'module2'})).to.not.exist
+    expect(_.find(modules, {name: 'module1'})).to.exist;
+    expect(_.find(modules, {name: 'module2'})).to.not.exist;
 
     let activators = loader.classesLoader.getClasses('activator.js');
     expect(activators).to.have.length(2);

@@ -13,7 +13,7 @@ export class SimpleRegexCodeModifierHelper {
         importNames[match[4]] = match[7];
       } else {
         match[3].split(',').map(x => {
-          x = x.trim()
+          x = x.trim();
           importNames[x] = match[7];
         });
       }
@@ -22,7 +22,7 @@ export class SimpleRegexCodeModifierHelper {
 
     if (last) {
       let startIndex = last.index + last[0].length;
-      let append = ''
+      let append = '';
 
       let importNamesKeys = Object.keys(importNames);
       while ((match = tsImportRegex.exec(additional)) != null) {
@@ -32,7 +32,7 @@ export class SimpleRegexCodeModifierHelper {
           }
         } else if (match[3]) {
           match[3].split(',').map(x => {
-            x = x.trim()
+            x = x.trim();
             if (importNamesKeys.indexOf(x) === -1) {
               append += 'import {' + x + '} from \"' + match[7] + '\";\n';
             }
@@ -59,7 +59,7 @@ export class SimpleRegexCodeModifierHelper {
 
   static copyMethods(target: string, additional: string): string {
     let match: RegExpExecArray = null;
-    let methodNames = []
+    let methodNames = [];
     let last = null;
     while ((match = tsMethodEnvelopeRegex.exec(target)) != null) {
       methodNames.push(match[4]);
@@ -74,7 +74,7 @@ export class SimpleRegexCodeModifierHelper {
     }else{
       match = /\}\s*$/g.exec(target);
       if(match){
-        prepand = false
+        prepand = false;
         startIndex = match.index - 1;
       }
     }
@@ -82,7 +82,7 @@ export class SimpleRegexCodeModifierHelper {
 
     if (startIndex > -1) {
 
-      let append = ''
+      let append = '';
 
       while ((match = tsMethodEnvelopeRegex.exec(additional)) != null) {
         if (methodNames.indexOf(match[4]) === -1) {
@@ -94,8 +94,8 @@ export class SimpleRegexCodeModifierHelper {
         return target;
       }
 
-      let parts = []
-      parts.push(target.substr(0, startIndex + 1))
+      let parts = [];
+      parts.push(target.substr(0, startIndex + 1));
       parts.push((prepand ? '\n\n':'')+'  ' + append);
       parts.push(target.substr(startIndex));
 

@@ -49,7 +49,7 @@ export class GenerateCommand {
           return _x && x.name === argv.collection;
         }
         return _x;
-      })
+      });
 
       if (res.length === 1) {
         // okay!

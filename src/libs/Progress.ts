@@ -10,7 +10,7 @@ export class Progress extends EventEmitter {
   options: any = {};
 
   progressing: boolean = false;
-  active: number = 0
+  active: number = 0;
 
   timer: Timer = null;
   done: number = 0;

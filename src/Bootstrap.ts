@@ -96,7 +96,7 @@ export const DEFAULT_RUNTIME_OPTIONS: IRuntimeLoaderOptions = {
       ]
     },
   ]
-}
+};
 
 
 
@@ -113,7 +113,7 @@ const DEFAULT_OPTIONS: ITypexsOptions = {
   storage: {
     'default': DEFAULT_STORAGE_OPTIONS
   }
-}
+};
 
 
 export class Bootstrap {
@@ -260,7 +260,7 @@ export class Bootstrap {
 
     // check if it is an file
     try {
-      let additionalData = null
+      let additionalData = null;
 
       if (_.isString(c)) {
         // can be file or JSON with config
@@ -356,7 +356,7 @@ export class Bootstrap {
 
 
   getCommands() {
-    let commands = []
+    let commands = [];
     for (let clz of this.runtimeLoader.getClasses('commands')) {
       commands.push(Bootstrap.getContainer().get(clz));
     }

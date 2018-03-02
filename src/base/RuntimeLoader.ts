@@ -92,9 +92,9 @@ export class RuntimeLoader {
       let modulSettings = this.settings[moduleName];
       if (_.has(modulSettings, 'declareLibs')) {
         for (let s of modulSettings['declareLibs']) {
-          let topicData = _.find(this._options.libs,(lib) => lib.topic === s.topic)
+          let topicData = _.find(this._options.libs,(lib) => lib.topic === s.topic);
           if(topicData){
-            topicData.refs.push(...s.refs)
+            topicData.refs.push(...s.refs);
             topicData.refs = _.uniq(topicData.refs);
           }else{
             this._options.libs.push(s);
@@ -141,7 +141,7 @@ export class RuntimeLoader {
       if (schematic) {
         let module = this.getModule(moduleName);
         let coll = await PlatformUtils.readFile(PlatformUtils.join(module.path, schematic));
-        let collectionContent = {}
+        let collectionContent = {};
         if (coll) {
           try {
             collectionContent = JSON.parse(coll.toString('utf-8'))

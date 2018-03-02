@@ -63,7 +63,7 @@ export class BaseUtils {
 
   static uniqArr(res: any[]) {
     return _.uniqBy(res, (entry) => {
-      let x = null
+      let x = null;
       if (_.isFunction(entry)) {
         x = entry.toString();
       } else {

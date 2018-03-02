@@ -4,7 +4,7 @@ import {BeforeInsert, Column, Entity, PrimaryColumn} from "typeorm";
 export class X1 {
 
   @PrimaryColumn()
-  id: number
+  id: number;
 
   @Column()
   txt:string;

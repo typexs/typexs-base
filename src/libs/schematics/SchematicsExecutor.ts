@@ -173,6 +173,7 @@ export class SchematicsExecutor {
     });
 
 // Pass the rest of the arguments as the smart default "argv". Then delete it.
+    /*
     workflow.registry.addSmartDefaultProvider('argv', (schema: JsonObject) => {
       if ('index' in schema) {
         return this._options.argv._[Number(schema['index'])];
@@ -180,6 +181,7 @@ export class SchematicsExecutor {
         return this._options.argv._;
       }
     });
+    */
 
     const debug = true;
 

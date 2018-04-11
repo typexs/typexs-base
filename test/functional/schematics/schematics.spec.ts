@@ -43,7 +43,7 @@ class BootstrapGeneralSpec {
   }
 
 
-  @test @timeout(5000)
+  @test @timeout(10000)
   async 'gulp task'() {
     let appdir = __dirname + '/../../..';
     let workdir = path.join(TMPDIR, 'gulp_test');

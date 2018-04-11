@@ -15,12 +15,13 @@ export class GenerateCommand {
 
 
   command = "generate [schematic] [collection]";
+
   aliases = "g";
+
   describe = "Generate schematics";
 
 
   builder(yargs: any) {
-
     return yargs
   }
 

@@ -23,7 +23,7 @@ Impl. Base Generator
       at _combinedTickCallback (internal/process/next_tick.js:138:11)
       at process._tickCallback (internal/process/next_tick.js:180:9)
 
-Solved: Fixed npm-install in schamtics/angular was set to true.
+Solved: Fixed npm-install in schemtics/angular was set to true.
 
 
 
@@ -31,3 +31,7 @@ Solved: Fixed npm-install in schamtics/angular was set to true.
 
 Check if "reflect-metadata" is installed in cli.js
 
+**@ISSUE {counter:issue} 20180411** +
+
+Disable storage if not defined.
+(If possible with typeorm create an OnlyInMemoryStore)

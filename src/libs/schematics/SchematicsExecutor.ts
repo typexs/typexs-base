@@ -7,10 +7,8 @@ import {NodeJsSyncHost} from "@angular-devkit/core/node";
 import {Logger} from "@angular-devkit/core/src/logger";
 import {LogLevel} from "@angular-devkit/core/src/logger/logger";
 import {FileWorkflow} from "./FileWorkflow";
-import {Observable} from "rxjs";
 
 
-let tmp:Observable<{}>;
 
 class WFLogger extends Logger {
   constructor() {
@@ -209,7 +207,7 @@ export class SchematicsExecutor {
             } else {
               Log.error(err.message);
             }
-
+            // reject(err);
             process.exit(1);
           },
           complete() {

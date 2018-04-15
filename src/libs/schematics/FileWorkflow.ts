@@ -83,15 +83,17 @@ export class FileWorkflow implements Workflow {
     if (!maybeContext) {
       throw new Error('Cannot get context when workflow is not executing...');
     }
-
     return maybeContext;
   }
+
   get registry(): schema.SchemaRegistry {
     return this._registry;
   }
+
   get reporter(): Observable<DryRunEvent> {
     return this._reporter.asObservable();
   }
+
   get lifeCycle(): Observable<workflow.LifeCycleEvent> {
     return this._lifeCycle.asObservable();
   }

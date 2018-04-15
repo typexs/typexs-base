@@ -1,18 +1,16 @@
-import {FileSystemEngineHost} from "./FileSystemEngineHost";
-
-import {DryRunEvent, formats, SchematicEngine, UnsuccessfulWorkflowExecution} from '@angular-devkit/schematics';
-import {BuiltinTaskExecutor} from '@angular-devkit/schematics/tasks/node';
-import {validateOptionsWithSchema,} from '@angular-devkit/schematics/tools';
-import {JsonObject, normalize, schema, tags, terminal, virtualFs} from '@angular-devkit/core';
+import {DryRunEvent, UnsuccessfulWorkflowExecution} from '@angular-devkit/schematics';
+import {JsonObject, normalize, tags, terminal, virtualFs} from '@angular-devkit/core';
 import {Log} from "../logging/Log";
 import {ISchematicsOptions} from "./ISchematicsOptions";
 import * as _ from 'lodash';
 import {NodeJsSyncHost} from "@angular-devkit/core/node";
-import {NodeWorkflow} from "@angular-devkit/schematics/tools/workflow/node-workflow";
 import {Logger} from "@angular-devkit/core/src/logger";
 import {LogLevel} from "@angular-devkit/core/src/logger/logger";
 import {FileWorkflow} from "./FileWorkflow";
+import {Observable} from "rxjs";
 
+
+let tmp:Observable<{}>;
 
 class WFLogger extends Logger {
   constructor() {
@@ -46,6 +44,7 @@ class WFLogger extends Logger {
 
 
 export class SchematicsExecutor {
+
 
 
   private _options: ISchematicsOptions;

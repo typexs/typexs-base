@@ -1,7 +1,6 @@
 import * as merge from 'deepmerge'
 import * as _ from 'lodash'
 import {InterpolationSupport} from "commons-config";
-import {Options} from "deepmerge";
 
 
 export class BaseUtils {
@@ -10,7 +9,7 @@ export class BaseUtils {
   static wait(time: number): Promise<any> {
     return new Promise(resolve => {
       setTimeout(function () {
-        resolve()
+        resolve();
       }, time)
     })
   }
@@ -20,7 +19,7 @@ export class BaseUtils {
     try {
       InterpolationSupport.exec(data, parameter);
     } catch (e) {
-      throw e
+      throw e;
     }
     return data.msg
   }

@@ -45,13 +45,9 @@ class WFLogger extends Logger {
 
 export class SchematicsExecutor {
 
-
-
   private _options: ISchematicsOptions;
 
-
   constructor(options: ISchematicsOptions) {
-
 
     this._options = options;
     if (!_.has(this._options, 'argv')) {
@@ -171,7 +167,7 @@ export class SchematicsExecutor {
       }
     });
 
-// Pass the rest of the arguments as the smart default "argv". Then delete it.
+    // Pass the rest of the arguments as the smart default "argv". Then delete it.
     /*
     workflow.registry.addSmartDefaultProvider('argv', (schema: JsonObject) => {
       if ('index' in schema) {
@@ -224,56 +220,5 @@ export class SchematicsExecutor {
           },
         });
     });
-
-
-    // await new Promise((resolve, reject) => {
-    //   schematic
-    //     .call(this._options.argv, host)
-    //     .pipe(
-    //       map((tree: Tree) => Tree.optimize(tree)),
-    //       concatMap((tree: Tree) => {
-    //         return drySink.commit(tree).pipe(
-    //           ignoreElements(),
-    //           concat(observableOf(tree)));
-    //       }),
-    //
-    //       concatMap((tree: Tree) => {
-    //         if (!error) {
-    //           // Output the logging queue.
-    //           loggingQueue.forEach(log => Log.info(log));
-    //         }
-    //
-    //         if (nothingDone) {
-    //           Log.info('Nothing to be done.');
-    //         }
-    //
-    //         if (dryRun || error) {
-    //           return observableOf(tree);
-    //         }
-    //
-    //         return fsSink.commit(tree).pipe(
-    //           ignoreElements(),
-    //           concat(observableOf(tree)));
-    //       }),
-    //       concatMap(() => engine.executePostTasks())
-    //     )
-    //     .subscribe({
-    //       complete() {
-    //         Log.info('Done');
-    //         resolve();
-    //       },
-    //       error(err: Error) {
-    //         if (debug) {
-    //           Log.error('An error occured:\n' + err.stack);
-    //         } else {
-    //           Log.error(err);
-    //         }
-    //         reject(err);
-    //       },
-    //     });
-    // })
-
   }
-
-
 }

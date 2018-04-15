@@ -1,4 +1,3 @@
-import * as fs from 'fs';
 import * as core from '@angular-devkit/core/node';
 import {RuleFactory} from '@angular-devkit/schematics';
 import {
@@ -7,10 +6,7 @@ import {
   SchematicMissingFieldsException,
 } from '@angular-devkit/schematics/tools';
 import {dirname, join, resolve as resolvePath} from 'path';
-import {
-  FileSystemCollectionDesc,
-  FileSystemSchematicDesc,
-} from '@angular-devkit/schematics/tools/description';
+import {FileSystemCollectionDesc, FileSystemSchematicDesc,} from '@angular-devkit/schematics/tools/description';
 import {ExportStringRef} from '@angular-devkit/schematics/tools/export-ref';
 import {FileSystemEngineHostBase} from '@angular-devkit/schematics/tools/file-system-engine-host-base';
 import {readJsonFile} from '@angular-devkit/schematics/tools/file-system-utility';

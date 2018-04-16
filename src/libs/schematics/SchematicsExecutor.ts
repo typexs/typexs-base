@@ -9,7 +9,6 @@ import {LogLevel} from "@angular-devkit/core/src/logger/logger";
 import {FileWorkflow} from "./FileWorkflow";
 
 
-
 class WFLogger extends Logger {
   constructor() {
     super("WFLogger")
@@ -119,7 +118,7 @@ export class SchematicsExecutor {
     let nothingDone: boolean = true;
     let dryRun: boolean = this._options.dryRun;
 
-    const workflow = new FileWorkflow(fsHost, {basedir:this.basedir,force, dryRun});
+    const workflow = new FileWorkflow(fsHost, {basedir: this.basedir, force, dryRun});
 
     let loggingQueue: string[] = [];
 
@@ -188,35 +187,35 @@ export class SchematicsExecutor {
      */
 
     await new Promise((resolve, reject) => {
-      workflow.execute({
+      let exec = workflow.execute({
         collection: this.collectionName,
         schematic: this.schematicName,
         options: this._options.argv,
         allowPrivate: this._options.allowPrivate,
         debug: this._options.debug,
         logger: new WFLogger()
-      })
-        .subscribe({
-          error(err: Error) {
-            // In case the workflow was not successful, show an appropriate error message.
-            if (err instanceof UnsuccessfulWorkflowExecution) {
-              // "See above" because we already printed the error.
-              Log.error('The Schematic workflow failed. See above.');
-            } else if (debug) {
-              Log.error('An error occured:\n' + err.stack);
-            } else {
-              Log.error(err.message);
-            }
-            // reject(err);
-            process.exit(1);
-          },
-          complete() {
-            if (nothingDone) {
-              Log.info('Nothing to be done.');
-            }
-            resolve();
-          },
-        });
+      });
+      exec.subscribe({
+        error(err: Error) {
+          // In case the workflow was not successful, show an appropriate error message.
+          if (err instanceof UnsuccessfulWorkflowExecution) {
+            // "See above" because we already printed the error.
+            Log.error('The Schematic workflow failed. See above.');
+          } else if (debug) {
+            Log.error('An error occured:\n' + err.stack);
+          } else {
+            Log.error(err.message);
+          }
+          // reject(err);
+          process.exit(1);
+        },
+        complete() {
+          if (nothingDone) {
+            Log.info('Nothing to be done.');
+          }
+          resolve();
+        },
+      });
     });
   }
 }

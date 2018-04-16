@@ -8,7 +8,9 @@ var tsMode = false;
 
 if(fs.existsSync(path.join(current,'tsconfig.json'))) {
   tsMode = true;
-  require('ts-node').register();
+  require('ts-node').register({
+    project: path.join(current,'tsconfig.json')
+  });
 }
 
 require("reflect-metadata");

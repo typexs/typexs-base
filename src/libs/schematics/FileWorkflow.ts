@@ -177,9 +177,7 @@ export class FileWorkflow implements Workflow {
 
         obs.complete();
       })),
-      reduce(() => {
-        let xc;
-      }),
+     // reduce(() => { }),
     );
   }
 }

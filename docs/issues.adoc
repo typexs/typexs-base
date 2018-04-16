@@ -35,3 +35,10 @@ Check if "reflect-metadata" is installed in cli.js
 
 Disable storage if not defined.
 (If possible with typeorm create an OnlyInMemoryStore)
+
+
+**@ISSUE {counter:issue} 20180416** +
+
+Error handling in shell script typexs:
+* if no project exists
+* if no typexs-base is installed

@@ -7,6 +7,7 @@ import {NodeJsSyncHost} from "@angular-devkit/core/node";
 import {Logger} from "@angular-devkit/core/src/logger";
 import {LogLevel} from "@angular-devkit/core/src/logger/logger";
 import {FileWorkflow} from "./FileWorkflow";
+import {Observable} from "rxjs/index";
 
 
 class WFLogger extends Logger {
@@ -195,6 +196,7 @@ export class SchematicsExecutor {
         debug: this._options.debug,
         logger: new WFLogger()
       });
+      Log.info(exec);
       exec.subscribe({
         error(err: Error) {
           // In case the workflow was not successful, show an appropriate error message.

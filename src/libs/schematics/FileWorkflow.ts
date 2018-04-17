@@ -7,31 +7,45 @@
  */
 import {Path, logging, schema, virtualFs} from '@angular-devkit/core';
 import {
-  DryRunSink, HostSink, HostTree, SchematicEngine, Tree, UnsuccessfulWorkflowExecution, formats, workflow, DryRunEvent,
+  DryRunSink,
+  //HostSink,
+  //HostTree,
+  SchematicEngine,
+  Tree,
+  //UnsuccessfulWorkflowExecution,
+  formats,
+  //workflow,
+  DryRunEvent, FileSystemSink, FileSystemTree,
 } from '@angular-devkit/schematics';  // tslint:disable-line:no-implicit-dependencies
-import {EMPTY, Observable, Subject, concat, of, throwError} from 'rxjs';
-import {concatMap, ignoreElements, map} from 'rxjs/operators';
-import {reduce, tap} from 'rxjs/internal/operators';
+//import {EMPTY, Observable, Subject, concat, of, throwError} from 'rxjs';
+import {concat, concatMap, ignoreElements, map} from 'rxjs/operators';
+//import {reduce, tap} from 'rxjs/internal/operators';
 import {BuiltinTaskExecutor} from "@angular-devkit/schematics/tasks/node";
 import {FileSystemEngineHost} from "./FileSystemEngineHost";
-import {validateOptionsWithSchema} from "@angular-devkit/schematics/tools";
-import {Workflow} from "@angular-devkit/schematics/src/workflow";
+import {FileSystemHost, validateOptionsWithSchema} from "@angular-devkit/schematics/tools";
+import {Subject} from "rxjs/Subject";
+import {Observable} from "rxjs/Observable";
+import {of} from "rxjs/observable/of";
+import {Logger} from "@angular-devkit/core/src/logger";
+
+//import {Workflow} from "@angular-devkit/schematics/src/workflow";
 
 
-export class FileWorkflow implements Workflow {
+export class FileWorkflow /*implements Workflow */ {
 
   protected _engine: SchematicEngine<{}, {}>;
   protected _engineHost: FileSystemEngineHost;
   protected _registry: schema.CoreSchemaRegistry;
   protected _reporter: Subject<DryRunEvent> = new Subject();
-  protected _lifeCycle: Subject<workflow.LifeCycleEvent> = new Subject();
-  protected _context: workflow.WorkflowExecutionContext[];
+//  protected _lifeCycle: Subject<workflow.LifeCycleEvent> = new Subject();
+  // protected _context: workflow.WorkflowExecutionContext[];
 
 
   constructor(
-    protected _host: virtualFs.Host,
+    protected _host: FileSystemHost,//virtualFs.Host,
     protected _options: {
       basedir: string;
+      workdir: string;
       force?: boolean;
       dryRun?: boolean;
       root?: Path,
@@ -52,7 +66,7 @@ export class FileWorkflow implements Workflow {
     this._engineHost.registerTaskExecutor(
       BuiltinTaskExecutor.NodePackage,
       {
-        allowPackageManagerOverride: true,
+        //allowPackageManagerOverride: true,
         packageManager: this._options.packageManager,
         rootDirectory: this._options.root,
       },
@@ -63,11 +77,12 @@ export class FileWorkflow implements Workflow {
         rootDirectory: this._options.root,
       },
     );
-    this._engineHost.registerTaskExecutor(BuiltinTaskExecutor.RunSchematic);
-    this._engineHost.registerTaskExecutor(BuiltinTaskExecutor.TslintFix);
-    this._context = [];
+    //this._engineHost.registerTaskExecutor(BuiltinTaskExecutor.RunSchematic);
+    //this._engineHost.registerTaskExecutor(BuiltinTaskExecutor.TslintFix);
+    //this._context = [];
   }
 
+  /*
   get context(): Readonly<workflow.WorkflowExecutionContext> {
     const maybeContext = this._context[this._context.length - 1];
     if (!maybeContext) {
@@ -75,6 +90,7 @@ export class FileWorkflow implements Workflow {
     }
     return maybeContext;
   }
+  */
 
   get registry(): schema.SchemaRegistry {
     return this._registry;
@@ -84,41 +100,45 @@ export class FileWorkflow implements Workflow {
     return this._reporter.asObservable();
   }
 
+  /*
   get lifeCycle(): Observable<workflow.LifeCycleEvent> {
     return this._lifeCycle.asObservable();
   }
+*/
 
   execute(
-    options: Partial<workflow.WorkflowExecutionContext>
-      & workflow.RequiredWorkflowExecutionContext,
-  ): Observable<void> {
-    const parentContext = this._context[this._context.length - 1];
+    //options: Partial<workflow.WorkflowExecutionContext>   & workflow.RequiredWorkflowExecutionContext,
+    options: { logger: Logger, [k: string]: any }
+  ): Observable<any> {
+    //const parentContext = this._context[this._context.length - 1];
 
-    if (!parentContext) {
-      this._lifeCycle.next({kind: 'start'});
-    }
+    //if (!parentContext) {
+    //this._lifeCycle.next({kind: 'start'});
+    //}
 
     /** Create the collection and the schematic. */
     const collection = this._engine.createCollection(options.collection);
     // Only allow private schematics if called from the same collection.
     const allowPrivate = options.allowPrivate
-      || (parentContext && parentContext.collection === options.collection);
-    const schematic = collection.createSchematic(options.schematic, allowPrivate);
+    //|| (parentContext && parentContext.collection === options.collection);
+    const schematic = collection.createSchematic(options.schematic)//, allowPrivate);
 
     // We need two sinks if we want to output what will happen, and actually do the work.
     // Note that fsSink is technically not used if `--dry-run` is passed, but creating the Sink
     // does not have any side effect.
-    const dryRunSink = new DryRunSink(this._host, this._options.force);
-    const fsSink = new HostSink(this._host, this._options.force);
-
+    const dryRunSink = new DryRunSink(this._options.workdir, this._options.force);
+    const fsSink = new FileSystemSink(this._options.workdir, this._options.force);
+    //const fsSink = new HostSink(this._host, this._options.force);
+    //const host = of(new FileSystemTree(new FileSystemHost(this._options.basedir)));
     let error = false;
     const dryRunSubscriber = dryRunSink.reporter.subscribe(event => {
       this._reporter.next(event);
       error = error || (event.kind == 'error');
     });
 
-    this._lifeCycle.next({kind: 'workflow-start'});
+    //this._lifeCycle.next({kind: 'workflow-start'});
 
+    /*
     const context = {
       ...options,
       debug: options.debug || false,
@@ -127,57 +147,37 @@ export class FileWorkflow implements Workflow {
       parentContext,
     };
     this._context.push(context);
-
-    return concat(
-      schematic.call(options.options, of(new HostTree(this._host)), {
-        logger: context.logger,
-      }).pipe(
+*/
+    //return concat(
+    return schematic.call(
+      options.options,
+      of(new FileSystemTree(this._host)),
+      {
+        debug: options.debug,
+        logger: options.logger,
+      })
+      .pipe(
         map(tree => Tree.optimize(tree)),
         concatMap((tree: Tree) => {
-          return concat(
-            dryRunSink.commit(tree).pipe(
-              ignoreElements(),
-            ),
-            of(tree),
-          );
+          return dryRunSink.commit(tree).pipe(
+            ignoreElements(),
+            concat(of(tree)));
         }),
         concatMap((tree: Tree) => {
           dryRunSubscriber.unsubscribe();
-          if (error) {
-            return throwError(new UnsuccessfulWorkflowExecution());
+          if (error || this._options.dryRun) {
+            return of(tree);
           }
-          if (this._options.dryRun) {
-            return EMPTY;
-          }
-
-          return fsSink.commit(tree);
+          return fsSink.commit(tree).pipe(
+            ignoreElements(),
+            concat(of(tree)));
         }),
-      ),
-      concat(new Observable<void>(obs => {
-        if (!this._options.dryRun) {
-          this._lifeCycle.next({kind: 'post-tasks-start'});
-          this._engine.executePostTasks()
-            .pipe(
-              reduce(() => {
-              }),
-              tap(() => this._lifeCycle.next({kind: 'post-tasks-end'})),
-            )
-            .subscribe(obs);
-        } else {
-          obs.complete();
-        }
-      })),
-      concat(new Observable(obs => {
-        this._lifeCycle.next({kind: 'workflow-end'});
-        this._context.pop();
+        concatMap(() => this._engine.executePostTasks())
+      );
 
-        if (this._context.length == 0) {
-          this._lifeCycle.next({kind: 'end'});
-        }
 
-        obs.complete();
-      })),
-     // reduce(() => { }),
-    );
+    // reduce(() => { }),
+
+
   }
 }

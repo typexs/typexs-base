@@ -1,4 +1,4 @@
-import {DryRunEvent, UnsuccessfulWorkflowExecution} from '@angular-devkit/schematics';
+import {DryRunEvent} from '@angular-devkit/schematics';
 import {JsonObject, normalize, tags, terminal, virtualFs} from '@angular-devkit/core';
 import {Log} from "../logging/Log";
 import {ISchematicsOptions} from "./ISchematicsOptions";
@@ -8,6 +8,8 @@ import {Logger} from "@angular-devkit/core/src/logger";
 import {LogLevel} from "@angular-devkit/core/src/logger/logger";
 import {FileWorkflow} from "./FileWorkflow";
 import {Observable} from "rxjs";
+import {of} from "rxjs/observable/of";
+import {FileSystemHost} from "@angular-devkit/schematics/tools";
 
 
 class WFLogger extends Logger {
@@ -108,9 +110,9 @@ export class SchematicsExecutor {
     //const schematic = collection.createSchematic(this.schematicName);
 
     const force = this._options.force;
-    const fsHost = new virtualFs.ScopedHost(new NodeJsSyncHost(), normalize(this.workdir));
+    //const fsHost = new virtualFs.ScopedHost(new NodeJsSyncHost(), normalize(this.workdir));
 
-    // const host = observableOf(new FileSystemTree(new FileSystemHost(this.workdir)));
+    const fsHost = new FileSystemHost(this.workdir);
     // const host = observableOf(new FileSystemTree(fsHost));
     // let drySink = new DryRunSink(fsHost, this._options.force);
     // let fsSink = new HostSink(fsHost, this._options.force);
@@ -119,7 +121,7 @@ export class SchematicsExecutor {
     let nothingDone: boolean = true;
     let dryRun: boolean = this._options.dryRun;
 
-    const workflow = new FileWorkflow(fsHost, {basedir: this.basedir, force, dryRun});
+    const workflow = new FileWorkflow(fsHost, {basedir: this.basedir, workdir: this.workdir, force, dryRun});
 
     let loggingQueue: string[] = [];
 
@@ -152,19 +154,19 @@ export class SchematicsExecutor {
       }
     });
 
+    /*
+        workflow.lifeCycle.subscribe(event => {
+          if (event.kind == 'workflow-end' || event.kind == 'post-tasks-start') {
+            if (!error) {
+              // Flush the log queue and clean the error state.
+              loggingQueue.forEach(log => Log.info(log));
+            }
 
-    workflow.lifeCycle.subscribe(event => {
-      if (event.kind == 'workflow-end' || event.kind == 'post-tasks-start') {
-        if (!error) {
-          // Flush the log queue and clean the error state.
-          loggingQueue.forEach(log => Log.info(log));
-        }
-
-        loggingQueue = [];
-        error = false;
-      }
-    });
-
+            loggingQueue = [];
+            error = false;
+          }
+        });
+    */
     // Pass the rest of the arguments as the smart default "argv". Then delete it.
     /*
     workflow.registry.addSmartDefaultProvider('argv', (schema: JsonObject) => {
@@ -200,10 +202,11 @@ export class SchematicsExecutor {
       exec.subscribe({
         error(err: Error) {
           // In case the workflow was not successful, show an appropriate error message.
-          if (err instanceof UnsuccessfulWorkflowExecution) {
-            // "See above" because we already printed the error.
-            Log.error('The Schematic workflow failed. See above.');
-          } else if (debug) {
+          // if (err instanceof UnsuccessfulWorkflowExecution) {
+          // "See above" because we already printed the error.
+          // Log.error('The Schematic workflow failed. See above.');
+          //} else
+          if (debug) {
             Log.error('An error occured:\n' + err.stack);
           } else {
             Log.error(err.message);
@@ -214,6 +217,8 @@ export class SchematicsExecutor {
         complete() {
           if (nothingDone) {
             Log.info('Nothing to be done.');
+          } else {
+            loggingQueue.forEach(log => Log.info(log));
           }
           resolve();
         },

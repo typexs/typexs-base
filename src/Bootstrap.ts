@@ -125,7 +125,7 @@ export class Bootstrap {
 
   private CONFIG_LOADED: boolean = false;
 
-  private cfgOptions: IOptions = null;
+  private cfgOptions: IOptions = {};
 
   private VERBOSE_DONE: boolean = false;
 

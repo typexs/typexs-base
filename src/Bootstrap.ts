@@ -17,6 +17,7 @@ import {useContainer} from "typeorm";
 import {BaseUtils} from "./libs/utils/BaseUtils";
 import {PlatformUtils} from "commons-base";
 import {CONFIG_NAMESPACE} from "./types";
+import {IConfigOptions} from "commons-config/config/IConfigOptions";
 
 useContainer(Container);
 
@@ -140,7 +141,7 @@ export class Bootstrap {
   private constructor(options: ITypexsOptions = {}) {
     this._options = _.defaults(options, _.cloneDeep(DEFAULT_OPTIONS));
     let config_load_order = _.cloneDeep(DEFAULT_CONFIG_LOAD_ORDER);
-    this.cfgOptions = {configs: config_load_order};
+    this.setConfigSources(config_load_order);
 
   }
 
@@ -182,7 +183,7 @@ export class Bootstrap {
     Bootstrap.getContainer().set(Storage.NAME, this.storage);
     Bootstrap.getContainer().set(K_STORAGE, this.storage);
 
-    let o_storage: { [name: string]: IStorageOptions } = Config.get(K_STORAGE, CONFIG_NAMESPACE);
+    let o_storage: { [name: string]: IStorageOptions } = Config.get(K_STORAGE, CONFIG_NAMESPACE, {});
 
     for (let name in o_storage) {
       let settings = o_storage[name];
@@ -245,6 +246,9 @@ export class Bootstrap {
     return this._(options).configure()
   }
 
+  setConfigSources(sources: IConfigOptions[]){
+    this.cfgOptions.configs = sources;
+  }
 
   configure(c: any = null) {
     if (this.CONFIG_LOADED) {

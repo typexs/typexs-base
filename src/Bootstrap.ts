@@ -248,6 +248,11 @@ export class Bootstrap {
 
   setConfigSources(sources: IConfigOptions[]){
     this.cfgOptions.configs = sources;
+    return this;
+  }
+
+  static setConfigSources(sources: IConfigOptions[]) {
+    return this._().setConfigSources(sources);
   }
 
   configure(c: any = null) {

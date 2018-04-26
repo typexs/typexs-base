@@ -111,31 +111,36 @@ export class StorageRef {
       engine: options && options.engine ? options.engine : undefined,
       database: options && options.database ? options.database : undefined,
       schema: options && options.schema ? options.schema : undefined,
-      skipSync: !!(options && options.skipSync === true)
+      synchronize: options && options.synchronize ? options.synchronize : undefined
     };
     getMetadataArgsStorage().tables.push(args);
     this.addEntityType(type);
   }
 
   addEntityType(type: EntitySchema | Function): void {
-    let opts: any = {
-      entitySchemas: [],
+    let opts: any /*IStorageOptions*/ = {
+      //entitySchemas: [],
       entities: []
     };
+
+    /*
     if (this.options.entitySchemas) {
       opts.entitySchemas = this.options.entitySchemas
     }
+    */
+
     if (this.options.entities) {
       opts.entities = this.options.entities;
     }
 
-    if (_.isFunction(type)) {
+    //if (_.isFunction(type)) {
       let exists = opts.entities.indexOf(type);
 
       if (exists < 0) {
         opts.entities.push(type);
         this.options = _.assign(this.options, opts)
       }
+      /*
     } else {
       let exists = _.find(opts.entitySchemas, {name: type.name});
       if (!exists) {
@@ -143,6 +148,7 @@ export class StorageRef {
         this.options = _.assign(this.options, opts)
       }
     }
+    */
   }
 
   async reload(full: boolean = true): Promise<any> {

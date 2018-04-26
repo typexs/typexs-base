@@ -36,7 +36,6 @@ export * from "./libs/schematics/SimpleRegexCodeModifierHelper";
 export * from "./libs/storage/ConnectionWrapper";
 export * from "./libs/storage/EntitySchemaColumnOptions";
 export * from "./libs/storage/EntitySchemaRelationOptions";
-export * from "./libs/storage/EntitySchemaType";
 export * from "./libs/storage/IStorageOptions";
 export * from "./libs/storage/Storage";
 export * from "./libs/storage/StorageRef";

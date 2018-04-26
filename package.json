@@ -60,6 +60,7 @@
     "commons-eventbus": "latest",
     "commons-moduls": "latest",
     "lodash": "^4.17.10",
+    "js-yaml": "^3.11.0",
     "moment": "^2.22.1",
     "rxjs": "^5.5.10",
     "typedi": "^0.7.2",

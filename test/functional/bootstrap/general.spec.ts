@@ -1,12 +1,11 @@
 import * as path from 'path';
 import * as _ from 'lodash';
-import {suite, test, timeout} from "mocha-typescript";
+import {suite, test} from "mocha-typescript";
 import {expect} from "chai";
 
 import {Bootstrap} from "../../../src/Bootstrap";
 import {Config} from "commons-config";
 import {RuntimeLoader} from "../../../src/base/RuntimeLoader";
-import {inspect} from "util";
 
 
 @suite('functional/bootstrap/general')
@@ -20,22 +19,16 @@ class BootstrapGeneralSpec {
   @test
   async 'add additional config options'() {
 
-    Bootstrap._({
-      app: {
-        path: __dirname
-      }
-    });
+    Bootstrap._({app: {path: __dirname}});
 
-    let cfg = Bootstrap.addConfigOptions({
-      configs: [{type: 'file', file: './config/super.json'}]
-    });
+    let cfg = Bootstrap.addConfigOptions({ configs: [{type: 'file', file: './config/super.json'}] });
 
     expect(cfg.configs).to.deep.include({
       type: 'file',
       file: './config/super.json'
     });
 
-    Bootstrap.configure();
+    let settings = Bootstrap.configure();
 
     let data = Config.get('', 'typexs');
     expect(data).to.deep.include(
@@ -91,7 +84,9 @@ class BootstrapGeneralSpec {
   async 'bootstrap app with modules'() {
     let appdir = path.join(__dirname, 'fake_app');
 
-    let bootstrap = Bootstrap.configure({app: {name: 'test', path: appdir}});
+    let bootstrap = Bootstrap.configure({
+      app: {name: 'test', path: appdir}
+    });
     bootstrap = await bootstrap.prepareRuntime();
 
     expect(bootstrap['_options']).to.be.deep.include({
@@ -116,7 +111,7 @@ class BootstrapGeneralSpec {
               refs: [
                 'entities', 'src/entities',
                 'shared/entities', 'src/shared/entities',
-                'modules/*/entities', 'src/modules/*/entities',"src/entitytest"
+                'modules/*/entities', 'src/modules/*/entities', "src/entitytest"
               ]
             },
             {topic: 'flow', refs: ['flow']},

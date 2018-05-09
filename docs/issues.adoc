@@ -42,3 +42,13 @@ Disable storage if not defined.
 Error handling in shell script typexs:
 * if no project exists
 * if no typexs-base is installed
+
+
+**@ISSUE {counter:issue} 20180508** +
+
+Schematics has a problem with directories which have wrong
+permissions. If you want to use generate as upgrade, there
+must be a possibility to exclude special folders.
+
+
+

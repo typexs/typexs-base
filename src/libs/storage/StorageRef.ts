@@ -17,7 +17,6 @@ import {BaseUtils} from "../../";
 export class StorageRef {
 
 
-
   // if memory then on connection must be permanent
   private singleConnection: boolean = false;
 
@@ -123,32 +122,17 @@ export class StorageRef {
       entities: []
     };
 
-    /*
-    if (this.options.entitySchemas) {
-      opts.entitySchemas = this.options.entitySchemas
-    }
-    */
-
     if (this.options.entities) {
       opts.entities = this.options.entities;
     }
 
     //if (_.isFunction(type)) {
-      let exists = opts.entities.indexOf(type);
+    let exists = opts.entities.indexOf(type);
 
-      if (exists < 0) {
-        opts.entities.push(type);
-        this.options = _.assign(this.options, opts)
-      }
-      /*
-    } else {
-      let exists = _.find(opts.entitySchemas, {name: type.name});
-      if (!exists) {
-        opts.entitySchemas.push(type);
-        this.options = _.assign(this.options, opts)
-      }
+    if (exists < 0) {
+      opts.entities.push(type);
+      this.options = _.assign(this.options, opts)
     }
-    */
   }
 
   async reload(full: boolean = true): Promise<any> {
@@ -194,9 +178,9 @@ export class StorageRef {
 
   async remove(wrapper: ConnectionWrapper) {
     _.remove(this.connections, {inc: wrapper.inc});
-    if (_.isEmpty(this.connections) && !this.isOnlyMemory()){
+    if (_.isEmpty(this.connections) && !this.isOnlyMemory()) {
 
-      if(getConnectionManager().has(this.name) && getConnectionManager().get(this.name).isConnected){
+      if (getConnectionManager().has(this.name) && getConnectionManager().get(this.name).isConnected) {
         try {
           await getConnectionManager().get(this.name).close()
         } catch (err) {
@@ -204,6 +188,10 @@ export class StorageRef {
         }
       }
     }
+  }
+
+  getOptions(): IStorageOptions {
+    return this.options;
   }
 
 

@@ -2,10 +2,10 @@ export interface IActivator {
   /**
    * Initialisation
    */
-  startup():void;
+  startup?():void;
 
   /**
    * Booting
    */
-  bootstrap():void;
+  bootstrap?():void;
 }

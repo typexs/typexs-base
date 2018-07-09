@@ -349,10 +349,10 @@ export class Bootstrap {
 
   startup(): Promise<Bootstrap> {
     let activators = this.getActivators();
-    return Promise.all(_.map(activators, async (a) => {
+    return Promise.all(_.map(_.filter(activators, a => _.isFunction(a['startup'])), async (a) => {
       return a.startup();
     })).then((res) => {
-      return Promise.all(_.map(activators, async (a) => {
+      return Promise.all(_.map(_.filter(activators, a => _.isFunction(a['bootstrap'])), async (a) => {
         return a.bootstrap();
       }));
     }).then((res) => {

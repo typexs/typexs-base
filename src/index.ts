@@ -5,6 +5,7 @@ export * from "commons-config";
 export * from "commons-moduls";
 
 export * from "./api/IActivator";
+export * from "./api/IBootstrap";
 export * from "./api/IModule";
 export * from "./base/cli";
 export * from "./base/IRuntimeLoaderOptions";

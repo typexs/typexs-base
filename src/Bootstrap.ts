@@ -366,11 +366,11 @@ export class Bootstrap {
 
   startup(): Promise<Bootstrap> {
     let activators = this.getActivators();
-    let bootstraps = this.getModulBootstraps();
     return Promise.all(_.map(_.filter(activators, a => _.isFunction(a['startup'])), async (a) => {
       return a.startup();
     })).then((res) => {
       // TODO how to handle dependencies?
+      let bootstraps = this.getModulBootstraps();
       return Promise.all(_.map(_.filter(bootstraps, a => _.isFunction(a['bootstrap'])), async (a) => {
         return a.bootstrap();
       }));

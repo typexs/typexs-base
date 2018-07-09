@@ -3,7 +3,7 @@ import * as _ from 'lodash';
 import {suite, test} from "mocha-typescript";
 import {expect} from "chai";
 
-import {Bootstrap} from "../../../src/Bootstrap";
+import {Bootstrap, K_CLS_BOOTSTRAP} from "../../../src/Bootstrap";
 import {Config} from "commons-config";
 import {RuntimeLoader} from "../../../src/base/RuntimeLoader";
 
@@ -21,7 +21,7 @@ class BootstrapGeneralSpec {
 
     Bootstrap._({app: {path: __dirname}});
 
-    let cfg = Bootstrap.addConfigOptions({ configs: [{type: 'file', file: './config/super.json'}] });
+    let cfg = Bootstrap.addConfigOptions({configs: [{type: 'file', file: './config/super.json'}]});
 
     expect(cfg.configs).to.deep.include({
       type: 'file',
@@ -99,6 +99,7 @@ class BootstrapGeneralSpec {
         libs:
           [
             {topic: 'activator.js', refs: ['Activator', 'src/Activator']},
+            {topic: K_CLS_BOOTSTRAP, refs: ['Bootstrap', 'src/Bootstrap']},
             {
               "refs": [
                 "builder"

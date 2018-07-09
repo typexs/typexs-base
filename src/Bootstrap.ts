@@ -18,6 +18,7 @@ import {BaseUtils} from "./libs/utils/BaseUtils";
 import {PlatformUtils} from "commons-base";
 import {CONFIG_NAMESPACE} from "./types";
 import {IConfigOptions} from "commons-config/config/IConfigOptions";
+import {IBootstrap} from "./api/IBootstrap";
 
 useContainer(Container);
 
@@ -63,6 +64,7 @@ export interface ITypexsOptions {
 }
 
 export const K_CLS_ACTIVATOR = 'activator.js';
+export const K_CLS_BOOTSTRAP = 'bootstrap.js';
 
 export const DEFAULT_RUNTIME_OPTIONS: IRuntimeLoaderOptions = {
 
@@ -79,6 +81,10 @@ export const DEFAULT_RUNTIME_OPTIONS: IRuntimeLoaderOptions = {
     {
       topic: K_CLS_ACTIVATOR,
       refs: ['Activator', 'src/Activator']
+    },
+    {
+      topic: K_CLS_BOOTSTRAP,
+      refs: ['Bootstrap', 'src/Bootstrap']
     },
     {
       topic: 'commands',
@@ -98,7 +104,6 @@ export const DEFAULT_RUNTIME_OPTIONS: IRuntimeLoaderOptions = {
     },
   ]
 };
-
 
 
 const DEFAULT_OPTIONS: ITypexsOptions = {
@@ -132,6 +137,9 @@ export class Bootstrap {
   private runtimeLoader: RuntimeLoader = null;
 
   private activators: IActivator[] = null;
+
+  private bootstraps: IBootstrap[] = null;
+
 
   private storage: Storage;
 
@@ -246,7 +254,7 @@ export class Bootstrap {
     return this._(options).configure()
   }
 
-  setConfigSources(sources: IConfigOptions[]){
+  setConfigSources(sources: IConfigOptions[]) {
     this.cfgOptions.configs = sources;
     return this;
   }
@@ -314,8 +322,7 @@ export class Bootstrap {
 
     this._options = BaseUtils.merge(this._options, Config.jar(CONFIG_NAMESPACE).get(''));
     Config.jar(CONFIG_NAMESPACE).merge(this._options);
-    //this._options = Config.jar(CONFIG_NAMESPACE).get('');
-
+    // this._options = Config.jar(CONFIG_NAMESPACE).get('');
     return this;
   }
 
@@ -346,13 +353,25 @@ export class Bootstrap {
 
   }
 
+  private createBootstrapInstances() {
+    let classes = this.runtimeLoader.getClasses(K_CLS_BOOTSTRAP);
+    this.bootstraps = [];
+    // todo before create injector and pass as parameter
+    for (let clz of classes) {
+      this.bootstraps.push(Bootstrap.getContainer().get(clz));
+    }
+    return this.bootstraps;
+  }
+
 
   startup(): Promise<Bootstrap> {
     let activators = this.getActivators();
+    let bootstraps = this.getModulBootstraps();
     return Promise.all(_.map(_.filter(activators, a => _.isFunction(a['startup'])), async (a) => {
       return a.startup();
     })).then((res) => {
-      return Promise.all(_.map(_.filter(activators, a => _.isFunction(a['bootstrap'])), async (a) => {
+      // TODO how to handle dependencies?
+      return Promise.all(_.map(_.filter(bootstraps, a => _.isFunction(a['bootstrap'])), async (a) => {
         return a.bootstrap();
       }));
     }).then((res) => {
@@ -360,11 +379,19 @@ export class Bootstrap {
     })
   }
 
+
   getActivators(): IActivator[] {
     if (!this.activators) {
       return this.createActivatorInstances();
     }
     return this.activators;
+  }
+
+  getModulBootstraps(): IBootstrap[] {
+    if (!this.bootstraps) {
+      return this.createBootstrapInstances();
+    }
+    return this.bootstraps;
   }
 
 
@@ -393,7 +420,6 @@ export class Bootstrap {
   getStorage() {
     return this.storage;
   }
-
 
 
 }

@@ -352,6 +352,10 @@ export class Bootstrap {
     return Promise.all(_.map(activators, async (a) => {
       return a.startup();
     })).then((res) => {
+      return Promise.all(_.map(activators, async (a) => {
+        return a.bootstrap();
+      }));
+    }).then((res) => {
       return this;
     })
   }

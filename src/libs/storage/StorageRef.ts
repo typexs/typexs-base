@@ -13,6 +13,7 @@ import * as path from "path";
 import * as _ from "lodash";
 import {PlatformUtils, TodoException} from "commons-base";
 import {BaseUtils} from "../../";
+import * as _ from "lodash";
 
 export class StorageRef {
 
@@ -77,11 +78,14 @@ export class StorageRef {
 
     let out = "";
     for (let x in this.options) {
-      if (typeof this.options[x] === 'string') {
+      if(['type','logging','database','dialect','synchronize','name'].indexOf(x) == -1){
+        continue;
+      }
+      if (_.isString(this.options[x])) {
         out += "\t" + x + " = " + this.options[x] + "\n"
       }
     }
-    Log.info(`storage: use ${this.options.type} for storage with options:\n${out} `);
+    Log.debug(`storage: use ${this.options.type} for storage with options:\n${out} `);
     Runtime.$().setConfig('storage', this.options)
   }
 

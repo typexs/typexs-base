@@ -254,14 +254,17 @@ export class Bootstrap {
     return this._(options).configure()
   }
 
+
   setConfigSources(sources: IConfigOptions[]) {
     this.cfgOptions.configs = sources;
     return this;
   }
 
+
   static setConfigSources(sources: IConfigOptions[]) {
     return this._().setConfigSources(sources);
   }
+
 
   configure(c: any = null) {
     if (this.CONFIG_LOADED) {
@@ -273,7 +276,6 @@ export class Bootstrap {
     if (this._options.app.path) {
       this.cfgOptions.workdir = this._options.app.path;
     }
-
 
     // check if it is an file
     try {

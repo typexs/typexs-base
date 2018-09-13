@@ -13,7 +13,6 @@ import * as path from "path";
 import * as _ from "lodash";
 import {PlatformUtils, TodoException} from "commons-base";
 import {BaseUtils} from "../../";
-import * as _ from "lodash";
 
 export class StorageRef {
 

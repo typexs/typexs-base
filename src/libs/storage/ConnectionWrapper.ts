@@ -15,11 +15,11 @@ export class ConnectionWrapper {
 
   storage: StorageRef;
 
-  connection: Connection;
+  _connection: Connection;
 
   constructor(s: StorageRef, conn?: Connection) {
     this.storage = s;
-    this.connection = conn;
+    this._connection = conn;
     this.name = this.storage.name
   }
 
@@ -55,12 +55,12 @@ export class ConnectionWrapper {
   async connect(): Promise<ConnectionWrapper> {
     await ConnectionWrapper._LOCK.startWhenReady();
     try {
-      if (!this.connection) {
-        this.connection = await getConnectionManager().get(this.name);
+      if (!this._connection) {
+        this._connection = await getConnectionManager().get(this.name);
       }
 
-      if (!this.connection.isConnected) {
-        this.connection = await this.connection.connect()
+      if (!this._connection.isConnected) {
+        this._connection = await this._connection.connect()
       }
     } catch (err) {
       Log.error(err);
@@ -72,7 +72,7 @@ export class ConnectionWrapper {
 
 
   get manager(): EntityManager {
-    return this.connection.manager
+    return this._connection.manager
   }
 
   async close(): Promise<ConnectionWrapper> {
@@ -84,8 +84,11 @@ export class ConnectionWrapper {
     } finally {
       ConnectionWrapper._LOCK.ready();
     }
-
     return Promise.resolve(this)
+  }
+
+  get connection() {
+    return this._connection;
   }
 
 }

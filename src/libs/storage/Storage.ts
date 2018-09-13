@@ -1,6 +1,7 @@
 import {IStorageOptions} from "./IStorageOptions";
 import {SqliteConnectionOptions} from "typeorm/driver/sqlite/SqliteConnectionOptions";
 import {StorageRef} from "./StorageRef";
+import * as _ from "lodash";
 
 
 export const DEFAULT_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
@@ -20,7 +21,7 @@ export class Storage {
 
 
   register(name: string, options: IStorageOptions) {
-    // Todo load other handling class from baseClass if nesaccary options.baseClass
+    // Todo load other handling class from baseClass if necassary options.baseClass
     let ref = new StorageRef(options);
     this.refs[name] = ref;
     return ref;
@@ -29,6 +30,14 @@ export class Storage {
 
   get(name: string = 'default'): StorageRef {
     return this.refs[name];
+  }
+
+  getNames(){
+    return _.keys(this.refs);
+  }
+
+  getAllOptions(){
+    return _.values(this.refs).map(ref => ref.getOptions())
   }
 
 }

@@ -77,7 +77,7 @@ export class StorageRef {
 
     let out = "";
     for (let x in this.options) {
-      if(['type','logging','database','dialect','synchronize','name'].indexOf(x) == -1){
+      if (['type', 'logging', 'database', 'dialect', 'synchronize', 'name'].indexOf(x) == -1) {
         continue;
       }
       if (_.isString(this.options[x])) {
@@ -92,7 +92,7 @@ export class StorageRef {
     return this.options.name
   }
 
-  get dbType() {
+  get dbType(): string {
     return this.options.type
   }
 
@@ -148,12 +148,12 @@ export class StorageRef {
 
   async prepare(): Promise<void> {
     if (!getConnectionManager().has(this.name)) {
-      let c = await  getConnectionManager().create(<ConnectionOptions>this.options);
+      let c = await getConnectionManager().create(<ConnectionOptions>this.options);
       c = await c.connect();
-      await(await this.wrap(c)).close();
+      await (await this.wrap(c)).close();
     }
     else {
-      await(await this.wrap()).close()
+      await (await this.wrap()).close()
     }
     // return Promise.resolve()
   }

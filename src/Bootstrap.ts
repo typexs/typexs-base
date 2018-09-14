@@ -15,10 +15,11 @@ import {Container} from "typedi";
 
 import {useContainer} from "typeorm";
 import {BaseUtils} from "./libs/utils/BaseUtils";
-import {PlatformUtils} from "commons-base";
+import {ClassLoader, PlatformUtils} from "commons-base";
 import {CONFIG_NAMESPACE} from "./types";
 import {IConfigOptions} from "commons-config/config/IConfigOptions";
 import {IBootstrap} from "./api/IBootstrap";
+import {ClassesLoader} from "commons-moduls";
 
 useContainer(Container);
 
@@ -367,16 +368,20 @@ export class Bootstrap {
 
 
   startup(): Promise<Bootstrap> {
+    Log.debug('startup ...');
     let activators = this.getActivators();
     return Promise.all(_.map(_.filter(activators, a => _.isFunction(a['startup'])), async (a) => {
+      Log.debug('activate' + ClassesLoader.getModulName(a.constructor));
       return a.startup();
     })).then((res) => {
       // TODO how to handle dependencies?
       let bootstraps = this.getModulBootstraps();
       return Promise.all(_.map(_.filter(bootstraps, a => _.isFunction(a['bootstrap'])), async (a) => {
+        Log.debug('bootstrap' + ClassesLoader.getModulName(a.constructor));
         return a.bootstrap();
       }));
     }).then((res) => {
+      Log.debug('startup ready.');
       return this;
     })
   }

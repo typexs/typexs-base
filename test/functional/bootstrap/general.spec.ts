@@ -3,9 +3,10 @@ import * as _ from 'lodash';
 import {suite, test} from "mocha-typescript";
 import {expect} from "chai";
 
-import {Bootstrap, K_CLS_BOOTSTRAP} from "../../../src/Bootstrap";
+import {Bootstrap} from "../../../src/Bootstrap";
 import {Config} from "commons-config";
 import {RuntimeLoader} from "../../../src/base/RuntimeLoader";
+import {K_CLS_BOOTSTRAP, K_CLS_STORAGE_SCHEMAHANDLER} from "../../../src";
 
 
 @suite('functional/bootstrap/general')
@@ -117,6 +118,13 @@ class BootstrapGeneralSpec {
             },
             {topic: 'flow', refs: ['flow']},
             {topic: 'generators', refs: ['generators', 'src/generators']},
+            {
+              topic: K_CLS_STORAGE_SCHEMAHANDLER,
+              refs: [
+                "adapters/storage/*/*SchemaHandler.*",
+                "src/adapters/storage/*/*SchemaHandler.*"
+              ]
+            }
 
 
           ],

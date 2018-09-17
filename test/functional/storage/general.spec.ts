@@ -46,7 +46,10 @@ class GeneralSpec {
   @test
   async 'storage bootstrap'() {
     let appdir = path.join(__dirname, 'fake_app');
-    let bootstrap = await Bootstrap.configure({app: {path: appdir}}).prepareRuntime();
+    let bootstrap = await Bootstrap.configure({
+      app: {path: appdir},
+      modules: {paths: [__dirname + '/../../..']}
+    }).prepareRuntime();
     bootstrap = await bootstrap.activateStorage();
 
     let storageManager = bootstrap.getStorage();
@@ -124,7 +127,7 @@ class GeneralSpec {
       @Column()
       txt: string;
 
-      test:boolean = false;
+      test: boolean = false;
 
       @BeforeInsert()
       t() {
@@ -133,7 +136,7 @@ class GeneralSpec {
     }
 
     class Y extends X {
-      test2:boolean = false;
+      test2: boolean = false;
 
       @BeforeInsert()
       tes() {
@@ -169,7 +172,7 @@ class GeneralSpec {
 
   @test
   async 'typeorm detect listener on fixed added class'() {
-    let opts = _.merge(_.clone(TEST_STORAGE_OPTIONS), {entities: [X1,Y1]});
+    let opts = _.merge(_.clone(TEST_STORAGE_OPTIONS), {entities: [X1, Y1]});
     let storage = new StorageRef(opts);
     await storage.prepare();
 

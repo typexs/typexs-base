@@ -1,7 +1,5 @@
-import * as _ from 'lodash';
 import {suite, test} from "mocha-typescript";
 import {expect} from "chai";
-import {IStorageOptions} from "../../../src";
 import * as path from "path";
 import {Bootstrap} from "../../../src/Bootstrap";
 import {Config} from "commons-config";
@@ -20,11 +18,14 @@ class GeneralSpec {
   @test
   async 'load dummy command'() {
     let appdir = path.join(__dirname, 'fake_app');
-    let bootstrap = await Bootstrap.configure({app: {path: appdir}}).prepareRuntime();
+    let bootstrap = await Bootstrap.configure({
+      app: {path: appdir},
+      modules: {paths: [__dirname + '/../../..']}
+    }).prepareRuntime();
     await bootstrap.activateStorage();
 
     let commands = bootstrap.getCommands();
-    expect(commands).to.have.length(1);
+    expect(commands).to.have.length(3);
 
     let result = await commands[0].handler({});
     expect(result).to.deep.eq({

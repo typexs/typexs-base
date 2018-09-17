@@ -8,7 +8,6 @@ import {RuntimeLoader} from "../../base/RuntimeLoader";
 import {K_CLS_STORAGE_SCHEMAHANDLER} from "../../types";
 
 
-
 export const DEFAULT_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
   name: 'default',
   type: "sqlite",
@@ -24,28 +23,26 @@ export class Storage {
 
   private refs: { [key: string]: StorageRef } = {};
 
-  private schemaHandler:{[key: string]: Function} = {};
-
-
+  private schemaHandler: { [key: string]: Function } = {};
 
 
   register(name: string, options: IStorageOptions) {
     // Todo load other handling class from baseClass if necassary options.baseClass
     let ref = new StorageRef(options);
     let type = '__default__';
-    if(_.has(this.schemaHandler,options.type)){
+    if (_.has(this.schemaHandler, options.type)) {
       type = options.type;
     }
-    ref.setSchemaHandler(Reflect.construct(this.schemaHandler[type],[ref]));
+    ref.setSchemaHandler(Reflect.construct(this.schemaHandler[type], [ref]));
     this.refs[name] = ref;
     return ref;
   }
 
 
-  async prepare(loader:RuntimeLoader){
+  async prepare(loader: RuntimeLoader) {
     let classes = await loader.getClasses(K_CLS_STORAGE_SCHEMAHANDLER);
-    for(let cls of classes){
-      let obj = <AbstractSchemaHandler>Reflect.construct(cls,[]);
+    for (let cls of classes) {
+      let obj = <AbstractSchemaHandler>Reflect.construct(cls, []);
       this.schemaHandler[obj.type] = cls;
     }
   }
@@ -55,11 +52,13 @@ export class Storage {
     return this.refs[name];
   }
 
-  getNames(){
+
+  getNames() {
     return _.keys(this.refs);
   }
 
-  getAllOptions(){
+
+  getAllOptions() {
     return _.values(this.refs).map(ref => ref.getOptions())
   }
 

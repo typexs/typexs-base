@@ -1,0 +1,11 @@
+app:
+  name: fake_app_handler
+
+
+storage:
+  default:
+    synchronize: true
+    type: sqlite
+    database: ':memory:'
+   # logging: all
+   # logger: simple-console

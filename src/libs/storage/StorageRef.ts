@@ -12,7 +12,10 @@ import {Runtime} from "../Runtime";
 import * as path from "path";
 import * as _ from "lodash";
 import {PlatformUtils, TodoException} from "commons-base";
-import {BaseUtils} from "../../";
+
+import {AbstractSchemaHandler} from "./AbstractSchemaHandler";
+import {BaseUtils} from "../utils/BaseUtils";
+
 
 export class StorageRef {
 
@@ -29,6 +32,8 @@ export class StorageRef {
   private options: IStorageOptions = null;
 
   private entitySchemas: EntitySchema[] = [];
+
+  private schemaHandler: AbstractSchemaHandler;
 
   //private static $$: Storage = null;
 
@@ -136,6 +141,15 @@ export class StorageRef {
       opts.entities.push(type);
       this.options = _.assign(this.options, opts)
     }
+  }
+
+
+  getSchemaHandler() {
+    return this.schemaHandler;
+  }
+
+  setSchemaHandler(handler: AbstractSchemaHandler) {
+    this.schemaHandler = handler;
   }
 
   async reload(full: boolean = true): Promise<any> {

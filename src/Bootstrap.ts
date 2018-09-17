@@ -15,8 +15,8 @@ import {Container} from "typedi";
 
 import {useContainer} from "typeorm";
 import {BaseUtils} from "./libs/utils/BaseUtils";
-import {ClassLoader, PlatformUtils} from "commons-base";
-import {CONFIG_NAMESPACE} from "./types";
+import {PlatformUtils} from "commons-base";
+import {CONFIG_NAMESPACE, K_CLS_ACTIVATOR, K_CLS_BOOTSTRAP, K_CLS_STORAGE_SCHEMAHANDLER} from "./types";
 import {IConfigOptions} from "commons-config/config/IConfigOptions";
 import {IBootstrap} from "./api/IBootstrap";
 import {ClassesLoader} from "commons-moduls";
@@ -64,8 +64,6 @@ export interface ITypexsOptions {
 
 }
 
-export const K_CLS_ACTIVATOR = 'activator.js';
-export const K_CLS_BOOTSTRAP = 'bootstrap.js';
 
 export const DEFAULT_RUNTIME_OPTIONS: IRuntimeLoaderOptions = {
 
@@ -94,6 +92,13 @@ export const DEFAULT_RUNTIME_OPTIONS: IRuntimeLoaderOptions = {
     {
       topic: 'generators',
       refs: ['generators', 'src/generators']
+    },
+    {
+      topic: K_CLS_STORAGE_SCHEMAHANDLER,
+      refs: [
+        "adapters/storage/*/*SchemaHandler.*",
+        "src/adapters/storage/*/*SchemaHandler.*"
+      ]
     },
     {
       topic: 'entity.default',
@@ -187,6 +192,7 @@ export class Bootstrap {
   async activateStorage(): Promise<Bootstrap> {
     this.storage = new Storage();
     this.storage.nodeId = Bootstrap.nodeId;
+    await this.storage.prepare(this.runtimeLoader);
 
     Bootstrap.getContainer().set(Storage, this.storage);
     Bootstrap.getContainer().set(Storage.NAME, this.storage);

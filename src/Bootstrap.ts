@@ -13,7 +13,7 @@ import {IStorageOptions, K_STORAGE} from "./libs/storage/IStorageOptions";
 import {DEFAULT_STORAGE_OPTIONS, Storage} from "./libs/storage/Storage";
 import {Container} from "typedi";
 
-import {useContainer} from "typeorm";
+import {getMetadataArgsStorage, useContainer} from "typeorm";
 import {BaseUtils} from "./libs/utils/BaseUtils";
 import {PlatformUtils} from "commons-base";
 import {CONFIG_NAMESPACE, K_CLS_ACTIVATOR, K_CLS_BOOTSTRAP, K_CLS_STORAGE_SCHEMAHANDLER} from "./types";
@@ -204,10 +204,15 @@ export class Bootstrap {
       let settings = o_storage[name];
       let entities: Function[] = [];
       if (this.runtimeLoader) {
-        entities = this.runtimeLoader.getClasses(['entity', name].join('.'));
+        let _entities:Function[] = this.runtimeLoader.getClasses(['entity', name].join('.'));
+        // Check if classes are realy for typeorm
+        entities = <Function[]>getMetadataArgsStorage().tables
+          .filter(t => _entities.indexOf(<Function>t.target) != -1)
+          .map(t => t.target);
       }
+
       let _settings: IStorageOptions = _.merge(settings, {entities: entities}, {name: name});
-      Log.debug('storage register ' + name);
+      Log.debug('storage register ' + name + ' with '+entities.length +' entities');
       let storageRef = this.storage.register(name, _settings);
       await storageRef.prepare();
       Bootstrap.getContainer().set([K_STORAGE, name].join('.'), storageRef);
@@ -377,17 +382,17 @@ export class Bootstrap {
     Log.debug('startup ...');
     let activators = this.getActivators();
     return Promise.all(_.map(_.filter(activators, a => _.isFunction(a['startup'])), async (a) => {
-      Log.debug('activate' + ClassesLoader.getModulName(a.constructor));
+      Log.debug('activate ' + ClassesLoader.getModulName(a.constructor));
       return a.startup();
     })).then((res) => {
       // TODO how to handle dependencies?
       let bootstraps = this.getModulBootstraps();
       return Promise.all(_.map(_.filter(bootstraps, a => _.isFunction(a['bootstrap'])), async (a) => {
-        Log.debug('bootstrap' + ClassesLoader.getModulName(a.constructor));
+        Log.debug('bootstrap ' + ClassesLoader.getModulName(a.constructor));
         return a.bootstrap();
       }));
     }).then((res) => {
-      Log.debug('startup ready.');
+      Log.debug('startup finished.');
       return this;
     })
   }

@@ -7,7 +7,7 @@ export abstract class AbstractSchemaHandler {
 
   readonly storageRef: StorageRef;
 
-  protected constructor(ref?: StorageRef) {
+  constructor(ref?: StorageRef) {
     this.storageRef = ref;
   }
 

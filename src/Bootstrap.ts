@@ -347,6 +347,8 @@ export class Bootstrap {
     Bootstrap.getContainer().set(RuntimeLoader, this.runtimeLoader);
     Bootstrap.getContainer().set(RuntimeLoader.NAME, this.runtimeLoader);
     await this.runtimeLoader.prepare();
+    // update config
+    Config.jar(CONFIG_NAMESPACE).set('modules',this.runtimeLoader._options);
     return this;
   }
 

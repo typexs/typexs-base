@@ -1,7 +1,17 @@
-
+import {ISubModule} from "commons-moduls/registry/ISubModule";
 
 export interface IModule {
-  name:string;
-  internal:boolean;
-  version:string;
+  name: string;
+  version: string;
+  path: string;
+  weight: number;
+  dependencies: any;
+  child_modules: string[];
+  internal: boolean;
+  main: string;
+  sub_modules: {
+    [subpath: string]: ISubModule;
+  };
+  submodule: boolean;
+
 }

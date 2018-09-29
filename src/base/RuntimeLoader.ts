@@ -26,6 +26,11 @@ export class RuntimeLoader {
   classesLoader: ClassesLoader;
 
 
+  disabledModuleNames: string[] = [];
+
+  disabledClassNames: string[] = [];
+
+
   constructor(options: IRuntimeLoaderOptions) {
     _.defaults(options, _.cloneDeep(DEFAULT_RUNTIME_OPTIONS));
     this._options = options;
@@ -44,8 +49,6 @@ export class RuntimeLoader {
     })
 
 
-
-
   }
 
 
@@ -59,6 +62,7 @@ export class RuntimeLoader {
     if (this._options.packageKeys) {
       modulePackageJsonKeys = modulePackageJsonKeys.concat(this._options.packageKeys);
     }
+    this._options.packageKeys = modulePackageJsonKeys;
 
     let modulPaths = [];
     for (let _path of this._options.paths) {
@@ -79,6 +83,7 @@ export class RuntimeLoader {
     });
     await this.registry.rebuild();
 
+
     let settingsLoader = await this.registry.createSettingsLoader({
       ref: 'package.json',
       path: 'typexs'
@@ -88,18 +93,27 @@ export class RuntimeLoader {
     // todo enable all, check against storage
 
     for (let moduleName in this.settings) {
-      Log.debug('Load settings from module ' + moduleName);
-      let modulSettings = this.settings[moduleName];
-      if (_.has(modulSettings, 'declareLibs')) {
-        for (let s of modulSettings['declareLibs']) {
-          let topicData = _.find(this._options.libs,(lib) => lib.topic === s.topic);
-          if(topicData){
-            topicData.refs.push(...s.refs);
-            topicData.refs = _.uniq(topicData.refs);
-          }else{
-            this._options.libs.push(s);
+      if (!this.isIncluded(moduleName)) {
+        this.includeModule(moduleName);
+      }
+
+      if (this.isEnabled(moduleName)) {
+        Log.debug('Load settings from module ' + moduleName);
+        let modulSettings = this.settings[moduleName];
+        if (_.has(modulSettings, 'declareLibs')) {
+          for (let s of modulSettings['declareLibs']) {
+            let topicData = _.find(this._options.libs, (lib) => lib.topic === s.topic);
+            if (topicData) {
+              topicData.refs.push(...s.refs);
+              topicData.refs = _.uniq(topicData.refs);
+            } else {
+              this._options.libs.push(s);
+            }
           }
         }
+      } else {
+        this.disabledModuleNames.push(moduleName);
+        Log.debug('Skip settings loading for module ' + moduleName);
       }
     }
 
@@ -107,6 +121,17 @@ export class RuntimeLoader {
     this.classesLoader = await this.registry.createClassesLoader({libs: this._options.libs});
   }
 
+  isIncluded(modulName: string) {
+    return _.has(this._options.included, modulName);
+  }
+
+  includeModule(modulName: string) {
+    return _.set(this._options.included, modulName, {enabled: true});
+  }
+
+  isEnabled(modulName: string) {
+    return _.get(this._options.included, modulName + '.enabled', true);
+  }
 
   async getSettings(key: string) {
     let settingsLoader = await this.registry.createSettingsLoader({
@@ -128,10 +153,13 @@ export class RuntimeLoader {
 
   getClasses(topic: string) {
     if (this.classesLoader) {
-      return this.classesLoader.getClasses(topic);
+      return this.classesLoader.getClassesWithFilter(topic, ((className, modulName) =>
+        this.disabledModuleNames.indexOf(modulName) !== -1 ||
+        this.disabledClassNames.indexOf(className) !== -1));
     }
     return [];
   }
+
 
   async getSchematicsInfos(): Promise<ISchematicsInfo[]> {
     let infos: ISchematicsInfo[] = [];

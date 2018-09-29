@@ -17,10 +17,15 @@ export interface IRuntimeLoaderOptions {
   /**
    * Filter modules which have 'typexs' and here defined keys in package.json definition
    */
-  packageKeys?:string[]
+  packageKeys?: string[]
 
   disabled?: string[]
 
   libs?: IClassesLib[]
+
+  /**
+   * Lists included modules
+   */
+  included?: { [modulName: string]: { enabled?: boolean } }
 
 }

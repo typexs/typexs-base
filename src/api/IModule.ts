@@ -13,5 +13,6 @@ export interface IModule {
     [subpath: string]: ISubModule;
   };
   submodule: boolean;
-
+  settings?: any;
+  enabled?: boolean;
 }

@@ -97,6 +97,18 @@ class BootstrapGeneralSpec {
       },
       modules: {
         appdir: appdir,
+        included: {
+          "fake_app": {
+            "enabled": true
+          },
+          "module1": {
+            "enabled": true
+          },
+          "module3": {
+            "enabled": true
+          }
+        }
+        ,
         libs:
           [
             {topic: 'activator.js', refs: ['Activator', 'src/Activator']},
@@ -128,6 +140,10 @@ class BootstrapGeneralSpec {
 
 
           ],
+        "packageKeys": [
+          "typexs"
+        ]
+        ,
         paths: [
           appdir
         ],
@@ -161,11 +177,16 @@ class BootstrapGeneralSpec {
   async 'additional package keys'() {
     let appdir = path.join(__dirname, 'fake_app');
     let bootstrap = Bootstrap.configure({
-      app: {name: 'test', path: appdir},
-      modules: {packageKeys: ['pkg']}
+      app: {
+        name: 'test', path: appdir
+      },
+      modules: {
+        packageKeys: ['pkg']
+      }
     });
     bootstrap = await bootstrap.prepareRuntime();
     let modules = bootstrap.getModules();
+
     expect(modules).to.have.length(4);
 
   }

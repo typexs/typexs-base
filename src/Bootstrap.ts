@@ -71,6 +71,8 @@ export const DEFAULT_RUNTIME_OPTIONS: IRuntimeLoaderOptions = {
 
   paths: [],
 
+  included: {},
+
   subModulPattern: [
     'packages',
     'src/packages'
@@ -204,7 +206,7 @@ export class Bootstrap {
       let settings = o_storage[name];
       let entities: Function[] = [];
       if (this.runtimeLoader) {
-        let _entities:Function[] = this.runtimeLoader.getClasses(['entity', name].join('.'));
+        let _entities: Function[] = this.runtimeLoader.getClasses(['entity', name].join('.'));
         // Check if classes are realy for typeorm
         entities = <Function[]>getMetadataArgsStorage().tables
           .filter(t => _entities.indexOf(<Function>t.target) != -1)
@@ -212,7 +214,7 @@ export class Bootstrap {
       }
 
       let _settings: IStorageOptions = _.merge(settings, {entities: entities}, {name: name});
-      Log.debug('storage register ' + name + ' with '+entities.length +' entities');
+      Log.debug('storage register ' + name + ' with ' + entities.length + ' entities');
       let storageRef = this.storage.register(name, _settings);
       await storageRef.prepare();
       Bootstrap.getContainer().set([K_STORAGE, name].join('.'), storageRef);
@@ -348,7 +350,7 @@ export class Bootstrap {
     Bootstrap.getContainer().set(RuntimeLoader.NAME, this.runtimeLoader);
     await this.runtimeLoader.prepare();
     // update config
-    Config.jar(CONFIG_NAMESPACE).set('modules',this.runtimeLoader._options);
+    Config.jar(CONFIG_NAMESPACE).set('modules', this.runtimeLoader._options);
     return this;
   }
 
@@ -423,13 +425,25 @@ export class Bootstrap {
     return commands;
   }
 
+
+
+
   getAppPath() {
     return this._options.app.path
   }
 
 
   getModules(): IModule[] {
-    return this.getLoader().registry.modules();
+    let regModules = this.getLoader().registry.modules();
+    let modules: IModule[] = [];
+    for(let _module of regModules){
+      let moduleInfo:IModule = _module;
+      moduleInfo.settings = this.runtimeLoader.getSettings(_module.name);
+      moduleInfo.enabled = this.runtimeLoader.disabledModuleNames.indexOf(_module.name) === -1;
+      modules.push(moduleInfo);
+    }
+
+    return modules;
   }
 
   getLoader(): RuntimeLoader {

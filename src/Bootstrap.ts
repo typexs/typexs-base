@@ -1,6 +1,5 @@
 import * as _ from 'lodash';
 import {CryptUtils} from "./libs/utils/CryptUtils";
-import {ILoggerOptions} from "./libs/logging/ILoggerOptions";
 import {Log} from "./libs/logging/Log";
 import {IOptions} from "commons-config";
 import {RuntimeLoader} from "./base/RuntimeLoader";
@@ -20,6 +19,7 @@ import {CONFIG_NAMESPACE, K_CLS_ACTIVATOR, K_CLS_BOOTSTRAP, K_CLS_STORAGE_SCHEMA
 import {IConfigOptions} from "commons-config/config/IConfigOptions";
 import {IBootstrap} from "./api/IBootstrap";
 import {ClassesLoader} from "commons-moduls";
+import {ITypexsOptions} from "./libs/ITypexsOptions";
 
 useContainer(Container);
 
@@ -50,19 +50,6 @@ const DEFAULT_CONFIG_LOAD_ORDER = [
 ];
 
 
-export interface ITypexsOptions {
-  app?: {
-    name?: string
-    path?: string
-  }
-
-  modules?: IRuntimeLoaderOptions
-
-  logging?: ILoggerOptions
-
-  storage?: { [name: string]: IStorageOptions }
-
-}
 
 
 export const DEFAULT_RUNTIME_OPTIONS: IRuntimeLoaderOptions = {

@@ -3,7 +3,7 @@
 import {OnDeleteType} from "typeorm/metadata/types/OnDeleteType";
 import {RelationType} from "typeorm/metadata/types/RelationTypes";
 import {JoinColumnOptions} from "typeorm";
-import {JoinTableMultipleColumnsOptions} from "typeorm/decorator/options/JoinTableMuplipleColumnsOptions";
+import {JoinTableMultipleColumnsOptions} from "typeorm/decorator/options/JoinTableMultipleColumnsOptions";
 
 export interface EntitySchemaRelationOptions {
     /**

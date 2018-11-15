@@ -3,7 +3,7 @@ import {expect} from "chai";
 import * as path from "path";
 import {Bootstrap} from "../../../src/Bootstrap";
 import {Config} from "commons-config";
-
+import * as _ from "lodash";
 
 @suite('functional/commands/general')
 class GeneralSpec {
@@ -27,7 +27,9 @@ class GeneralSpec {
     let commands = bootstrap.getCommands();
     expect(commands).to.have.length(3);
 
-    let result = await commands[0].handler({});
+    let command = _.find(commands,e => e.command == 'dummy');
+
+    let result = await command.handler({});
     expect(result).to.deep.eq({
       name: 'default',
       type: 'sqlite',

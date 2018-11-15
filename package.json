@@ -1,5 +1,5 @@
 {
-  "name": "typexs-base",
+  "name": "@typexs/base",
   "version": "0.4.23",
   "description": "",
   "main": "index.js",

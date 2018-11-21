@@ -10,6 +10,7 @@ export * from './libs/exceptions/NotYetImplementedError'
 export * from "./api/IActivator";
 export * from "./api/IBootstrap";
 export * from "./api/IModule";
+export * from "./api/IPermissions";
 
 export * from "./adapters/storage/default/DefaultSchemaHandler";
 export * from "./adapters/storage/sqlite/SqliteSchemaHandler";

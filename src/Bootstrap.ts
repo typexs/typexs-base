@@ -373,7 +373,7 @@ export class Bootstrap {
     let activators = this.getActivators();
     activators = _.filter(activators, a => _.isFunction(a['startup']));
     for (let activator of activators) {
-      Log.debug('activator ' + ClassesLoader.getModulName(activator.constructor));
+      Log.debug('activate ' + ClassesLoader.getModulName(activator.constructor));
       await activator.startup();
     }
 

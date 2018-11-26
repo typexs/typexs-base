@@ -16,11 +16,11 @@ if(fs.existsSync(path.join(current,'tsconfig.json'))) {
 require("reflect-metadata");
 if(fs.existsSync(path.join(current,'package.json'))){
   var json = require(path.join(current,'package.json'));
-  if(json.name === 'typexs-base'){
+  if(json.name === '@typexs/base'){
     const cli_1 = require(tsMode ? path.join(current,'src','base','cli') : path.join(current,'base','cli'));
     cli_1.cli();
   }else{
-    const cli_1 = require("typexs-base");
+    const cli_1 = require("@typexs/base");
     cli_1.cli();
   }
 }else{

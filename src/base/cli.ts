@@ -7,7 +7,7 @@ import {Log} from "./../libs/logging/Log";
 
 export function cli():Promise<Bootstrap>{
 // todo ... make this configurable
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+  // process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 // need be done at this point, if not,  ConfigHandler has an undefined a
   ConfigHandler.reload();

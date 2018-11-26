@@ -50,8 +50,6 @@ const DEFAULT_CONFIG_LOAD_ORDER = [
 ];
 
 
-
-
 export const DEFAULT_RUNTIME_OPTIONS: IRuntimeLoaderOptions = {
 
   appdir: '.',
@@ -355,8 +353,8 @@ export class Bootstrap {
       this.activators.push(Bootstrap.getContainer().get(clz));
     }
     return this.activators;
-
   }
+
 
   private createBootstrapInstances() {
     let classes = this.runtimeLoader.getClasses(K_CLS_BOOTSTRAP);
@@ -369,23 +367,26 @@ export class Bootstrap {
   }
 
 
-  startup(): Promise<Bootstrap> {
+  async startup(): Promise<Bootstrap> {
     Log.debug('startup ...');
+
     let activators = this.getActivators();
-    return Promise.all(_.map(_.filter(activators, a => _.isFunction(a['startup'])), async (a) => {
-      Log.debug('activate ' + ClassesLoader.getModulName(a.constructor));
-      return a.startup();
-    })).then((res) => {
-      // TODO how to handle dependencies?
-      let bootstraps = this.getModulBootstraps();
-      return Promise.all(_.map(_.filter(bootstraps, a => _.isFunction(a['bootstrap'])), async (a) => {
-        Log.debug('bootstrap ' + ClassesLoader.getModulName(a.constructor));
-        return a.bootstrap();
-      }));
-    }).then((res) => {
-      Log.debug('startup finished.');
-      return this;
-    })
+    activators = _.filter(activators, a => _.isFunction(a['startup']));
+    for (let activator of activators) {
+      Log.debug('activator ' + ClassesLoader.getModulName(activator.constructor));
+      await activator.startup();
+    }
+
+    // TODO how to handle dependencies?
+    let bootstraps = this.getModulBootstraps();
+    bootstraps = _.filter(bootstraps, a => _.isFunction(a['bootstrap']));
+    for (let bootstrap of bootstraps) {
+      Log.debug('bootstrap ' + ClassesLoader.getModulName(bootstrap.constructor));
+      await bootstrap.bootstrap();
+    }
+
+    Log.debug('startup finished.');
+    return this;
   }
 
 
@@ -413,8 +414,6 @@ export class Bootstrap {
   }
 
 
-
-
   getAppPath() {
     return this._options.app.path
   }
@@ -423,8 +422,8 @@ export class Bootstrap {
   getModules(): IModule[] {
     let regModules = this.getLoader().registry.modules();
     let modules: IModule[] = [];
-    for(let _module of regModules){
-      let moduleInfo:IModule = _module;
+    for (let _module of regModules) {
+      let moduleInfo: IModule = _module;
       moduleInfo.settings = this.runtimeLoader.getSettings(_module.name);
       moduleInfo.enabled = this.runtimeLoader.disabledModuleNames.indexOf(_module.name) === -1;
       modules.push(moduleInfo);
@@ -432,6 +431,7 @@ export class Bootstrap {
 
     return modules;
   }
+
 
   getLoader(): RuntimeLoader {
     return this.runtimeLoader;

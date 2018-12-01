@@ -20,6 +20,8 @@ import {IConfigOptions} from "commons-config/config/IConfigOptions";
 import {IBootstrap} from "./api/IBootstrap";
 import {ClassesLoader} from "commons-moduls";
 import {ITypexsOptions} from "./libs/ITypexsOptions";
+import {K_CLS_API, K_CLS_USE_API} from "./libs/Constants";
+import {Invoker} from "./base/Invoker";
 
 useContainer(Container);
 
@@ -71,6 +73,18 @@ export const DEFAULT_RUNTIME_OPTIONS: IRuntimeLoaderOptions = {
     {
       topic: K_CLS_BOOTSTRAP,
       refs: ['Bootstrap', 'src/Bootstrap']
+    },
+    {
+      topic: K_CLS_BOOTSTRAP,
+      refs: ['Bootstrap', 'src/Bootstrap']
+    },
+    {
+      topic: K_CLS_API,
+      refs: ['api/*.api.*', 'src/api/*.api.*']
+    },
+    {
+      topic: K_CLS_USE_API,
+      refs: ['extend/*', 'src/extend/*']
     },
     {
       topic: 'commands',
@@ -334,6 +348,11 @@ export class Bootstrap {
     Bootstrap.getContainer().set(RuntimeLoader, this.runtimeLoader);
     Bootstrap.getContainer().set(RuntimeLoader.NAME, this.runtimeLoader);
     await this.runtimeLoader.prepare();
+
+    let invoker = new Invoker(this.runtimeLoader);
+    Bootstrap.getContainer().set(Invoker.NAME, invoker);
+    await invoker.prepare();
+
     // update config
     Config.jar(CONFIG_NAMESPACE).set('modules', this.runtimeLoader._options);
     return this;

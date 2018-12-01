@@ -1,0 +1,52 @@
+import * as path from 'path';
+import {suite, test} from "mocha-typescript";
+import {expect} from "chai";
+
+import {Bootstrap} from "../../../src/Bootstrap";
+import {Config} from "commons-config";
+import {RuntimeLoader} from "../../../src/base/RuntimeLoader";
+import {K_CLS_BOOTSTRAP, K_CLS_STORAGE_SCHEMAHANDLER} from "../../../src";
+import {Container} from "typedi";
+import {Invoker} from "../../../src/base/Invoker";
+import {K_CLS_API, K_CLS_USE_API} from "../../../src/libs/Constants";
+import {AwesomeApi} from "./fake_app/src/api/Awesome.api";
+
+
+@suite('functional/bootstrap/invoker')
+class InvokerSpec {
+
+  before() {
+    Bootstrap.reset();
+    Config.clear();
+  }
+
+
+  @test
+  async 'api invoker dev'() {
+
+    let p = path.join(__dirname, 'fake_app');
+    let loader = new RuntimeLoader({
+      appdir: p,
+      libs: [
+        {topic: K_CLS_API, refs: ['src/api/*.api.*']},
+        {topic: K_CLS_USE_API, refs: ['src/extend/*']},
+      ]
+    });
+    Container.set(RuntimeLoader.NAME, loader);
+    await loader.rebuild();
+
+    let invoker = new Invoker(loader);
+    await invoker.prepare();
+    expect(invoker.has(AwesomeApi)).to.be.true;
+    expect(invoker.hasImpl(AwesomeApi)).to.be.true;
+
+    let api = invoker.use(AwesomeApi);
+    expect(api.doSomethingGreat).to.exist;
+    let ret = await api.doSomethingGreat('data');
+    expect(ret).to.be.deep.eq(['work done with data'])
+
+  }
+
+
+}
+

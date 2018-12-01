@@ -6,7 +6,7 @@ import {expect} from "chai";
 import {Bootstrap} from "../../../src/Bootstrap";
 import {Config} from "commons-config";
 import {RuntimeLoader} from "../../../src/base/RuntimeLoader";
-import {K_CLS_BOOTSTRAP, K_CLS_STORAGE_SCHEMAHANDLER} from "../../../src";
+import {K_CLS_API, K_CLS_BOOTSTRAP, K_CLS_STORAGE_SCHEMAHANDLER, K_CLS_USE_API} from "../../../src";
 
 
 @suite('functional/bootstrap/general')
@@ -112,12 +112,13 @@ class BootstrapGeneralSpec {
         libs:
           [
             {topic: 'activator.js', refs: ['Activator', 'src/Activator']},
+            {topic: K_CLS_API, refs: ['api/*.api.*', 'src/api/*.api.*']},
             {topic: K_CLS_BOOTSTRAP, refs: ['Bootstrap', 'src/Bootstrap']},
             {
+              "topic": "builder",
               "refs": [
                 "builder"
-              ],
-              "topic": "builder",
+              ]
             },
             {topic: 'commands', refs: ['commands', 'src/commands']},
             {
@@ -136,6 +137,10 @@ class BootstrapGeneralSpec {
                 "adapters/storage/*/*SchemaHandler.*",
                 "src/adapters/storage/*/*SchemaHandler.*"
               ]
+            },
+            {
+              topic: K_CLS_USE_API,
+              refs: ['extend/*', 'src/extend/*']
             }
 
 

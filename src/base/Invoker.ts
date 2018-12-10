@@ -74,7 +74,10 @@ export class Invoker {
     let results = [];
     // TODO maybe parallel
     for (let instance of instances) {
-      let ret = await instance[method].apply(instance, args);
+      let ret = null;
+      if(instance[method]){
+        ret = await instance[method].apply(instance, args);
+      }
       results.push(ret)
     }
     return results;

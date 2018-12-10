@@ -45,6 +45,12 @@ class InvokerSpec {
     let ret = await api.doSomethingGreat('data');
     expect(ret).to.be.deep.eq(['work done with data'])
 
+
+    api = invoker.use(AwesomeApi);
+    expect(api.doNotSomethingGreat).to.exist;
+    ret = await api.doNotSomethingGreat('data');
+    expect(ret).to.be.deep.eq([null])
+
   }
 
 

@@ -7,5 +7,8 @@ export class AwesomeApi implements IAwesomeApi {
     return null;
   }
 
+  doNotSomethingGreat(data: any): string {
+    return null;
+  }
 
 }

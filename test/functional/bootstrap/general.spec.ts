@@ -134,8 +134,8 @@ class BootstrapGeneralSpec {
             {
               topic: K_CLS_STORAGE_SCHEMAHANDLER,
               refs: [
-                "adapters/storage/*/*SchemaHandler.*",
-                "src/adapters/storage/*/*SchemaHandler.*"
+                "adapters/storage/*SchemaHandler.*",
+                "src/adapters/storage/*SchemaHandler.*"
               ]
             },
             {

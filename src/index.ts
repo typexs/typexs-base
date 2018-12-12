@@ -15,8 +15,10 @@ export * from "./api/IBootstrap";
 export * from "./api/IModule";
 export * from "./api/IPermissions";
 
-export * from "./adapters/storage/default/DefaultSchemaHandler";
-export * from "./adapters/storage/sqlite/SqliteSchemaHandler";
+export * from "./adapters/storage/DefaultSchemaHandler";
+export * from "./adapters/storage/SqliteSchemaHandler";
+export * from "./adapters/storage/PostgresSchemaHandler";
+export * from "./adapters/storage/MysqlSchemaHandler";
 
 export * from "./base/cli";
 export * from "./base/IRuntimeLoaderOptions";
@@ -55,6 +57,7 @@ export * from "./libs/storage/ConnectionWrapper";
 export * from "./libs/storage/EntitySchemaColumnOptions";
 export * from "./libs/storage/EntitySchemaRelationOptions";
 export * from "./libs/storage/IStorageOptions";
+export * from "./libs/storage/IDBType";
 export * from "./libs/storage/Storage";
 export * from "./libs/storage/StorageRef";
 export * from "./libs/storage/Collection";

@@ -6,6 +6,7 @@ import * as _ from "lodash";
 import {AbstractSchemaHandler} from "./AbstractSchemaHandler";
 import {RuntimeLoader} from "../../base/RuntimeLoader";
 import {K_CLS_STORAGE_SCHEMAHANDLER} from "../../types";
+import {DefaultSchemaHandler} from "../../adapters/storage/DefaultSchemaHandler";
 
 
 export const DEFAULT_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
@@ -25,6 +26,10 @@ export class Storage {
 
   private schemaHandler: { [key: string]: Function } = {};
 
+  constructor(){
+    this.schemaHandler['__default__'] = DefaultSchemaHandler;
+  }
+
 
   register(name: string, options: IStorageOptions) {
     // Todo load other handling class from baseClass if necassary options.baseClass
@@ -43,7 +48,9 @@ export class Storage {
     let classes = await loader.getClasses(K_CLS_STORAGE_SCHEMAHANDLER);
     for (let cls of classes) {
       let obj = <AbstractSchemaHandler>Reflect.construct(cls, []);
-      this.schemaHandler[obj.type] = cls;
+      if(obj){
+        this.schemaHandler[obj.type] = cls;
+      }
     }
   }
 

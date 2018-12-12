@@ -1,4 +1,4 @@
-import {AbstractSchemaHandler} from "../../../libs/storage/AbstractSchemaHandler";
+import {AbstractSchemaHandler} from "../../libs/storage/AbstractSchemaHandler";
 import * as _ from "lodash";
 
 

@@ -96,11 +96,11 @@ export class AsyncWorkerQueue<T extends IQueueWorkload> extends events.EventEmit
           return _worker
         })
         .then(async (_worker) => {
-          let res = await self.processor.do(_worker.workload(), self);
-          _worker.setResult(res);
-          return _worker
+            let res = await self.processor.do(_worker.workload(), self);
+            _worker.setResult(res);
+            return _worker
         })
-        .then(function (_worker) {
+        .then( (_worker) => {
           _.remove(self.active, _worker);
           _worker.doStop();
           self._done++;
@@ -166,11 +166,11 @@ export class AsyncWorkerQueue<T extends IQueueWorkload> extends events.EventEmit
    * @param entry
    * @returns {QueueJob<T>}
    */
-  push(entry: T): Promise<QueueJob<T>> {
+  push(entry: T): QueueJob<T> {
     let _entry: QueueJob<T> = new QueueJob(this, entry);
-    let $p = _entry.enqueued();
+    //let $p = _entry.enqueued();
     this.emit(AsyncWorkerQueue.E_ENQUEUE, _entry);
-    return $p;
+    return _entry;
   }
 
 

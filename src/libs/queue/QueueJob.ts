@@ -1,8 +1,8 @@
 import {IQueueWorkload} from "./IQueueWorkload";
 import {IQueue} from "./IQueue";
-import Timer = NodeJS.Timer;
 
 import {CryptUtils} from "../utils/CryptUtils";
+import Timer = NodeJS.Timer;
 
 
 export class QueueJob<T extends IQueueWorkload> {
@@ -20,6 +20,7 @@ export class QueueJob<T extends IQueueWorkload> {
   private _stop: Date = null;
   private _enqueued: Date = null;
   private _duration: number;
+  private _error:Error = null;
 
   private _result: any = null;
 
@@ -67,6 +68,10 @@ export class QueueJob<T extends IQueueWorkload> {
     this._result = v;
   }
 
+  getError(){
+    return this._error;
+  }
+
   public starting(): Promise<QueueJob<T>> {
     let self = this;
     return new Promise(function (resolve) {
@@ -82,19 +87,18 @@ export class QueueJob<T extends IQueueWorkload> {
   }
 
   public done(): Promise<QueueJob<T>> {
-    let self = this;
-    return new Promise(function (resolve,reject) {
-      if (!self._stop) {
-        self._queue.once('job ' + self.id + ' stop', function (err:Error = null) {
+    return new Promise( (resolve,reject) => {
+      if (!this._stop) {
+        this._queue.once('job ' + this.id + ' stop', function (err:Error = null) {
           if(err){
             reject(err);
           }else{
-            resolve(self)
+            resolve(this)
           }
         })
       } else {
         // if stopped then pass through
-        resolve(self)
+        resolve(this)
       }
     })
   }
@@ -110,6 +114,7 @@ export class QueueJob<T extends IQueueWorkload> {
   }
 
   public doStop(err:Error = null) {
+    this._error = err;
     this._stop = new Date();
     this._duration = this._stop.getTime() - this._start.getTime();
     this._queue.emit('job ' + this._id + ' stop',err);

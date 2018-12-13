@@ -54,7 +54,7 @@ export class PostgresSchemaHandler extends AbstractSchemaHandler {
       case 'date':
         type.type = 'date';
         if(type.variant){
-          type.type = 'datetime';
+          type.type = 'timestamp';
         }
         break;
       case 'datetime':

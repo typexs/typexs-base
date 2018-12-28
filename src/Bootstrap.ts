@@ -15,7 +15,7 @@ import {Container} from "typedi";
 import {getMetadataArgsStorage, useContainer} from "typeorm";
 import {BaseUtils} from "./libs/utils/BaseUtils";
 import {PlatformUtils} from "commons-base";
-import {CONFIG_NAMESPACE, K_CLS_ACTIVATOR, K_CLS_BOOTSTRAP, K_CLS_STORAGE_SCHEMAHANDLER} from "./types";
+import {CONFIG_NAMESPACE, K_CLS_ACTIVATOR, K_CLS_BOOTSTRAP, K_CLS_STORAGE_SCHEMAHANDLER, K_CLS_TASKS} from "./types";
 import {IConfigOptions} from "commons-config/config/IConfigOptions";
 import {IBootstrap} from "./api/IBootstrap";
 import {ClassesLoader} from "commons-moduls";
@@ -68,19 +68,22 @@ export const DEFAULT_RUNTIME_OPTIONS: IRuntimeLoaderOptions = {
   libs: [
     {
       topic: K_CLS_ACTIVATOR,
-      refs: ['Activator', 'src/Activator']
+      refs: [
+        'Activator', 'src/Activator'
+      ]
     },
     {
       topic: K_CLS_BOOTSTRAP,
-      refs: ['Bootstrap', 'src/Bootstrap']
-    },
-    {
-      topic: K_CLS_BOOTSTRAP,
-      refs: ['Bootstrap', 'src/Bootstrap']
+      refs: [
+        'Bootstrap', 'src/Bootstrap',
+        'Startup', 'src/Startup'
+      ]
     },
     {
       topic: K_CLS_API,
-      refs: ['api/*.api.*', 'src/api/*.api.*']
+      refs: [
+        'api/*.api.*', 'src/api/*.api.*'
+      ]
     },
     {
       topic: K_CLS_USE_API,
@@ -107,6 +110,12 @@ export const DEFAULT_RUNTIME_OPTIONS: IRuntimeLoaderOptions = {
         'entities', 'src/entities',
         'shared/entities', 'src/shared/entities',
         'modules/*/entities', 'src/modules/*/entities'
+      ]
+    },
+    {
+      topic: K_CLS_TASKS,
+      refs: [
+        'tasks', 'src/tasks'
       ]
     },
   ]
@@ -146,7 +155,6 @@ export class Bootstrap {
   private activators: IActivator[] = null;
 
   private bootstraps: IBootstrap[] = null;
-
 
   private storage: Storage;
 

@@ -28,6 +28,8 @@ export * from "./base/Invoker";
 
 export * from "./commands/GenerateCommand";
 export * from "./commands/ModulesCommand";
+export * from "./commands/TaskCommand";
+
 
 export * from "./libs/IHttpHeaders";
 export * from "./libs/IKeyValuePair";
@@ -63,11 +65,20 @@ export * from "./libs/storage/StorageRef";
 export * from "./libs/storage/Collection";
 export * from "./libs/storage/AbstractSchemaHandler";
 
+export * from "./libs/tasks/Task";
+export * from "./libs/tasks/TaskObject";
+export * from "./libs/tasks/TaskRun";
+export * from "./libs/tasks/TaskRunner";
+export * from "./libs/tasks/Tasks";
+
+
 export * from "./libs/utils/BaseUtils";
 export * from "./libs/utils/CryptUtils";
 export * from "./libs/utils/DomainUtils";
 export * from "./libs/utils/TreeUtils";
 
 export * from "./Bootstrap";
+export * from "./Activator";
+export * from "./Startup";
 
 

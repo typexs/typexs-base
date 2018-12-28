@@ -21,11 +21,14 @@ class GeneralSpec {
     let bootstrap = await Bootstrap.configure({
       app: {path: appdir},
       modules: {paths: [__dirname + '/../../..']}
-    }).prepareRuntime();
+    });
+    await bootstrap.prepareRuntime();
     await bootstrap.activateStorage();
+    await bootstrap.startup();
+
 
     let commands = bootstrap.getCommands();
-    expect(commands).to.have.length(3);
+    expect(commands).to.have.length(4);
 
     let command = _.find(commands,e => e.command == 'dummy');
 

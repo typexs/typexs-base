@@ -45,7 +45,7 @@ class TasksSpec {
     expect(result).to.deep.eq(['test']);
   }
 
-  
+
   @test
   async 'exec tasks'() {
     let commands = bootstrap.getCommands();

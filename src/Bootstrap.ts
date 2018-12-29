@@ -162,6 +162,7 @@ export class Bootstrap {
 
 
   private constructor(options: ITypexsOptions = {}) {
+    options = options || {};
     this._options = _.defaults(options, _.cloneDeep(DEFAULT_OPTIONS));
     let config_load_order = _.cloneDeep(DEFAULT_CONFIG_LOAD_ORDER);
     this.setConfigSources(config_load_order);

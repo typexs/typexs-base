@@ -65,6 +65,7 @@ export * from "./libs/storage/StorageRef";
 export * from "./libs/storage/Collection";
 export * from "./libs/storage/AbstractSchemaHandler";
 
+export * from "./libs/tasks/ITask";
 export * from "./libs/tasks/Task";
 export * from "./libs/tasks/TaskObject";
 export * from "./libs/tasks/TaskRun";

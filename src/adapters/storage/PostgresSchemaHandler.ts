@@ -54,14 +54,14 @@ export class PostgresSchemaHandler extends AbstractSchemaHandler {
       case 'date':
         type.type = 'date';
         if(type.variant){
-          type.type = 'timestamp';
+          type.type = 'timestamp with time zone';
         }
         break;
       case 'datetime':
-        type.type = 'timestamp';
+        type.type = 'timestamp with time zone';
         break;
       case 'timestamp':
-        type.type = 'timestamp';
+        type.type = 'timestamp with time zone';
         break;
       case 'json':
         type.type = 'jsonb';

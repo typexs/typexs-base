@@ -2,7 +2,8 @@ import {LogEvent} from "./LogEvent";
 import * as winston from "winston";
 import * as _ from 'lodash'
 import {ILoggerOptions} from "./ILoggerOptions";
-import {LoggerOptions, TransportInstance, TransportOptions} from "winston";
+//import {LoggerOptions, TransportInstance, TransportOptions} from "winston";
+import {LoggerOptions, TransportInstance, TransportOptions,LoggerInstance} from "winston";
 import * as moment from "moment";
 import {BaseUtils} from "../../";
 import {TodoException} from "commons-base";
@@ -46,7 +47,7 @@ export class Log {
 
   private initial: boolean = false;
 
-  private defaultLogger: winston.LoggerInstance = null;
+  private defaultLogger: LoggerInstance = null;
 
   private _options: ILoggerOptions = null;
 

@@ -28,7 +28,7 @@ class GeneralSpec {
 
 
     let commands = bootstrap.getCommands();
-    expect(commands).to.have.length(4);
+    expect(commands.length).to.be.gt(0);
 
     let command = _.find(commands,e => e.command == 'dummy');
 

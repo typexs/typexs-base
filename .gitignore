@@ -75,3 +75,6 @@ archive/
 
 # lock
 package-lock.json
+
+
+config/typexs--*

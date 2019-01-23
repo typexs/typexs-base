@@ -113,7 +113,7 @@ class BootstrapGeneralSpec {
           [
             {topic: 'activator.js', refs: ['Activator', 'src/Activator']},
             {topic: K_CLS_API, refs: ['api/*.api.*', 'src/api/*.api.*']},
-            {topic: K_CLS_BOOTSTRAP, refs: ['Bootstrap', 'src/Bootstrap','Startup', 'src/Startup']},
+            {topic: K_CLS_BOOTSTRAP, refs: ['Bootstrap', 'src/Bootstrap', 'Startup', 'src/Startup']},
             {
               "topic": "builder",
               "refs": [

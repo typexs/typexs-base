@@ -43,7 +43,7 @@ class InvokerSpec {
     let api = invoker.use(AwesomeApi);
     expect(api.doSomethingGreat).to.exist;
     let ret = await api.doSomethingGreat('data');
-    expect(ret).to.be.deep.eq(['work done with data'])
+    expect(ret).to.be.deep.eq(['work done with data']);
 
 
     api = invoker.use(AwesomeApi);

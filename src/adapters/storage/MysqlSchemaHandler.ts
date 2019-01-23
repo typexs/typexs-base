@@ -23,7 +23,7 @@ export class MysqlSchemaHandler extends AbstractSchemaHandler {
       variant: null,
       sourceType: null,
       length: length
-    }
+    };
 
     let split = jsType.split(':');
     type.sourceType = <JS_DATA_TYPES>split.shift();

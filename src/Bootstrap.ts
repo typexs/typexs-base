@@ -352,8 +352,8 @@ export class Bootstrap {
       Log.error(err);
       process.exit(1)
     }
-
-    this._options = BaseUtils.merge(this._options, Config.jar(CONFIG_NAMESPACE).get(''));
+    let add = Config.jar(CONFIG_NAMESPACE).get('');
+    this._options = BaseUtils.merge(this._options, add);
     Config.jar(CONFIG_NAMESPACE).merge(this._options);
     // this._options = Config.jar(CONFIG_NAMESPACE).get('');
     return this;

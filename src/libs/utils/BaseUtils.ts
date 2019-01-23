@@ -1,6 +1,5 @@
-import * as merge from 'deepmerge'
 import * as _ from 'lodash'
-import {InterpolationSupport} from "commons-config";
+import {InterpolationSupport, Utils} from "commons-config";
 import {TreeUtils, WalkValues} from "./TreeUtils";
 
 
@@ -56,25 +55,13 @@ export class BaseUtils {
     return _.clone(obj)
   }
 
-  static mergeArray(dest: any[], source: any[], options?: merge.Options) {
-    let res = _.concat(dest, source);
-    return BaseUtils.uniqArr(res)
-  }
 
   static uniqArr(res: any[]) {
-    return _.uniqBy(res, (entry) => {
-      let x = null;
-      if (_.isFunction(entry)) {
-        x = entry.toString();
-      } else {
-        x = JSON.stringify(entry);
-      }
-      return x
-    });
+    return Utils.uniqArr(res)
   }
 
   static merge(...args: any[]): any {
-    return merge.all(args, {arrayMerge: this.mergeArray})
+    return Utils.merge(...args);
   }
 
 
@@ -104,7 +91,6 @@ export class BaseUtils {
 
     }
     return arr
-
   }
 
   static splitTyped(arr: string, sep: string = '.'): any[] {

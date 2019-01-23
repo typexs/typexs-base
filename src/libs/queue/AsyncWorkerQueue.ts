@@ -41,7 +41,7 @@ export class AsyncWorkerQueue<T extends IQueueWorkload> extends events.EventEmit
   constructor(processor: IQueueProcessor<T>, options: IAsyncQueueOptions = {name: 'none'}) {
     super();
     this.setMaxListeners(1000);
-    this.options = BaseUtils.merge(ASYNC_QUEUE_DEFAULT, options);
+    this.options = _.defaults(options, ASYNC_QUEUE_DEFAULT);
     this.processor = processor;
     this.on(AsyncWorkerQueue.E_DO_PROCESS, this.process.bind(this));
     this.on(AsyncWorkerQueue.E_ENQUEUE, this.enqueue.bind(this));
@@ -51,7 +51,7 @@ export class AsyncWorkerQueue<T extends IQueueWorkload> extends events.EventEmit
   private next() {
     this.runningTasks--;
 
-    Log.debug('queue[' + this.options.name + '] inc=' + this._inc + ' done=' + this._done + ' error=' + this._error+  ' running=' + this.running() + ' todo=' + this.enqueued() + ' active=' + this.active.length);
+    Log.debug('queue[' + this.options.name + '] inc=' + this._inc + ' done=' + this._done + ' error=' + this._error + ' running=' + this.running() + ' todo=' + this.enqueued() + ' active=' + this.active.length);
     if (this.isPaused()) {
       if (!this.isRunning()) {
         this.emit(AsyncWorkerQueue.E_NO_RUNNING_JOBS)
@@ -96,11 +96,11 @@ export class AsyncWorkerQueue<T extends IQueueWorkload> extends events.EventEmit
           return _worker
         })
         .then(async (_worker) => {
-            let res = await self.processor.do(_worker.workload(), self);
-            _worker.setResult(res);
-            return _worker
+          let res = await self.processor.do(_worker.workload(), self);
+          _worker.setResult(res);
+          return _worker
         })
-        .then( (_worker) => {
+        .then((_worker) => {
           _.remove(self.active, _worker);
           _worker.doStop();
           self._done++;
@@ -221,7 +221,7 @@ export class AsyncWorkerQueue<T extends IQueueWorkload> extends events.EventEmit
 // TODO impl
   resume() {
     this._paused = false;
-    for(let i=0;i<this.options.concurrent;i++){
+    for (let i = 0; i < this.options.concurrent; i++) {
       this.fireProcess()
     }
   }

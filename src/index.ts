@@ -9,6 +9,8 @@ export * from "./api/IBootstrap";
 export * from "./api/IModule";
 export * from "./api/IPermissions";
 
+export * from "./libs/ITypexsOptions"
+
 export * from "./adapters/storage/DefaultSchemaHandler";
 export * from "./adapters/storage/SqliteSchemaHandler";
 export * from "./adapters/storage/PostgresSchemaHandler";
@@ -16,8 +18,8 @@ export * from "./adapters/storage/MysqlSchemaHandler";
 
 export * from "./base/cli";
 export * from "./base/IRuntimeLoaderOptions";
-export * from "./base/MetaArgs";
 export * from "./base/RuntimeLoader";
+export * from "./base/MetaArgs";
 export * from "./base/Invoker";
 
 export * from "./commands/GenerateCommand";
@@ -73,7 +75,5 @@ export * from "./libs/utils/DomainUtils";
 export * from "./libs/utils/TreeUtils";
 
 export * from "./Bootstrap";
-export * from "./Activator";
-export * from "./Startup";
 
 

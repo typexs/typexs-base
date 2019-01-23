@@ -11,18 +11,7 @@ import {BeforeInsert, Column, Entity, PrimaryColumn} from "typeorm";
 import {SqliteConnectionOptions} from "typeorm/driver/sqlite/SqliteConnectionOptions";
 import {X1} from "./entities/X1";
 import {Y1} from "./entities/Y1";
-
-
-export const TEST_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
-  name: 'default',
-  type: "sqlite",
-  database: ":memory:",
-  synchronize: true,
-
-  // tablesPrefix: ""
-
-};
-
+import {TEST_STORAGE_OPTIONS} from "../config";
 
 @suite('functional/storage/general')
 class GeneralSpec {
@@ -36,10 +25,10 @@ class GeneralSpec {
 
   @test
   async 'storage options override'() {
-    let opt1: IStorageOptions = {name: 'default', type: 'sqlite', entityPrefix: 'test'};
-    let opt2: IStorageOptions = {name: 'default2', type: 'postgres'};
+    let opt1: IStorageOptions = {name: 'default', type: 'sqlite', entityPrefix: 'test', connectOnStartup: true};
+    let opt2: IStorageOptions = {name: 'default2', type: 'postgres', connectOnStartup: true};
     let options: IStorageOptions = _.merge(opt1, opt2);
-    expect(options).to.be.deep.eq({name: 'default2', type: 'postgres', entityPrefix: 'test'});
+    expect(options).to.be.deep.eq({name: 'default2', type: 'postgres', entityPrefix: 'test', connectOnStartup: true});
   }
 
 

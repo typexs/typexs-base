@@ -30,10 +30,11 @@ class GeneralSpec {
     let commands = bootstrap.getCommands();
     expect(commands.length).to.be.gt(0);
 
-    let command = _.find(commands,e => e.command == 'dummy');
+    let command = _.find(commands, e => e.command == 'dummy');
 
     let result = await command.handler({});
     expect(result).to.deep.eq({
+      connectOnStartup: false,
       name: 'default',
       type: 'sqlite',
       database: ':memory:',

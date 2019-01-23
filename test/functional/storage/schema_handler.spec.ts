@@ -1,27 +1,10 @@
-import * as fs from "fs";
 import * as path from "path";
 import * as _ from 'lodash';
 import {suite, test} from "mocha-typescript";
 import {expect} from "chai";
-import {IStorageOptions, StorageRef} from "../../../src";
 
 import {Bootstrap} from "../../../src/Bootstrap";
 import {Config} from "commons-config";
-import {BeforeInsert, Column, Entity, PrimaryColumn} from "typeorm";
-import {SqliteConnectionOptions} from "typeorm/driver/sqlite/SqliteConnectionOptions";
-import {X1} from "./entities/X1";
-import {Y1} from "./entities/Y1";
-
-
-export const TEST_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
-  name: 'default',
-  type: "sqlite",
-  database: ":memory:",
-  synchronize: true,
-
-  // tablesPrefix: ""
-
-};
 
 
 @suite('functional/storage/schema_handler')

@@ -1,9 +1,9 @@
 import {LogEvent} from "./LogEvent";
+//import {LoggerOptions, TransportInstance, TransportOptions} from "winston";
 import * as winston from "winston";
+import {LoggerInstance, LoggerOptions, TransportOptions} from "winston";
 import * as _ from 'lodash'
 import {ILoggerOptions} from "./ILoggerOptions";
-//import {LoggerOptions, TransportInstance, TransportOptions} from "winston";
-import {LoggerOptions, TransportInstance, TransportOptions,LoggerInstance} from "winston";
 import * as moment from "moment";
 import {BaseUtils} from "../../";
 import {TodoException} from "commons-base";

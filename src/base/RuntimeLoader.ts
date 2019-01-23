@@ -4,7 +4,7 @@ import {ClassesLoader, Module} from "commons-moduls";
 import {IRuntimeLoaderOptions} from "./IRuntimeLoaderOptions";
 
 import {DEFAULT_RUNTIME_OPTIONS} from "../Bootstrap";
-import {TYPEXS_NAME} from "../types";
+import {TYPEXS_NAME} from "../libs/Constants";
 import {PlatformUtils} from "commons-base";
 import {Log} from "./../libs/logging/Log";
 import {ISchematicsInfo} from "../libs/schematics/ISchematicsInfo";

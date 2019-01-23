@@ -5,7 +5,7 @@ import * as _ from "lodash";
 
 import {AbstractSchemaHandler} from "./AbstractSchemaHandler";
 import {RuntimeLoader} from "../../base/RuntimeLoader";
-import {K_CLS_STORAGE_SCHEMAHANDLER} from "../../types";
+import {K_CLS_STORAGE_SCHEMAHANDLER} from "../Constants";
 import {DefaultSchemaHandler} from "../../adapters/storage/DefaultSchemaHandler";
 
 

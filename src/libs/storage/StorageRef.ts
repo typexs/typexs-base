@@ -5,7 +5,7 @@ import {ConnectionWrapper} from "./ConnectionWrapper";
 import {Config} from "commons-config";
 import {DEFAULT_STORAGE_OPTIONS} from "./Storage";
 import {EntitySchema} from "typeorm/entity-schema/EntitySchema";
-import {K_WORKDIR} from "../../types";
+import {K_WORKDIR} from "../Constants";
 import {IStorageOptions} from "./IStorageOptions";
 import {SqliteConnectionOptions} from "typeorm/driver/sqlite/SqliteConnectionOptions";
 import {Runtime} from "../Runtime";

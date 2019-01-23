@@ -15,12 +15,19 @@ import {Container} from "typedi";
 import {getMetadataArgsStorage, useContainer} from "typeorm";
 import {BaseUtils} from "./libs/utils/BaseUtils";
 import {PlatformUtils} from "commons-base";
-import {CONFIG_NAMESPACE, K_CLS_ACTIVATOR, K_CLS_BOOTSTRAP, K_CLS_STORAGE_SCHEMAHANDLER, K_CLS_TASKS} from "./types";
+import {CONFIG_NAMESPACE} from "./libs/Constants";
 import {IConfigOptions} from "commons-config/config/IConfigOptions";
 import {IBootstrap} from "./api/IBootstrap";
 import {ClassesLoader} from "commons-moduls";
 import {ITypexsOptions} from "./libs/ITypexsOptions";
-import {K_CLS_API, K_CLS_USE_API} from "./libs/Constants";
+import {
+  K_CLS_ACTIVATOR,
+  K_CLS_API,
+  K_CLS_BOOTSTRAP,
+  K_CLS_STORAGE_SCHEMAHANDLER,
+  K_CLS_TASKS,
+  K_CLS_USE_API
+} from "./libs/Constants";
 import {Invoker} from "./base/Invoker";
 
 useContainer(Container);

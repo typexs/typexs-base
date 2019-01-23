@@ -1,14 +1,10 @@
-import * as _ from 'lodash';
+import * as _ from "lodash";
 import {MetaArgs} from "./MetaArgs";
 import {RuntimeLoader} from "./RuntimeLoader";
 import {ClassType, K_CLS_API, K_CLS_USE_API} from "../libs/Constants";
 import {Container, Inject} from "typedi";
+import {IAPIDef} from "../libs/api/IAPIDef";
 
-export interface APIDef {
-  api: any
-  handle: any
-  impl: any[]
-}
 
 
 export class Invoker {
@@ -18,7 +14,7 @@ export class Invoker {
   @Inject(RuntimeLoader.NAME)
   loader: RuntimeLoader;
 
-  private apiImpls: APIDef[] = [];
+  private apiImpls: IAPIDef[] = [];
 
 
   constructor(loader: RuntimeLoader) {
@@ -75,7 +71,7 @@ export class Invoker {
     // TODO maybe parallel
     for (let instance of instances) {
       let ret = null;
-      if(instance[method]){
+      if (instance[method]) {
         ret = await instance[method].apply(instance, args);
       }
       results.push(ret)

@@ -231,7 +231,9 @@ export class Bootstrap {
       let _settings: IStorageOptions = _.merge(settings, {entities: entities}, {name: name});
       Log.debug('storage register ' + name + ' with ' + entities.length + ' entities');
       let storageRef = this.storage.register(name, _settings);
-      await storageRef.prepare();
+      if (storageRef.getOptions().connectOnStartup) {
+        await storageRef.prepare();
+      }
       Bootstrap.getContainer().set([K_STORAGE, name].join('.'), storageRef);
     }
     return this;

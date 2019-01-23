@@ -9,6 +9,9 @@ export * from "./api/IBootstrap";
 export * from "./api/IModule";
 export * from "./api/IPermissions";
 
+export * from "./api/Tasks.api";
+export * from "./api/ITasksApi";
+
 export * from "./libs/ITypexsOptions"
 
 export * from "./adapters/storage/DefaultSchemaHandler";

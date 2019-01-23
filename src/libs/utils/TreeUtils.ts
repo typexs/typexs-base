@@ -1,9 +1,19 @@
 import * as _ from 'lodash';
 
+export interface WalkValues {
+  value: any,
+  key: string | number,
+  index: number,
+  location: any
+  parent: any
+  isLeaf: boolean
+}
+
 export class TreeUtils {
 
 
-  static walk(root: any, fn: Function) {
+  // todo move this to commons-base
+  static walk(root: any, fn: (x: WalkValues) => void) {
     function walk(obj: any, parent: any = null, key: string | number = null, location: any[] = []) {
       if (obj === null || obj === undefined) return;
       if (_.isArray(obj)) {
@@ -20,9 +30,7 @@ export class TreeUtils {
           if (!isLeaf) {
             walk(el, j, el, key ? [...location, ...[key], ...[j]] : [...location, ...[j]])
           }
-
         })
-
       } else if (_.isPlainObject(obj)) {
         _.keys(obj).forEach(_key => {
           let isLeaf = !_.isArray(obj[_key]) && !_.isPlainObject(obj[_key]);
@@ -37,9 +45,7 @@ export class TreeUtils {
           if (!isLeaf) {
             walk(obj[_key], obj, _key, [...location, ...[_key]])
           }
-
         })
-
       } else {
         fn({
           value: obj,
@@ -49,11 +55,11 @@ export class TreeUtils {
           location: [...location],
           isLeaf: true
         })
-
       }
     }
 
     walk(root)
   }
+
 
 }

@@ -35,6 +35,8 @@ export class StorageRef {
 
   private schemaHandler: AbstractSchemaHandler;
 
+  private _prepared: boolean = false;
+
   //private static $$: Storage = null;
 
   constructor(options: IStorageOptions/* = DEFAULT_STORAGE_OPTIONS, FIX_STORAGE_OPTIONS: any = {}*/) {
@@ -42,7 +44,7 @@ export class StorageRef {
     // options = Utils.merge(options, FIX_STORAGE_OPTIONS);
 
     if (options.type == 'sqlite') {
-      let opts = <SqliteConnectionOptions>options;
+      let opts = <SqliteConnectionOptions & IStorageOptions>options;
 
       if (opts.database != ':memory:' &&
         !_.isEmpty(opts.database) &&
@@ -82,6 +84,7 @@ export class StorageRef {
 
     let out = "";
     for (let x in this.options) {
+      // todo define per config?
       if (['type', 'logging', 'database', 'dialect', 'synchronize', 'name'].indexOf(x) == -1) {
         continue;
       }
@@ -153,6 +156,7 @@ export class StorageRef {
   }
 
   async reload(full: boolean = true): Promise<any> {
+    this._prepared = false;
     if (getConnectionManager().has(this.name)) {
       // let name = this.name
       await this.shutdown(full)
@@ -162,13 +166,15 @@ export class StorageRef {
 
   async prepare(): Promise<void> {
     if (!getConnectionManager().has(this.name)) {
+      // todo maybe handle exception?
+
       let c = await getConnectionManager().create(<ConnectionOptions>this.options);
       c = await c.connect();
       await (await this.wrap(c)).close();
-    }
-    else {
+    } else {
       await (await this.wrap()).close()
     }
+    this._prepared = true;
     // return Promise.resolve()
   }
 
@@ -213,6 +219,9 @@ export class StorageRef {
 
 
   async connect(): Promise<ConnectionWrapper> {
+    if (!this._prepared) {
+      await this.prepare()
+    }
     return (await this.wrap()).connect()
   }
 

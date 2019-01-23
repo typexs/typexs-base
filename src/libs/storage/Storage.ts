@@ -9,10 +9,11 @@ import {K_CLS_STORAGE_SCHEMAHANDLER} from "../Constants";
 import {DefaultSchemaHandler} from "../../adapters/storage/DefaultSchemaHandler";
 
 
-export const DEFAULT_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
+export const DEFAULT_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions & IStorageOptions>{
   name: 'default',
   type: "sqlite",
-  database: ":memory:"
+  database: ":memory:",
+  connectOnStartup: false
 };
 
 
@@ -26,7 +27,7 @@ export class Storage {
 
   private schemaHandler: { [key: string]: Function } = {};
 
-  constructor(){
+  constructor() {
     this.schemaHandler['__default__'] = DefaultSchemaHandler;
   }
 
@@ -48,7 +49,7 @@ export class Storage {
     let classes = await loader.getClasses(K_CLS_STORAGE_SCHEMAHANDLER);
     for (let cls of classes) {
       let obj = <AbstractSchemaHandler>Reflect.construct(cls, []);
-      if(obj){
+      if (obj) {
         this.schemaHandler[obj.type] = cls;
       }
     }

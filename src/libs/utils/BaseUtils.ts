@@ -1,6 +1,7 @@
 import * as merge from 'deepmerge'
 import * as _ from 'lodash'
 import {InterpolationSupport} from "commons-config";
+import {TreeUtils, WalkValues} from "./TreeUtils";
 
 
 export class BaseUtils {
@@ -76,54 +77,11 @@ export class BaseUtils {
     return merge.all(args, {arrayMerge: this.mergeArray})
   }
 
-  static walk(root: any, fn: Function) {
-    function walk(obj: any, location: any[] = []) {
-      if (obj === null || obj === undefined) return;
 
-      Object.keys(obj).forEach((key) => {
-
-        // Value is an array, call walk on each item in the array
-        if (Array.isArray(obj[key])) {
-          obj[key].forEach((el: any, j: number) => {
-            fn({
-              value: el,
-              key: key,
-              index: j,
-              location: [...location, ...[key], ...[j]],
-              parent: obj,
-              isLeaf: false
-            });
-            walk(el, [...location, ...[key], ...[j]])
-          })
-
-          // Value is an object, walk the keys of the object
-        } else if (typeof obj[key] === 'object') {
-          fn({
-            value: obj[key],
-            key: key,
-            parent: obj,
-            index: null,
-            location: [...location, ...[key]],
-            isLeaf: false
-          });
-          walk(obj[key], [...location, ...[key]])
-
-          // We've reached a leaf node, call fn on the leaf with the location
-        } else {
-          fn({
-            value: obj[key],
-            key: key,
-            parent: obj,
-            index: null,
-            location: [...location, ...[key]],
-            isLeaf: true
-          })
-        }
-      })
-    }
-
-    walk(root)
+  static walk(root: any, fn: (v: WalkValues) => void) {
+    return TreeUtils.walk(root, fn);
   }
+
 
   static get(arr: any, path: string = null): any {
     if (path) {
@@ -218,12 +176,8 @@ export class BaseUtils {
 
 
   static isObject(o: any) {
-    return _.isObject(o)
+    return _.isPlainObject(o)
   }
 
-
-  static isString(o: any) {
-    return _.isString(o)
-  }
 
 }

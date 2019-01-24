@@ -1,36 +1,15 @@
 import * as _ from "lodash";
-import {MetaArgs} from "./MetaArgs";
-import {RuntimeLoader} from "./RuntimeLoader";
-import {ClassType, K_CLS_API, K_CLS_USE_API} from "../libs/Constants";
-import {Container, Inject} from "typedi";
+import {ClassType} from "../libs/Constants";
+import {Container} from "typedi";
 import {IAPIDef} from "../libs/api/IAPIDef";
-
 
 
 export class Invoker {
 
   static NAME: string = 'Invoker';
 
-  @Inject(RuntimeLoader.NAME)
-  loader: RuntimeLoader;
 
   private apiImpls: IAPIDef[] = [];
-
-
-  constructor(loader: RuntimeLoader) {
-    this.loader = loader;
-  }
-
-
-  prepare() {
-    // lade klassen mit erweiterung, jedoch welche erweiterung implementieren diese
-    let apiClasses = this.loader.getClasses(K_CLS_API);
-    this.loader.getClasses(K_CLS_USE_API);
-    let apis = MetaArgs.key(K_CLS_USE_API);
-    apiClasses.forEach(api => {
-      this.register(api, apis.filter(x => x.api).map(x => x.target));
-    });
-  }
 
 
   register(api: Function, impl: Function | Function[]) {

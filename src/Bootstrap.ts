@@ -29,6 +29,7 @@ import {
   K_CLS_USE_API
 } from "./libs/Constants";
 import {Invoker} from "./base/Invoker";
+import {MetaArgs} from "./base/MetaArgs";
 
 useContainer(Container);
 
@@ -367,13 +368,24 @@ export class Bootstrap {
     Bootstrap.getContainer().set(RuntimeLoader.NAME, this.runtimeLoader);
     await this.runtimeLoader.prepare();
 
-    let invoker = new Invoker(this.runtimeLoader);
+    let invoker = new Invoker();
     Bootstrap.getContainer().set(Invoker.NAME, invoker);
-    await invoker.prepare();
+    Bootstrap.prepareInvoker(invoker, this.runtimeLoader);
 
     // update config
     Config.jar(CONFIG_NAMESPACE).set('modules', this.runtimeLoader._options);
     return this;
+  }
+
+
+  static prepareInvoker(i: Invoker, loader: RuntimeLoader) {
+    // lade klassen mit erweiterung, jedoch welche erweiterung implementieren diese
+    let apiClasses = loader.getClasses(K_CLS_API);
+    loader.getClasses(K_CLS_USE_API);
+    let apis = MetaArgs.key(K_CLS_USE_API);
+    apiClasses.forEach(api => {
+      i.register(api, apis.filter(x => x.api).map(x => x.target));
+    });
   }
 
 

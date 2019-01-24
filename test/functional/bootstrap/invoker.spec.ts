@@ -35,8 +35,8 @@ class InvokerSpec {
     Container.set(RuntimeLoader.NAME, loader);
     await loader.rebuild();
 
-    let invoker = new Invoker(loader);
-    await invoker.prepare();
+    let invoker = new Invoker();
+    await Bootstrap.prepareInvoker(invoker,loader);
     expect(invoker.has(AwesomeApi)).to.be.true;
     expect(invoker.hasImpl(AwesomeApi)).to.be.true;
 

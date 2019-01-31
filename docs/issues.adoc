@@ -1,7 +1,5 @@
 ## Issues
 
-[.line-through]#*@ISSUE {counter:issue} 20180205*# +
-impl. gulp task generate index.ts
 
 **@ISSUE {counter:issue} 20180205** +
 Impl. schematics for generation of new typexs instance or upgrade
@@ -27,10 +25,6 @@ Solved: Fixed npm-install in schemtics/angular was set to true.
 
 
 
-**@ISSUE {counter:issue} 20180221** +
-
-Check if "reflect-metadata" is installed in cli.js
-
 **@ISSUE {counter:issue} 20180411** +
 
 Disable storage if not defined.
@@ -51,9 +45,6 @@ permissions. If you want to use generate as upgrade, there
 must be a possibility to exclude special folders.
 
 
-**@ISSUE {counter:issue} 20180607** +
-
-Add TaskCommand and implement Task API
 
 **@ISSUE {counter:issue} 20180607** +
 

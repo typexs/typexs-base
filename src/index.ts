@@ -1,18 +1,12 @@
+export * from './browser';
+
+// extern exports
 export {Container, Inject, Service} from "typedi";
 export {Config, IConfigOptions, IConfigData, IFileConfigOptions} from "commons-config";
-export {ClassesLoader,ModuleRegistry} from "commons-moduls";
-export {PlatformUtils, FileUtils, ClassLoader, NestedException, StringOrFunction, TodoException} from "commons-base";
+export {ClassesLoader, ModuleRegistry} from "commons-moduls";
+export {PlatformUtils, FileUtils, ClassLoader} from "commons-base";
 
 
-export * from './libs/Constants';
-
-export * from './libs/exceptions/NotSupportedError'
-export * from './libs/exceptions/NotYetImplementedError'
-
-export * from "./api/IActivator";
-export * from "./api/IBootstrap";
-export * from "./api/IModule";
-export * from "./api/IPermissions";
 
 export * from "./api/Tasks.api";
 export * from "./api/ITasksApi";

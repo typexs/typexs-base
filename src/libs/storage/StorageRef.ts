@@ -15,6 +15,7 @@ import {PlatformUtils, TodoException} from "commons-base";
 
 import {AbstractSchemaHandler} from "./AbstractSchemaHandler";
 import {BaseUtils} from "../utils/BaseUtils";
+import {StorageEntityController} from "./StorageEntityController";
 
 
 export class StorageRef {
@@ -34,6 +35,8 @@ export class StorageRef {
   private entitySchemas: EntitySchema[] = [];
 
   private schemaHandler: AbstractSchemaHandler;
+
+  private controller: StorageEntityController;
 
   private _prepared: boolean = false;
 
@@ -68,12 +71,10 @@ export class StorageRef {
         if (!found) {
           throw new TodoException('File ' + opts.database + ' for database can\'t be found.')
         }
-
       }
     }
 
     this.options = Object.assign({}, DEFAULT_STORAGE_OPTIONS, options);
-
 
     if (this.options.type == 'sqlite') {
       this.singleConnection = true;
@@ -93,7 +94,8 @@ export class StorageRef {
       }
     }
     Log.debug(`storage: use ${this.options.type} for storage with options:\n${out} `);
-    Runtime.$().setConfig('storage', this.options)
+    Runtime.$().setConfig('storage', this.options);
+    this.controller = new StorageEntityController(this);
   }
 
   get name() {
@@ -215,6 +217,10 @@ export class StorageRef {
 
   getOptions(): IStorageOptions {
     return this.options;
+  }
+
+  getController() {
+    return this.controller;
   }
 
 

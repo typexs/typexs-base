@@ -1,5 +1,5 @@
 import {AbstractSchemaHandler} from "../../libs/storage/AbstractSchemaHandler";
-import {NotYetImplementedError} from "../../libs/exceptions/NotYetImplementedError";
+import {NotYetImplementedError} from "commons-base";
 import {Collection} from "../../libs/storage/Collection";
 
 

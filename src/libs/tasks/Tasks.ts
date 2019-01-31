@@ -183,8 +183,8 @@ export class Tasks {
   }
 
 
-  addClasses(dir: string) {
-    let klazzes = ClassLoader.importClassesFromDirectories([dir]);
+  async addClasses(dir: string) {
+    let klazzes = await ClassLoader.importClassesFromDirectoriesAsync([dir]);
     for (let klass of klazzes) {
       let task = <Function>Container.get(klass);
       if (!('name' in task) || !_.isFunction(task['exec'])) throw new Error('task ' + klass + ' has no name');

@@ -47,11 +47,11 @@ class GeneralSpec {
 
     let schemaHandler = storageRef.getSchemaHandler();
     let tableNames = await schemaHandler.getCollectionNames();
-    expect(tableNames).to.have.length(3);
+    expect(tableNames).to.have.length(4);
     expect(tableNames).to.have.members(_.map(q, _q => _q.name));
 
     let tables = await schemaHandler.getCollections(tableNames);
-    expect(tables).to.have.length(3);
+    expect(tables).to.have.length(4);
     expect(tableNames).to.have.members(_.map(tables, _q => _q.name));
 
   }

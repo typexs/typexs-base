@@ -3,7 +3,7 @@ import * as path from "path";
 import * as _ from 'lodash';
 import {suite, test} from "mocha-typescript";
 import {expect} from "chai";
-import {IStorageOptions, StorageRef} from "../../../src";
+import {Invoker, IStorageOptions, StorageRef} from "../../../src";
 
 import {Bootstrap} from "../../../src/Bootstrap";
 import {Config} from "commons-config";
@@ -12,6 +12,7 @@ import {SqliteConnectionOptions} from "typeorm/driver/sqlite/SqliteConnectionOpt
 import {X1} from "./entities/X1";
 import {Y1} from "./entities/Y1";
 import {TEST_STORAGE_OPTIONS} from "../config";
+import {Container} from "typedi";
 
 @suite('functional/storage/general')
 class GeneralSpec {
@@ -67,6 +68,9 @@ class GeneralSpec {
       id: number;
     }
 
+    let invoker = new Invoker();
+    Container.set(Invoker.NAME,invoker);
+
     let storage = new StorageRef(TEST_STORAGE_OPTIONS);
     await storage.prepare();
 
@@ -89,6 +93,10 @@ class GeneralSpec {
 
     let dbfile = path.join(__dirname, 'testdb01.sqlite');
     let opts = _.merge(_.clone(TEST_STORAGE_OPTIONS), {database: dbfile});
+
+
+    let invoker = new Invoker();
+    Container.set(Invoker.NAME,invoker);
 
     let storage = new StorageRef(opts);
     await storage.prepare();
@@ -133,6 +141,9 @@ class GeneralSpec {
       }
     }
 
+    let invoker = new Invoker();
+    Container.set(Invoker.NAME,invoker);
+
     let storage = new StorageRef(TEST_STORAGE_OPTIONS);
     await storage.prepare();
 
@@ -162,6 +173,10 @@ class GeneralSpec {
   @test
   async 'typeorm detect listener on fixed added class'() {
     let opts = _.merge(_.clone(TEST_STORAGE_OPTIONS), {entities: [X1, Y1]});
+
+    let invoker = new Invoker();
+    Container.set(Invoker.NAME,invoker);
+
     let storage = new StorageRef(opts);
     await storage.prepare();
 

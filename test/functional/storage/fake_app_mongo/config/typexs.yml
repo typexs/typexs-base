@@ -1,5 +1,5 @@
 app:
-  name: fake_app_handler
+  name: fake_app_mongo
 
 
 
@@ -7,7 +7,7 @@ app:
 storage:
   default:
     synchronize: true
-    type: sqlite
-    database: ':memory:'
+    type: mongodb
+    database: typexs
     # logging: all
     # logger: simple-console

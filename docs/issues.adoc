@@ -49,3 +49,4 @@ must be a possibility to exclude special folders.
 **@ISSUE {counter:issue} 20180607** +
 
 Find other way to invoke gulp task from different modules
+

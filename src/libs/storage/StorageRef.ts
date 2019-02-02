@@ -16,7 +16,9 @@ import {ClassUtils, PlatformUtils, TodoException} from "commons-base";
 import {AbstractSchemaHandler} from "./AbstractSchemaHandler";
 import {BaseUtils} from "../utils/BaseUtils";
 import {StorageEntityController} from "./StorageEntityController";
-import {IClassRef} from "commons-schema-api";
+import {ClassRef, IClassRef, IEntityRef} from "commons-schema-api";
+import {REGISTRY_TYPEORM} from "./framework/typeorm/schema/TypeOrmConstants";
+import {TypeOrmEntityRegistry} from "./framework/typeorm/schema/TypeOrmEntityRegistry";
 
 
 export class StorageRef {
@@ -150,16 +152,39 @@ export class StorageRef {
   }
 
 
+  getEntityRef(name: string | Function): IEntityRef {
+    let clazz = this.getEntityClass(name);
+    if (clazz) {
+      return TypeOrmEntityRegistry.$().getEntityRefFor(clazz);
+    }
+    return null;
+  }
+
+  getClassRef(name: string | Function): IClassRef {
+    let clazz = this.getEntityClass(name);
+    if (clazz) {
+      return ClassRef.get(clazz instanceof EntitySchema ? clazz.options.target : clazz, REGISTRY_TYPEORM);
+    }
+    return null;
+  }
+
   private static machineName(x: string | EntitySchema | Function) {
     return _.snakeCase(ClassUtils.getClassName(x instanceof EntitySchema ? x.options.target : x))
   }
 
 
-  hasEntityClass(ref: IClassRef | string) {
+  hasEntityClass(ref: IClassRef | string | Function) {
+    return !!this.getEntityClass(ref);
+  }
+
+  getEntityClass(ref: IClassRef | string | Function) {
     if (_.isString(ref)) {
       return this.options.entities.find(x => ref === StorageRef.machineName(x))
+    } else if (_.isFunction(ref)) {
+      let _ref = ClassRef.get(ref, REGISTRY_TYPEORM);
+      return this.options.entities.find(x => _ref.machineName === StorageRef.machineName(x))
     } else {
-      return this.options.entities.find(x => ref.machineName === StorageRef.machineName(x))
+      return this.options.entities.find(x => (<IClassRef>ref).machineName === StorageRef.machineName(x))
     }
   }
 

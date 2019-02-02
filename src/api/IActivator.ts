@@ -2,6 +2,7 @@ export interface IActivator {
   /**
    * Initialisation
    */
-  startup():void;
+  startup(): void;
+
 
 }

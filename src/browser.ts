@@ -6,6 +6,7 @@ export {
 export * from "./api/IActivator";
 export * from "./api/IBootstrap";
 export * from "./api/IModule";
+export * from "./api/IShutdown";
 export * from "./api/IPermissions";
 
 export * from "./base/MetaArgs";

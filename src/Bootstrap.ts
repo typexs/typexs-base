@@ -15,7 +15,7 @@ import {Container} from "typedi";
 import {getMetadataArgsStorage, useContainer} from "typeorm";
 import {BaseUtils} from "./libs/utils/BaseUtils";
 import {PlatformUtils} from "commons-base";
-import {CONFIG_NAMESPACE} from "./libs/Constants";
+import {CONFIG_NAMESPACE, K_CLS_CACHE_ADAPTER} from "./libs/Constants";
 import {IConfigOptions} from "commons-config/config/IConfigOptions";
 import {IBootstrap} from "./api/IBootstrap";
 import {ClassesLoader} from "commons-moduls";
@@ -30,6 +30,7 @@ import {
 } from "./libs/Constants";
 import {Invoker} from "./base/Invoker";
 import {MetaArgs} from "./base/MetaArgs";
+import {IShutdown} from "./api/IShutdown";
 
 useContainer(Container);
 
@@ -110,6 +111,13 @@ export const DEFAULT_RUNTIME_OPTIONS: IRuntimeLoaderOptions = {
       refs: [
         "adapters/storage/*SchemaHandler.*",
         "src/adapters/storage/*SchemaHandler.*"
+      ]
+    },
+    {
+      topic: K_CLS_CACHE_ADAPTER,
+      refs: [
+        "adapters/cache/*CacheAdapter.*",
+        "src/adapters/cache/*CacheAdapter.*"
       ]
     },
     {
@@ -241,13 +249,14 @@ export class Bootstrap {
   }
 
 
-  throwedUnhandledRejection(reason: any, err: Error) {
+  async throwedUnhandledRejection(reason: any, err: Error) {
     Log.error('unhandledRejection', reason, err)
   }
 
 
-  throwedUncaughtException(err: Error) {
+  async throwedUncaughtException(err: Error) {
     Log.error('uncaughtException', err)
+    await this.shutdown();
   }
 
 
@@ -389,9 +398,6 @@ export class Bootstrap {
   }
 
 
-  private configureModules() {
-    // execute static method config on Activators if it exists
-  }
 
 
   private createActivatorInstances() {
@@ -438,6 +444,17 @@ export class Bootstrap {
     return this;
   }
 
+
+  async shutdown(){
+    Log.debug('shutdown ...');
+
+    let bootstraps = this.getModulBootstraps();
+    bootstraps = _.filter(bootstraps, a => _.isFunction(a['shutdown']));
+    for (let bootstrap of bootstraps) {
+      Log.debug('shutdown of ' + ClassesLoader.getModulName(bootstrap.constructor));
+      await (<IShutdown>bootstrap).shutdown();
+    }
+  }
 
   getActivators(): IActivator[] {
     if (!this.activators) {
@@ -490,6 +507,7 @@ export class Bootstrap {
   getStorage() {
     return this.storage;
   }
+
 
 
 }

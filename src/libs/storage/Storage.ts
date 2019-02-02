@@ -7,6 +7,7 @@ import {AbstractSchemaHandler} from "./AbstractSchemaHandler";
 import {RuntimeLoader} from "../../base/RuntimeLoader";
 import {K_CLS_STORAGE_SCHEMAHANDLER} from "../Constants";
 import {DefaultSchemaHandler} from "../../adapters/storage/DefaultSchemaHandler";
+import {IClassRef} from "commons-schema-api";
 
 
 export const DEFAULT_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions & IStorageOptions>{
@@ -53,6 +54,20 @@ export class Storage {
         this.schemaHandler[obj.type] = cls;
       }
     }
+  }
+
+
+  /**
+   * Returns storage ref for the given classRef or machineName
+   * @param classRef
+   */
+  forClass(classRef: IClassRef | string) {
+    for (let k in this.refs) {
+      if (this.refs[k].hasEntityClass(classRef)) {
+        return this.refs[k]
+      }
+    }
+    return null;
   }
 
 

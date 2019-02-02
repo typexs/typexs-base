@@ -11,11 +11,12 @@ import {SqliteConnectionOptions} from "typeorm/driver/sqlite/SqliteConnectionOpt
 import {Runtime} from "../Runtime";
 import * as path from "path";
 import * as _ from "lodash";
-import {PlatformUtils, TodoException} from "commons-base";
+import {ClassUtils, PlatformUtils, TodoException} from "commons-base";
 
 import {AbstractSchemaHandler} from "./AbstractSchemaHandler";
 import {BaseUtils} from "../utils/BaseUtils";
 import {StorageEntityController} from "./StorageEntityController";
+import {IClassRef} from "commons-schema-api";
 
 
 export class StorageRef {
@@ -145,6 +146,20 @@ export class StorageRef {
     if (exists < 0) {
       opts.entities.push(type);
       this.options = _.assign(this.options, opts)
+    }
+  }
+
+
+  private static machineName(x: string | EntitySchema | Function) {
+    return _.snakeCase(ClassUtils.getClassName(x instanceof EntitySchema ? x.options.target : x))
+  }
+
+
+  hasEntityClass(ref: IClassRef | string) {
+    if (_.isString(ref)) {
+      return this.options.entities.find(x => ref === StorageRef.machineName(x))
+    } else {
+      return this.options.entities.find(x => ref.machineName === StorageRef.machineName(x))
     }
   }
 

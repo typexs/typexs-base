@@ -7,8 +7,7 @@ import {Invoker, IStorageOptions, StorageRef} from "../../../src";
 
 import {Bootstrap} from "../../../src/Bootstrap";
 import {Config} from "commons-config";
-import {BeforeInsert, Column, Entity, PrimaryColumn} from "typeorm";
-import {SqliteConnectionOptions} from "typeorm/driver/sqlite/SqliteConnectionOptions";
+import {BeforeInsert, Column, PrimaryColumn} from "typeorm";
 import {X1} from "./entities/X1";
 import {Y1} from "./entities/Y1";
 import {TEST_STORAGE_OPTIONS} from "../config";
@@ -63,9 +62,33 @@ class GeneralSpec {
     let storageRef = storageManager.forClass('module_entity');
     expect(storageRef.name).to.eq(XS_DEFAULT);
 
-    let classRef = ClassRef.get(require('./fake_app/entities/TestEntity').TestEntity,'dummy');
+    const TestEntity = require('./fake_app/entities/TestEntity').TestEntity;
+    let classRef = ClassRef.get(TestEntity, 'dummy');
     storageRef = storageManager.forClass(classRef);
     expect(storageRef.name).to.eq(XS_DEFAULT);
+
+
+    let classRef2 = storageRef.getClassRef('TestEntity');
+    expect(classRef2.getClass()).to.be.eq(TestEntity)
+    let classRef3 = storageRef.getClassRef('test_entity');
+    expect(classRef2.getClass()).to.be.eq(TestEntity)
+    expect(classRef2).to.be.eq(classRef3);
+    expect(classRef2.machineName).to.be.eq('test_entity');
+    expect(classRef2.storingName).to.be.eq('test_entity');
+    expect(classRef2.name).to.be.eq('TestEntity');
+
+    let entityRef_1 = storageRef.getEntityRef('test_entity');
+    let entityRef_2 = storageRef.getEntityRef('TestEntity');
+    let entityRef_3 = storageRef.getEntityRef(TestEntity);
+    expect(entityRef_1.name).to.be.eq('TestEntity');
+    expect(entityRef_2.name).to.be.eq('TestEntity');
+    expect(entityRef_3.name).to.be.eq('TestEntity');
+
+    let properties = entityRef_1.getPropertyRefs();
+    expect(properties).to.have.length(2);
+    expect(_.map(properties, p => p.name)).to.deep.eq(['id','name']);
+
+
   }
 
 
@@ -78,7 +101,7 @@ class GeneralSpec {
     }
 
     let invoker = new Invoker();
-    Container.set(Invoker.NAME,invoker);
+    Container.set(Invoker.NAME, invoker);
 
     let storage = new StorageRef(TEST_STORAGE_OPTIONS);
     await storage.prepare();
@@ -105,7 +128,7 @@ class GeneralSpec {
 
 
     let invoker = new Invoker();
-    Container.set(Invoker.NAME,invoker);
+    Container.set(Invoker.NAME, invoker);
 
     let storage = new StorageRef(opts);
     await storage.prepare();
@@ -151,7 +174,7 @@ class GeneralSpec {
     }
 
     let invoker = new Invoker();
-    Container.set(Invoker.NAME,invoker);
+    Container.set(Invoker.NAME, invoker);
 
     let storage = new StorageRef(TEST_STORAGE_OPTIONS);
     await storage.prepare();
@@ -184,7 +207,7 @@ class GeneralSpec {
     let opts = _.merge(_.clone(TEST_STORAGE_OPTIONS), {entities: [X1, Y1]});
 
     let invoker = new Invoker();
-    Container.set(Invoker.NAME,invoker);
+    Container.set(Invoker.NAME, invoker);
 
     let storage = new StorageRef(opts);
     await storage.prepare();

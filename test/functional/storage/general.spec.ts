@@ -13,6 +13,7 @@ import {X1} from "./entities/X1";
 import {Y1} from "./entities/Y1";
 import {TEST_STORAGE_OPTIONS} from "../config";
 import {Container} from "typedi";
+import {ClassRef, XS_DEFAULT} from "commons-schema-api";
 
 @suite('functional/storage/general')
 class GeneralSpec {
@@ -58,7 +59,15 @@ class GeneralSpec {
     expect(entityNames).to.be.deep.eq([
       'ModuleEntity', 'TestEntity'
     ]);
+
+    let storageRef = storageManager.forClass('module_entity');
+    expect(storageRef.name).to.eq(XS_DEFAULT);
+
+    let classRef = ClassRef.get(require('./fake_app/entities/TestEntity').TestEntity,'dummy');
+    storageRef = storageManager.forClass(classRef);
+    expect(storageRef.name).to.eq(XS_DEFAULT);
   }
+
 
   @test
   async 'dynamically add entity class in db memory'() {

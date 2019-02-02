@@ -168,8 +168,12 @@ export class StorageRef {
     return null;
   }
 
+  private static getClassName(x: string | EntitySchema | Function){
+    return ClassUtils.getClassName(x instanceof EntitySchema ? x.options.target : x)
+  }
+
   private static machineName(x: string | EntitySchema | Function) {
-    return _.snakeCase(ClassUtils.getClassName(x instanceof EntitySchema ? x.options.target : x))
+    return _.snakeCase(this.getClassName(x))
   }
 
 
@@ -179,7 +183,8 @@ export class StorageRef {
 
   getEntityClass(ref: IClassRef | string | Function) {
     if (_.isString(ref)) {
-      return this.options.entities.find(x => ref === StorageRef.machineName(x))
+      const  _ref = _.snakeCase(ref);
+      return this.options.entities.find(x => _ref === StorageRef.machineName(x))
     } else if (_.isFunction(ref)) {
       let _ref = ClassRef.get(ref, REGISTRY_TYPEORM);
       return this.options.entities.find(x => _ref.machineName === StorageRef.machineName(x))

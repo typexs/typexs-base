@@ -1,7 +1,8 @@
 import {StorageRef} from "./StorageRef";
 import {Collection} from "./Collection";
 import {IDBType} from "./IDBType";
-import {JS_DATA_TYPES} from "../Constants";
+import {JS_DATA_TYPES} from "commons-schema-api/browser";
+
 
 export abstract class AbstractSchemaHandler {
 

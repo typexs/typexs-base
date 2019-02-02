@@ -1,10 +1,11 @@
 import {validate} from 'class-validator';
 import * as _ from 'lodash'
-
-import {IValidationResult} from "./IValidationResult";
 import {IValidationError} from "./IValidationError";
+import {IValidationResult} from "./IValidationResult";
+import {ILookupRegistry} from "commons-schema-api/browser";
 import {IValidationMessage} from "./IValidationMessage";
-import {IEntityLookupRegistry} from "../schema_api/IEntityLookupRegistry";
+
+
 
 
 export const STATE_KEY = '$state';
@@ -26,10 +27,10 @@ export class DataContainer<T> {
   instance: T;
 
 
-  constructor(instance: T, registry: IEntityLookupRegistry) {
+  constructor(instance: T, registry: ILookupRegistry) {
     this.instance = instance;
-    let entityDef = registry.getEntityDefFor(this.instance);
-    entityDef.getPropertyDefs().forEach(propDef => {
+    let entityDef = registry.getEntityRefFor(this.instance);
+    entityDef.getPropertyRefs().forEach(propDef => {
       this.validation[propDef.name] = {
         key: propDef.name,
         valid: false,
@@ -95,7 +96,15 @@ export class DataContainer<T> {
   async validate(): Promise<boolean> {
     this.isValidated = true;
     _.remove(this.errors, error => error.type == 'validate');
-    let results = await validate(this.instance, {validationError: {target: false}});
+    let results:IValidationError[] = [];
+    try {
+//      const validator = await import('class-validator');
+
+      results = <IValidationError[]>await validate(this.instance, {validationError: {target: false}});
+    }catch (e) {
+      // TODO log no validator
+    }
+
     results.map(r => this.errors.push({
       property: r.property,
       value: r.value,

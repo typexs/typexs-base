@@ -1,7 +1,8 @@
 import * as _ from "lodash";
-import {ClassType} from "../libs/Constants";
+
 import {Container} from "typedi";
 import {IAPIDef} from "../libs/api/IAPIDef";
+import {ClassType} from "commons-schema-api/browser";
 
 
 export class Invoker {

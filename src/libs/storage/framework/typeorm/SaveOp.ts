@@ -8,7 +8,8 @@ import {DataContainer} from "../../DataContainer";
 
 import {TypeOrmUtils} from "./TypeOrmUtils";
 import {ObjectsNotValidError} from "../../../exceptions/ObjectsNotValidError";
-import {TypeOrmEntityLookupRegistry} from "./schema/TypeOrmEntityLookupRegistry";
+import {TypeOrmEntityRegistry} from "./schema/TypeOrmEntityRegistry";
+
 
 
 export class SaveOp<T> implements ISaveOp<T> {
@@ -48,8 +49,8 @@ export class SaveOp<T> implements ISaveOp<T> {
         let promises = [];
         for (let entityName of entityNames) {
           let repo = this.c.manager.getMongoRepository(entityName);
-          let entityDef = TypeOrmEntityLookupRegistry.$().getEntityDefFor(entityName);
-          let propertyDef = entityDef.getPropertyDefs().find(p => p.isIdentifier());
+          let entityDef = TypeOrmEntityRegistry.$().getEntityRefFor(entityName);
+          let propertyDef = entityDef.getPropertyRefs().find(p => p.isIdentifier());
 
           if (options.raw) {
             let bulk = repo.initializeOrderedBulkOp();
@@ -121,7 +122,7 @@ export class SaveOp<T> implements ISaveOp<T> {
 
   private async validate() {
     let valid: boolean = true;
-    await Promise.all(_.map(this.objects, o => new DataContainer(o, TypeOrmEntityLookupRegistry.$())).map(async c => {
+    await Promise.all(_.map(this.objects, o => new DataContainer(o, TypeOrmEntityRegistry.$())).map(async c => {
       valid = valid && await c.validate();
       if (!this.isMongoDB()) {
         c.applyState();

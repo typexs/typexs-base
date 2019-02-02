@@ -3,8 +3,9 @@ import {AbstractSqlConditionsBuilder} from "../AbstractSqlConditionsBuilder";
 import {NotYetImplementedError} from "commons-base";
 import {RelationMetadataArgs} from "typeorm/browser/metadata-args/RelationMetadataArgs";
 import {IConditionJoin} from "../IConditionJoin";
-import {TypeOrmPropertyDef} from "./schema/TypeOrmPropertyDef";
-import {IClassRef} from "../../../schema_api/IClassRef";
+import {TypeOrmPropertyRef} from "./schema/TypeOrmPropertyRef";
+import {IClassRef} from "commons-schema-api/browser";
+
 
 export class TypeOrmSqlConditionsBuilder extends AbstractSqlConditionsBuilder {
 
@@ -14,12 +15,12 @@ export class TypeOrmSqlConditionsBuilder extends AbstractSqlConditionsBuilder {
     let names: string[] = [this.alias];
     let rootAlias = this.alias;
     for (let _join of joins) {
-      let prop = tmp.getPropertyDef(_join);
+      let prop = tmp.getPropertyRef(_join);
       if (prop.isReference()) {
         let from = tmp;
         tmp = prop.getTargetRef() ? prop.getTargetRef() : null;
 
-        let relation: RelationMetadataArgs = (<TypeOrmPropertyDef>prop).relation;
+        let relation: RelationMetadataArgs = (<TypeOrmPropertyRef>prop).relation;
         let join: IConditionJoin = {
           alias: this.createAlias(tmp),
           table: tmp.storingName,
@@ -28,7 +29,7 @@ export class TypeOrmSqlConditionsBuilder extends AbstractSqlConditionsBuilder {
 
         let conditions: string[] = [];
         if (relation.relationType == 'one-to-many') {
-          let sourceIdKeyProps = from.getPropertyDefs().filter(f => f.isIdentifier());
+          let sourceIdKeyProps = from.getPropertyRefs().filter(f => f.isIdentifier());
           if (sourceIdKeyProps.length == 1) {
             let sourceIdKey = sourceIdKeyProps[0].name;
             let targetIdKey = from.storingName + '' + _.capitalize(sourceIdKey);
@@ -37,7 +38,7 @@ export class TypeOrmSqlConditionsBuilder extends AbstractSqlConditionsBuilder {
             throw new NotYetImplementedError();
           }
         } else if (relation.relationType == 'many-to-one') {
-          let targetIdKeyProps = tmp.getPropertyDefs().filter(f => f.isIdentifier());
+          let targetIdKeyProps = tmp.getPropertyRefs().filter(f => f.isIdentifier());
           if (targetIdKeyProps.length == 1) {
             let targetIdKey = targetIdKeyProps[0].name;
             let sourceIdKey = tmp.storingName + '' + _.capitalize(targetIdKey);

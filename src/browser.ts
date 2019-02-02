@@ -14,10 +14,6 @@ export * from "./base/Invoker";
 export * from './libs/Constants';
 export * from "./libs/ITypexsOptions";
 
-export * from './libs/schema_api/IClassRef';
-export * from './libs/schema_api/IEntityDef';
-export * from './libs/schema_api/IPropertyDef';
-export * from './libs/schema_api/IEntityLookupRegistry';
 
 export * from './libs/storage/DataContainer';
 export * from './libs/storage/IStorageOptions';
@@ -30,6 +26,6 @@ export * from "./libs/storage/framework/IFindOptions";
 export * from "./libs/storage/framework/ISaveOptions";
 export * from "./libs/storage/framework/IConditionJoin";
 
-export * from "./libs/utils/ClassUtils";
+
 export * from "./libs/utils/CryptUtils";
 export * from "./libs/utils/TreeUtils";

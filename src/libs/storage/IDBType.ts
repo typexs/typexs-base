@@ -1,4 +1,5 @@
-import {JS_DATA_TYPES} from "../Constants";
+import {JS_DATA_TYPES} from "commons-schema-api/browser";
+
 
 export interface IDBType {
   type: string;

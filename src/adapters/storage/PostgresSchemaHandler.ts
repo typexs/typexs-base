@@ -1,7 +1,7 @@
 import {AbstractSchemaHandler} from "../../libs/storage/AbstractSchemaHandler";
 import * as _ from "lodash";
 import {IDBType} from "../../libs/storage/IDBType";
-import {JS_DATA_TYPES} from "../../libs/Constants";
+import {JS_DATA_TYPES} from "commons-schema-api/browser";
 
 
 export class PostgresSchemaHandler extends AbstractSchemaHandler {

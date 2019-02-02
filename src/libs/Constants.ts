@@ -1,32 +1,4 @@
-export const XS_TYPE_SCHEMA = 'schema';
-export const XS_TYPE_ENTITY = 'entity';
-export const XS_TYPE_CLASS_REF = 'class_ref';
-export const XS_TYPE_PROPERTY = 'property';
-export const XS_TYPE_BINDING_SCHEMA_ENTITY = 'schema_entity';
-export const XS_TYPE_BINDING_SCHEMA_CLASS_REF = 'schema_class_ref';
 
-export const XS_P_$COUNT = '$count';
-export const XS_P_$LIMIT = '$limit';
-export const XS_P_$OFFSET = '$offset';
-
-export type XS_TYPE =
-  'schema'
-  | 'entity'
-  | 'property'
-  | 'class_ref'
-  | 'schema_entity'
-  | 'entity_property'
-  | 'property_entity'
-  | 'schema_class_ref';
-
-export type XS_DATA_TYPES = 'string' | 'number' | 'boolean' | 'entity' | 'array' | 'any' ;
-export const XS_ID_SEPARATOR = '--';
-
-export const XS_DEFAULT_SCHEMA = 'default';
-
-export type ClassType<T> = { new (...args: any[]): T; };
-
-export type JS_DATA_TYPES = 'string' | 'text' | 'number' | 'boolean' | 'double' | 'json' | 'date' | 'time' | 'datetime' | 'timestamp' | 'byte';
 
 export const K_CLS_USE_API = 'use_api';
 export const K_CLS_API = 'api';
@@ -37,3 +9,8 @@ export const K_CLS_ACTIVATOR = 'activator.js';
 export const K_CLS_BOOTSTRAP = 'bootstrap.js';
 export const K_CLS_STORAGE_SCHEMAHANDLER: string = 'storage.schemahandler.adapters';
 export const K_CLS_TASKS: string = 'tasks';
+
+
+export const XS_P_$COUNT = '$count';
+export const XS_P_$LIMIT = '$limit';
+export const XS_P_$OFFSET = '$offset';

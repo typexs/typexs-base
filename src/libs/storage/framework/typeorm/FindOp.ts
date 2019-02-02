@@ -6,8 +6,9 @@ import {ConnectionWrapper} from "../../ConnectionWrapper";
 
 
 import {XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from "../../../Constants";
-import {TypeOrmEntityLookupRegistry} from "./schema/TypeOrmEntityLookupRegistry";
+
 import {TypeOrmSqlConditionsBuilder} from "./TypeOrmSqlConditionsBuilder";
+import {TypeOrmEntityRegistry} from "./schema/TypeOrmEntityRegistry";
 
 
 export class FindOp<T> implements IFindOp<T> {
@@ -42,7 +43,7 @@ export class FindOp<T> implements IFindOp<T> {
   private async find(entityType: Function | string, findConditions?: any): Promise<T[]> {
     let repo = this.connection.manager.getRepository(entityType);
     let qb = repo.createQueryBuilder();
-    let entityDef = TypeOrmEntityLookupRegistry.$().getEntityDefFor(entityType);
+    let entityDef = TypeOrmEntityRegistry.$().getEntityRefFor(entityType);
     if (findConditions) {
       let builder = new TypeOrmSqlConditionsBuilder(entityDef, qb.alias);
       const where = builder.build(findConditions);
@@ -63,7 +64,7 @@ export class FindOp<T> implements IFindOp<T> {
     }
 
     if (_.isNull(this.options.sort)) {
-      entityDef.getPropertyDefs().filter(x => x.isIdentifier()).forEach(x => {
+      entityDef.getPropertyRefs().filter(x => x.isIdentifier()).forEach(x => {
         qb.addOrderBy(qb.alias + '.' + x.storingName, 'ASC');
       });
     } else {

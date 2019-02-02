@@ -1,22 +1,20 @@
 import * as _ from 'lodash';
-import {NotYetImplementedError} from "commons-base";
-import {RelationMetadataArgs} from "typeorm/browser/metadata-args/RelationMetadataArgs";
-import {IEntityDef} from "../../schema_api/IEntityDef";
+import {NotYetImplementedError} from "commons-base/browser";
+import {IEntityRef, IClassRef} from "commons-schema-api/browser";
 import {IConditionJoin} from "./IConditionJoin";
-import {IClassRef} from "../../schema_api/IClassRef";
 
 
 export abstract class AbstractSqlConditionsBuilder {
 
   protected inc: number = 1;
 
-  protected entityDef: IEntityDef;
+  protected entityDef: IEntityRef;
 
   protected alias: string;
 
   protected joins: IConditionJoin[] = [];
 
-  constructor(entityDef: IEntityDef, alias: string = null) {
+  constructor(entityDef: IEntityRef, alias: string = null) {
     this.inc = 1;
     this.entityDef = entityDef;
     this.alias = alias ? alias : this.entityDef.storingName;

@@ -1,3 +1,4 @@
+import * as _ from 'lodash';
 import * as path from "path";
 import {suite, test} from "mocha-typescript";
 import {expect} from "chai";
@@ -5,6 +6,7 @@ import {expect} from "chai";
 import {Bootstrap} from "../../../src/Bootstrap";
 import {Config} from "commons-config";
 import {PlatformTools} from "typeorm/platform/PlatformTools";
+import {inspect} from "util";
 
 
 @suite('functional/storage/storage_controller_sql')
@@ -19,7 +21,7 @@ class Storage_controller_sqlSpec {
 
 
   @test
-  async 'storage bootstrap'() {
+  async 'lifecycle save, find, remove'() {
     const Car = require('./fake_app_sql/entities/Car').Car;
     const Driver = require('./fake_app_sql/entities/Driver').Driver;
 
@@ -151,6 +153,18 @@ class Storage_controller_sqlSpec {
     expect(car_by_driver_inv).to.have.length(2);
     expect(car_by_driver_inv[0]).to.deep.eq({id: 1, firstName: 'Black', lastName: 'Yellow'});
     expect(car_by_driver_inv[1]).to.deep.eq({id: 2, firstName: 'Red', lastName: 'Green'});
+    
+    // remove driver
+    let remove_driver = await controller.remove(car_by_driver_inv);
+    expect(remove_driver).to.have.length(2);
+    expect(_.map(remove_driver, (d: any) => d.id)).to.deep.eq([undefined, undefined]);
+
+    let car_by_driver_inv_after_remove = await controller.find(Driver, {'car.id': 1});
+    expect(car_by_driver_inv_after_remove).to.have.length(0);
+
+    let remove_car = await controller.remove(car_by_driver);
+    expect(remove_car).to.have.length(1);
+    expect(_.map(remove_car, (d: any) => d.id)).to.deep.eq([undefined]);
 
   }
 

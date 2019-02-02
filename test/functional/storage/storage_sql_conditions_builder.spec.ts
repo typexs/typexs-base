@@ -4,9 +4,9 @@ import {expect} from "chai";
 
 import {Bootstrap} from "../../../src/Bootstrap";
 import {Config} from "commons-config";
-import {TypeOrmEntityLookupRegistry} from "../../../src/libs/storage/framework/typeorm/schema/TypeOrmEntityLookupRegistry";
 import {TypeOrmSqlConditionsBuilder} from "../../../src/libs/storage/framework/typeorm/TypeOrmSqlConditionsBuilder";
 import {PlatformTools} from "typeorm/platform/PlatformTools";
+import {TypeOrmEntityRegistry} from "../../../src/libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry";
 
 let bootstrap: Bootstrap;
 let Car:any = null;
@@ -53,7 +53,7 @@ class Storage_sql_conditions_builderSpec {
   @test
   async 'build join conditions for one-to-many typeorm relation'() {
 
-    let sql = new TypeOrmSqlConditionsBuilder(TypeOrmEntityLookupRegistry.$().getEntityDefFor(Car), 'car');
+    let sql = new TypeOrmSqlConditionsBuilder(TypeOrmEntityRegistry.$().getEntityRefFor(Car), 'car');
     let where = sql.build({'driver.id': 1});
 
     expect(where).to.eq("driver_1.id = '1'");
@@ -74,7 +74,7 @@ class Storage_sql_conditions_builderSpec {
   @test
   async 'build join conditions for many-to-one typeorm relation'() {
 
-    let sql = new TypeOrmSqlConditionsBuilder(TypeOrmEntityLookupRegistry.$().getEntityDefFor(Driver), 'driver');
+    let sql = new TypeOrmSqlConditionsBuilder(TypeOrmEntityRegistry.$().getEntityRefFor(Driver), 'driver');
     let where = sql.build({'car.id': 1});
 
     expect(where).to.eq("car_1.id = '1'");

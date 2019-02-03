@@ -10,3 +10,11 @@ services:
     volumes:
     - ./local/mongodb:/data/db
 
+
+  redis:
+    container_name: typexs_base_test_redis
+    image: redis
+    ports:
+      - 127.0.0.1:6379:6379
+    volumes:
+      - ./local/redis/db:/data

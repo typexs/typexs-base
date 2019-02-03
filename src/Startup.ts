@@ -6,9 +6,10 @@ import {Cache} from "./libs/cache/Cache";
 import {K_CLS_CACHE_ADAPTER} from "./libs/Constants";
 import {Config} from "commons-config";
 import {ICacheConfig} from "./libs/cache/ICacheConfig";
+import {IShutdown} from "./api/IShutdown";
 
 
-export class Startup implements IBootstrap {
+export class Startup implements IBootstrap, IShutdown {
 
   @Inject(Tasks.NAME)
   tasks: Tasks;
@@ -22,11 +23,15 @@ export class Startup implements IBootstrap {
   async bootstrap(): Promise<void> {
     this.tasks.prepare(this.loader);
 
-    this.loader.getClasses(K_CLS_CACHE_ADAPTER).forEach(cls => this.cache.register(<any>cls));
+    for (let cls of this.loader.getClasses(K_CLS_CACHE_ADAPTER)) {
+      await this.cache.register(<any>cls);
+    }
     let cache: ICacheConfig = Config.get('cache');
     await this.cache.configure(cache);
 
   }
 
-
+  async shutdown() {
+    await this.cache.shutdown();
+  }
 }

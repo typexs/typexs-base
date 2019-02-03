@@ -416,7 +416,10 @@ export class Bootstrap {
     this.bootstraps = [];
     // todo before create injector and pass as parameter
     for (let clz of classes) {
-      this.bootstraps.push(Bootstrap.getContainer().get(clz));
+      if(clz != Bootstrap){
+        this.bootstraps.push(Bootstrap.getContainer().get(clz));
+      }
+
     }
     return this.bootstraps;
   }
@@ -449,7 +452,7 @@ export class Bootstrap {
     Log.debug('shutdown ...');
 
     let bootstraps = this.getModulBootstraps();
-    bootstraps = _.filter(bootstraps, a => _.isFunction(a['shutdown']));
+    bootstraps = _.filter(bootstraps, a =>  _.isFunction(a['shutdown']));
     for (let bootstrap of bootstraps) {
       Log.debug('shutdown of ' + ClassesLoader.getModulName(bootstrap.constructor));
       await (<IShutdown>bootstrap).shutdown();

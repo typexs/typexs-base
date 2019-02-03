@@ -120,6 +120,14 @@ class BootstrapGeneralSpec {
                 "builder"
               ]
             },
+            {
+              "refs": [
+                "adapters/cache/*CacheAdapter.*",
+                "src/adapters/cache/*CacheAdapter.*"
+              ],
+              "topic": "cache.adapters"
+            },
+
             {topic: 'commands', refs: ['commands', 'src/commands']},
             {
               topic: 'entity.default',

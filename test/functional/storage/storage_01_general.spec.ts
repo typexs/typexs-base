@@ -15,7 +15,7 @@ import {Container} from "typedi";
 import {ClassRef, XS_DEFAULT} from "commons-schema-api";
 
 @suite('functional/storage/general')
-class GeneralSpec {
+class Storage_01_generalSpec {
 
 
   before() {

@@ -15,7 +15,7 @@
  */
 import * as _ from 'lodash';
 import {ICacheAdapter} from "./ICacheAdapter";
-import {ClassType, XS_DEFAULT} from "commons-schema-api";
+import {ClassType, XS_DEFAULT} from "commons-schema-api/browser";
 import {ICacheConfig} from "./ICacheConfig";
 import {ICacheGetOptions, ICacheSetOptions} from "./ICacheOptions";
 import {CacheBin} from "./CacheBin";

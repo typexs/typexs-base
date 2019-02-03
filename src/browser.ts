@@ -16,6 +16,13 @@ export * from './libs/Constants';
 export * from "./libs/ITypexsOptions";
 
 
+export * from './libs/cache/Cache';
+export * from './libs/cache/CacheBin';
+export * from './libs/cache/ICacheAdapter';
+export * from './libs/cache/ICacheBinConfig';
+export * from './libs/cache/ICacheConfig';
+export * from './libs/cache/ICacheOptions';
+
 
 export * from './libs/storage/DataContainer';
 export * from './libs/storage/IStorageOptions';

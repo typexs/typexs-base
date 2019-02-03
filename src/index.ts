@@ -7,16 +7,20 @@ export {ClassesLoader, ModuleRegistry} from "commons-moduls";
 export {PlatformUtils, FileUtils, ClassLoader} from "commons-base";
 
 
-
 export * from "./api/Tasks.api";
 export * from "./api/ITasksApi";
 
-export * from "./libs/ITypexsOptions"
+
+export * from "./adapters/cache/MemoryCacheAdapter";
+export * from "./adapters/cache/RedisCacheAdapter";
+export * from "./adapters/cache/redis/IRedisCacheClient";
+
 
 export * from "./adapters/storage/DefaultSchemaHandler";
 export * from "./adapters/storage/SqliteSchemaHandler";
 export * from "./adapters/storage/PostgresSchemaHandler";
 export * from "./adapters/storage/MysqlSchemaHandler";
+
 
 export * from "./base/cli";
 export * from "./base/IRuntimeLoaderOptions";

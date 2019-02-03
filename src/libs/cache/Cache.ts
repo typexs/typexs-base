@@ -22,8 +22,7 @@ import {CacheBin} from "./CacheBin";
 
 
 export const DEFAULT_OPTIONS: ICacheConfig = {
-  bins: {default: 'default'},
-  adapter: {default: {type: 'memory'}}
+  bins: {default: 'default'}
 }
 
 export class Cache {
@@ -36,7 +35,7 @@ export class Cache {
 
   private adapters: { [k: string]: ICacheAdapter } = {};
 
-  bins: { [k: string]: CacheBin } = {};
+  private bins: { [k: string]: CacheBin } = {};
 
 
   getBin(name: string) {
@@ -49,32 +48,40 @@ export class Cache {
 
   async get(key: string, bin: string = XS_DEFAULT, options?: ICacheGetOptions) {
     let cacheBin = this.getBin(bin);
-    return cacheBin.get(key, options);
+    return cacheBin.get(key, bin, options);
   }
 
 
-  async set(key: string, value: any, bin: string, options?: ICacheSetOptions) {
+  async set(key: string, value: any, bin: string = XS_DEFAULT, options?: ICacheSetOptions) {
     let cacheBin = this.getBin(bin);
-    return cacheBin.set(key, value, options);
+    return cacheBin.set(key, value,bin, options);
   }
 
 
-  async configure(config: ICacheConfig) {
-    _.defaultsDeep(config, DEFAULT_OPTIONS);
-    this.options = config;
+  async configure(config?: ICacheConfig) {
+    if (config && _.isPlainObject(config)) {
+      _.defaultsDeep(config || {}, DEFAULT_OPTIONS);
+      this.options = config;
+    }
+
 
     for (let key of _.keys(this.options.adapter)) {
       let adapterConfig = this.options.adapter[key];
       let entry = this.adapterClasses.find(c => c.type == adapterConfig.type);
+      let adapter: ICacheAdapter = null;
       if (!entry) {
         entry = this.adapterClasses.find(c => c.type == 'memory');
-        let adapter: ICacheAdapter = Reflect.construct(entry.clazz, []);
+        adapter = Reflect.construct(entry.clazz, []);
         await adapter.configure(key, {type: 'memory'});
         this.adapters[key] = adapter;
       } else {
-        let adapter: ICacheAdapter = Reflect.construct(entry.clazz, []);
+        adapter = Reflect.construct(entry.clazz, []);
         await adapter.configure(key, adapterConfig);
         this.adapters[key] = adapter;
+      }
+
+      if (this.options.bins[XS_DEFAULT] == key) {
+        this.adapters[XS_DEFAULT] = adapter;
       }
     }
 
@@ -102,9 +109,9 @@ export class Cache {
   }
 
 
-  register(s: ClassType<ICacheAdapter>) {
+  async register(s: ClassType<ICacheAdapter>) {
     let instance = <ICacheAdapter>Reflect.construct(s, []);
-    if (instance && instance.hasRequirements()) {
+    if (instance && await instance.hasRequirements()) {
       this.adapterClasses.push({
         type: instance.type,
         clazz: s
@@ -115,9 +122,28 @@ export class Cache {
   }
 
 
-  shutdown(){
+  getOptions() {
+    return this.options;
+  }
+
+
+  getAdapterClasses() {
+    return this.adapterClasses;
+  }
+
+
+  getAdapters() {
+    return this.adapters;
+  }
+
+
+  getBins() {
+    return this.bins;
+  }
+
+  shutdown() {
     let p = [];
-    for(let k in this.adapters){
+    for (let k in this.adapters) {
       p.push(this.adapters[k].shutdown());
     }
     return Promise.all(p);

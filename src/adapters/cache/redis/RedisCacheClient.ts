@@ -1,3 +1,4 @@
+import * as _ from 'lodash';
 import {ClientOpts, createClient, RedisClient} from "redis";
 import {IRedisCacheClient} from "./IRedisCacheClient";
 import {ICacheGetOptions, ICacheSetOptions} from "../../../libs/cache/ICacheOptions";
@@ -50,12 +51,28 @@ export class RedisCacheClient implements IRedisCacheClient {
         if (err) {
           reject(err);
         } else {
-          resolve(reply);
+          if (_.isBuffer(reply)) {
+            reply = reply.toString();
+          }
+          let _value = this.unserialize(reply);
+          resolve(_value);
         }
       });
     });
   }
 
+  serialize(v: any) {
+    return JSON.stringify(v);
+  }
+
+  unserialize(v: any) {
+    try {
+      return JSON.parse(v)
+    } catch (e) {
+      return null;
+    }
+
+  }
 
   set(key: string, value: any, options?: ICacheSetOptions) {
     return new Promise((resolve, reject) => {
@@ -63,24 +80,21 @@ export class RedisCacheClient implements IRedisCacheClient {
         reject(new Error('no connection'));
       }
 
-      if (options.ttl) {
-        this.client.set(key, value, 'EX', options.ttl, (err, reply) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(reply);
-          }
-        });
-      } else {
-        this.client.set(key, value, (err, reply) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(reply);
-          }
-        });
-
+      let _value = this.serialize(value);
+      let args: any[] = [key, _value];
+      if (options && options.ttl) {
+        args.push('EX', options.ttl);
       }
+
+      args.push((err: Error, reply: any) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(reply);
+        }
+      });
+
+      this.client.set.apply(this.client, args);
 
     });
   }
@@ -116,6 +130,30 @@ export class RedisCacheClient implements IRedisCacheClient {
     }
     this.connected = false;
     return null;
+  }
+
+  async removeKeysByPattern(name: string): Promise<number> {
+    return new Promise((resolve, reject) => {
+      this.client.keys(name, (err, reply) => {
+        if (err) {
+          reject(err)
+        } else {
+          if (!_.isEmpty(reply)) {
+            this.client.del(reply, (err1, reply1) => {
+              if (err1) {
+                reject(err1)
+              } else {
+                resolve(reply1);
+              }
+            })
+          } else {
+            resolve(0);
+          }
+        }
+      })
+    })
+
+    //return null;
   }
 
 }

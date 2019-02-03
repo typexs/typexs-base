@@ -3,7 +3,8 @@ import {PlatformUtils} from "commons-base";
 import {ICacheBinConfig} from "../../libs/cache/ICacheBinConfig";
 import {ICacheSetOptions} from "../../libs/cache/ICacheOptions";
 import {IRedisCacheClient} from "./redis/IRedisCacheClient";
-import {CryptUtils, Log} from "../..";
+import {CryptUtils} from "../../libs/utils/CryptUtils";
+import {Log} from "../../libs/logging/Log";
 
 export class RedisCacheAdapter implements ICacheAdapter {
 
@@ -25,13 +26,13 @@ export class RedisCacheAdapter implements ICacheAdapter {
   }
 
 
-  hasRequirements(): boolean {
+  async hasRequirements(): Promise<boolean> {
     try {
       PlatformUtils.load('redis');
-      RedisCacheAdapter.REDIS = PlatformUtils.load('./redis/RedisCacheClient');
+      RedisCacheAdapter.REDIS = await import('./redis/RedisCacheClient').then(x => x.RedisCacheClient);
       return true;
     } catch (e) {
-      Log.debug('Can\'t load redis cache adapter cause redis npm package isn\'t present');
+      Log.debug('Can\'t load redis cache adapter cause redis npm package isn\'t present. ');
     }
     return false;
   }
@@ -39,7 +40,7 @@ export class RedisCacheAdapter implements ICacheAdapter {
 
   cacheKey(bin: string, key: string) {
     let hash = CryptUtils.shorthash(key);
-    return [bin, key, hash].join('--').replace(/[^\w\d]/, '');
+    return ['bin:'+bin, key, hash].join('--').replace(/[^\w\d\-:]/, '');
   }
 
 
@@ -56,6 +57,12 @@ export class RedisCacheAdapter implements ICacheAdapter {
     const _key = this.cacheKey(bin, key);
     await this.client.set(_key, value, options);
     return value;
+  }
+
+
+  async clearBin(name:string){
+    await this.client.connect();
+    await this.client.removeKeysByPattern('bin:'+name+'--*');
   }
 
 

@@ -11,11 +11,13 @@ export interface ICacheAdapter {
 
   configure(name: string, options: ICacheBinConfig): void;
 
-  hasRequirements(): boolean;
+  hasRequirements(): boolean | Promise<boolean>;
 
   get(key: string, bin: string, options: ICacheSetOptions): any;
 
   set(key: string, value: any, bin: string, options: ICacheSetOptions): any;
+
+  clearBin(name:string):void;
 
   shutdown(): void;
 

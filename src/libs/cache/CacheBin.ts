@@ -12,11 +12,11 @@ export class CacheBin {
   }
 
 
-  async get(key: string, options?: ICacheGetOptions) {
-    return this.store.get(key, this.name, options);
+  async get(key: string, bin: string, options?: ICacheGetOptions) {
+    return this.store.get(key, bin, options);
   }
 
-  async set(key: string, value: any, options?: ICacheSetOptions) {
-    return this.store.set(key, value, this.name, options);
+  async set(key: string, value: any, bin: string, options?: ICacheSetOptions) {
+    return this.store.set(key, value, bin, options);
   }
 }

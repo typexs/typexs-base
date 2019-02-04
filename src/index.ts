@@ -66,6 +66,7 @@ export * from "./libs/storage/Storage";
 export * from "./libs/storage/StorageRef";
 export * from "./libs/storage/Collection";
 export * from "./libs/storage/AbstractSchemaHandler";
+export * from "./libs/storage/StorageEntityController";
 
 export * from "./libs/tasks/ITask";
 export * from "./libs/tasks/Task";

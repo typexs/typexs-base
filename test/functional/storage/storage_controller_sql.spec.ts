@@ -146,7 +146,18 @@ class Storage_controller_sqlSpec {
     expect(car_found_raw[0]).to.deep.eq({Car_id: 2, Car_name: 'Team Yellow'});
     expect(car_found_raw[0]).to.be.not.instanceOf(Car);
 
+    // search by string field
+    let drivers_2 = await controller.find(Driver, {'firstName': 'Blue'});
+    //console.log(car_by_driver);
+    expect(drivers_2).to.have.length(1);
+    expect(drivers_2[0]).to.deep.eq({id: 3, firstName: 'Blue', lastName: 'Pink'});
+
     let car_by_driver = await controller.find(Car, {'driver.id': 1});
+    //console.log(car_by_driver);
+    expect(car_by_driver).to.have.length(1);
+    expect(car_by_driver[0]).to.deep.eq({id: 1, name: 'Team Blue'});
+
+    car_by_driver = await controller.find(Car, {'driver.firstName': 'Black'});
     //console.log(car_by_driver);
     expect(car_by_driver).to.have.length(1);
     expect(car_by_driver[0]).to.deep.eq({id: 1, name: 'Team Blue'});
@@ -156,7 +167,7 @@ class Storage_controller_sqlSpec {
     expect(car_by_driver_inv).to.have.length(2);
     expect(car_by_driver_inv[0]).to.deep.eq({id: 1, firstName: 'Black', lastName: 'Yellow'});
     expect(car_by_driver_inv[1]).to.deep.eq({id: 2, firstName: 'Red', lastName: 'Green'});
-    
+
     // remove driver
     let remove_driver = await controller.remove(car_by_driver_inv);
     expect(remove_driver).to.have.length(2);

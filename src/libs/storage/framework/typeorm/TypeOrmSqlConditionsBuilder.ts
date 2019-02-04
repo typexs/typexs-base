@@ -58,7 +58,7 @@ export class TypeOrmSqlConditionsBuilder extends AbstractSqlConditionsBuilder {
         names = [rootAlias];
 
       } else {
-        names.push(prop.storingName);
+        names.push(prop.name);
       }
     }
     return names.join('.')

@@ -7,6 +7,7 @@ import {Bootstrap} from "../../../src/Bootstrap";
 import {Config} from "commons-config";
 import {PlatformTools} from "typeorm/platform/PlatformTools";
 import {inspect} from "util";
+import {XS_P_$COUNT} from "../../../src";
 
 
 @suite('functional/storage/storage_controller_sql')
@@ -135,7 +136,9 @@ class Storage_controller_sqlSpec {
       }]);
 
     let car_found = await controller.find(Car, {id: 1});
+
     expect(car_found).to.have.length(1);
+    expect(car_found[XS_P_$COUNT]).to.be.eq(1);
 
     let car_found_raw = await controller.find(Car, {id: 2}, {raw: true});
     //console.log(car_found_raw);

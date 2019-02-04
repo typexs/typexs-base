@@ -74,7 +74,7 @@ export class FindOp<T> implements IFindOp<T> {
       })
     }
 
-    let results = await this.options.raw ? qb.getRawMany() : qb.getMany();
+    let results = this.options.raw ? await  qb.getRawMany() : await qb.getMany();
     results[XS_P_$COUNT] = recordCount;
     results[XS_P_$OFFSET] = this.options.offset;
     results[XS_P_$LIMIT] = this.options.limit;

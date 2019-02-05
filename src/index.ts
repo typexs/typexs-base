@@ -20,6 +20,7 @@ export * from "./adapters/storage/DefaultSchemaHandler";
 export * from "./adapters/storage/SqliteSchemaHandler";
 export * from "./adapters/storage/PostgresSchemaHandler";
 export * from "./adapters/storage/MysqlSchemaHandler";
+export * from "./adapters/storage/MongoDbSchemaHandler";
 
 
 export * from "./base/cli";

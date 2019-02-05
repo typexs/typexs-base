@@ -158,13 +158,15 @@ export class TypeOrmEntityRegistry implements ILookupRegistry {
     }
     classRef.setSchema(json.schema);
 
-    let entity = this.getEntityRefFor(classRef.getClass());
-    if (!entity) {
-      let fn: TableMetadataArgs = json.options;
-      fn.target = classRef.getClass();
-      entity = new TypeOrmEntityRef(fn);
-      this.register(entity);
+    let tableMetaData: TableMetadataArgs = json.options;
+    let entityRef = this.find(json.name);
+    if (!entityRef) {
+      tableMetaData.target = classRef.getClass();
+      entityRef = new TypeOrmEntityRef(tableMetaData);
+      this.register(entityRef);
+    }
 
+    if (entityRef) {
       for (let prop of json.properties) {
         let targetRef = null;
         if (prop.targetRef) {
@@ -212,7 +214,7 @@ export class TypeOrmEntityRegistry implements ILookupRegistry {
       }
     }
 
-    return entity;
+    return entityRef;
   }
 
 

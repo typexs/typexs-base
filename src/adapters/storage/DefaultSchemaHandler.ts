@@ -1,6 +1,7 @@
 import {AbstractSchemaHandler} from "../../libs/storage/AbstractSchemaHandler";
 import {NotYetImplementedError} from "commons-base";
-import {Collection} from "../../libs/storage/Collection";
+import {ICollection} from "../../libs/storage/ICollection";
+
 
 
 export class DefaultSchemaHandler extends AbstractSchemaHandler {
@@ -8,7 +9,7 @@ export class DefaultSchemaHandler extends AbstractSchemaHandler {
   type: string = '__default__';
 
 
-  getCollections(): Promise<Collection[]> {
+  getCollections(): Promise<ICollection[]> {
     throw new NotYetImplementedError();
   }
 
@@ -16,7 +17,7 @@ export class DefaultSchemaHandler extends AbstractSchemaHandler {
     throw new NotYetImplementedError();
   }
 
-  getCollection(name: string): Promise<Collection> {
+  getCollection(name: string): Promise<ICollection> {
     throw new NotYetImplementedError();
   }
 

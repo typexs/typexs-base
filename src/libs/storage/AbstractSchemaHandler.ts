@@ -1,7 +1,9 @@
+import * as _ from 'lodash';
 import {StorageRef} from "./StorageRef";
-import {Collection} from "./Collection";
 import {IDBType} from "./IDBType";
 import {JS_DATA_TYPES} from "commons-schema-api/browser";
+import {ICollection} from "./ICollection";
+import {ICollectionProperty} from "./ICollectionProperty";
 
 
 export abstract class AbstractSchemaHandler {
@@ -21,9 +23,29 @@ export abstract class AbstractSchemaHandler {
     return await c.manager.connection.createQueryRunner().getTable(name);
   }
 
-  async getCollections(names: string[]): Promise<Collection[]> {
+  async getCollections(names: string[]): Promise<ICollection[]> {
     let c = await this.storageRef.connect();
-    return await c.manager.connection.createQueryRunner().getTables(names);
+    let collections = await c.manager.connection.createQueryRunner().getTables(names);
+    let colls: ICollection[] = [];
+    _.map(collections, c => {
+      let props: ICollectionProperty[] = [];
+      c.columns.map(c => {
+        props.push(c);
+      });
+
+      let _c: ICollection = {
+        name: c.name,
+        framework: 'typeorm',
+        properties: props
+      };
+
+      _.keys(c).filter(x => x != 'columns').map(k => {
+        _c[k] = c[k];
+      });
+
+      colls.push(_c);
+    });
+    return colls;
   }
 
 

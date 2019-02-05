@@ -37,6 +37,10 @@ export * from "./libs/storage/framework/IFindOptions";
 export * from "./libs/storage/framework/ISaveOptions";
 export * from "./libs/storage/framework/IConditionJoin";
 
+export * from "./libs/storage/framework/typeorm/schema/TypeOrmConstants";
+export * from "./libs/storage/framework/typeorm/schema/TypeOrmEntityRef";
+export * from "./libs/storage/framework/typeorm/schema/TypeOrmPropertyRef";
+export * from "./libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry";
 
 export * from "./libs/utils/CryptUtils";
 export * from "./libs/utils/TreeUtils";

@@ -1,6 +1,5 @@
 import * as _ from 'lodash';
 
-import {getMetadataArgsStorage} from "typeorm";
 import {TypeOrmEntityRef} from "./TypeOrmEntityRef";
 import {TableMetadataArgs} from "typeorm/browser/metadata-args/TableMetadataArgs";
 
@@ -12,15 +11,17 @@ import {
   LookupRegistry,
   SchemaUtils,
   XS_TYPE_ENTITY,
-  XS_TYPE_PROPERTY,AbstractRef,Binding
+  XS_TYPE_PROPERTY, AbstractRef, Binding
 } from "commons-schema-api/browser";
 import {REGISTRY_TYPEORM} from "./TypeOrmConstants";
 import {ClassUtils, NotYetImplementedError} from "commons-base/browser";
 import {TypeOrmPropertyRef} from "./TypeOrmPropertyRef";
-import {RelationMetadataArgs} from "typeorm/metadata-args/RelationMetadataArgs";
-import {ColumnMetadataArgs} from "typeorm/metadata-args/ColumnMetadataArgs";
+import {RelationMetadataArgs} from "typeorm/browser/metadata-args/RelationMetadataArgs";
+import {ColumnMetadataArgs} from "typeorm/browser/metadata-args/ColumnMetadataArgs";
 import {ValidationMetadata} from "class-validator/metadata/ValidationMetadata";
 import {getFromContainer, MetadataStorage} from "class-validator";
+import {MetadataArgsStorage} from "typeorm/browser/metadata-args/MetadataArgsStorage";
+
 
 export class TypeOrmEntityRegistry implements ILookupRegistry {
 
@@ -28,6 +29,7 @@ export class TypeOrmEntityRegistry implements ILookupRegistry {
 
   private lookupRegistry = LookupRegistry.$(REGISTRY_TYPEORM);
 
+  private metadatastore: MetadataArgsStorage = null;
 
   static $() {
     if (!this._self) {
@@ -36,8 +38,25 @@ export class TypeOrmEntityRegistry implements ILookupRegistry {
     return this._self;
   }
 
+  constructor() {
+    try {
+      this.metadatastore = this.getGlobal()['typeormMetadataArgsStorage'];
+    } catch (e) {
+
+    }
+  }
+
+  getGlobal() {
+    if (typeof window !== "undefined") {
+      return window;
+    } else {
+      // NativeScript uses global, not window
+      return global;
+    }
+  }
+
   private findTable(f: (x: TableMetadataArgs) => boolean) {
-    return getMetadataArgsStorage().tables.find(f);
+    return this.metadatastore.tables.find(f);
   }
 
 
@@ -74,10 +93,10 @@ export class TypeOrmEntityRegistry implements ILookupRegistry {
     this.register(entity);
 
     let properties: TypeOrmPropertyRef[] = <TypeOrmPropertyRef[]>_.concat(
-      _.map(getMetadataArgsStorage().columns
+      _.map(this.metadatastore.columns
           .filter(c => c.target == fn.target),
         c => this.register(new TypeOrmPropertyRef(c, 'column'))),
-      _.map(getMetadataArgsStorage().filterRelations(fn.target),
+      _.map(this.metadatastore.filterRelations(fn.target),
         c => this.register(new TypeOrmPropertyRef(c, 'relation'))),
     );
 
@@ -196,46 +215,5 @@ export class TypeOrmEntityRegistry implements ILookupRegistry {
     return entity;
   }
 
-
-  // private static _fromJsonProperty(property: IPropertyMetadata, classRef: ClassRef) {
-  //   let options = _.clone(property.options);
-  //   options.sourceClass = classRef;
-  //
-  //   if (property.targetRef) {
-  //     let classRef = this._fromJsonClassRef(property.targetRef);
-  //     options.type = classRef.getClass(true);
-  //   }
-  //
-  //   if (property.propertyRef) {
-  //     let classRef = this._fromJsonClassRef(property.propertyRef);
-  //     options.propertyClass = classRef.getClass(true);
-  //   }
-  //
-  //   if (property.validator) {
-  //     property.validator.forEach(m => {
-  //       let _m = _.clone(m);
-  //       _m.target = classRef.getClass(true);
-  //       let vma = new ValidationMetadata(_m);
-  //       getFromContainer(MetadataStorage).addValidationMetadata(vma);
-  //     })
-  //   }
-  //
-  //   let prop = this.createProperty(options);
-  //   this.register(prop);
-  // }
-  //
-  //
-  // private _fromJsonClassRef(classRefMetadata: IClassRefMetadata) {
-  //   let classRef = ClassRef.get(classRefMetadata.className);
-  //   classRef.setSchemas(_.isArray(classRefMetadata.schema) ? classRefMetadata.schema : [classRefMetadata.schema]);
-  //
-  //   if (classRefMetadata.properties) {
-  //     classRefMetadata.properties.forEach(property => {
-  //       this._fromJsonProperty(property, classRef);
-  //     });
-  //   }
-  //
-  //   return classRef;
-  // }
 
 }

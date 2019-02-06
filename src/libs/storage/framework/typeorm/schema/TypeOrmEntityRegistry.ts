@@ -196,6 +196,11 @@ export class TypeOrmEntityRegistry implements ILookupRegistry {
             case 'Date':
               type = Date;
               break;
+
+          }
+
+          if(!type && prop.dataType){
+            type = prop.dataType;
           }
 
           (<any>c).options.type = type;

@@ -14,7 +14,7 @@ import {Container} from "typedi";
 
 import {getMetadataArgsStorage, useContainer} from "typeorm";
 import {BaseUtils} from "./libs/utils/BaseUtils";
-import {PlatformUtils} from "commons-base";
+import {MetaArgs, PlatformUtils} from "commons-base";
 import {CONFIG_NAMESPACE, K_CLS_CACHE_ADAPTER} from "./libs/Constants";
 import {IConfigOptions} from "commons-config/config/IConfigOptions";
 import {IBootstrap} from "./api/IBootstrap";
@@ -29,7 +29,7 @@ import {
   K_CLS_USE_API
 } from "./libs/Constants";
 import {Invoker} from "./base/Invoker";
-import {MetaArgs} from "./base/MetaArgs";
+
 import {IShutdown} from "./api/IShutdown";
 
 useContainer(Container);

@@ -55,6 +55,7 @@ export class TypeOrmEntityRegistry implements ILookupRegistry {
     }
   }
 
+
   private findTable(f: (x: TableMetadataArgs) => boolean) {
     return this.metadatastore.tables.find(f);
   }
@@ -71,6 +72,7 @@ export class TypeOrmEntityRegistry implements ILookupRegistry {
       throw new NotYetImplementedError();
     }
   }
+
 
   private _findTableMetadataArgs(fn: any) {
     let cName: TableMetadataArgs = null;
@@ -109,7 +111,6 @@ export class TypeOrmEntityRegistry implements ILookupRegistry {
         }
       }
     });
-
     return entity;
   }
 

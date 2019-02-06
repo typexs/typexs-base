@@ -1,5 +1,5 @@
 export {
-  NestedException, TodoException, NotYetImplementedError, NotSupportedError, StringOrFunction
+  NestedException, TodoException, NotYetImplementedError, NotSupportedError, StringOrFunction, MetaArgs
 }from "commons-base/browser";
 
 
@@ -9,7 +9,6 @@ export * from "./api/IModule";
 export * from "./api/IShutdown";
 export * from "./api/IPermissions";
 
-export * from "./base/MetaArgs";
 export * from "./base/Invoker";
 
 export * from './libs/Constants';

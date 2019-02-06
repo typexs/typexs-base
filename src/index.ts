@@ -26,8 +26,6 @@ export * from "./adapters/storage/MongoDbSchemaHandler";
 export * from "./base/cli";
 export * from "./base/IRuntimeLoaderOptions";
 export * from "./base/RuntimeLoader";
-export * from "./base/MetaArgs";
-export * from "./base/Invoker";
 
 export * from "./commands/GenerateCommand";
 export * from "./commands/ModulesCommand";

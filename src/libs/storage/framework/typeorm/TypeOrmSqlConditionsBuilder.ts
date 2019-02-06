@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import {AbstractSqlConditionsBuilder} from "../AbstractSqlConditionsBuilder";
-import {NotYetImplementedError} from "commons-base";
+import {NotYetImplementedError} from "commons-base/browser";
 import {RelationMetadataArgs} from "typeorm/browser/metadata-args/RelationMetadataArgs";
 import {IConditionJoin} from "../IConditionJoin";
 import {TypeOrmPropertyRef} from "./schema/TypeOrmPropertyRef";

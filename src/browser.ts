@@ -28,6 +28,7 @@ export * from './libs/storage/IStorageOptions';
 export * from './libs/storage/ICollection';
 export * from './libs/storage/ICollectionProperty';
 export * from './libs/storage/IDBType';
+
 export * from './libs/storage/IValidationError';
 export * from './libs/storage/IValidationMessage';
 export * from './libs/storage/IValidationResult';

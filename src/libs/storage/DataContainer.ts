@@ -30,6 +30,9 @@ export class DataContainer<T> {
   constructor(instance: T, registry: ILookupRegistry) {
     this.instance = instance;
     let entityDef = registry.getEntityRefFor(this.instance);
+    if(!entityDef){
+      throw new Error('none definition found for instance ' + JSON.stringify(instance));
+    }
     entityDef.getPropertyRefs().forEach(propDef => {
       this.validation[propDef.name] = {
         key: propDef.name,

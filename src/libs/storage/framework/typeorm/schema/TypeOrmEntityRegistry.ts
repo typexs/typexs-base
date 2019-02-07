@@ -117,7 +117,7 @@ export class TypeOrmEntityRegistry implements ILookupRegistry {
 
   private find(instance: any): TypeOrmEntityRef {
     let cName = ClassUtils.getClassName(instance);
-    return this.lookupRegistry.find(XS_TYPE_ENTITY, {name: cName});
+    return this.getEntityRefByName(cName);
   }
 
 
@@ -133,9 +133,12 @@ export class TypeOrmEntityRegistry implements ILookupRegistry {
     if (entityRef) {
       return entityRef;
     }
-    let metadata = this._findTableMetadataArgs(instance);
-    if (metadata) {
-      return this.createEntity(metadata);
+
+    if (this.metadatastore) {
+      let metadata = this._findTableMetadataArgs(instance);
+      if (metadata) {
+        return this.createEntity(metadata);
+      }
     }
     return null;
   }
@@ -199,7 +202,7 @@ export class TypeOrmEntityRegistry implements ILookupRegistry {
 
           }
 
-          if(!type && prop.dataType){
+          if (!type && prop.dataType) {
             type = prop.dataType;
           }
 

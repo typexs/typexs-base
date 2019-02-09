@@ -79,9 +79,7 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
   }
 
   private convertRegular(data: any) {
-
-    let jsType = (<string>this.getType()).toLowerCase();
-
+    const jsType = (<string>this.getType()).toLowerCase();
 
     switch (jsType) {
       case "datetime":
@@ -95,8 +93,10 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
       case "string":
         if (_.isString(data)) {
           return data;
+        } else if (_.isArray(data) && data.length == 1) {
+          return data[0];
         } else if (data) {
-
+          return JSON.stringify(data);
         } else {
           return null;
         }
@@ -141,7 +141,7 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
 
     }
 
-    throw new NotYetImplementedError('value ' + data + ' column type ' + this.column.options.type)
+    throw new NotYetImplementedError('value ' + data + ':' + (typeof data) + ' column type ' + jsType);
   }
 
   private convertDate(data: any) {
@@ -213,13 +213,13 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
   toJson(): IPropertyRefMetadata {
     let o = super.toJson();
 
-    TreeUtils.walk(o.options,(v:WalkValues) => {
-      if(_.isString(v.key) && _.isFunction(v.value)){
+    TreeUtils.walk(o.options, (v: WalkValues) => {
+      if (_.isString(v.key) && _.isFunction(v.value)) {
         v.parent[v.key] = ClassUtils.getClassName(v.value);
-        if(v.key == 'type' && _.isEmpty(v.parent[v.key])){
+        if (v.key == 'type' && _.isEmpty(v.parent[v.key])) {
           v.parent[v.key] = ClassUtils.getClassName(v.value());
         }
-      }else if(_.isString(v.key) && _.isUndefined(v.value)){
+      } else if (_.isString(v.key) && _.isUndefined(v.value)) {
         delete v.parent[v.key]
       }
     });

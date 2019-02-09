@@ -171,9 +171,9 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
     if (!this.isReference()) {
       let type = this.column.options.type;
       if (_.isFunction(type)) {
-        return <ColumnType>ClassUtils.getClassName(type);
+        return ClassUtils.getClassName(type);
       } else {
-        return TypeOrmUtils.toJsonType(type)
+        return <string>TypeOrmUtils.toJsonType(type)
       }
     }
     return null;

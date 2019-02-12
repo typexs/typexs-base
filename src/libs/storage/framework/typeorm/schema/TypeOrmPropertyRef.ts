@@ -79,7 +79,11 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
   }
 
   private convertRegular(data: any) {
-    const jsType = (<string>this.getType()).toLowerCase();
+    const type = (<string>this.getType());
+    if(!type || !_.isString(type)){
+      return data;
+    }
+    const jsType = type.toLowerCase();
 
     switch (jsType) {
       case "datetime":
@@ -156,7 +160,9 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
       case "updateDate":
         return this.convertDate(data);
     }
-    throw new NotYetImplementedError('value ' + data + ' column type ' + this.column.options.type)
+    // if mongo no column types are defined
+    return data;
+    //throw new NotYetImplementedError('value ' + data + ' column type ' + this.column.options.type)
   }
 
   getEntityRef(): TypeOrmEntityRef {

@@ -31,6 +31,8 @@ import {
 import {Invoker} from "./base/Invoker";
 
 import {IShutdown} from "./api/IShutdown";
+import subscribe from "commons-eventbus/decorator/subscribe";
+import {System} from "./libs/system/System";
 
 useContainer(Container);
 
@@ -177,12 +179,12 @@ export class Bootstrap {
   private _options: ITypexsOptions;
 
 
+
   private constructor(options: ITypexsOptions = {}) {
     options = options || {};
     this._options = _.defaults(options, _.cloneDeep(DEFAULT_OPTIONS));
     let config_load_order = _.cloneDeep(DEFAULT_CONFIG_LOAD_ORDER);
     this.setConfigSources(config_load_order);
-
   }
 
 
@@ -365,7 +367,11 @@ export class Bootstrap {
     let add = Config.jar(CONFIG_NAMESPACE).get('');
     this._options = BaseUtils.merge(this._options, add);
     Config.jar(CONFIG_NAMESPACE).merge(this._options);
-    // this._options = Config.jar(CONFIG_NAMESPACE).get('');
+
+    /**
+     * Override nodeId if given
+     */
+    Bootstrap.nodeId = Config.get('argv.nodeId', Bootstrap.nodeId);
     return this;
   }
 
@@ -383,8 +389,23 @@ export class Bootstrap {
 
     // update config
     Config.jar(CONFIG_NAMESPACE).set('modules', this.runtimeLoader._options);
+    process.on('exit', async (code) => {
+      Log.debug(`About to exit with code: ${code}`);
+      await this.shutdown();
+    });
+    this.createSystemInfo();
+
     return this;
   }
+
+
+  private createSystemInfo() {
+    let system = new System(Bootstrap.nodeId);
+    Bootstrap.getContainer().set(System.NAME, system);
+    // todo ip + command
+    return this;
+  }
+
 
 
   static prepareInvoker(i: Invoker, loader: RuntimeLoader) {
@@ -396,8 +417,6 @@ export class Bootstrap {
       i.register(api, apis.filter(x => x.api).map(x => x.target));
     });
   }
-
-
 
 
   private createActivatorInstances() {
@@ -416,7 +435,7 @@ export class Bootstrap {
     this.bootstraps = [];
     // todo before create injector and pass as parameter
     for (let clz of classes) {
-      if(clz != Bootstrap){
+      if (clz != Bootstrap) {
         this.bootstraps.push(Bootstrap.getContainer().get(clz));
       }
 
@@ -448,11 +467,11 @@ export class Bootstrap {
   }
 
 
-  async shutdown(){
+  async shutdown() {
     Log.debug('shutdown ...');
 
     let bootstraps = this.getModulBootstraps();
-    bootstraps = _.filter(bootstraps, a =>  _.isFunction(a['shutdown']));
+    bootstraps = _.filter(bootstraps, a => _.isFunction(a['shutdown']));
     for (let bootstrap of bootstraps) {
       Log.debug('shutdown of ' + ClassesLoader.getModulName(bootstrap.constructor));
       await (<IShutdown>bootstrap).shutdown();
@@ -510,7 +529,6 @@ export class Bootstrap {
   getStorage() {
     return this.storage;
   }
-
 
 
 }

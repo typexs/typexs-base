@@ -7,6 +7,8 @@ import {K_CLS_CACHE_ADAPTER} from "./libs/Constants";
 import {Config} from "commons-config";
 import {ICacheConfig} from "./libs/cache/ICacheConfig";
 import {IShutdown} from "./api/IShutdown";
+import {System} from "./libs/system/System";
+import {EventBus, IEventBusConfiguration} from "commons-eventbus";
 
 
 export class Startup implements IBootstrap, IShutdown {
@@ -20,6 +22,10 @@ export class Startup implements IBootstrap, IShutdown {
   @Inject(RuntimeLoader.NAME)
   loader: RuntimeLoader;
 
+  @Inject(System.NAME)
+  system: System;
+
+
   async bootstrap(): Promise<void> {
     this.tasks.prepare(this.loader);
 
@@ -29,9 +35,24 @@ export class Startup implements IBootstrap, IShutdown {
     let cache: ICacheConfig = Config.get('cache');
     await this.cache.configure(cache);
 
+    let bus: {[name:string]:IEventBusConfiguration} = Config.get('eventbus',false);
+    if(bus){
+
+      for(let name in bus){
+        let busCfg:IEventBusConfiguration = bus[name];
+        busCfg.name = name;
+        let x = EventBus.$().addConfiguration(busCfg);
+        //console.log(x);
+      }
+      await this.system.register();
+    }
   }
+
 
   async shutdown() {
     await this.cache.shutdown();
+    await this.system.unregister();
+
+    await EventBus.$().shutdown();
   }
 }

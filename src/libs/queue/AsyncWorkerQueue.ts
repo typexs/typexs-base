@@ -5,7 +5,6 @@ import {IQueueProcessor} from "./IQueueProcessor";
 import {IQueueWorkload} from "./IQueueWorkload";
 import {QueueJob} from "./QueueJob";
 import {Log} from "../logging/Log";
-import {BaseUtils} from "../../";
 
 
 const ASYNC_QUEUE_DEFAULT: IAsyncQueueOptions = {

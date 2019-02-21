@@ -3,6 +3,7 @@ import {Tasks} from "./libs/tasks/Tasks";
 import {Cache} from "./libs/cache/Cache";
 import {Container, Inject} from "typedi";
 import {RuntimeLoader} from "./base/RuntimeLoader";
+import {IPermissions} from "./api/IPermissions";
 
 
 export class Activator implements IActivator{
@@ -18,6 +19,8 @@ export class Activator implements IActivator{
     Container.set(Cache.NAME, cache);
 
   }
+
+
 
 
 }

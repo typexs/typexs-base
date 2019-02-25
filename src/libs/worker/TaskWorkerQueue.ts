@@ -9,7 +9,7 @@ import {Log} from "../logging/Log";
 export interface ITaskDesc extends IQueueWorkload {
 
   /**
-   * Name of the task to run
+   * Name of the taskRef to run
    */
   name: string;
 }

@@ -1,0 +1,9 @@
+## Tasks
+
+
+### Notizen:
+
+* abhängigkeiten
+* voraussetzungen
+* gruppierung
+* parameter definieren Incoming Outgoing

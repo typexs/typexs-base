@@ -1,10 +1,9 @@
-
 import {TaskWorkerQueue} from "../libs/worker/TaskWorkerQueue";
 import {Log} from '../libs/logging/Log'
 import {Container, Inject} from "typedi";
 
 
-export class WorkerCommand{
+export class WorkerCommand {
 
   command = "worker";
 
@@ -18,13 +17,9 @@ export class WorkerCommand{
   }
 
 
-  handler(argv: any) {
-
+  async handler(argv: any) {
     const worker = <TaskWorkerQueue>Container.get(TaskWorkerQueue);
-    worker.prepare();
-
-
-
+    await worker.prepare();
 
   }
 

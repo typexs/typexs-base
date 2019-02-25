@@ -13,9 +13,9 @@ export class TaskCommand {
   @Inject('Invoker')
   invoker: Invoker;
 
-  command: string = "task";
+  command: string = "taskRef";
   aliases = "t";
-  describe = "Start task";
+  describe = "Start taskRef";
 
 
   builder(yargs: any) {
@@ -30,7 +30,7 @@ export class TaskCommand {
     let notask = false;
 
     for (let i = 0; i < process.argv.length; i++) {
-      if (process.argv[i] == 'task') {
+      if (process.argv[i] == 'taskRef') {
         start = true;
         continue;
       }

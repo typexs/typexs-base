@@ -68,8 +68,8 @@ export * from "./libs/storage/AbstractSchemaHandler";
 export * from "./libs/storage/StorageEntityController";
 
 export * from "./libs/tasks/ITask";
-export * from "./libs/tasks/Task";
-export * from "./libs/tasks/TaskObject";
+export * from "./libs/tasks/TaskRef";
+export * from "./libs/tasks/TaskRuntimeContainer";
 export * from "./libs/tasks/TaskRun";
 export * from "./libs/tasks/TaskRunner";
 export * from "./libs/tasks/Tasks";

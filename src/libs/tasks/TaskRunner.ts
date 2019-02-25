@@ -1,68 +1,84 @@
+import * as _ from 'lodash';
 import {EventEmitter} from 'events'
 import {Tasks} from "./Tasks";
 import {TaskRun} from "./TaskRun";
 import {Log} from "../logging/Log";
+import {
+  TASKRUN_STATE_DONE,
+  TASKRUN_STATE_FINISH_PROMISE,
+  TASKRUN_STATE_FINISHED,
+  TASKRUN_STATE_NEXT,
+  TASKRUN_STATE_RUN
+} from "./Constants";
+import {ITaskRunnerResult} from "./ITaskRunnerResult";
 
 
 export class TaskRunner extends EventEmitter {
 
   static taskRunnerId: number = 0;
 
+
   $options: any;
+
   $id: any;
+
   $registry: Tasks;
+
   $parallel: any;
+
   $dry_mode: any;
+
   $tasks: any;
-  $todo: any;
-  $running: any;
-  $done: any;
+
+  $todo: string[];
+
+  $running: string[];
+
+  $done: string[];
+
   $finished: any;
+
   $start: Date;
+
   $stop: Date;
+
   $duration: number;
+
   $finish: Function = null;
+
+  $incoming: any = {};
+
+  $outgoing: any = {};
 
   constructor(registry: Tasks, names: string[], options: any = {}) {
     super();
+
     this.$options = options || {};
     this.$id = TaskRunner.taskRunnerId++;
     this.$registry = registry;
-    this.$parallel = this.$options['parallel'] || 3;
+    this.$parallel = this.$options['parallel'] || 5;
     //this.$inital = names;
     this.$dry_mode = this.$options['dry_mode'] || false;
     this.$start = new Date();
     this.$tasks = {};
+
+    this.resolveDeps(names);
 
     this.$todo = [];
     this.$running = [];
     this.$done = [];
 
     this.$finished = false;
+    this.$todo = _.keys(this.$tasks);
 
-    this.resolveDeps(names);
+    this.on(TASKRUN_STATE_FINISHED, this.finish.bind(this));
+    this.on(TASKRUN_STATE_NEXT, this.next.bind(this));
+    this.on(TASKRUN_STATE_RUN, this.taskRun.bind(this));
+    this.on(TASKRUN_STATE_DONE, this.taskDone.bind(this))
+  }
 
-    this.$todo = Object.keys(this.$tasks);
-
-
-    let self = this;
-
-    this.on(Tasks.CONST.EVENTS.FINISHED, function () {
-      self.finish();
-    });
-
-    this.on(Tasks.CONST.EVENTS.NEXT, function () {
-      self.next();
-    });
-
-    this.on(Tasks.CONST.EVENTS.TASK_RUN, function (taskRun) {
-      self.taskRun(taskRun);
-    });
-
-    this.on(Tasks.CONST.EVENTS.TASK_DONE, function (taskRun) {
-      self.taskDone(taskRun);
-    })
-
+  setIncoming(key: string, value: any) {
+    _.set(this.$incoming, key, value);
   }
 
 
@@ -74,10 +90,9 @@ export class TaskRunner extends EventEmitter {
         return t
       }
     }
-
     return null;
-
   }
+
 
   resolveDeps(task_names: string[]) {
     for (let i = 0; i < task_names.length; i++) {
@@ -90,7 +105,6 @@ export class TaskRunner extends EventEmitter {
       let taskRun = new TaskRun(this, task);
       this.$tasks[name] = taskRun;
 
-
       if (taskRun.$subtasks.length > 0) {
         this.resolveDeps(taskRun.$subtasks);
       }
@@ -100,6 +114,7 @@ export class TaskRunner extends EventEmitter {
       }
     }
   }
+
 
   areTasksDone(tasks: string[]) {
     // console.log('check',tasks, 'done',this.$done)
@@ -122,7 +137,7 @@ export class TaskRunner extends EventEmitter {
 
     if (this.$todo.length == 0 && this.$running.length == 0) {
       this.$finished = true;
-      self.emit(Tasks.CONST.EVENTS.FINISHED);
+      self.emit(TASKRUN_STATE_FINISHED);
       return;
     }
 
@@ -134,30 +149,28 @@ export class TaskRunner extends EventEmitter {
 
     if (nextTask) {
       if (this.$running.length < this.$parallel) {
-        self.emit(Tasks.CONST.EVENTS.TASK_RUN, nextTask);
+        self.emit(TASKRUN_STATE_RUN, nextTask);
       }
     }
 
   }
 
 
-  taskRun(taskRun: TaskRun) {
+  async taskRun(taskRun: TaskRun) {
     let self = this;
-
-
-    let name = taskRun.task().name();
+    let name = taskRun.taskRef().name;
 
     let ridx = this.$running.indexOf(name);
     if (ridx == -1) {
       this.$running.push(name);
     } else {
-      throw new Error('Task already running!!!');
+      throw new Error('TaskRef already running!!!');
     }
 
 
     let idx = this.$todo.indexOf(name);
     if (idx == -1) {
-      throw new Error('Task not in todo list!');
+      throw new Error('TaskRef not in todo list!');
     }
     this.$todo.splice(idx, 1);
 
@@ -167,30 +180,32 @@ export class TaskRunner extends EventEmitter {
       }
       taskRun.$error = err;
       taskRun.$result = res;
-      self.emit(Tasks.CONST.EVENTS.TASK_DONE, taskRun, err);
+      self.emit(TASKRUN_STATE_DONE, taskRun, err);
     };
 
-    taskRun.start(doneCallback);
-
-    self.emit(Tasks.CONST.EVENTS.NEXT);
+    await taskRun.start(doneCallback, this.$incoming);
+    self.emit(TASKRUN_STATE_NEXT);
   }
 
 
   taskDone(task: TaskRun, err: Error = null) {
     task.stop();
 
-    let name = task.task().name();
+    // copy outgoings to incomings
+    _.assign(this.$incoming, task.$outgoing);
+
+    let name = task.taskRef().name;
 
     let ridx = this.$done.indexOf(name);
     if (ridx == -1) {
       this.$done.push(name);
     } else {
-      throw new Error('Task already in done list!!!');
+      throw new Error('TaskRef already in done list!!!');
     }
 
     let idx = this.$running.indexOf(name);
     if (idx == -1) {
-      throw new Error('Task not in running list!');
+      throw new Error('TaskRef not in running list!');
     }
     this.$running.splice(idx, 1);
 
@@ -198,19 +213,42 @@ export class TaskRunner extends EventEmitter {
       task.$error = err;
     }
 
-    this.emit(Tasks.CONST.EVENTS.NEXT);
+    this.emit(TASKRUN_STATE_NEXT);
   }
 
 
-  run(cb: Function) {
+  run(cb?: Function): Promise<ITaskRunnerResult> {
     this.$finish = cb;
-    this.emit(Tasks.CONST.EVENTS.NEXT);
+
+    return new Promise((resolve, reject) => {
+      // TODO timeout?
+      this.once(TASKRUN_STATE_FINISH_PROMISE, (x: any) => {
+        if (_.isError(x)) {
+          reject(x);
+        } else {
+          resolve(x);
+        }
+      });
+      this.emit(TASKRUN_STATE_NEXT);
+    })
   }
 
-  runDry(cb: Function) {
+  runDry(cb?: Function): Promise<ITaskRunnerResult> {
     this.$dry_mode = true;
     this.$finish = cb;
-    this.emit(Tasks.CONST.EVENTS.NEXT);
+
+    return new Promise((resolve, reject) => {
+
+      // TODO timeout?
+      this.once(TASKRUN_STATE_FINISH_PROMISE, (x: any) => {
+        if (_.isError(x)) {
+          reject(x);
+        } else {
+          resolve(x);
+        }
+      });
+      this.emit(TASKRUN_STATE_NEXT);
+    });
   }
 
 
@@ -228,7 +266,7 @@ export class TaskRunner extends EventEmitter {
 
 
   finish() {
-
+    Log.debug('finished ', _.keys(this.$tasks));
     this.$stop = new Date();
     this.$duration = this.$stop.getTime() - this.$start.getTime();
 
@@ -239,14 +277,18 @@ export class TaskRunner extends EventEmitter {
       results.push(task.stats())
     }
 
-    if (this.$finish) {
-      this.$finish({
-        start: this.$start,
-        stop: this.$start,
-        duration: this.$duration,
-        results: results
-      });
+    let status = {
+      start: this.$start,
+      stop: this.$start,
+      duration: this.$duration,
+      results: results
     }
+
+    if (this.$finish) {
+      this.$finish(status);
+    }
+
+    this.emit(TASKRUN_STATE_FINISH_PROMISE, status);
 
   }
 

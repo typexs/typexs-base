@@ -33,7 +33,7 @@ class TasksSpec {
     let commands = bootstrap.getCommands();
     let command = commands.find(x => x instanceof TaskCommand);
     expect(command).to.exist;
-    expect((<TaskCommand>command).command).to.eq('task');
+    expect((<TaskCommand>command).command).to.eq('taskRef');
 
   }
 
@@ -50,7 +50,7 @@ class TasksSpec {
   async 'exec tasks'() {
     let commands = bootstrap.getCommands();
     let command = commands.find(x => x instanceof TaskCommand);
-    process.argv = ['blabla', 'task', 'test'];
+    process.argv = ['blabla', 'taskRef', 'test'];
     let result = await command.handler({});
     expect(result).to.exist;
     expect(result.results).to.have.length(1);

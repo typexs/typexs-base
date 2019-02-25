@@ -185,7 +185,7 @@ export class SchematicsExecutor {
      *  after all is done.
      *
      *  The Observable returned will properly cancel the workflow if unsubscribed, error out if ANY
-     *  step of the workflow failed (sink or task), with details included, and will only complete
+     *  step of the workflow failed (sink or taskRef), with details included, and will only complete
      *  when everything is done.
      */
 

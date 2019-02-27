@@ -1,58 +1,73 @@
-import {AbstractRef, IClassRef, IPropertyRef, XS_TYPE_PROPERTY} from "commons-schema-api";
+import {AbstractRef, IClassRef, IPropertyRef, XS_TYPE_PROPERTY} from "commons-schema-api/browser";
 import {TaskRef} from "./TaskRef";
 import {C_TASKS} from "./Constants";
+import {NotYetImplementedError} from "commons-base/browser";
+import {ITaskDesc} from "./ITaskDesc";
 
 
-export class TaskExchangeRef extends AbstractRef implements IPropertyRef{
+export class TaskExchangeRef extends AbstractRef implements IPropertyRef {
 
-  descriptor:ITaskDesc;
 
-  constructor(desc:ITaskDesc){
-    super(XS_TYPE_PROPERTY,desc.propertyName,desc.target,C_TASKS);
+  descriptor: ITaskDesc;
+
+
+  constructor(desc: ITaskDesc) {
+    super(XS_TYPE_PROPERTY, desc.propertyName, desc.target, C_TASKS);
     this.setOptions(desc.options);
     this.descriptor = desc;
   }
 
-  convert(i: any): any {
+
+  /**
+   * Return the property specific customized value
+   *
+   * @param value
+   */
+  async convert(value: any): Promise<any> {
+    if(this.descriptor.options && this.descriptor.options.handle){
+      return await this.descriptor.options.handle(value);
+    }
+    return value;
   }
 
   get(instance: any): any {
+    throw new NotYetImplementedError();
   }
 
   getEntityRef(): TaskRef {
-    return undefined;
+    throw new NotYetImplementedError();
   }
 
   getTargetRef(): IClassRef {
-    return undefined;
+    throw new NotYetImplementedError();
   }
 
   getType(): string {
-    return "";
+    throw new NotYetImplementedError();
   }
 
   id(): string {
-    return "";
+    throw new NotYetImplementedError();
   }
 
   isCollection(): boolean {
-    return false;
+    throw new NotYetImplementedError();
   }
 
   isEntityReference(): boolean {
-    return false;
+    throw new NotYetImplementedError();
   }
 
   isIdentifier(): boolean {
-    return false;
+    throw new NotYetImplementedError();
   }
 
   isReference(): boolean {
-    return false;
+    throw new NotYetImplementedError();
   }
 
   label(): string {
-    return "";
+    throw new NotYetImplementedError();
   }
 
 }

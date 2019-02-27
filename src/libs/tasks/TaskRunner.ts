@@ -11,6 +11,8 @@ import {
   TASKRUN_STATE_RUN
 } from "./Constants";
 import {ITaskRunnerResult} from "./ITaskRunnerResult";
+import {TaskExchangeRef} from "./TaskExchangeRef";
+import {NotSupportedError} from "commons-base";
 
 
 export class TaskRunner extends EventEmitter {
@@ -28,9 +30,9 @@ export class TaskRunner extends EventEmitter {
 
   $dry_mode: any;
 
-  $tasks: any;
+  $tasks: TaskRun[] = [];
 
-  $todo: string[];
+  $todo: string[] = [];
 
   $running: string[];
 
@@ -60,16 +62,19 @@ export class TaskRunner extends EventEmitter {
     //this.$inital = names;
     this.$dry_mode = this.$options['dry_mode'] || false;
     this.$start = new Date();
-    this.$tasks = {};
 
     this.resolveDeps(names);
+    this.$tasks = _.orderBy(this.$tasks, ['$weight', 1]);
 
     this.$todo = [];
     this.$running = [];
     this.$done = [];
 
     this.$finished = false;
-    this.$todo = _.keys(this.$tasks);
+
+    this.$todo = this.$tasks.map(x => x.taskRef().name);
+
+    //this.$todo = _.keys(this.$tasks);
 
     this.on(TASKRUN_STATE_FINISHED, this.finish.bind(this));
     this.on(TASKRUN_STATE_NEXT, this.next.bind(this));
@@ -77,17 +82,45 @@ export class TaskRunner extends EventEmitter {
     this.on(TASKRUN_STATE_DONE, this.taskDone.bind(this))
   }
 
-  setIncoming(key: string, value: any) {
-    _.set(this.$incoming, key, value);
+
+  /**
+   * Get all necassary incoming parameter
+   *
+   * @param itersect
+   */
+  getRequiredIncomings(withoutPassThrough: boolean = false) {
+    let incoming: any[] = [];
+    this.$tasks.map(t => {
+      t.taskRef().getIncomings().map(x => {
+        incoming.push(x);
+      });
+      if(!withoutPassThrough){
+        t.taskRef().getOutgoings().map(x => {
+          _.remove(incoming, i => i.storingName == x.storingName)
+        });
+      }
+    });
+    return incoming;
   }
 
 
-  selectNextTask() {
-    for (let x in this.$tasks) {
-      let t = this.$tasks[x];
+  async setIncoming(key: string, value: any) {
+    let ref = this.getRequiredIncomings().find(i => i.storingName == key);
+    if(ref){
+      _.set(this.$incoming, key, await ref.convert(value));
+    }else{
+      throw new NotSupportedError('no required incoming parameter found for '+key);
+    }
 
-      if (t.ready()) {
-        return t
+  }
+
+  /**
+   * Check if subtask or depending tasks are ready
+   */
+  selectNextTask() {
+    for (let taskRun of this.$tasks) {
+      if (taskRun.ready()) {
+        return taskRun;
       }
     }
     return null;
@@ -97,19 +130,20 @@ export class TaskRunner extends EventEmitter {
   resolveDeps(task_names: string[]) {
     for (let i = 0; i < task_names.length; i++) {
       let name = task_names[i];
-      if (name in this.$tasks) {
-        continue;
-      }
+      let taskRun = _.find(this.$tasks, x => x.taskRef().name == name);
+      if (taskRun) continue;
 
       let task = this.$registry.get(name);
-      let taskRun = new TaskRun(this, task);
-      this.$tasks[name] = taskRun;
+      taskRun = new TaskRun(this, task);
+      this.$tasks.push(taskRun);
 
       if (taskRun.$subtasks.length > 0) {
+        taskRun.$weight += taskRun.$subtasks.length;
         this.resolveDeps(taskRun.$subtasks);
       }
 
       if (taskRun.$dependencies.length > 0) {
+        taskRun.$weight += taskRun.$dependencies.length;
         this.resolveDeps(taskRun.$dependencies);
       }
     }
@@ -253,27 +287,18 @@ export class TaskRunner extends EventEmitter {
 
 
   getList() {
-    let tasks = {};
-    for (let i in this.$tasks) {
-      tasks[i] = [];
-      let t = this.$tasks[i];
-      tasks[i] = tasks[i].concat(t.$dependencies);
-      tasks[i] = tasks[i].concat(t.$subtasks)
-    }
-
-    return tasks
+    return this.$tasks.map(t => t.taskRef().name)
   }
 
 
   finish() {
-    Log.debug('finished ', _.keys(this.$tasks));
+    //Log.debug('finished ', this.getList());
     this.$stop = new Date();
     this.$duration = this.$stop.getTime() - this.$start.getTime();
 
     // todo collect results
     let results = [];
-    for (let t in this.$tasks) {
-      let task = this.$tasks[t];
+    for (let task of this.$tasks) {
       results.push(task.stats())
     }
 

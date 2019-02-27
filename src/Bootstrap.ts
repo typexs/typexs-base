@@ -15,28 +15,32 @@ import {Container} from "typedi";
 import {getMetadataArgsStorage, useContainer} from "typeorm";
 import {BaseUtils} from "./libs/utils/BaseUtils";
 import {MetaArgs, PlatformUtils} from "commons-base";
-import {CONFIG_NAMESPACE, K_CLS_CACHE_ADAPTER} from "./libs/Constants";
-import {IConfigOptions} from "commons-config/config/IConfigOptions";
-import {IBootstrap} from "./api/IBootstrap";
-import {ClassesLoader} from "commons-moduls";
-import {ITypexsOptions} from "./libs/ITypexsOptions";
 import {
+  CONFIG_NAMESPACE,
   K_CLS_ACTIVATOR,
   K_CLS_API,
   K_CLS_BOOTSTRAP,
+  K_CLS_CACHE_ADAPTER,
   K_CLS_STORAGE_SCHEMAHANDLER,
   K_CLS_TASKS,
   K_CLS_USE_API
 } from "./libs/Constants";
+import {IConfigOptions} from "commons-config/config/IConfigOptions";
+import {IBootstrap} from "./api/IBootstrap";
+import {ClassesLoader} from "commons-moduls";
+import {ITypexsOptions} from "./libs/ITypexsOptions";
 import {Invoker} from "./base/Invoker";
 
 import {IShutdown} from "./api/IShutdown";
-import subscribe from "commons-eventbus/decorator/subscribe";
 import {System} from "./libs/system/System";
 
 useContainer(Container);
 
-
+/**
+ * Search for config files
+ * - first look for hostname specific files
+ * - then for context specific controlled by startup arguments like 'nodeId' and 'stage'
+ */
 const DEFAULT_CONFIG_LOAD_ORDER = [
   {type: 'file', file: '${argv.configfile}'},
   {type: 'file', file: '${env.configfile}'},
@@ -45,7 +49,9 @@ const DEFAULT_CONFIG_LOAD_ORDER = [
     file: {dirname: './config', filename: 'typexs'},
     namespace: CONFIG_NAMESPACE,
     pattern: [
-      'typexs--${os.hostname}'
+      'typexs--${os.hostname}',
+      'typexs--${argv.nodeId}',
+      'typexs--${os.hostname}--${argv.nodeId}'
     ]
   },
   {
@@ -54,10 +60,14 @@ const DEFAULT_CONFIG_LOAD_ORDER = [
     pattern: [
       'secrets',
       '${app.name}--${os.hostname}',
+      '${app.name}--${argv.nodeId}',
       '${app.name}--${env.stage}',
       '${app.name}--${argv.stage}',
       '${app.name}--${os.hostname}--${argv.stage}',
-      '${app.name}--${os.hostname}--${env.stage}'
+      '${app.name}--${os.hostname}--${env.stage}',
+      '${app.name}--${os.hostname}--${argv.nodeId}',
+      '${app.name}--${os.hostname}--${env.stage}--${argv.nodeId}',
+      '${app.name}--${os.hostname}--${argv.stage}--${argv.nodeId}'
     ]
   }
 ];
@@ -133,7 +143,7 @@ export const DEFAULT_RUNTIME_OPTIONS: IRuntimeLoaderOptions = {
     {
       topic: K_CLS_TASKS,
       refs: [
-        'tasks', 'src/tasks'
+        'tasks', 'tasks/*/*', 'src/tasks', 'src/tasks/*/*'
       ]
     },
   ]
@@ -177,7 +187,6 @@ export class Bootstrap {
   private storage: Storage;
 
   private _options: ITypexsOptions;
-
 
 
   private constructor(options: ITypexsOptions = {}) {
@@ -405,7 +414,6 @@ export class Bootstrap {
     // todo ip + command
     return this;
   }
-
 
 
   static prepareInvoker(i: Invoker, loader: RuntimeLoader) {

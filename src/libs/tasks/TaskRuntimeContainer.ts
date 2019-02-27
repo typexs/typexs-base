@@ -26,7 +26,7 @@ export class TaskRuntimeContainer implements ITaskRuntimeContainer {
 
   progress(nr: number) {
     this.$progress = nr;
-    Log.debug(this.name + ': ' + Math.round((this.$progress / this.$total) * 100) +'%');
+    //Log.debug(this.name + ': ' + Math.round((this.$progress / this.$total) * 100) +'%');
   }
 
 

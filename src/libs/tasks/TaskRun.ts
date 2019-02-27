@@ -47,6 +47,8 @@ export class TaskRun {
 
   $duration: number;
 
+  $weight: number = 0;
+
 
   constructor(runner: TaskRunner, taskRef: TaskRef) {
     this.id = TaskRun.taskId++;
@@ -77,7 +79,6 @@ export class TaskRun {
 
   ready() {
     if (!this.$done && !this.$running) {
-      // console.log(this.$taskRef.$name)
       if (this.$runner.areTasksDone(this.$subtasks) && this.$runner.areTasksDone(this.$dependencies)) {
         return true;
       }
@@ -92,20 +93,19 @@ export class TaskRun {
     this.$start = new Date();
     this.$wrapper = new TaskRuntimeContainer(this);
 
-
     if (this.$runner.$dry_mode) {
-      Log.info('dry start: ' + this.taskRef().name);
+      Log.debug('dry taskRef start: ' + this.taskRef().name);
       let func = function (d: Function) {
         d();
       };
       func.call(this.$wrapper, done);
     } else {
-      Log.info('taskRef start: ' + this.taskRef().name);
+      Log.debug('taskRef start: ' + this.taskRef().name);
       let outgoings: TaskExchangeRef[] = this.taskRef().getOutgoings();
 
-      let _incoming:any = {};
+      let _incoming: any = {};
       this.taskRef().getIncomings().forEach((x: TaskExchangeRef) => {
-        _incoming[x.name] = _.get(incoming, x.name, undefined);
+        _incoming[x.name] = _.get(incoming, x.storingName, undefined);
       });
       this.$incoming = _.clone(_incoming);
 
@@ -120,7 +120,7 @@ export class TaskRun {
         try {
           let res = await fn.call(this.$wrapper);
           outgoings.forEach(x => {
-            this.$outgoing[x.name] = instance[x.name];
+            this.$outgoing[x.storingName] = instance[x.name];
           });
           done(null, res);
         } catch (e) {
@@ -129,7 +129,7 @@ export class TaskRun {
       } else {
         fn.call(this.$wrapper, (err: Error, res: any) => {
           outgoings.forEach(x => {
-            this.$outgoing[x.name] = instance[x.name];
+            this.$outgoing[x.storingName] = instance[x.name];
           });
           done(err, res);
         });
@@ -139,7 +139,7 @@ export class TaskRun {
 
 
   stop() {
-    Log.info('stop: ' + this.taskRef().name, this.$result);
+    Log.debug('stop: ' + this.taskRef().name);
     this.$done = true;
     this.$running = false;
     this.$stop = new Date();

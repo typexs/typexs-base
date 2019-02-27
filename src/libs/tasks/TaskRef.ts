@@ -51,6 +51,7 @@ export class TaskRef extends AbstractRef implements IEntityRef {
           this.group(group);
         }
       }
+      this.$fn = name;
 
 
     } else if (_.isObject(name)) {

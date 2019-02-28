@@ -1,6 +1,28 @@
 ## Tasks
 
 
+### Configuration
+
+Allowing or denying registration of tasks.
+
+```
+# deny all tasks but not the tasks which name starts with 'mytasks_'
+tasks:
+  access:
+  - task: *
+    access: deny
+  - task: mytasks_*
+    access: allow
+```
+
+### Integretion / implementation
+
+* as Function
+* as Class
+* as Instance
+
+
+
 ### Notizen:
 
 * abhängigkeiten

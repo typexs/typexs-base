@@ -210,6 +210,15 @@ export class Bootstrap {
     Container.reset();
   }
 
+  static getNodeId(){
+    return this.nodeId;
+  }
+
+
+  getNodeId(){
+    return Bootstrap.getNodeId();
+  }
+
 
   activateLogger(): Bootstrap {
     Log.prefix = Bootstrap.nodeId + ' ';
@@ -380,7 +389,7 @@ export class Bootstrap {
     /**
      * Override nodeId if given
      */
-    Bootstrap.nodeId = Config.get('argv.nodeId', Bootstrap.nodeId);
+    Bootstrap.nodeId = Config.get('argv.nodeId', Config.get('app.nodeId', Bootstrap.nodeId));
     return this;
   }
 

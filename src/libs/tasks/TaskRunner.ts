@@ -8,12 +8,13 @@ import {
   TASKRUN_STATE_FINISH_PROMISE,
   TASKRUN_STATE_FINISHED,
   TASKRUN_STATE_NEXT,
-  TASKRUN_STATE_RUN
+  TASKRUN_STATE_RUN, TASKRUN_STATE_UPDATE
 } from "./Constants";
 import {ITaskRunnerResult} from "./ITaskRunnerResult";
 import {TaskExchangeRef} from "./TaskExchangeRef";
 import {NotSupportedError} from "commons-base";
 import {CryptUtils} from "../..";
+import {TasksHelper} from "./TasksHelper";
 
 
 export class TaskRunner extends EventEmitter {
@@ -94,18 +95,7 @@ export class TaskRunner extends EventEmitter {
    * @param itersect
    */
   getRequiredIncomings(withoutPassThrough: boolean = false) {
-    let incoming: any[] = [];
-    this.$tasks.map(t => {
-      t.taskRef().getIncomings().map(x => {
-        incoming.push(x);
-      });
-      if (!withoutPassThrough) {
-        t.taskRef().getOutgoings().map(x => {
-          _.remove(incoming, i => i.storingName == x.storingName)
-        });
-      }
-    });
-    return incoming;
+    return TasksHelper.getRequiredIncomings(this.$tasks.map(tr => tr.taskRef()), withoutPassThrough);
   }
 
 
@@ -206,7 +196,6 @@ export class TaskRunner extends EventEmitter {
       throw new Error('TaskRef already running!!!');
     }
 
-
     let idx = this.$todo.indexOf(name);
     if (idx == -1) {
       throw new Error('TaskRef not in todo list!');
@@ -222,7 +211,7 @@ export class TaskRunner extends EventEmitter {
       self.emit(TASKRUN_STATE_DONE, taskRun, err);
     };
 
-    let incoming:any = {};
+    let incoming: any = {};
     taskRun.taskRef().getIncomings().forEach(x => {
       incoming[x.name] = this.$incoming[x.storingName] || this.$outgoing[x.storingName];
     });
@@ -279,12 +268,11 @@ export class TaskRunner extends EventEmitter {
     })
   }
 
+
   runDry(cb?: Function): Promise<ITaskRunnerResult> {
     this.$dry_mode = true;
     this.$finish = cb;
-
     return new Promise((resolve, reject) => {
-
       // TODO timeout?
       this.once(TASKRUN_STATE_FINISH_PROMISE, (x: any) => {
         if (_.isError(x)) {
@@ -303,31 +291,44 @@ export class TaskRunner extends EventEmitter {
   }
 
 
+  update(taskName: string) {
+    this.emit(TASKRUN_STATE_UPDATE, taskName, this.collectStats())
+  }
+
+
   finish() {
     //Log.debug('finished ', this.getList());
     this.$stop = new Date();
     this.$duration = this.$stop.getTime() - this.$start.getTime();
 
-    // todo collect results
-    let results = [];
-    for (let task of this.$tasks) {
-      results.push(task.stats())
-    }
-
-    let status = {
-      start: this.$start,
-      stop: this.$start,
-      duration: this.$duration,
-      results: results
-    }
+    let status = this.collectStats();
 
     if (this.$finish) {
       this.$finish(status);
     }
 
     this.emit(TASKRUN_STATE_FINISH_PROMISE, status);
-
   }
+
+
+  collectStats(taskName:string = null) {
+    // todo collect results
+    let results = [];
+    for (let task of this.$tasks) {
+      results.push(task.stats());
+    }
+
+    let status = {
+      start: this.$start,
+      stop: this.$stop,
+      duration: this.$duration,
+      tasks: this.getList(),
+      results: results
+    };
+    return status;
+  }
+
+
 
 }
 

@@ -7,20 +7,17 @@ export class TaskRuntimeContainer implements ITaskRuntimeContainer {
 
   private readonly $_run_: TaskRun;
 
-  private $results: any;
-
   private $progress: number = 0;
 
-  private $limit: number = 100;
-
-  private $total: any;
+  private $total: number = 100;
 
 
   constructor(taskRun: TaskRun) {
     this.$_run_ = taskRun;
-    this.$results = null;
-    this.$total = null;
+    this.$total = 100;
   }
+
+
 
 
   private getRunner(){
@@ -31,6 +28,7 @@ export class TaskRuntimeContainer implements ITaskRuntimeContainer {
 
   progress(nr: number) {
     this.$progress = nr;
+    this.$_run_.update();
     //Log.debug(this.name + ': ' + Math.round((this.$progress / this.$total) * 100) +'%');
   }
 
@@ -40,6 +38,9 @@ export class TaskRuntimeContainer implements ITaskRuntimeContainer {
   }
 
 
+  done(){
+    this.$progress = this.$total;
+  }
 
 
   get name() {
@@ -52,16 +53,10 @@ export class TaskRuntimeContainer implements ITaskRuntimeContainer {
   }
 
 
-  results(data: any) {
-    return this.$results = data;
-  }
-
-
   stats() {
     return {
       progress: this.$progress,
-      total: this.$total,
-      results: _.clone(this.$results)
+      total: this.$total
     }
   }
 }

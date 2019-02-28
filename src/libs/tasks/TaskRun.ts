@@ -5,6 +5,7 @@ import {TaskRunner} from "./TaskRunner";
 import {Log} from "../logging/Log";
 import {TaskExchangeRef} from "./TaskExchangeRef";
 import {NotSupportedError} from "commons-base";
+import {ITaskRunResult} from "./ITaskRunResult";
 
 export class TaskRun {
 
@@ -71,6 +72,7 @@ export class TaskRun {
     this.$start = null;
     this.$stop = null;
     this.$duration = null;
+    this.$wrapper = new TaskRuntimeContainer(this);
   }
 
 
@@ -97,7 +99,7 @@ export class TaskRun {
 
     this.$running = true;
     this.$start = new Date();
-    this.$wrapper = new TaskRuntimeContainer(this);
+
 
     if (this.$runner.$dry_mode) {
       Log.debug('dry taskRef start: ' + this.taskRef().name);
@@ -150,11 +152,17 @@ export class TaskRun {
     this.$running = false;
     this.$stop = new Date();
     this.$duration = this.$stop.getTime() - this.$start.getTime();
+    this.$wrapper.done();
+  }
+
+
+  update(){
+    this.getRunner().update(this.taskRef().name);
   }
 
 
   stats() {
-    let stats = {
+    let stats:ITaskRunResult = {
       id: this.id,
       name: this.taskRef().name,
       created: this.$created,
@@ -167,9 +175,7 @@ export class TaskRun {
       has_error: this.$error != null,
       error: this.$error
     };
-
-    return _.merge(stats, this.$wrapper.stats);
-
+    return _.merge(stats, this.$wrapper.stats());
   }
 
 }

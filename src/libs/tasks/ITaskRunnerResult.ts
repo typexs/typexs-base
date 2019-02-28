@@ -8,6 +8,8 @@ export interface ITaskRunnerResult {
 
   duration: number;
 
+  progress?: number;
+
   results: ITaskRunResult[];
 
 }

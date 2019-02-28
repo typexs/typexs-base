@@ -12,6 +12,10 @@ export interface ITaskRunResult {
 
   duration:number;
 
+  progress?: number;
+
+  total?:number;
+
   incoming?: any;
 
   outgoing?: any;

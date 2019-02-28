@@ -1,11 +1,17 @@
 import {IQueueWorkload} from "../..";
+import {TaskEvent} from "./TaskEvent";
 
 export interface ITaskWorkload extends IQueueWorkload {
 
   /**
-   * Name or names of the taskRef's to run
+   * reuse event object
    */
-  name: string | string[];
+  event: TaskEvent;
+
+  /**
+   * Names of the taskRef's to run
+   */
+  names: string[];
 
   /**
    * Arguments for task execution

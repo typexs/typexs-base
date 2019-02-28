@@ -1,22 +1,28 @@
 import {Config} from "commons-config";
 import {Inject} from "typedi";
-import {Invoker,  Tasks} from "..";
+import {Invoker} from "../base/Invoker";
+import {Tasks} from "../libs/tasks/Tasks";
 import {Log} from '../libs/logging/Log'
 import {TasksApi} from "../api/Tasks.api";
+import {System} from "../libs/system/System";
 
 
 export class TaskCommand {
 
-  @Inject('Tasks')
+  @Inject(Tasks.NAME)
   tasks: Tasks;
 
-  @Inject('Invoker')
+  @Inject(Invoker.NAME)
   invoker: Invoker;
 
-  command: string = "taskRef";
-  aliases = "t";
-  describe = "Start taskRef";
+  @Inject(System.NAME)
+  system: System;
 
+  command: string = "task";
+
+  aliases = "t";
+
+  describe = "Start task";
 
   builder(yargs: any) {
     return yargs;
@@ -30,7 +36,7 @@ export class TaskCommand {
     let notask = false;
 
     for (let i = 0; i < process.argv.length; i++) {
-      if (process.argv[i] == 'taskRef') {
+      if (process.argv[i] == 'task') {
         start = true;
         continue;
       }
@@ -67,9 +73,8 @@ export class TaskCommand {
     } else {
       res = this.tasks.list();
       Log.info(res);
-
-
     }
+
     await this.invoker.use(TasksApi).onShutdown();
     return res;
   }

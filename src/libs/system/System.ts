@@ -80,7 +80,7 @@ export class System {
     if (!this._registered) return;
     this.node.state = 'unregister';
     await EventBus.unregister(this);
-    await EventBus.post(this.node);
+    EventBus.postAndForget(this.node);
   }
 
 

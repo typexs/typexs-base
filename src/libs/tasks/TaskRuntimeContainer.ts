@@ -1,20 +1,19 @@
 import * as _ from 'lodash';
 import {TaskRun} from "./TaskRun";
 import {ITaskRuntimeContainer} from "./ITaskRuntimeContainer";
-import {Log} from "../..";
 
 
 export class TaskRuntimeContainer implements ITaskRuntimeContainer {
 
-  readonly $_run_: TaskRun;
+  private readonly $_run_: TaskRun;
 
-  $results: any;
+  private $results: any;
 
-  $progress: number = 0;
+  private $progress: number = 0;
 
-  $limit: number = 100;
+  private $limit: number = 100;
 
-  $total: any;
+  private $total: any;
 
 
   constructor(taskRun: TaskRun) {
@@ -22,6 +21,12 @@ export class TaskRuntimeContainer implements ITaskRuntimeContainer {
     this.$results = null;
     this.$total = null;
   }
+
+
+  private getRunner(){
+    this.$_run_.getRunner()
+  }
+
 
 
   progress(nr: number) {
@@ -33,6 +38,8 @@ export class TaskRuntimeContainer implements ITaskRuntimeContainer {
   total(nr: number) {
     this.$total = nr;
   }
+
+
 
 
   get name() {

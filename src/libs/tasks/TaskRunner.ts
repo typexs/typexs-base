@@ -13,16 +13,19 @@ import {
 import {ITaskRunnerResult} from "./ITaskRunnerResult";
 import {TaskExchangeRef} from "./TaskExchangeRef";
 import {NotSupportedError} from "commons-base";
+import {CryptUtils} from "../..";
 
 
 export class TaskRunner extends EventEmitter {
 
   static taskRunnerId: number = 0;
 
+  nr: number = TaskRunner.taskRunnerId++;
+
+  id: string;
 
   $options: any;
 
-  $id: any;
 
   $registry: Tasks;
 
@@ -55,8 +58,10 @@ export class TaskRunner extends EventEmitter {
   constructor(registry: Tasks, names: string[], options: any = {}) {
     super();
 
+    this.id = CryptUtils.shorthash(names.join(';') + ';' + this.nr);
+
     this.$options = options || {};
-    this.$id = TaskRunner.taskRunnerId++;
+
     this.$registry = registry;
     this.$parallel = this.$options['parallel'] || 5;
     //this.$inital = names;
@@ -94,7 +99,7 @@ export class TaskRunner extends EventEmitter {
       t.taskRef().getIncomings().map(x => {
         incoming.push(x);
       });
-      if(!withoutPassThrough){
+      if (!withoutPassThrough) {
         t.taskRef().getOutgoings().map(x => {
           _.remove(incoming, i => i.storingName == x.storingName)
         });
@@ -106,10 +111,10 @@ export class TaskRunner extends EventEmitter {
 
   async setIncoming(key: string, value: any) {
     let ref = this.getRequiredIncomings().find(i => i.storingName == key);
-    if(ref){
+    if (ref) {
       _.set(this.$incoming, key, await ref.convert(value));
-    }else{
-      throw new NotSupportedError('no required incoming parameter found for '+key);
+    } else {
+      throw new NotSupportedError('no required incoming parameter found for ' + key);
     }
 
   }
@@ -217,7 +222,12 @@ export class TaskRunner extends EventEmitter {
       self.emit(TASKRUN_STATE_DONE, taskRun, err);
     };
 
-    await taskRun.start(doneCallback, this.$incoming);
+    let incoming:any = {};
+    taskRun.taskRef().getIncomings().forEach(x => {
+      incoming[x.name] = this.$incoming[x.storingName] || this.$outgoing[x.storingName];
+    });
+
+    await taskRun.start(doneCallback, incoming);
     self.emit(TASKRUN_STATE_NEXT);
   }
 
@@ -226,7 +236,9 @@ export class TaskRunner extends EventEmitter {
     task.stop();
 
     // copy outgoings to incomings
-    _.assign(this.$incoming, task.$outgoing);
+    task.taskRef().getOutgoings().forEach(x => {
+      this.$outgoing[x.storingName] = task.$outgoing[x.name];
+    })
 
     let name = task.taskRef().name;
 

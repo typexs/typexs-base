@@ -1,7 +1,7 @@
 export interface ITaskRuntimeContainer {
   //id: number;
 
-  //name: string;
+  name: string;
 
   progress?(progress: number): void;
 

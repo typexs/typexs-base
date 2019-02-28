@@ -1,10 +1,8 @@
-import {ITaskRuntimeContainer} from "./ITaskRuntimeContainer";
-
 export interface ITask {
 
-  name: string;
+  name?: string;
 
-  runtime?: ITaskRuntimeContainer;
+  groups?: string[];
 
   exec(done: (err: Error, res: any) => void): void;
 }

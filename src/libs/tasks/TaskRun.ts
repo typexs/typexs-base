@@ -4,16 +4,18 @@ import {TaskRuntimeContainer} from "./TaskRuntimeContainer";
 import {TaskRunner} from "./TaskRunner";
 import {Log} from "../logging/Log";
 import {TaskExchangeRef} from "./TaskExchangeRef";
+import {NotSupportedError} from "commons-base";
 
 export class TaskRun {
 
   static taskId: number = 0;
 
+
   id: number;
 
   $root: any;
 
-  $runner: any;
+  private $runner: TaskRunner;
 
   $initialized: any;
 
@@ -35,9 +37,9 @@ export class TaskRun {
 
   $subtasks: any;
 
-  $taskRef: TaskRef;
+  private $taskRef: TaskRef;
 
-  $wrapper: TaskRuntimeContainer;
+  private $wrapper: TaskRuntimeContainer;
 
   $created: Date;
 
@@ -77,6 +79,10 @@ export class TaskRun {
   }
 
 
+  getRunner(){
+    return this.$runner;
+  }
+
   ready() {
     if (!this.$done && !this.$running) {
       if (this.$runner.areTasksDone(this.$subtasks) && this.$runner.areTasksDone(this.$dependencies)) {
@@ -103,36 +109,36 @@ export class TaskRun {
       Log.debug('taskRef start: ' + this.taskRef().name);
       let outgoings: TaskExchangeRef[] = this.taskRef().getOutgoings();
 
-      let _incoming: any = {};
-      this.taskRef().getIncomings().forEach((x: TaskExchangeRef) => {
-        _incoming[x.name] = _.get(incoming, x.storingName, undefined);
-      });
-      this.$incoming = _.clone(_incoming);
+      this.$incoming = _.clone(incoming);
 
       //let _incoming = this.$incoming;
       let runtimeReference = this.taskRef().getRuntime();
       if (runtimeReference) {
-        _incoming[runtimeReference.name] = this.$wrapper;
+        incoming[runtimeReference.name] = this.$wrapper;
       }
 
-      const [fn, instance] = this.$taskRef.executable(_incoming);
-      if (fn.length == 0) {
-        try {
-          let res = await fn.call(this.$wrapper);
-          outgoings.forEach(x => {
-            this.$outgoing[x.storingName] = instance[x.name];
+      const [fn, instance] = this.taskRef().executable(incoming);
+      if(_.isFunction(fn)){
+        if (fn.length == 0) {
+          try {
+            let res = await fn.call(this.$wrapper);
+            outgoings.forEach(x => {
+              this.$outgoing[x.storingName] = instance[x.name];
+            });
+            done(null, res);
+          } catch (e) {
+            done(e, null);
+          }
+        } else {
+          fn.call(this.$wrapper, (err: Error, res: any) => {
+            outgoings.forEach(x => {
+              this.$outgoing[x.storingName] = instance[x.name];
+            });
+            done(err, res);
           });
-          done(null, res);
-        } catch (e) {
-          done(e, null);
         }
-      } else {
-        fn.call(this.$wrapper, (err: Error, res: any) => {
-          outgoings.forEach(x => {
-            this.$outgoing[x.storingName] = instance[x.name];
-          });
-          done(err, res);
-        });
+      }else{
+        throw new NotSupportedError('no executable for '+this.taskRef().name)
       }
     }
   }

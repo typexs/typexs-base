@@ -1,15 +1,14 @@
 import * as _ from 'lodash';
-import {TaskRef} from "./TaskRef";
+import {TaskRef, TaskRefType} from "./TaskRef";
 import {TaskRunner} from "./TaskRunner";
 import {ClassLoader, MetaArgs} from "commons-base";
-import {Container} from "typedi";
 import {K_CLS_TASKS, RuntimeLoader} from "../..";
 import {LookupRegistry, XS_TYPE_ENTITY, XS_TYPE_PROPERTY} from "commons-schema-api";
-import {K_CLS_TASK_DESCRIPTORS} from "./Constants";
+import {C_TASKS, K_CLS_TASK_DESCRIPTORS} from "./Constants";
 import {Minimatch} from 'minimatch';
 import {TaskExchangeRef} from "./TaskExchangeRef";
-import {Config} from "commons-config";
 import {ITasksConfig} from "./ITasksConfig";
+import {ITaskRefOptions} from "./ITaskRefOptions";
 
 
 export class Tasks {
@@ -20,28 +19,9 @@ export class Tasks {
 
   static taskId: number = 0;
 
-  /*
-  static CONST = {
-    GROUP: 1,
-    DEPENDS_ON: 2,
-    EVENTS: {
-      NEXT: TASKRUN_STATE_NEXT,
-      TASK_RUN: TASKRUN_STATE_RUN,
-      TASK_DONE: TASKRUN_STATE_DONE,
-      FINISHED: TASKRUN_STATE_FINISHED
-    }
-  };
-*/
-
   config: ITasksConfig = {access: []};
 
-  registry: LookupRegistry = LookupRegistry.$('tasks');
-
-//  $tasks: { [key: string]: TaskRef } = {};
-
-  //$bindings: any[] = [];
-
-  constructor() {}
+  registry: LookupRegistry = LookupRegistry.$(C_TASKS);
 
 
   static _(): Tasks {
@@ -95,7 +75,7 @@ export class Tasks {
     if (this.contains(name)) {
       return this.registry.find(XS_TYPE_ENTITY, (t: TaskRef) => t.name == name);
     }
-    let task = this.addTask(name);
+    let task = this.addTask(name, null, {group: true});
     return task;
   }
 
@@ -103,7 +83,7 @@ export class Tasks {
     if (_.has(this.config, 'access')) {
       // if access empty then
       let allow = this.config.access.length > 0 ? false : true;
-      let count:number = 0;
+      let count: number = 0;
       for (let a of this.config.access) {
         if (_.isUndefined(a.match)) {
           if (/\+|\.|\(|\\||\)|\*/.test(a.task)) {
@@ -126,7 +106,7 @@ export class Tasks {
         }
       }
       // no allowed or denied
-      if(count == 0){
+      if (count == 0) {
         allow = true;
       }
       return allow;
@@ -135,22 +115,27 @@ export class Tasks {
     return true;
   }
 
-  addTask(name: string | Function, fn: Function = null, options: any = null): TaskRef {
+  addTask(name: string | object | Function, fn: object | Function = null, options: ITaskRefOptions = null): TaskRef {
     let task = new TaskRef(name, fn, options);
     if (this.access(task.name)) {
-
-      this.registry.add(XS_TYPE_ENTITY, task);
-      let ref = task.getClassRef().getClass(false);
-      if (ref) {
-        MetaArgs.key(K_CLS_TASK_DESCRIPTORS).filter(x => x.target == ref).map(desc => {
-          let prop = new TaskExchangeRef(desc);
-          this.registry.add(XS_TYPE_PROPERTY, prop);
-        })
+      let exists = <TaskRef>this.registry.find(XS_TYPE_ENTITY, (x: TaskRef) => x.name == task.name);
+      if (!exists) {
+        this.registry.add(XS_TYPE_ENTITY, task);
+        if (task.canHaveProperties()) {
+          let ref = task.getClassRef().getClass(false);
+          if (ref) {
+            MetaArgs.key(K_CLS_TASK_DESCRIPTORS).filter(x => x.target == ref).map(desc => {
+              let prop = new TaskExchangeRef(desc);
+              this.registry.add(XS_TYPE_PROPERTY, prop);
+            })
+          }
+        }
+        return this.get(task.name);
+      } else {
+        return exists;
       }
-      return this.get(task.name);
     }
     return null;
-
 
   }
 
@@ -236,7 +221,7 @@ export class Tasks {
     for (let klass of klazzes) {
       let task = Reflect.construct(klass, []);
       if (!('name' in task) || !_.isFunction(task['exec'])) throw new Error('task ' + klass + ' has no name');
-      this.new(klass);
+      this.addTask(klass);
     }
   }
 

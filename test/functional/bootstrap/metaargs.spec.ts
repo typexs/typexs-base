@@ -6,12 +6,13 @@ import {MetaArgs} from "../../../src";
 @suite('functional/bootstrap/metaargs')
 class BootstrapGeneralSpec {
 
+
   before() {
-    MetaArgs.clear();
+    delete MetaArgs.$()['tmp'];
   }
 
   after() {
-    MetaArgs.clear();
+    delete MetaArgs.$()['tmp'];
   }
 
   @test

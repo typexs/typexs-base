@@ -8,7 +8,6 @@ import {TEST_STORAGE_OPTIONS} from "../config";
 import {Container} from "typedi";
 import {XS_DEFAULT} from "commons-schema-api";
 import {Cache} from "../../../src/libs/cache/Cache";
-import {MemoryCacheAdapter} from "../../../src/adapters/cache/MemoryCacheAdapter";
 import {RedisCacheAdapter} from "../../../src/adapters/cache/RedisCacheAdapter";
 
 @suite('functional/cache/cache_redis')
@@ -23,7 +22,9 @@ class Cache_redisSpec {
 
   @test
   async 'use redis cache with options'() {
-    let bootstrap = Bootstrap.configure({
+    let bootstrap = Bootstrap
+      .setConfigSources([{type: 'system'}])
+      .configure({
       app: {name: 'test'},
       modules: {paths: [__dirname + '/../../..']},
       storage: {default: TEST_STORAGE_OPTIONS},

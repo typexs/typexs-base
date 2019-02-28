@@ -1,14 +1,10 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
-
-import {Log, TaskRunner, Tasks} from "../../../src";
-import {Container} from "typedi";
-import {SimpleTask} from "./tasks/SimpleTask";
-import {SimpleTaskPromise} from "./tasks/SimpleTaskPromise";
-import {SimpleTaskWithArgs} from "./tasks/SimpleTaskWithArgs";
+import {Log} from "../../../src/libs/logging/Log";
+import {Tasks} from "../../../src";
 
 
-@suite('functional/tasks_access')
+@suite('functional/tasks/access')
 class Tasks_accessSpec {
 
 

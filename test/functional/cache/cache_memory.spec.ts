@@ -10,7 +10,7 @@ import {XS_DEFAULT} from "commons-schema-api";
 import {Cache} from "../../../src/libs/cache/Cache";
 import {MemoryCacheAdapter} from "../../../src/adapters/cache/MemoryCacheAdapter";
 
-@suite('functional/cache/general')
+@suite('functional/cache/memory')
 class Cache_memorySpec {
 
 
@@ -22,11 +22,13 @@ class Cache_memorySpec {
 
   @test
   async 'use default runtime memory cache with default options'() {
-    let bootstrap = Bootstrap.configure({
-      app: {name: 'test'},
-      modules: {paths: [__dirname + '/../../..']},
-      storage: {default: TEST_STORAGE_OPTIONS},
-    });
+    let bootstrap = Bootstrap
+      .setConfigSources([{type: 'system'}])
+      .configure({
+        app: {name: 'test'},
+        modules: {paths: [__dirname + '/../../..']},
+        storage: {default: TEST_STORAGE_OPTIONS},
+      });
     bootstrap.activateLogger();
     bootstrap.activateErrorHandling();
     await bootstrap.prepareRuntime();
@@ -77,12 +79,14 @@ class Cache_memorySpec {
 
   @test
   async 'use runtime memory cache with options'() {
-    let bootstrap = Bootstrap.configure({
-      app: {name: 'test'},
-      modules: {paths: [__dirname + '/../../..']},
-      storage: {default: TEST_STORAGE_OPTIONS},
-      cache: {bins: {default: 'mem1', test: 'mem2'}, adapter: {mem1: {type: 'memory'}, mem2: {type: 'memory'}}}
-    });
+    let bootstrap = Bootstrap
+      .setConfigSources([{type: 'system'}])
+      .configure({
+        app: {name: 'test'},
+        modules: {paths: [__dirname + '/../../..']},
+        storage: {default: TEST_STORAGE_OPTIONS},
+        cache: {bins: {default: 'mem1', test: 'mem2'}, adapter: {mem1: {type: 'memory'}, mem2: {type: 'memory'}}}
+      });
     bootstrap.activateLogger();
     bootstrap.activateErrorHandling();
     await bootstrap.prepareRuntime();
@@ -118,7 +122,7 @@ class Cache_memorySpec {
     let bins = cache.getBins();
     let binKeys = _.keys(bins);
 
-    expect(binKeys).to.be.deep.eq([XS_DEFAULT,'test']);
+    expect(binKeys).to.be.deep.eq([XS_DEFAULT, 'test']);
     expect(bins[XS_DEFAULT].store.name).to.be.eq('mem1');
     expect(bins['test'].store.name).to.be.eq('mem2');
 

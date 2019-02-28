@@ -150,7 +150,9 @@ class BootstrapGeneralSpec {
               topic: K_CLS_TASKS,
               refs: [
                 "tasks",
-                "src/tasks"
+                "tasks/*/*",
+                "src/tasks",
+                "src/tasks/*/*"
               ]
             },
             {

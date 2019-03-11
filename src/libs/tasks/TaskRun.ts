@@ -7,6 +7,9 @@ import {TaskExchangeRef} from "./TaskExchangeRef";
 import {NotSupportedError} from "commons-base";
 import {ITaskRunResult} from "./ITaskRunResult";
 
+import {TasksApi} from "../..";
+import {TaskState} from "./TaskState";
+
 export class TaskRun {
 
   static taskId: number = 0;
@@ -18,22 +21,23 @@ export class TaskRun {
 
   private $runner: TaskRunner;
 
-  $initialized: any;
+  // $initialized: any;
 
-  $enabled: boolean;
+  // $enabled: boolean;
 
-  $done: boolean;
+  // $done: boolean;
+  /*
+    $incoming: any = {};
 
-  $incoming: any = {};
+    $outgoing: any = {};
 
-  $outgoing: any = {};
 
-  $running: boolean;
+    $running: boolean;
 
-  $error: Error;
+    $error: Error;
 
-  $result: any;
-
+    $result: any;
+  */
   $dependencies: string[];
 
   $subtasks: any;
@@ -42,36 +46,25 @@ export class TaskRun {
 
   private $wrapper: TaskRuntimeContainer;
 
-  $created: Date;
-
-  $start: Date;
-
-  $stop: Date;
-
-  $duration: number;
-
-  $weight: number = 0;
+  readonly status: TaskState;
 
 
   constructor(runner: TaskRunner, taskRef: TaskRef) {
     this.id = TaskRun.taskId++;
     this.$root = false;
     this.$runner = runner;
-    this.$initialized = false;
-    this.$enabled = false;
-    this.$done = false;
-    this.$running = false;
-    this.$error = null;
+    // this.$initialized = false;
+    // this.$enabled = false;
 
     this.$dependencies = taskRef.dependencies();
 
     // taskRef that should run before this taskRef! (passing values!!!)
     this.$subtasks = taskRef.subtasks();
     this.$taskRef = taskRef;
-    this.$created = new Date();
-    this.$start = null;
-    this.$stop = null;
-    this.$duration = null;
+    this.status = new TaskState();
+    this.status.name = taskRef.name;
+    this.status.pid = runner.id;
+
     this.$wrapper = new TaskRuntimeContainer(this);
   }
 
@@ -81,12 +74,20 @@ export class TaskRun {
   }
 
 
-  getRunner(){
+  getRunner() {
     return this.$runner;
   }
 
+  isRunning() {
+    return this.status.running
+  }
+
+  isDone() {
+    return this.status.done
+  }
+
   ready() {
-    if (!this.$done && !this.$running) {
+    if (!this.isDone() && !this.isRunning()) {
       if (this.$runner.areTasksDone(this.$subtasks) && this.$runner.areTasksDone(this.$dependencies)) {
         return true;
       }
@@ -97,9 +98,9 @@ export class TaskRun {
 
   async start(done: (err: Error, res: any) => void, incoming: { [k: string]: any }) {
 
-    this.$running = true;
-    this.$start = new Date();
-
+    this.status.running = true;
+    this.status.start = new Date();
+    this.$runner.api().onStart(this.status);
 
     if (this.$runner.$dry_mode) {
       Log.debug('dry taskRef start: ' + this.taskRef().name);
@@ -111,7 +112,7 @@ export class TaskRun {
       Log.debug('taskRef start: ' + this.taskRef().name);
       let outgoings: TaskExchangeRef[] = this.taskRef().getOutgoings();
 
-      this.$incoming = _.clone(incoming);
+      this.status.incoming = _.clone(incoming);
 
       //let _incoming = this.$incoming;
       let runtimeReference = this.taskRef().getRuntime();
@@ -120,12 +121,12 @@ export class TaskRun {
       }
 
       const [fn, instance] = this.taskRef().executable(incoming);
-      if(_.isFunction(fn)){
+      if (_.isFunction(fn)) {
         if (fn.length == 0) {
           try {
             let res = await fn.call(this.$wrapper);
             outgoings.forEach(x => {
-              this.$outgoing[x.storingName] = instance[x.name];
+              this.status.outgoing[x.storingName] = instance[x.name];
             });
             done(null, res);
           } catch (e) {
@@ -134,46 +135,65 @@ export class TaskRun {
         } else {
           fn.call(this.$wrapper, (err: Error, res: any) => {
             outgoings.forEach(x => {
-              this.$outgoing[x.storingName] = instance[x.name];
+              this.status.outgoing[x.storingName] = instance[x.name];
             });
             done(err, res);
           });
         }
-      }else{
-        throw new NotSupportedError('no executable for '+this.taskRef().name)
+      } else {
+        throw new NotSupportedError('no executable for ' + this.taskRef().name)
       }
     }
   }
 
+  error(err: Error) {
+    this.status.error = err;
+    this.$runner.api().onError(this.status);
+  }
+
+  result(res: any) {
+    this.status.result = res;
+  }
+
+  hasError() {
+    return !!this.status.error;
+  }
 
   stop() {
     Log.debug('stop: ' + this.taskRef().name);
-    this.$done = true;
-    this.$running = false;
-    this.$stop = new Date();
-    this.$duration = this.$stop.getTime() - this.$start.getTime();
+    this.status.done = true;
+    this.status.running = false;
+    this.status.stop = new Date();
+    this.status.calcDuration();
+
+    this.$runner.api().onStop(this.status);
+
     this.$wrapper.done();
   }
 
 
-  update(){
+  addWeight(nr: number) {
+    this.status.weight += nr;
+  }
+
+  update() {
     this.getRunner().update(this.taskRef().name);
   }
 
 
   stats() {
-    let stats:ITaskRunResult = {
+    let stats: ITaskRunResult = {
       id: this.id,
       name: this.taskRef().name,
-      created: this.$created,
-      start: this.$start,
-      stop: this.$stop,
-      duration: this.$duration,
-      incoming: this.$incoming,
-      outgoing: this.$outgoing,
-      result: this.$result,
-      has_error: this.$error != null,
-      error: this.$error
+      created: this.status.created,
+      start: this.status.start,
+      stop: this.status.stop,
+      duration: this.status.duration,
+      incoming: this.status.incoming,
+      outgoing: this.status.outgoing,
+      result: this.status.result,
+      has_error: this.status.error != null,
+      error: this.status.error
     };
     return _.merge(stats, this.$wrapper.stats());
   }

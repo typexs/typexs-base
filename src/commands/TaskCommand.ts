@@ -6,7 +6,9 @@ import {Log} from '../libs/logging/Log'
 import {TasksApi} from "../api/Tasks.api";
 import {System} from "../libs/system/System";
 
-
+/**
+ * Starts a task direct or in a running worker
+ */
 export class TaskCommand {
 
   @Inject(Tasks.NAME)
@@ -24,6 +26,7 @@ export class TaskCommand {
 
   describe = "Start task";
 
+
   builder(yargs: any) {
     return yargs;
   }
@@ -31,6 +34,7 @@ export class TaskCommand {
   async handler(argv: any) {
     let args: string[] = [];
     let start = false;
+
 
 
     let notask = false;

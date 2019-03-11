@@ -168,7 +168,7 @@ const DEFAULT_OPTIONS: ITypexsOptions = {
 
 export class Bootstrap {
 
-  private static nodeId: string = CryptUtils.shorthash(CryptUtils.random(8));
+  private nodeId: string = CryptUtils.shorthash(CryptUtils.random(8));
 
   private static $self: Bootstrap = null;
 
@@ -210,18 +210,18 @@ export class Bootstrap {
     Container.reset();
   }
 
-  static getNodeId(){
-    return this.nodeId;
+  static getNodeId() {
+    return this._().nodeId;
   }
 
 
-  getNodeId(){
+  getNodeId() {
     return Bootstrap.getNodeId();
   }
 
 
   activateLogger(): Bootstrap {
-    Log.prefix = Bootstrap.nodeId + ' ';
+    Log.prefix = this.getNodeId() + ' ';
     Log.options(this._options.logging || {enable: false});
     return this;
   }
@@ -237,7 +237,7 @@ export class Bootstrap {
 
   async activateStorage(): Promise<Bootstrap> {
     this.storage = new Storage();
-    this.storage.nodeId = Bootstrap.nodeId;
+    this.storage.nodeId = this.getNodeId();
     await this.storage.prepare(this.runtimeLoader);
 
     Bootstrap.getContainer().set(Storage, this.storage);
@@ -389,7 +389,9 @@ export class Bootstrap {
     /**
      * Override nodeId if given
      */
-    Bootstrap.nodeId = Config.get('argv.nodeId', Config.get('app.nodeId', Bootstrap.nodeId));
+
+    let appNodeId = Config.get('app.nodeId', Config.get('argv.nodeId',null));
+    this.nodeId = appNodeId ? appNodeId : this.nodeId;
     return this;
   }
 
@@ -418,7 +420,8 @@ export class Bootstrap {
 
 
   private createSystemInfo() {
-    let system = new System(Bootstrap.nodeId);
+    let system = Bootstrap.getContainer().get(System);
+    system.initialize(this.getNodeId());
     Bootstrap.getContainer().set(System.NAME, system);
     // todo ip + command
     return this;
@@ -477,6 +480,13 @@ export class Bootstrap {
     for (let bootstrap of bootstraps) {
       Log.debug('bootstrap ' + ClassesLoader.getModulName(bootstrap.constructor));
       await bootstrap.bootstrap();
+    }
+
+    // system ready
+    for (let bootstrap of bootstraps) {
+      if(bootstrap['ready']) {
+        await bootstrap['ready']();
+      }
     }
 
     Log.debug('startup finished.');

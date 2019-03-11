@@ -8,13 +8,14 @@ import {
   TASKRUN_STATE_FINISH_PROMISE,
   TASKRUN_STATE_FINISHED,
   TASKRUN_STATE_NEXT,
-  TASKRUN_STATE_RUN, TASKRUN_STATE_UPDATE
+  TASKRUN_STATE_RUN,
+  TASKRUN_STATE_UPDATE
 } from "./Constants";
 import {ITaskRunnerResult} from "./ITaskRunnerResult";
-import {TaskExchangeRef} from "./TaskExchangeRef";
 import {NotSupportedError} from "commons-base";
-import {CryptUtils} from "../..";
+import {CryptUtils, Invoker, TasksApi} from "../..";
 import {TasksHelper} from "./TasksHelper";
+import {Container} from "typedi";
 
 
 export class TaskRunner extends EventEmitter {
@@ -26,7 +27,6 @@ export class TaskRunner extends EventEmitter {
   id: string;
 
   $options: any;
-
 
   $registry: Tasks;
 
@@ -56,8 +56,12 @@ export class TaskRunner extends EventEmitter {
 
   $outgoing: any = {};
 
+  private invoker: Invoker;
+
   constructor(registry: Tasks, names: string[], options: any = {}) {
     super();
+
+    this.invoker = Container.get(Invoker.NAME);
 
     this.id = CryptUtils.shorthash(names.join(';') + ';' + this.nr);
 
@@ -133,12 +137,12 @@ export class TaskRunner extends EventEmitter {
       this.$tasks.push(taskRun);
 
       if (taskRun.$subtasks.length > 0) {
-        taskRun.$weight += taskRun.$subtasks.length;
+        taskRun.addWeight(taskRun.$subtasks.length);
         this.resolveDeps(taskRun.$subtasks);
       }
 
       if (taskRun.$dependencies.length > 0) {
-        taskRun.$weight += taskRun.$dependencies.length;
+        taskRun.addWeight(taskRun.$dependencies.length);
         this.resolveDeps(taskRun.$dependencies);
       }
     }
@@ -184,6 +188,10 @@ export class TaskRunner extends EventEmitter {
 
   }
 
+  api() {
+    return this.invoker.use(TasksApi)
+  }
+
 
   async taskRun(taskRun: TaskRun) {
     let self = this;
@@ -206,8 +214,8 @@ export class TaskRunner extends EventEmitter {
       if (err) {
         Log.error(err);
       }
-      taskRun.$error = err;
-      taskRun.$result = res;
+      taskRun.error(err);
+      taskRun.result(res);
       self.emit(TASKRUN_STATE_DONE, taskRun, err);
     };
 
@@ -226,7 +234,7 @@ export class TaskRunner extends EventEmitter {
 
     // copy outgoings to incomings
     task.taskRef().getOutgoings().forEach(x => {
-      this.$outgoing[x.storingName] = task.$outgoing[x.name];
+      this.$outgoing[x.storingName] = task.status.outgoing[x.name];
     })
 
     let name = task.taskRef().name;
@@ -245,7 +253,7 @@ export class TaskRunner extends EventEmitter {
     this.$running.splice(idx, 1);
 
     if (err) {
-      task.$error = err;
+      task.error(err);
     }
 
     this.emit(TASKRUN_STATE_NEXT);
@@ -311,7 +319,7 @@ export class TaskRunner extends EventEmitter {
   }
 
 
-  collectStats(taskName:string = null) {
+  collectStats(taskName: string = null) {
     // todo collect results
     let results = [];
     for (let task of this.$tasks) {
@@ -327,7 +335,6 @@ export class TaskRunner extends EventEmitter {
     };
     return status;
   }
-
 
 
 }

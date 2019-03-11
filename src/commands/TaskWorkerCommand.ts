@@ -1,16 +1,14 @@
 import {TaskWorkerQueue} from "../libs/worker/TaskWorkerQueue";
-import {Log} from '../libs/logging/Log'
-import {Container, Inject} from "typedi";
+import {Container} from "typedi";
 
 
-export class WorkerCommand {
+export class TaskWorkerCommand {
 
-  command = "worker";
+  command = "task-worker";
 
-  aliases = "w";
+  aliases = "tw";
 
-  describe = "handles worker";
-
+  describe = "Handle tasks in worker";
 
   builder(yargs: any) {
     return yargs

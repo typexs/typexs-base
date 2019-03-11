@@ -1,4 +1,5 @@
 import * as _ from 'lodash';
+import {INodeInfo} from "../INodeInfo";
 
 export class NodeInfo {
 
@@ -12,12 +13,15 @@ export class NodeInfo {
 
   state: string;
 
+  contexts: INodeInfo[] = [];
+
+
   getRuntime() {
     return (new Date().getTime()) - this.start.getTime();
   }
 
-  restore(){
-    if(_.isString(this.start)){
+  restore() {
+    if (_.isString(this.start)) {
       this.start = new Date(this.start);
     }
   }

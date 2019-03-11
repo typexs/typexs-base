@@ -1,15 +1,21 @@
 import * as _ from 'lodash';
-import {TaskRef, TaskRefType} from "./TaskRef";
+import {TaskRef} from "./TaskRef";
 import {TaskRunner} from "./TaskRunner";
 import {ClassLoader, MetaArgs} from "commons-base";
 import {K_CLS_TASKS, RuntimeLoader} from "../..";
-import {LookupRegistry, XS_TYPE_ENTITY, XS_TYPE_PROPERTY} from "commons-schema-api";
-import {C_TASKS, K_CLS_TASK_DESCRIPTORS} from "./Constants";
+import {Binding, LookupRegistry, XS_TYPE_ENTITY, XS_TYPE_PROPERTY} from "commons-schema-api";
+import {
+  C_TASKS,
+  K_CLS_TASK_DESCRIPTORS,
+  XS_TYPE_BINDING_TASK_DEPENDS_ON,
+  XS_TYPE_BINDING_TASK_GROUP
+} from "./Constants";
 import {Minimatch} from 'minimatch';
 import {TaskExchangeRef} from "./TaskExchangeRef";
 import {ITasksConfig} from "./ITasksConfig";
 import {ITaskRefOptions} from "./ITaskRefOptions";
-
+import {ITaskInfo} from "./ITaskInfo";
+import {Bootstrap} from "../../Bootstrap";
 
 export class Tasks {
 
@@ -66,10 +72,19 @@ export class Tasks {
   }
 
 
-  list() {
-    return this.registry.list(XS_TYPE_ENTITY).map(x => x.name);
+  list(withRemote: boolean = false): string[] {
+    return this.names();
   }
 
+  names(withRemote: boolean = false): string[] {
+    return this.registry.list(XS_TYPE_ENTITY).filter(x => !withRemote && !x.isRemote()).map(x => x.name);
+  }
+
+  infos(withRemote: boolean = false): ITaskInfo[] {
+    return this.registry.list(XS_TYPE_ENTITY).filter(x => !withRemote && !x.isRemote()).map((x: TaskRef) => {
+      return x.info();
+    });
+  }
 
   get(name: string): TaskRef {
     if (this.contains(name)) {
@@ -120,6 +135,7 @@ export class Tasks {
     if (this.access(task.name)) {
       let exists = <TaskRef>this.registry.find(XS_TYPE_ENTITY, (x: TaskRef) => x.name == task.name);
       if (!exists) {
+        task.addNodeId(Bootstrap.getNodeId());
         this.registry.add(XS_TYPE_ENTITY, task);
         if (task.canHaveProperties()) {
           let ref = task.getClassRef().getClass(false);
@@ -132,11 +148,34 @@ export class Tasks {
         }
         return this.get(task.name);
       } else {
+        exists.addNodeId(Bootstrap.getNodeId());
         return exists;
       }
     }
     return null;
 
+  }
+
+
+  addRemoteTask(nodeId: string, info: ITaskInfo): TaskRef {
+    let task = new TaskRef(info, null, {remote: true});
+    let exists = <TaskRef>this.registry.find(XS_TYPE_ENTITY, (x: TaskRef) => x.name == task.name);
+    if (!exists) {
+      task.addNodeId(nodeId);
+      this.registry.add(XS_TYPE_ENTITY, task);
+      return this.get(task.name);
+    } else {
+      exists.addNodeId(nodeId);
+      return exists;
+    }
+  }
+
+
+  removeTask(task: TaskRef) {
+    this.registry.remove(XS_TYPE_ENTITY, (x: TaskRef) => x.name == task.name);
+    this.registry.remove(XS_TYPE_PROPERTY, (x: TaskExchangeRef) => x.getClassRef() == task.getClassRef());
+    this.registry.remove(<any>XS_TYPE_BINDING_TASK_GROUP, (x: Binding) => x.source == task.name || x.target == task.name);
+    this.registry.remove(<any>XS_TYPE_BINDING_TASK_DEPENDS_ON, (x: Binding) => x.source == task.name || x.target == task.name);
   }
 
   /**
@@ -224,9 +263,6 @@ export class Tasks {
       this.addTask(klass);
     }
   }
-
-
-
 
 
 }

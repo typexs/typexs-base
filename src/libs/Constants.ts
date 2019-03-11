@@ -12,6 +12,10 @@ export const K_CLS_CACHE_ADAPTER = 'cache.adapters';
 export const K_CLS_TASKS: string = 'tasks';
 
 
+export const C_EVENTBUS: string = 'eventbus';
+export const C_TASKS: string = 'tasks';
+
+
 export const XS_P_$COUNT = '$count';
 export const XS_P_$LIMIT = '$limit';
 export const XS_P_$OFFSET = '$offset';

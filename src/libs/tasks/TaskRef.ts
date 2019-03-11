@@ -13,10 +13,11 @@ import {ClassUtils, NotSupportedError, NotYetImplementedError} from "commons-bas
 import {Container} from "typedi";
 import {TaskExchangeRef} from "./TaskExchangeRef";
 import {ITaskRefOptions} from "./ITaskRefOptions";
+import {ITaskInfo} from "./ITaskInfo";
 
 
 export enum TaskRefType {
-  CALLBACK, CLASS, INSTANCE, GROUP
+  CALLBACK, CLASS, INSTANCE, GROUP, REMOTE
 }
 
 
@@ -24,9 +25,15 @@ export class TaskRef extends AbstractRef implements IEntityRef {
 
   _type: TaskRefType;
 
+  nodeIds: string[] = [];
+
   //$name: any;
 
   $source: any;
+
+  permissions: string[] = null;
+
+  description: string = null;
 
   $fn: Function | object = function (done: Function) {
     done();
@@ -37,42 +44,75 @@ export class TaskRef extends AbstractRef implements IEntityRef {
     super(XS_TYPE_ENTITY, TaskRef.getTaskName(name), TaskRef.getTaskObject(name, fn), C_TASKS);
     this.setOptions(options || {});
 
-    this.$source = null;
+    if (!this.isRemote()) {
 
-    if (_.isString(name)) {
-      if (_.isFunction(fn)) {
-        this.$fn = fn ? fn : function (done: Function) {
-          done();
-        };
-      }
-      this._type = TaskRefType.CALLBACK;
-    } else if (_.isFunction(name)) {
-      this._type = TaskRefType.CLASS;
-      let x = Reflect.construct(name, []);
-      if (x['groups']) {
-        for (let group of x['groups']) {
-          this.group(group);
+
+      this.$source = null;
+
+      if (_.isString(name)) {
+        if (_.isFunction(fn)) {
+          this.$fn = fn ? fn : function (done: Function) {
+            done();
+          };
         }
+        this._type = TaskRefType.CALLBACK;
+      } else if (_.isFunction(name)) {
+        this._type = TaskRefType.CLASS;
+        let x = Reflect.construct(name, []);
+        this.process(x);
+        this.$fn = name;
+      } else if (_.isObject(name)) {
+        this._type = TaskRefType.INSTANCE;
+        this.process(name);
+        this.$fn = name;
+      } else {
+        throw new Error('taskRef wrong defined ' + name + ' ' + fn);
       }
-      this.$fn = name;
-    } else if (_.isObject(name)) {
-      this._type = TaskRefType.INSTANCE;
-      if (name['groups']) {
-        for (let group of name['groups']) {
-          this.group(group);
-        }
+
+      if (options && options.group) {
+        this._type = TaskRefType.GROUP;
       }
-      this.$fn = name;
+
+      if (options && options['source'] != undefined) {
+        this.$source = options['source'];
+      }
     } else {
-      throw new Error('taskRef wrong defined ' + name + ' ' + fn);
+      this._type = TaskRefType.REMOTE;
     }
+  }
 
-    if (options && options.group) {
-      this._type = TaskRefType.GROUP;
+  addNodeId(nodeId: string) {
+    this.removeNodeId(nodeId);
+    this.nodeIds.push(nodeId);
+  }
+
+  removeNodeId(nodeId: string) {
+    _.remove(this.nodeIds, x => x == nodeId);
+  }
+
+  hasNodeIds(){
+    return this.nodeIds.length > 0;
+  }
+
+  isRemote(): boolean {
+    return this.getOptions('remote');
+  }
+
+  private process(obj: any) {
+    this.processGroup(obj);
+    if (obj['description']) {
+      this.description = obj['description'];
     }
+    if (obj['permissions']) {
+      this.permissions = obj['permissions'];
+    }
+  }
 
-    if (options && options['source'] != undefined) {
-      this.$source = options['source'];
+  private processGroup(obj: any) {
+    if (obj['groups']) {
+      for (let group of obj['groups']) {
+        this.group(group);
+      }
     }
   }
 
@@ -83,6 +123,17 @@ export class TaskRef extends AbstractRef implements IEntityRef {
 
   canHaveProperties() {
     return this._type === TaskRefType.CLASS || this._type === TaskRefType.INSTANCE;
+  }
+
+  info(): ITaskInfo {
+    return {
+      name: this.name,
+      description: this.description,
+      permissions: this.permissions,
+      groups: this.groups(),
+      nodeIds: this.nodeIds,
+      remote: this.isRemote()
+    }
   }
 
   executable(incoming: { [k: string]: any } = {}): [Function | object, any] {
@@ -103,6 +154,9 @@ export class TaskRef extends AbstractRef implements IEntityRef {
       case TaskRefType.GROUP:
         _.assign(this.$fn, incoming);
         return [this.$fn, this.$fn];
+
+      case TaskRefType.REMOTE:
+        return null;
     }
   }
 
@@ -129,6 +183,7 @@ export class TaskRef extends AbstractRef implements IEntityRef {
 
   static getTaskObject(name: string | Function | object, fn: Function | object): Function {
 
+
     if (_.isString(name)) {
       if (_.isNull(fn)) {
         return null;
@@ -143,6 +198,11 @@ export class TaskRef extends AbstractRef implements IEntityRef {
   subtasks() {
     return LookupRegistry.$(C_TASKS).filter(<any>XS_TYPE_BINDING_TASK_GROUP, (b: Binding) => b.source == this.name).map((b: Binding) => b.target);
   }
+
+  groups() {
+    return LookupRegistry.$(C_TASKS).filter(<any>XS_TYPE_BINDING_TASK_GROUP, (b: Binding) => b.target == this.name).map((b: Binding) => b.source);
+  }
+
 
   dependencies(): string[] {
     return LookupRegistry.$(C_TASKS).filter(<any>XS_TYPE_BINDING_TASK_DEPENDS_ON, (b: Binding) => b.target == this.name).map((b: Binding) => b.source);

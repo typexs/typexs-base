@@ -1,8 +1,7 @@
-export interface ITask {
+import {ITaskInfo} from "./ITaskInfo";
 
-  name?: string;
+export interface ITask extends ITaskInfo {
 
-  groups?: string[];
+  exec(done?: (err: Error, res: any) => void): void;
 
-  exec(done: (err: Error, res: any) => void): void;
 }

@@ -5,5 +5,9 @@ export interface IBootstrap {
    */
   bootstrap():void;
 
+  /**
+   * Is called after everything is activated and bootstrapped
+   */
+  ready?():void;
 
 }

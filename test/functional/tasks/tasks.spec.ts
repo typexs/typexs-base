@@ -186,6 +186,9 @@ class TasksSpec {
   async 'task status pub/sub'() {
   }
 
+  @test.skip
+  async 'add remote task '() {
+  }
 
   @test.skip
   async 'task runtime error'() {

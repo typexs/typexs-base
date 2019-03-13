@@ -1,6 +1,8 @@
 import {Bootstrap, ITypexsOptions} from "../../../../src";
 import {TEST_STORAGE_OPTIONS} from "../../config";
 import {IEventBusConfiguration} from "commons-eventbus";
+import {expect} from "chai";
+import * as _ from "lodash";
 
 (async function () {
   let bootstrap = Bootstrap
@@ -18,6 +20,13 @@ import {IEventBusConfiguration} from "commons-eventbus";
   await bootstrap.prepareRuntime();
   bootstrap = await bootstrap.activateStorage();
   bootstrap = await bootstrap.startup();
+
+  let commands = bootstrap.getCommands();
+  expect(commands.length).to.be.gt(0);
+
+  let command = _.find(commands, e => e.command == 'task-worker');
+  command.handler({});
+
   setTimeout(async () => {
     await bootstrap.shutdown();
   }, 1000);

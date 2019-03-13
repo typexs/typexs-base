@@ -22,7 +22,6 @@ import {SimpleTaskInstance} from "./tasks/SimpleTaskInstance";
 class TasksSpec {
 
 
-
   @test
   async 'register simple tasks class and run'() {
     let tasks = new Tasks();
@@ -79,6 +78,7 @@ class TasksSpec {
     expect(x.result).to.be.eq('test');
   }
 
+
   @test
   async 'register function callback and run'() {
     let tasks = new Tasks();
@@ -94,6 +94,7 @@ class TasksSpec {
     expect(x.result).to.be.eq('test');
   }
 
+
   @test
   async 'register function callback and run as promise'() {
     let tasks = new Tasks();
@@ -108,6 +109,7 @@ class TasksSpec {
     expect(x.name).to.be.eq(taskRef.name);
     expect(x.result).to.be.eq('test');
   }
+
 
   @test
   async 'register simple tasks class with arguments and run'() {
@@ -149,6 +151,7 @@ class TasksSpec {
     expect(res).to.be.deep.eq(['grouped_1', 'grouped_2']);
   }
 
+
   @test
   async 'grouped tasks with a grouping task'() {
     let tasks = new Tasks();
@@ -162,6 +165,7 @@ class TasksSpec {
     let res = data.results.map(r => r.result).filter(f => f);
     expect(res).to.be.deep.eq(['grouped_3', 'grouped_4', 'grouping']);
   }
+
 
   @test
   async 'dependencies tasks'() {
@@ -178,25 +182,31 @@ class TasksSpec {
     expect(res.result).to.deep.eq({new: 'data', test: 'true'});
   }
 
+
   @test.skip
   async 'own task logger'() {
   }
+
 
   @test.skip
   async 'task status pub/sub'() {
   }
 
+
   @test.skip
   async 'add remote task '() {
   }
+
 
   @test.skip
   async 'task runtime error'() {
   }
 
+
   @test.skip
   async 'map task to new one'() {
   }
+
 
   @test.skip
   async 'map task group to new one'() {

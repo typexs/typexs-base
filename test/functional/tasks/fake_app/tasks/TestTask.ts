@@ -1,11 +1,16 @@
 import {ITask} from "../../../../../src";
+import {Incoming} from "../../../../../src/libs/tasks/decorators/Incoming";
 
-export class TestTask implements ITask{
-  name:string = 'test';
+export class TestTask implements ITask {
 
-  description:string = 'Hallo welt';
+  name: string = 'test';
 
-  async exec(done:Function){
-    done(null,{res:'okay'});
+  description: string = 'Hallo welt';
+
+  @Incoming()
+  someValue: string;
+
+  async exec(done: Function) {
+    done(null, {res: 'okay', value: this.someValue});
   }
 }

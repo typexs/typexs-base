@@ -18,8 +18,10 @@ import {IEventBusConfiguration} from "commons-eventbus";
   await bootstrap.prepareRuntime();
   bootstrap = await bootstrap.activateStorage();
   bootstrap = await bootstrap.startup();
+
   setTimeout(async () => {
     await bootstrap.shutdown();
-  }, 1000);
+  }, 500);
+
 })();
 

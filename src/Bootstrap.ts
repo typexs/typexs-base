@@ -188,6 +188,8 @@ export class Bootstrap {
 
   private _options: ITypexsOptions;
 
+  private running: boolean = false;
+
 
   private constructor(options: ITypexsOptions = {}) {
     options = options || {};
@@ -390,7 +392,7 @@ export class Bootstrap {
      * Override nodeId if given
      */
 
-    let appNodeId = Config.get('app.nodeId', Config.get('argv.nodeId',null));
+    let appNodeId = Config.get('app.nodeId', Config.get('argv.nodeId', null));
     this.nodeId = appNodeId ? appNodeId : this.nodeId;
     return this;
   }
@@ -482,9 +484,11 @@ export class Bootstrap {
       await bootstrap.bootstrap();
     }
 
+    this.running = true;
+
     // system ready
     for (let bootstrap of bootstraps) {
-      if(bootstrap['ready']) {
+      if (bootstrap['ready']) {
         await bootstrap['ready']();
       }
     }
@@ -495,6 +499,8 @@ export class Bootstrap {
 
 
   async shutdown() {
+    if(!this.running) return;
+    this.running = false;
     Log.debug('shutdown ...');
 
     let bootstraps = this.getModulBootstraps();

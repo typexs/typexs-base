@@ -90,6 +90,7 @@ export class System {
       }
     }
     await Promise.all(nodeHandle);
+    this.node.state = 'idle';
   }
 
 
@@ -97,7 +98,7 @@ export class System {
     if (!this._registered) return;
     this.node.state = 'unregister';
     await EventBus.unregister(this);
-    EventBus.postAndForget(this.node);
+    await EventBus.postAndForget(this.node);
   }
 
 

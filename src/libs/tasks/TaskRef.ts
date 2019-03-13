@@ -45,8 +45,6 @@ export class TaskRef extends AbstractRef implements IEntityRef {
     this.setOptions(options || {});
 
     if (!this.isRemote()) {
-
-
       this.$source = null;
 
       if (_.isString(name)) {
@@ -78,6 +76,9 @@ export class TaskRef extends AbstractRef implements IEntityRef {
       }
     } else {
       this._type = TaskRefType.REMOTE;
+      this.$source = <ITaskInfo>name;
+      this.description = this.$source.description;
+      this.permissions = this.$source.permissions;
     }
   }
 

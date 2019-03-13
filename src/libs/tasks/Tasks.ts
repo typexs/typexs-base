@@ -71,17 +71,20 @@ export class Tasks {
     throw new Error('task ' + name + ' not exists')
   }
 
+  private getEntries(withRemote: boolean = false){
+    return this.registry.list(XS_TYPE_ENTITY).filter(x => withRemote || !x.isRemote())
+  }
 
   list(withRemote: boolean = false): string[] {
-    return this.names();
+    return this.names(withRemote);
   }
 
   names(withRemote: boolean = false): string[] {
-    return this.registry.list(XS_TYPE_ENTITY).filter(x => !withRemote && !x.isRemote()).map(x => x.name);
+    return this.getEntries(withRemote).map(x => x.name);
   }
 
   infos(withRemote: boolean = false): ITaskInfo[] {
-    return this.registry.list(XS_TYPE_ENTITY).filter(x => !withRemote && !x.isRemote()).map((x: TaskRef) => {
+    return this.getEntries(withRemote).map((x: TaskRef) => {
       return x.info();
     });
   }

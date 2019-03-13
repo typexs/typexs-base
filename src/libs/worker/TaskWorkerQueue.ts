@@ -1,12 +1,4 @@
-import {
-  AsyncWorkerQueue,
-  CryptUtils,
-  IAsyncQueueOptions,
-  IQueueProcessor,
-  IValidationError,
-  TaskRunner,
-  Tasks
-} from "../..";
+import {AsyncWorkerQueue, IAsyncQueueOptions, IQueueProcessor, TaskRunner, Tasks} from "../..";
 import {Bootstrap} from "../../Bootstrap";
 import {Inject} from "typedi";
 import subscribe from "commons-eventbus/decorator/subscribe";
@@ -37,15 +29,21 @@ export class TaskWorkerQueue implements IQueueProcessor<ITaskWorkload> {
     this.nodeId = Bootstrap.getNodeId();
     this.queue = new AsyncWorkerQueue<ITaskWorkload>(this, options);
     await EventBus.register(this);
-    Log.info('Task worker waiting for tasks ...');
+    Log.debug('Task worker: waiting for tasks ...');
   }
 
 
   @subscribe(TaskEvent)
   onTaskEvent(event: TaskEvent) {
     if (event.state != 'proposed') return null;
-    event.respId = this.nodeId;
 
+    if (event.targetId && event.targetId != this.nodeId) {
+      // not a task for me
+      return null;
+    }
+
+    event.respId = this.nodeId;
+    let parameters: any = null;
     let taskNames = _.isArray(event.name) ? event.name : [event.name];
 
     // filter not allowed tasks
@@ -53,12 +51,12 @@ export class TaskWorkerQueue implements IQueueProcessor<ITaskWorkload> {
     if (!_.isEmpty(taskNames)) {
 
       // validate arguments
-      let parameters = null;
+
       let props = TasksHelper.getRequiredIncomings(taskNames.map(t => this.tasks.get(t)));
-      if (props.length > 0 && !_.isEmpty(event.parameters) && _.keys(event.parameters).length > 0) {
-        let parameters = event.parameters;
+      if (props.length > 0) {
+        parameters = event.parameters;
         for (let p of props) {
-          if (!_.has(parameters, p.storingName)) {
+          if (!_.has(parameters, p.storingName) && !_.has(parameters, p.name)) {
             event.state = 'errored';
             event.errors.push(<IError>{
               context: 'required_parameter',
@@ -74,20 +72,27 @@ export class TaskWorkerQueue implements IQueueProcessor<ITaskWorkload> {
 
       if (event.state == 'proposed') {
         event.state = 'enqueue';
-        this.queue.push({
-          names: taskNames,
-          parameters: parameters,
-          event: event
-        });
+
       }
     } else {
       event.state = 'errored';
       event.errors.push(<IError>{
         context: 'task_not_allowed',
         message: 'The task a not supported by this worker.'
-      })
+      });
     }
-    return event;
+    Log.debug('onTaskEvent', event);
+
+    if (event.state == 'enqueue') {
+      setTimeout(() =>
+        this.queue.push({
+          names: taskNames,
+          parameters: parameters,
+          event: event
+        }), 10);
+    }
+
+    return this.fireState(event);
   }
 
 
@@ -97,14 +102,16 @@ export class TaskWorkerQueue implements IQueueProcessor<ITaskWorkload> {
     let runner = new TaskRunner(this.tasks, workLoad.names);
     e.state = 'started';
     e.data = runner.collectStats();
-    EventBus.postAndForget(e);
-    runner.on(TASKRUN_STATE_UPDATE,() => {
+    this.fireState(e);
+
+    runner.on(TASKRUN_STATE_UPDATE, () => {
       e.state = 'running';
       e.data = runner.collectStats();
-      EventBus.postAndForget(e);
+      this.fireState(e);
     });
 
     try {
+
       if (workLoad.parameters) {
         for (let p in workLoad.parameters) {
           await runner.setIncoming(p, workLoad.parameters[p]);
@@ -113,18 +120,24 @@ export class TaskWorkerQueue implements IQueueProcessor<ITaskWorkload> {
       results = await runner.run();
       e.state = 'stopped';
       e.data = runner.collectStats();
-      EventBus.postAndForget(e);
-    } catch (e) {
+      this.fireState(e);
+    } catch (err) {
       e.state = 'errored';
       e.errors.push({
-        message: e.message,
-        context: ClassUtils.getClassName(e)
+        message: err.message,
+        context: ClassUtils.getClassName(err)
       });
-      EventBus.postAndForget(e);
+      this.fireState(e);
     } finally {
       runner.removeAllListeners();
     }
     return results;
+  }
+
+  fireState(e: TaskEvent): TaskEvent {
+    let _e = _.cloneDeep(e);
+    EventBus.postAndForget(_e);
+    return _e;
   }
 
   /*

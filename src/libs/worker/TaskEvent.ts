@@ -1,6 +1,7 @@
 import {CryptUtils} from "../../libs/utils/CryptUtils";
 import {IError} from "../exceptions/IError";
 import {ITaskRunnerResult} from "../tasks/ITaskRunnerResult";
+import * as _ from 'lodash';
 
 export class TaskEvent {
 
@@ -10,6 +11,13 @@ export class TaskEvent {
    * Id of system node which created the event
    */
   nodeId: string;
+
+  /**
+   * Id of target system node
+   *
+   * Used for direct task allocation
+   */
+  targetId: string;
 
   /**
    * Id of responding system node
@@ -29,7 +37,7 @@ export class TaskEvent {
   /**
    * arguments to pass to task runner
    */
-  parameters?: any;
+  parameters?: { [name: string]: any };
 
   /**
    * errors
@@ -45,5 +53,12 @@ export class TaskEvent {
 
   data: ITaskRunnerResult;
 
+
+  addParameter(key: string, value: any) {
+    if (!this.parameters) {
+      this.parameters = {};
+    }
+    this.parameters[_.snakeCase(key)] = value;
+  }
 
 }

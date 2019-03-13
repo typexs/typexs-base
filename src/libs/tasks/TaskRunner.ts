@@ -104,14 +104,14 @@ export class TaskRunner extends EventEmitter {
 
 
   async setIncoming(key: string, value: any) {
-    let ref = this.getRequiredIncomings().find(i => i.storingName == key);
+    let ref = this.getRequiredIncomings().find(i => i.storingName == _.snakeCase(key));
     if (ref) {
-      _.set(this.$incoming, key, await ref.convert(value));
+      _.set(this.$incoming, ref.storingName, await ref.convert(value));
     } else {
       throw new NotSupportedError('no required incoming parameter found for ' + key);
     }
-
   }
+
 
   /**
    * Check if subtask or depending tasks are ready

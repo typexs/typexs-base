@@ -1,3 +1,4 @@
+import * as _ from 'lodash';
 import {Config} from "commons-config";
 import {Inject} from "typedi";
 import {Invoker} from "../base/Invoker";
@@ -5,9 +6,16 @@ import {Tasks} from "../libs/tasks/Tasks";
 import {Log} from '../libs/logging/Log'
 import {TasksApi} from "../api/Tasks.api";
 import {System} from "../libs/system/System";
+import {TaskEvent} from "../libs/worker/TaskEvent";
+import {Bootstrap} from "../Bootstrap";
+import {EventBus} from "commons-eventbus";
 
 /**
  * Starts a task direct or in a running worker
+ * Command: typexs task test [--targetId abc] [--mode worker|local]
+ *
+ * mode is per default 'worker' if one exists  else startup local
+ *
  */
 export class TaskCommand {
 
@@ -32,55 +40,96 @@ export class TaskCommand {
   }
 
   async handler(argv: any) {
-    let args: string[] = [];
+
+    let targetId = Config.get('argv.targetId', null);
+    let isLocal = Config.get('argv.local', false);
+
+    // filter task names from request
+    let taskNames: string[] = [];
     let start = false;
-
-
-
     let notask = false;
-
     for (let i = 0; i < process.argv.length; i++) {
       if (process.argv[i] == 'task') {
         start = true;
         continue;
       }
-
       if (!start) continue;
-
       if (process.argv[i].match(/^\-\-/)) {
         // parameter
         notask = true;
       } else {
         if (!notask) {
-          args.push(process.argv[i]);
+          taskNames.push(process.argv[i]);
         }
       }
     }
 
-    let res = null;
 
-    if (args.length > 0) {
-      let options: any = {
-        parallel: 5,
-        dry_mode: Config.get('argv.dry-mode', false)
-      };
+    if (taskNames.length > 0) {
+      let args = Config.get('argv');
+      // check nodes for tasks
+      let tasks = this.tasks.getTasks(taskNames);
 
-      let runner = this.tasks.runner(args, options);
-      await new Promise((resolve, reject) => {
-        runner.run(async (results: any) => {
-          Log.info(JSON.stringify(results));
-          res = results;
-          resolve()
-        });
-      })
+      if (!isLocal) {
+        let tasksForWorkers = tasks.filter(t => t.hasWorker() && (targetId == null || (targetId && t.hasTargetNodeId(targetId))));
+
+        if (tasks.length == tasksForWorkers.length) {
+          // all tasks can be send to workers
+          // execute
+
+          let event = new TaskEvent();
+          if (targetId) {
+            event.targetId = targetId;
+          }
+          event.name = taskNames;
+          for (let k of _.keys(args)) {
+            if (!/^_/.test(k)) {
+              console.log(k)
+              event.addParameter(k, args[k]);
+            }
+          }
+          event.nodeId = this.system.node.nodeId;
+
+          Log.debug('Sending event', event);
+          await EventBus.post(event);
+
+        } else {
+          // there are no worker running!
+          Log.error('There are no worker running for tasks: ' + taskNames.join(', '));
+        }
+      } else if (isLocal) {
+        let tasksLocal = tasks.filter(t => !t.hasWorker());
+
+        if (tasksLocal.length == tasks.length) {
+          let options: any = {
+            parallel: 5,
+            dry_mode: Config.get('argv.dry-mode', false)
+          };
+
+          let runner = this.tasks.runner(taskNames, options);
+          await new Promise((resolve, reject) => {
+            runner.run(async (results: any) => {
+              Log.info(JSON.stringify(results));
+              resolve()
+            });
+          })
+        } else {
+          Log.error('There are no tasks: ' + taskNames.join(', '));
+        }
+      }
 
     } else {
-      res = this.tasks.list();
-      Log.info(res);
+      let res = this.tasks.names();
+      Log.info('List of supported tasks:');
+      Log.info('\t- ' + res.join('\n\t') + '\n');
     }
 
-    await this.invoker.use(TasksApi).onShutdown();
-    return res;
+
+    await this.shutdown();
   }
 
+
+  async shutdown() {
+    await this.invoker.use(TasksApi).onShutdown();
+  }
 }

@@ -27,7 +27,8 @@ export class TaskRef extends AbstractRef implements IEntityRef {
 
   nodeIds: string[] = [];
 
-  //$name: any;
+  _hasWorker: boolean = false;
+
 
   $source: any;
 
@@ -82,16 +83,26 @@ export class TaskRef extends AbstractRef implements IEntityRef {
     }
   }
 
-  addNodeId(nodeId: string) {
+
+  hasTargetNodeId(nodeId:string){
+    return this.nodeIds.indexOf(nodeId) !== -1;
+  }
+
+  addNodeId(nodeId: string, hasWorker: boolean = false) {
     this.removeNodeId(nodeId);
     this.nodeIds.push(nodeId);
+    this._hasWorker = hasWorker;
   }
 
   removeNodeId(nodeId: string) {
     _.remove(this.nodeIds, x => x == nodeId);
   }
 
-  hasNodeIds(){
+  hasWorker(){
+    return this._hasWorker;
+  }
+
+  hasNodeIds() {
     return this.nodeIds.length > 0;
   }
 

@@ -28,7 +28,7 @@ export class TasksSystemExtension implements ISystemApi {
     if (found) {
       found.tasks.map((info: ITaskInfo) => {
         if (this.tasks.contains(info.name)) {
-          this.tasks.get(info.name).addNodeId(x.nodeId);
+          this.tasks.get(info.name).addNodeId(x.nodeId, true);
         } else {
           if (!info.remote) {
             this.tasks.addRemoteTask(x.nodeId, info);

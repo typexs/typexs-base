@@ -54,7 +54,7 @@ export class Tasks {
 
 
   runner(name: string | string[], options: any) {
-    if (Array.isArray(name)) {
+    if (_.isArray(name)) {
       let names = [];
       for (let i = 0; i < name.length; i++) {
         if (!this.contains(name[i])) {
@@ -71,23 +71,45 @@ export class Tasks {
     throw new Error('task ' + name + ' not exists')
   }
 
-  private getEntries(withRemote: boolean = false){
+
+  private getEntries(withRemote: boolean = false) {
     return this.registry.list(XS_TYPE_ENTITY).filter(x => withRemote || !x.isRemote())
+  }
+
+
+  getTasks(names: string | string[]) {
+    if (!_.isArray(names)) {
+      names = [names];
+    }
+
+    let _names: string[] = [];
+    for (let i = 0; i < names.length; i++) {
+      if (!this.contains(names[i])) {
+        throw new Error('task ' + names[i] + ' not exists')
+      }
+      _names.push(names[i]);
+    }
+
+
+    return this.getEntries(true).filter((x: TaskRef) => _names.indexOf(x.name) != -1)
   }
 
   list(withRemote: boolean = false): string[] {
     return this.names(withRemote);
   }
 
+
   names(withRemote: boolean = false): string[] {
     return this.getEntries(withRemote).map(x => x.name);
   }
+
 
   infos(withRemote: boolean = false): ITaskInfo[] {
     return this.getEntries(withRemote).map((x: TaskRef) => {
       return x.info();
     });
   }
+
 
   get(name: string): TaskRef {
     if (this.contains(name)) {
@@ -96,6 +118,7 @@ export class Tasks {
     let task = this.addTask(name, null, {group: true});
     return task;
   }
+
 
   access(name: string) {
     if (_.has(this.config, 'access')) {
@@ -128,10 +151,10 @@ export class Tasks {
         allow = true;
       }
       return allow;
-
     }
     return true;
   }
+
 
   addTask(name: string | object | Function, fn: object | Function = null, options: ITaskRefOptions = null): TaskRef {
     let task = new TaskRef(name, fn, options);
@@ -156,7 +179,6 @@ export class Tasks {
       }
     }
     return null;
-
   }
 
 
@@ -164,11 +186,11 @@ export class Tasks {
     let task = new TaskRef(info, null, {remote: true});
     let exists = <TaskRef>this.registry.find(XS_TYPE_ENTITY, (x: TaskRef) => x.name == task.name);
     if (!exists) {
-      task.addNodeId(nodeId);
+      task.addNodeId(nodeId, true);
       this.registry.add(XS_TYPE_ENTITY, task);
       return this.get(task.name);
     } else {
-      exists.addNodeId(nodeId);
+      exists.addNodeId(nodeId, true);
       return exists;
     }
   }
@@ -180,6 +202,7 @@ export class Tasks {
     this.registry.remove(<any>XS_TYPE_BINDING_TASK_GROUP, (x: Binding) => x.source == task.name || x.target == task.name);
     this.registry.remove(<any>XS_TYPE_BINDING_TASK_DEPENDS_ON, (x: Binding) => x.source == task.name || x.target == task.name);
   }
+
 
   /**
    *
@@ -197,6 +220,7 @@ export class Tasks {
     return !!this.registry.find(XS_TYPE_ENTITY, (t: TaskRef) => t.name == name);
   }
 
+
   /**
    * Fires src as subtask of dest
    *
@@ -209,6 +233,7 @@ export class Tasks {
     TaskRef.group(src, dest);
     return this;
   }
+
 
   /**
    * Fires src after execution of dest
@@ -244,8 +269,8 @@ export class Tasks {
     } else {
       throw new Error('task doesn\'t exists')
     }
-
   }
+
 
   task(name: string, fn: Function, options: any) {
     if (this.contains(name)) {

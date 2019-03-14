@@ -55,15 +55,18 @@ export class System {
     }
 
     let node = _.find(this.nodes, n => n.nodeId == nodeInfo.nodeId);
-    if (!node && nodeInfo.state == 'register') {
+    if (!node && (nodeInfo.state == 'register' || nodeInfo.state == 'idle') ) {
       this.nodes.push(nodeInfo);
       Log.debug('add remote node ', nodeInfo);
       await this.invoker.use(SystemApi).onNodeRegister(nodeInfo);
+      EventBus.postAndForget(this.node);
     } else if (node && nodeInfo.state == 'unregister') {
       _.remove(this.nodes, n => n.nodeId == nodeInfo.nodeId);
       Log.debug('remove remote node ', nodeInfo);
       await this.invoker.use(SystemApi).onNodeUnregister(nodeInfo);
     }
+
+
     return this.node;
   }
 

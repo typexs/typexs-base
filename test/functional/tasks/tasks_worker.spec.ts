@@ -4,7 +4,7 @@ import {expect} from 'chai';
 
 import {Bootstrap} from "../../../src/Bootstrap";
 import {Log} from "../../../src/libs/logging/Log";
-import {ITypexsOptions, Tasks} from "../../../src";
+import {ITypexsOptions, TaskCommand, Tasks} from "../../../src";
 import {Container} from "typedi";
 import {Config} from "commons-config";
 import {TEST_STORAGE_OPTIONS} from "../config";
@@ -385,17 +385,15 @@ class Tasks_workerSpec {
 
 
   @test
-  async 'run job over task command'() {
+  async 'run job remote over task command'() {
     // typexs task test [--targetId abc] [--mode worker|local /* default is worker if on exists else startup local*/]
-
     let handle = SpawnHandle.do(__dirname + '/fake_app/node_task_worker.ts').start(true);
     await handle.started;
-
 
     let bootstrap = Bootstrap
       .setConfigSources([{type: 'system'}])
       .configure(<ITypexsOptions & any>{
-        app: {name: 'test', nodeId: 'system', path: __dirname + '/fake_app'},
+        app: {name: 'test', nodeId: 'event', path: __dirname + '/fake_app'},
         logging: {enable: true, level: 'debug'},
         modules: {paths: [__dirname + '/../../..']},
         storage: {default: TEST_STORAGE_OPTIONS},
@@ -407,20 +405,21 @@ class Tasks_workerSpec {
     await bootstrap.prepareRuntime();
     bootstrap = await bootstrap.activateStorage();
     bootstrap = await bootstrap.startup();
-
+    await TestHelper.wait(300);
 
     let commands = bootstrap.getCommands();
     expect(commands.length).to.be.gt(0);
 
-    let command = _.find(commands, e => e.command == 'task');
-    Config.set('argv.mode','worker');
-    let c = Config.all();
-    console.log(inspect(c, false, 10));
-    //command.handler({});
-    c = Config.get('argv.mode');
+    let command: TaskCommand = _.find(commands, e => e.command == 'task');
+    Config.set('argv.local', false, 'system');
+    Config.set('argv.someValue', 'value', 'system');
+    process.argv = ['typexs', 'task', 'test'];
+
+
+    await command.handler({});
+
 
     await bootstrap.shutdown();
-
   }
 
 }

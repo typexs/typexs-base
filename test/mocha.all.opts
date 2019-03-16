@@ -1,7 +1,7 @@
 --require ts-node/register
 --watch-extensions ts
 --recursive
---timeout 10000
+--timeout 20000
 
 test/**/*.spec.ts
 test/**/**/*.spec.ts

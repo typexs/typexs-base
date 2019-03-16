@@ -55,7 +55,7 @@ export class System {
     }
 
     let node = _.find(this.nodes, n => n.nodeId == nodeInfo.nodeId);
-    if (!node && (nodeInfo.state == 'register' || nodeInfo.state == 'idle') ) {
+    if (!node && (nodeInfo.state == 'register' || nodeInfo.state == 'idle')) {
       this.nodes.push(nodeInfo);
       Log.debug('add remote node ', nodeInfo);
       await this.invoker.use(SystemApi).onNodeRegister(nodeInfo);
@@ -72,7 +72,17 @@ export class System {
 
   async gatherNodeInfos() {
     let infos: INodeInfo | INodeInfo[] = await this.invoker.use(SystemApi).getNodeInfos();
-    infos.map((x: INodeInfo | INodeInfo[]) => _.isArray(x) ? this.node.contexts.push(...x) : this.node.contexts.push(x));
+    if (_.isArray(infos)) {
+      for (let info of infos) {
+        if (!_.isEmpty(info)) {
+          this.node.contexts.push(info)
+        }
+      }
+    } else {
+      if (!_.isEmpty(infos)) {
+        this.node.contexts.push(infos)
+      }
+    }
   }
 
   async register() {

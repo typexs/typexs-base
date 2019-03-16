@@ -233,6 +233,7 @@ export class Bootstrap {
     process.on('unhandledRejection', this.throwedUnhandledRejection.bind(this));
     process.on('uncaughtException', this.throwedUncaughtException.bind(this));
     process.on('warning', Log.warn.bind(Log));
+    process.setMaxListeners(1000);
     return this;
   }
 
@@ -412,8 +413,7 @@ export class Bootstrap {
     // update config
     Config.jar(CONFIG_NAMESPACE).set('modules', this.runtimeLoader._options);
     process.on('exit', async (code) => {
-      Log.debug(`About to exit with code: ${code}`);
-      await this.shutdown();
+      await this.shutdown(code);
     });
     this.createSystemInfo();
 
@@ -498,10 +498,10 @@ export class Bootstrap {
   }
 
 
-  async shutdown() {
-    if(!this.running) return;
+  async shutdown(exitCode: number = 0) {
+    if (!this.running) return;
     this.running = false;
-    Log.debug('shutdown ...');
+    Log.debug('shutdown ... exitCode: ' + exitCode);
 
     let bootstraps = this.getModulBootstraps();
     bootstraps = _.filter(bootstraps, a => _.isFunction(a['shutdown']));

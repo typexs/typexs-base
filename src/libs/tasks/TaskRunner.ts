@@ -13,7 +13,8 @@ import {
 } from "./Constants";
 import {ITaskRunnerResult} from "./ITaskRunnerResult";
 import {NotSupportedError} from "commons-base";
-import {CryptUtils, Invoker, TasksApi} from "../..";
+import {CryptUtils, TasksApi} from "../..";
+import {Invoker} from '../../base/Invoker';
 import {TasksHelper} from "./TasksHelper";
 import {Container} from "typedi";
 

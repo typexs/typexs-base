@@ -55,5 +55,6 @@ export class Startup implements IBootstrap, IShutdown {
     await this.cache.shutdown();
     await this.system.unregister();
     await EventBus.$().shutdown();
+    this.tasks.reset();
   }
 }

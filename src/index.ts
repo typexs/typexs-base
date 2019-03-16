@@ -40,6 +40,7 @@ export * from "./libs/Progress";
 
 export * from "./libs/logging/ILoggerOptions";
 export * from "./libs/logging/Log";
+export * from "./libs/logging/Console";
 export * from "./libs/logging/LogEvent";
 
 export * from "./libs/queue/AsyncWorkerQueue";

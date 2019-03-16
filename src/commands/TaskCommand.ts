@@ -4,6 +4,7 @@ import {Inject} from "typedi";
 import {Invoker} from "../base/Invoker";
 import {Tasks} from "../libs/tasks/Tasks";
 import {Log} from '../libs/logging/Log'
+import {Console} from '../libs/logging/Console'
 import {TasksApi} from "../api/Tasks.api";
 import {System} from "../libs/system/System";
 import {TaskEvent} from "../libs/worker/TaskEvent";
@@ -89,18 +90,16 @@ export class TaskCommand {
             }
           }
           event.nodeId = this.system.node.nodeId;
-
           Log.debug('Sending event', event);
           await EventBus.post(event);
 
         } else {
           // there are no worker running!
-          Log.error('There are no worker running for tasks: ' + taskNames.join(', '));
+          Console.error('There are no worker running for tasks: ' + taskNames.join(', '));
         }
       } else if (isLocal) {
-        let tasksLocal = tasks.filter(t => !t.hasWorker());
 
-        if (tasksLocal.length == tasks.length) {
+        if (taskNames.length == tasks.length) {
           let options: any = {
             parallel: 5,
             dry_mode: Config.get('argv.dry-mode', false)
@@ -109,19 +108,19 @@ export class TaskCommand {
           let runner = this.tasks.runner(taskNames, options);
           await new Promise((resolve, reject) => {
             runner.run(async (results: any) => {
-              Log.info(JSON.stringify(results));
+              Console.log(JSON.stringify(results));
               resolve()
             });
           })
         } else {
-          Log.error('There are no tasks: ' + taskNames.join(', '));
+          Console.error('There are no tasks: ' + taskNames.join(', '));
         }
       }
 
     } else {
       let res = this.tasks.names();
-      Log.info('List of supported tasks:');
-      Log.info('\t- ' + res.join('\n\t') + '\n');
+      Console.log('List of supported tasks:');
+      Console.log('\t- ' + res.join('\n\t') + '\n');
     }
 
 

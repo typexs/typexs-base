@@ -21,7 +21,7 @@ export class Tasks {
 
   static NAME: string = 'Tasks';
 
-  static _self: Tasks = null;
+//  static _self: Tasks = null;
 
   static taskId: number = 0;
 
@@ -29,14 +29,14 @@ export class Tasks {
 
   registry: LookupRegistry = LookupRegistry.$(C_TASKS);
 
-
+/*
   static _(): Tasks {
     if (!Tasks._self) {
       Tasks._self = new Tasks()
     }
     return Tasks._self;
   }
-
+*/
 
   setConfig(config: ITasksConfig = {access: []}) {
     this.config = config;
@@ -292,5 +292,10 @@ export class Tasks {
     }
   }
 
+
+  reset(){
+    LookupRegistry.reset(C_TASKS);
+    this.registry = LookupRegistry.$(C_TASKS);
+  }
 
 }

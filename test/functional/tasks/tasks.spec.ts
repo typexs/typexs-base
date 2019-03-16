@@ -1,8 +1,7 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 
-import { TaskRunner, Tasks} from "../../../src";
-import {Log} from "../../../src/libs/logging/Log";
+import {Invoker, TaskRunner, Tasks, TasksApi} from "../../../src";
 import {Container} from "typedi";
 import {SimpleTask} from "./tasks/SimpleTask";
 import {SimpleTaskPromise} from "./tasks/SimpleTaskPromise";
@@ -20,6 +19,16 @@ import {SimpleTaskInstance} from "./tasks/SimpleTaskInstance";
 
 @suite('functional/tasks/tasks')
 class TasksSpec {
+
+  static before() {
+    let i = new Invoker();
+    Container.set(Invoker.NAME, i);
+    i.register(TasksApi, []);
+  }
+
+  static after() {
+    Container.reset();
+  }
 
 
   @test
@@ -163,7 +172,7 @@ class TasksSpec {
     let data = await runner.run();
     expect(data.results).to.have.length(3);
     let res = data.results.map(r => r.result).filter(f => f);
-    expect(res).to.be.deep.eq(['grouped_3', 'grouped_4', 'grouping']);
+    expect(res).to.be.deep.eq(['grouping', 'grouped_3', 'grouped_4']);
   }
 
 

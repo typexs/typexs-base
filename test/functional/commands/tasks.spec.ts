@@ -6,6 +6,8 @@ import {Config} from "commons-config";
 import * as _ from "lodash";
 import {TaskCommand} from "../../../src";
 
+const stdMocks = require('std-mocks');
+
 let bootstrap: Bootstrap;
 
 @suite('functional/commands/tasks')
@@ -15,6 +17,7 @@ class TasksSpec {
   static async before() {
     Bootstrap.reset();
     Config.clear();
+
 
     let appdir = path.join(__dirname, 'fake_app');
     bootstrap = await Bootstrap.configure({
@@ -39,22 +42,30 @@ class TasksSpec {
 
   @test
   async 'list tasks'() {
+    Config.set('argv.local', true, 'system');
     let commands = bootstrap.getCommands();
     let command = commands.find(x => x instanceof TaskCommand);
-    let result = await command.handler({});
-    expect(result).to.deep.eq(['test']);
+    stdMocks.use();
+    await command.handler({});
+    stdMocks.restore();
+    let results = stdMocks.flush();
+    expect(results.stdout).to.have.length(2);
+    expect(results.stdout[1]).to.contain('- test\n');
   }
 
 
   @test
   async 'exec tasks'() {
+    Config.set('argv.local', true, 'system');
     let commands = bootstrap.getCommands();
     let command = commands.find(x => x instanceof TaskCommand);
     process.argv = ['blabla', 'task', 'test'];
-    let result = await command.handler({});
-    expect(result).to.exist;
-    expect(result.results).to.have.length(1);
-    expect(_.find(result.results, x => x.name == 'test').result).to.deep.eq({res: 'okay'});
+    stdMocks.use();
+    await command.handler({});
+    stdMocks.restore();
+    let results = stdMocks.flush();
+    expect(results.stdout).to.have.length.gt(0);
+    expect(_.find(results.stdout, x => /\"name\":\"test\".*\"progress\":100/.test(x))).to.exist;
 
   }
 

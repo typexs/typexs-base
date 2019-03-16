@@ -1,7 +1,9 @@
-export class TestTask {
-  name:string = 'test';
+import {ITask} from "../../../../../src";
 
-  async exec(done:Function){
-    done(null,{res:'okay'});
+export class TestTask implements ITask{
+  name: string = 'test';
+
+  async exec(done: Function) {
+    done(null, {res: 'okay'});
   }
 }

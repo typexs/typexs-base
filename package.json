@@ -45,6 +45,7 @@
     "nyc": "^13.0.1",
     "redis": "^2.8.0",
     "sqlite3": "^4.0.2",
+    "std-mocks": "^1.0.1",
     "ts-node": "^6.2.0",
     "typescript": "^3.2.4",
     "typescript-compiler": "^1.4.1-2",

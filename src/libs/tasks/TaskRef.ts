@@ -84,9 +84,50 @@ export class TaskRef extends AbstractRef implements IEntityRef {
   }
 
 
-  hasTargetNodeId(nodeId:string){
+  getFn() {
+    if (!this.isRemote()) {
+      return this.$fn;
+    } else {
+      return this.$source;
+    }
+  }
+
+
+  clone(name: string) {
+    let opts, tr;
+
+    switch (this.getType()) {
+
+      case TaskRefType.REMOTE:
+        let source = _.clone(this.$source);
+        source.name = name;
+        return new TaskRef(source);
+
+      case TaskRefType.GROUP:
+        opts = _.clone(this.getOptions());
+        let tr = new TaskRef(name, null, opts);
+        this.grouping().forEach(x => {
+          TaskRef.group(name, x);
+        });
+        return tr;
+
+      default:
+        let fn = _.clone(this.getFn());
+        opts = _.clone(this.getOptions());
+        tr = new TaskRef(name, fn, opts);
+        this.dependencies().forEach(d => {
+          tr.dependsOn(d);
+        });
+        return tr;
+
+    }
+  }
+
+
+  hasTargetNodeId(nodeId: string) {
     return this.nodeIds.indexOf(nodeId) !== -1;
   }
+
 
   addNodeId(nodeId: string, hasWorker: boolean = false) {
     this.removeNodeId(nodeId);
@@ -98,7 +139,7 @@ export class TaskRef extends AbstractRef implements IEntityRef {
     _.remove(this.nodeIds, x => x == nodeId);
   }
 
-  hasWorker(){
+  hasWorker() {
     return this._hasWorker;
   }
 
@@ -133,9 +174,11 @@ export class TaskRef extends AbstractRef implements IEntityRef {
     return this._type;
   }
 
+
   canHaveProperties() {
     return this._type === TaskRefType.CLASS || this._type === TaskRefType.INSTANCE;
   }
+
 
   info(): ITaskInfo {
     return {
@@ -147,6 +190,7 @@ export class TaskRef extends AbstractRef implements IEntityRef {
       remote: this.isRemote()
     }
   }
+
 
   executable(incoming: { [k: string]: any } = {}): [Function | object, any] {
     switch (this.getType()) {
@@ -193,9 +237,8 @@ export class TaskRef extends AbstractRef implements IEntityRef {
     throw new NotSupportedError('can\'t find task name of ' + JSON.stringify(x));
   }
 
+
   static getTaskObject(name: string | Function | object, fn: Function | object): Function {
-
-
     if (_.isString(name)) {
       if (_.isNull(fn)) {
         return null;
@@ -204,17 +247,21 @@ export class TaskRef extends AbstractRef implements IEntityRef {
     } else {
       return _.isFunction(name) ? name : _.isFunction(name.constructor) ? name.constructor : _.isFunction(fn) ? fn : fn.constructor;
     }
-
   }
+
 
   subtasks() {
     return LookupRegistry.$(C_TASKS).filter(<any>XS_TYPE_BINDING_TASK_GROUP, (b: Binding) => b.source == this.name).map((b: Binding) => b.target);
   }
 
+
   groups() {
     return LookupRegistry.$(C_TASKS).filter(<any>XS_TYPE_BINDING_TASK_GROUP, (b: Binding) => b.target == this.name).map((b: Binding) => b.source);
   }
 
+  grouping() {
+    return LookupRegistry.$(C_TASKS).filter(<any>XS_TYPE_BINDING_TASK_GROUP, (b: Binding) => b.source == this.name).map((b: Binding) => b.target);
+  }
 
   dependencies(): string[] {
     return LookupRegistry.$(C_TASKS).filter(<any>XS_TYPE_BINDING_TASK_DEPENDS_ON, (b: Binding) => b.target == this.name).map((b: Binding) => b.source);
@@ -247,7 +294,6 @@ export class TaskRef extends AbstractRef implements IEntityRef {
       b.targetType = XS_TYPE_ENTITY;
       b.target = dest;
       registry.add(<any>XS_TYPE_BINDING_TASK_DEPENDS_ON, b);
-
     }
   }
 
@@ -266,7 +312,6 @@ export class TaskRef extends AbstractRef implements IEntityRef {
       b.targetType = XS_TYPE_ENTITY;
       b.target = dest;
       registry.add(<any>XS_TYPE_BINDING_TASK_GROUP, b);
-
     }
     return this;
   }
@@ -276,29 +321,36 @@ export class TaskRef extends AbstractRef implements IEntityRef {
     return _.snakeCase(this.name.toLowerCase());
   }
 
+
   build<T>(instance: any, options?: IBuildOptions): T {
     throw new NotYetImplementedError();
   }
+
 
   create<T>(): T {
     throw new NotYetImplementedError();
   }
 
+
   getPropertyRef(name: string): TaskExchangeRef {
     return this.getPropertyRefs().find(x => x.name == name);
   }
+
 
   getPropertyRefs(): TaskExchangeRef[] {
     return this.getLookupRegistry().filter(XS_TYPE_PROPERTY, (e: TaskExchangeRef) => e.getSourceRef() === this.getClassRef());
   }
 
+
   getIncomings(): TaskExchangeRef[] {
     return this.getPropertyRefs().filter((x: TaskExchangeRef) => x.descriptor.type == "incoming");
   }
 
+
   getOutgoings(): TaskExchangeRef[] {
     return this.getPropertyRefs().filter((x: TaskExchangeRef) => x.descriptor.type == "outgoing");
   }
+
 
   getRuntime(): TaskExchangeRef {
     return this.getPropertyRefs().find((x: TaskExchangeRef) => x.descriptor.type == "runtime");

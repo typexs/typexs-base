@@ -1,6 +1,8 @@
 export interface ITaskRunResult {
 
-  id: number;
+  tasksId: string;
+
+  nr: number;
 
   name: string;
 
@@ -10,11 +12,11 @@ export interface ITaskRunResult {
 
   stop: Date;
 
-  duration:number;
+  duration: number;
 
   progress?: number;
 
-  total?:number;
+  total?: number;
 
   incoming?: any;
 
@@ -24,6 +26,6 @@ export interface ITaskRunResult {
 
   error: Error;
 
-  has_error:boolean;
+  has_error: boolean;
 
 }

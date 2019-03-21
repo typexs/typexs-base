@@ -1,8 +1,12 @@
-export class TaskState {
+import {ITaskRunResult} from "./ITaskRunResult";
 
-  pid: string;
+export class TaskState implements ITaskRunResult {
+
+  tasksId: string;
 
   name: string;
+
+  nr: number;
 
   created: Date = new Date();
 
@@ -13,6 +17,10 @@ export class TaskState {
   duration: number;
 
   weight: number = 0;
+
+  progress: number = 0;
+
+  total: number = 1;
 
   done: boolean = false;
 
@@ -26,6 +34,7 @@ export class TaskState {
 
   error: Error = null;
 
+  has_error: boolean = false;
 
   calcDuration() {
     this.duration = this.stop.getTime() - this.start.getTime();

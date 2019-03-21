@@ -17,6 +17,15 @@ import {CryptUtils, TasksApi} from "../..";
 import {Invoker} from '../../base/Invoker';
 import {TasksHelper} from "./TasksHelper";
 import {Container} from "typedi";
+import {ILoggerApi} from "../logging/ILoggerApi";
+import * as moment from "moment";
+import {WinstonLoggerJar} from "../logging/WinstonLoggerJar";
+
+import * as winston from "winston";
+import * as fs from "fs";
+import * as os from "os";
+import * as path from "path";
+import {DefaultJsonFormat} from "../logging/DefaultJsonFormat";
 
 
 export class TaskRunner extends EventEmitter {
@@ -59,12 +68,19 @@ export class TaskRunner extends EventEmitter {
 
   private invoker: Invoker;
 
+  private loggerName: string;
+
+  private taskLogger: ILoggerApi;
+
+  private taskLoggerFile: string;
+
+
   constructor(registry: Tasks, names: string[], options: any = {}) {
     super();
 
     this.invoker = Container.get(Invoker.NAME);
 
-    this.id = CryptUtils.shorthash(names.join(';') + ';' + this.nr);
+    this.id = CryptUtils.shorthash(names.join(';') + ';' + this.nr + Date.now());
 
     this.$options = options || {};
 
@@ -84,6 +100,22 @@ export class TaskRunner extends EventEmitter {
     this.$finished = false;
 
     this.$todo = this.$tasks.map(x => x.taskRef().name);
+    this.loggerName = 'task-runner-' + this.id;
+    let startDate = moment(this.$start).toISOString();
+    this.taskLogger = Log._().createLogger(this.loggerName, {
+      prefix: this.id,
+      taskStart: startDate,
+      taskId: this.id,
+      taskNames: this.$todo.join('--')
+    });
+    this.taskLogger.info('Log execution of tasks:', this.$todo);
+
+    this.taskLoggerFile = path.join(os.tmpdir(), 'typexs-taskrun-' + this.id + '-' + startDate);
+    (<WinstonLoggerJar>this.taskLogger).logger().add(
+      new winston.transports.Stream({
+        stream: fs.createWriteStream(this.taskLoggerFile, {}),
+        format: new DefaultJsonFormat()
+      }));
 
     //this.$todo = _.keys(this.$tasks);
 
@@ -91,6 +123,21 @@ export class TaskRunner extends EventEmitter {
     this.on(TASKRUN_STATE_NEXT, this.next.bind(this));
     this.on(TASKRUN_STATE_RUN, this.taskRun.bind(this));
     this.on(TASKRUN_STATE_DONE, this.taskDone.bind(this))
+  }
+
+
+  getLogFile() {
+    return this.taskLoggerFile;
+  }
+
+
+  getLogger() {
+    return this.taskLogger;
+  }
+
+
+  getReadStream() {
+    return fs.createReadStream(this.getLogFile(), {autoClose: true});
   }
 
 
@@ -186,8 +233,8 @@ export class TaskRunner extends EventEmitter {
         self.emit(TASKRUN_STATE_RUN, nextTask);
       }
     }
-
   }
+
 
   api() {
     return this.invoker.use(TasksApi)
@@ -213,7 +260,7 @@ export class TaskRunner extends EventEmitter {
 
     let doneCallback = function (err: Error, res: any) {
       if (err) {
-        Log.error(err);
+        self.taskLogger.error(err);
       }
       taskRun.error(err);
       taskRun.result(res);
@@ -316,6 +363,7 @@ export class TaskRunner extends EventEmitter {
       this.$finish(status);
     }
 
+    this.taskLogger.close();
     this.emit(TASKRUN_STATE_FINISH_PROMISE, status);
   }
 
@@ -337,6 +385,14 @@ export class TaskRunner extends EventEmitter {
     return status;
   }
 
+
+  async finalize() {
+    if (fs.existsSync(this.taskLoggerFile)) {
+      await new Promise((resolve, reject) => {
+        fs.unlink(this.taskLoggerFile, resolve);
+      })
+    }
+  }
 
 }
 

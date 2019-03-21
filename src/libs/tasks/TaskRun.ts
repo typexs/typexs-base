@@ -14,30 +14,12 @@ export class TaskRun {
 
   static taskId: number = 0;
 
-
   id: number;
 
   $root: any;
 
   private $runner: TaskRunner;
 
-  // $initialized: any;
-
-  // $enabled: boolean;
-
-  // $done: boolean;
-  /*
-    $incoming: any = {};
-
-    $outgoing: any = {};
-
-
-    $running: boolean;
-
-    $error: Error;
-
-    $result: any;
-  */
   $dependencies: string[];
 
   $subtasks: any;
@@ -53,17 +35,15 @@ export class TaskRun {
     this.id = TaskRun.taskId++;
     this.$root = false;
     this.$runner = runner;
-    // this.$initialized = false;
-    // this.$enabled = false;
-
     this.$dependencies = taskRef.dependencies();
 
     // taskRef that should run before this taskRef! (passing values!!!)
     this.$subtasks = taskRef.subtasks();
     this.$taskRef = taskRef;
     this.status = new TaskState();
+    this.status.tasksId = runner.id;
     this.status.name = taskRef.name;
-    this.status.pid = runner.id;
+    this.status.nr = this.id;
 
     this.$wrapper = new TaskRuntimeContainer(this);
   }
@@ -103,13 +83,13 @@ export class TaskRun {
     this.$runner.api().onStart(this.status);
 
     if (this.$runner.$dry_mode) {
-      Log.debug('dry taskRef start: ' + this.taskRef().name);
+      this.$wrapper.logger().debug('dry taskRef start: ' + this.taskRef().name);
       let func = function (d: Function) {
         d();
       };
       func.call(this.$wrapper, done);
     } else {
-      Log.debug('taskRef start: ' + this.taskRef().name);
+      this.$wrapper.logger().debug('taskRef start: ' + this.taskRef().name);
       let outgoings: TaskExchangeRef[] = this.taskRef().getOutgoings();
 
       this.status.incoming = _.clone(incoming);
@@ -133,12 +113,16 @@ export class TaskRun {
             done(e, null);
           }
         } else {
-          fn.call(this.$wrapper, (err: Error, res: any) => {
-            outgoings.forEach(x => {
-              this.status.outgoing[x.storingName] = instance[x.name];
+          try {
+            fn.call(this.$wrapper, (err: Error, res: any) => {
+              outgoings.forEach(x => {
+                this.status.outgoing[x.storingName] = instance[x.name];
+              });
+              done(err, res);
             });
-            done(err, res);
-          });
+          } catch (err) {
+            done(err, null);
+          }
         }
       } else {
         throw new NotSupportedError('no executable for ' + this.taskRef().name)
@@ -160,7 +144,7 @@ export class TaskRun {
   }
 
   stop() {
-    Log.debug('stop: ' + this.taskRef().name);
+    this.$wrapper.logger().debug('stop: ' + this.taskRef().name);
     this.status.done = true;
     this.status.running = false;
     this.status.stop = new Date();
@@ -180,21 +164,8 @@ export class TaskRun {
     this.getRunner().update(this.taskRef().name);
   }
 
-
   stats() {
-    let stats: ITaskRunResult = {
-      id: this.id,
-      name: this.taskRef().name,
-      created: this.status.created,
-      start: this.status.start,
-      stop: this.status.stop,
-      duration: this.status.duration,
-      incoming: this.status.incoming,
-      outgoing: this.status.outgoing,
-      result: this.status.result,
-      has_error: this.status.error != null,
-      error: this.status.error
-    };
+    let stats: ITaskRunResult = _.clone(this.status);
     return _.merge(stats, this.$wrapper.stats());
   }
 

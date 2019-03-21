@@ -1,15 +1,41 @@
-import {TransportOptions} from "winston";
-
 export const K_LOGGING = "logging";
 
 
-export interface ILoggerOptions  {
+export interface ILoggerTransport {
 
-    enable: boolean
+}
 
-    level?: string
+export interface ILoggerOptions {
 
-    events?: boolean
+  enable: boolean
 
-    transports?: {[k: string]: TransportOptions}[]
+  /**
+   * Log info prefix
+   */
+  prefix?:string;
+
+  /**
+   * name for the logger or minimatch pattern for logger group
+   */
+  name?: string;
+
+
+  /**
+   * generate minimatch
+   */
+  match?: any;
+
+  /**
+   * define if necessary log extension are needed
+   * like adding extra transport. It should be enough to add definitions to Activator.
+   */
+  //requires?: string[];
+
+  level?: string
+
+  format?: any;
+
+  transports?: { [k: string]: ILoggerTransport }[]
+
+  loggers?: ILoggerOptions[];
 }

@@ -1,24 +1,15 @@
-import {LogEvent} from "./LogEvent";
-//import {LoggerOptions, TransportInstance, TransportOptions} from "winston";
-import * as winston from "winston";
-import {LoggerInstance, LoggerOptions, TransportOptions} from "winston";
 import * as _ from 'lodash'
 import {ILoggerOptions} from "./ILoggerOptions";
-import * as moment from "moment";
-import {BaseUtils} from "../../";
-import {TodoException} from "commons-base";
+import {C_DEFAULT} from "commons-base";
+import {WinstonLoggerJar} from "./WinstonLoggerJar";
+import {BaseUtils} from "../../libs/utils/BaseUtils";
+import {Minimatch} from "minimatch";
+import {InterpolationSupport} from "commons-config";
+import {ILoggerApi} from "./ILoggerApi";
 
-const DEFAULT_TRANSPORT_OPTIONS: TransportOptions = {
-  timestamp: true,
-  json: false,
-  defaultFormatter: true
-
-};
 
 const DEFAULT_OPTIONS: ILoggerOptions = {
   enable: true,
-
-  events: true,
 
   level: 'info',
 
@@ -41,24 +32,32 @@ export class Log {
 
   static prefix: string = '';
 
-  static enableEvents: boolean = true;
+  static inc: number = 0;
 
-  static console: boolean = false;
+//  static enableEvents: boolean = false;
 
+  //static console: boolean = false;
+
+  /**
+   * check if configuration was loaded
+   */
   private initial: boolean = false;
 
-  private defaultLogger: LoggerInstance = null;
+  private globalOptions: ILoggerOptions;
 
-  private _options: ILoggerOptions = null;
+  private loggers: { [k: string]: ILoggerApi } = {};
 
-  constructor() {
+
+  private constructor() {
   }
 
-  private create(opts: LoggerOptions): Log {
-    this.defaultLogger = new (winston.Logger)(opts);
-    this.initial = true;
-    return this
+
+  static reset() {
+    this.self = null;
+    this.enable = true;
+    this.prefix = '';
   }
+
 
   static _() {
     if (!this.self) {
@@ -68,20 +67,121 @@ export class Log {
   }
 
 
-  get logger(): winston.LoggerInstance {
+  get logger(): ILoggerApi {
     if (!this.initial) {
       this.options(DEFAULT_OPTIONS)
     }
-    return this.defaultLogger
+    return this.getLogger();
   }
 
-  private static defaultFormatter(options: any) {
-    // Return string will be passed to logger.
-    return '[' + moment(Date.now()).format('YYYY.MM.DD HH:mm:ss.SSS') + '] ' +
-      (Log.prefix ? Log.prefix:'') +
-      '[' + options.level.toUpperCase() + ']' + ' '.repeat(7 - options.level.length) +
-      (options.message ? options.message : '') +
-      (options.meta && Object.keys(options.meta).length ? '\n\t' + JSON.stringify(options.meta) : '');
+
+  static getLogger(name: string = C_DEFAULT) {
+    return this._().getLogger(name);
+  }
+
+
+  getLogger(name: string = C_DEFAULT): ILoggerApi {
+    if (_.has(this.loggers, name)) {
+      return this.loggers[name];
+    }
+    return null;
+  }
+
+  getLoggerOptionsFor(name: string) {
+    if (_.has(this.globalOptions, 'loggers')) {
+      let count: number = 0;
+      for (let a of this.globalOptions.loggers) {
+        if (_.isUndefined(a.match)) {
+          if (/\+|\.|\(|\\||\)|\*/.test(a.name)) {
+            a.match = new Minimatch(a.name);
+          } else {
+            a.match = false;
+          }
+        }
+        if (_.isBoolean(a.match)) {
+          if (a.name === name) {
+            return a;
+          }
+        } else {
+          if (a.match.match(name)) {
+            return a;
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+
+  createOrUpdateLogger(name: string = C_DEFAULT, opts: ILoggerOptions, append: boolean = true) {
+    let l = this.getLogger(name);
+    if (l) {
+      (<any>l).build(opts, append);
+      Log.info('update logger ' + name, opts);
+    } else {
+      l = new WinstonLoggerJar(opts);
+      this.loggers[name] = l;
+      if(name !== C_DEFAULT){
+        Log.info('create new logger ' + name, opts);
+      }
+
+    }
+    return l;
+  }
+
+
+  createLogger(name: string, params: any = {}) {
+    let opts = this.getLoggerOptionsFor(name);
+    if (!opts) {
+      opts = DEFAULT_OPTIONS;
+      opts.name = 'logger_' + Log.inc++;
+    }
+    let optsClone = _.cloneDeep(opts);
+
+    if(params.prefix){
+      optsClone.prefix = params.prefix;
+    }
+
+    delete optsClone.match;
+    InterpolationSupport.exec(optsClone, params);
+    return this.createOrUpdateLogger(name, optsClone);
+  }
+
+
+  removeLogger(name: string) {
+    this.getLogger(name).close();
+    delete this.loggers[name];
+    Log.info('remove logger ' + name);
+  }
+
+
+  static options(options: ILoggerOptions, append: boolean = false): ILoggerOptions {
+    return this._().options(options, append)
+  }
+
+
+  private options(options: ILoggerOptions, append: boolean = false) {
+    if (append && this.globalOptions) {
+      options = BaseUtils.merge(this.globalOptions, options)
+    }
+    this.globalOptions = _.defaults(options, DEFAULT_OPTIONS);
+    Log.enable = this.globalOptions.enable;
+    //  Log.enableEvents = this.globalOptions.events;
+    this.initial = true;
+    this.createOrUpdateLogger(C_DEFAULT, this.globalOptions, append);
+    return this.globalOptions;
+  }
+
+  /*
+  createLogger(name:string,){
+    let l = new (winston.Logger)(opts);
+  }
+
+
+  private create(opts: LoggerOptions): Log {
+    this.loggers[C_DEFAULT] = new WinstonLoggerJar(opts);
+    this.initial = true;
+    return this
   }
 
   private options(options: ILoggerOptions, append: boolean = false) {
@@ -101,7 +201,7 @@ export class Log {
     for (let opt of options.transports) {
 
       let k = Object.keys(opt).shift();
-      let transportOptions: TransportOptions = _.defaults(opt[k], DEFAULT_TRANSPORT_OPTIONS);
+      let transportOptions: any = _.defaults(opt[k], DEFAULT_TRANSPORT_OPTIONS);
 
       if (!transportOptions.formatter && transportOptions['defaultFormatter']) {
         transportOptions.formatter = Log.defaultFormatter;
@@ -109,20 +209,20 @@ export class Log {
 
       switch (k) {
         case 'file':
-          opts.transports.push(new winston.transports.File(transportOptions));
+          opts.transports.push(new File(transportOptions));
           break;
         case 'console':
-          opts.transports.push(new winston.transports.Console(transportOptions));
+          opts.transports.push(new Console(transportOptions));
           break;
         case 'dailyrotatefile':
           require('winston-daily-rotate-file');
-          opts.transports.push(new winston.transports.DailyRotateFile(transportOptions));
+          opts.transports.push(new DailyRotateFile(transportOptions));
           break;
         case 'http':
-          opts.transports.push(new winston.transports.Http(transportOptions));
+          opts.transports.push(new Http(transportOptions));
           break;
         case 'memory':
-          opts.transports.push(new winston.transports.Memory(transportOptions));
+          opts.transports.push(new Memory(transportOptions));
           break;
         case 'webhook':
           opts.transports.push(new winston.transports.Webhook(transportOptions));
@@ -138,41 +238,39 @@ export class Log {
     return this._options
   }
 
-
   static options(options: ILoggerOptions, append: boolean = false): ILoggerOptions {
     return this._().options(options, append)
-  }
-
+}
+*/
 
   static log(level: string, ...args: any[]) {
     if (Log.enable) {
-      let l = new LogEvent({args: args, level: level, prefix: this.prefix});
-      if (Log.enableEvents) {
-        l.fire()
-      }
-      this._().logger.log(level.toLocaleLowerCase(), l.message());
+      this._().logger.log(level.toLocaleLowerCase(), ...args);
     }
   }
+
 
   static info(...args: any[]) {
     args.unshift('INFO');
     Log.log.apply(Log, args)
   }
 
+
   static warn(...args: any[]) {
     args.unshift('WARN');
     Log.log.apply(Log, args)
   }
+
 
   static debug(...args: any[]) {
     args.unshift('DEBUG');
     Log.log.apply(Log, args)
   }
 
+
   static error(...args: any[]) {
     args.unshift('ERROR');
     Log.log.apply(Log, args)
   }
-
 
 }

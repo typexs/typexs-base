@@ -1,6 +1,7 @@
 import * as _ from 'lodash'
-import {EventBus} from "commons-eventbus";
+
 import * as moment from "moment";
+import {Log} from "./Log";
 
 export class LogEvent {
 
@@ -19,14 +20,11 @@ export class LogEvent {
     if (opts.time) {
       opts.time = new Date()
     }
-    this.prefix = _.get(opts, 'prefix', '');
+    this.prefix = [Log.prefix, _.get(opts, 'prefix', '')].filter(x => !_.isEmpty(x)).join('__');
     this._message = opts.message;
     _.assign(this, opts)
   }
 
-  fire() {
-    EventBus.postAndForget(this)
-  }
 
   message(): string {
     let _msgs: any[] = [];
@@ -50,6 +48,7 @@ export class LogEvent {
         }
       });
     }
+
     return _msgs.join('\n')
   }
 

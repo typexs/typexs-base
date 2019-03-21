@@ -1,3 +1,5 @@
+import * as _ from 'lodash';
+import * as fs from 'fs';
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 
@@ -15,7 +17,12 @@ import {GroupedTask4} from "./tasks/GroupedTask4";
 import {GroupingTask} from "./tasks/GroupingTask";
 import {SimpleTaskNoName} from "./tasks/SimpleTaskNoName";
 import {SimpleTaskInstance} from "./tasks/SimpleTaskInstance";
+import {SimpleTaskUngrouped01} from "./tasks/SimpleTaskUngrouped01";
+import {SimpleTaskUngrouped02} from "./tasks/SimpleTaskUngrouped02";
+import {SimpleTaskError} from "./tasks/SimpleTaskError";
+import {SimpleTaskWithRuntimeLog} from "./tasks/SimpleTaskWithRuntimeLog";
 
+const stdMocks = require('std-mocks');
 
 @suite('functional/tasks/tasks')
 class TasksSpec {
@@ -76,7 +83,7 @@ class TasksSpec {
   @test
   async 'register simple tasks instance with exec method and run'() {
     let tasks = new Tasks();
-    let nn = new SimpleTaskInstance()
+    let nn = new SimpleTaskInstance();
     let taskRef = tasks.addTask(nn);
     expect(taskRef.name).to.be.eq('simple_task_instance');
     let runner = new TaskRunner(tasks, [taskRef.name]);
@@ -192,8 +199,161 @@ class TasksSpec {
   }
 
 
-  @test.skip
+  @test
+  async 'map task to new one (class-registered task)'() {
+    const oldName = 'simple_task';
+    const newName = 'copy_simple_task';
+    let tasks = new Tasks();
+    let taskRef = tasks.addTask(SimpleTask);
+    expect(taskRef.name).to.be.eq(oldName);
+
+
+    let copyTaskRef = tasks.taskMap(newName, oldName);
+    expect(copyTaskRef.name).to.eq(newName);
+    let c1 = taskRef.getClassRef();
+    let c2 = copyTaskRef.getClassRef();
+    expect(c1).to.not.eq(c2);
+
+    let runner = new TaskRunner(tasks, [newName]);
+    let data = await runner.run();
+    expect(data.results).to.have.length(1);
+  }
+
+
+  @test
+  async 'map task to new one (instance-registered task)'() {
+    const oldName = 'simple_task_instance';
+    const newName = 'copy_simple_task';
+    let tasks = new Tasks();
+    let nn = new SimpleTaskInstance();
+    let taskRef = tasks.addTask(nn);
+    expect(taskRef.name).to.be.eq(oldName);
+
+    let copyTaskRef = tasks.taskMap(newName, oldName);
+    expect(copyTaskRef.name).to.eq(newName);
+    let c1 = taskRef.getClassRef();
+    let c2 = copyTaskRef.getClassRef();
+    // if instance is cloned then the classref is the same
+    expect(c1).to.eq(c2);
+
+    let runner = new TaskRunner(tasks, [newName]);
+    let data = await runner.run();
+    expect(data.results).to.have.length(1);
+
+  }
+
+
+  @test
+  async 'map task to new one (callback-registered task)'() {
+    const oldName = 'callback_test';
+    const newName = 'copy_callback_test';
+    let tasks = new Tasks();
+    let taskRef = tasks.addTask(oldName, function (done: Function) {
+      done(null, 'test')
+    });
+    expect(taskRef.name).to.be.eq(oldName);
+
+    let copyTaskRef = tasks.taskMap(newName, oldName);
+    expect(copyTaskRef.name).to.eq(newName);
+
+    let c1 = taskRef.getClassRef();
+    let c2 = copyTaskRef.getClassRef();
+    expect(c1).to.not.eq(c2);
+
+    let runner = new TaskRunner(tasks, [newName]);
+    let data = await runner.run();
+    expect(data.results).to.have.length(1);
+  }
+
+
+  @test
+  async 'map task group to new one'() {
+    let tasks = new Tasks();
+    let t1 = tasks.addTask(SimpleTaskUngrouped01);
+    let t2 = tasks.addTask(SimpleTaskUngrouped02);
+
+    t1.group('simple_group');
+    t2.group('simple_group');
+
+    let ref = tasks.taskMap('copy_simple_group', 'simple_group');
+    expect(ref.name).to.eq('copy_simple_group');
+
+    let groups = ref.grouping();
+    expect(groups).to.deep.eq(['simple_task_ungrouped_01', 'simple_task_ungrouped_02']);
+
+    let runner = new TaskRunner(tasks, ['simple_group']);
+    let data = await runner.run();
+    expect(data.results).to.have.length(3);
+
+    runner = new TaskRunner(tasks, ['copy_simple_group']);
+    data = await runner.run();
+    expect(data.results).to.have.length(3);
+  }
+
+
+  @test
+  async 'runtime error in (class-registered task)'() {
+    let tasks = new Tasks();
+    let taskRef = tasks.addTask(SimpleTaskError);
+
+    let runner = new TaskRunner(tasks, [taskRef.name]);
+    let data = await runner.run();
+    expect(data.results).to.have.length(1);
+    expect(_.find(data.results, x => x.has_error)).exist;
+
+  }
+
+
+  @test
   async 'own task logger'() {
+    let tasks = new Tasks();
+    let taskRef = tasks.addTask(SimpleTaskWithRuntimeLog);
+    stdMocks.use();
+    let runner = new TaskRunner(tasks, [taskRef.name]);
+    runner.getLogger().info('extern use ;)');
+    let logFile = runner.getLogFile();
+    expect(fs.existsSync(logFile)).to.be.true;
+
+    let x: any[] = [];
+    let reader = runner.getReadStream();
+    reader.on('data', (data: any) => {
+      x = x.concat(data.toString().split('\n').filter((x:string) => !_.isEmpty(x)));
+    });
+
+    let p = new Promise((resolve, reject) => {
+      reader.on('end', resolve);
+    });
+
+    let data = await runner.run();
+    stdMocks.restore();
+    let content = stdMocks.flush();
+
+    let cNewLogger = content.stdout.shift();
+    expect(cNewLogger).to.contain('[INFO]   create new logger task-runner-');
+    let cLogExec = content.stdout.shift();
+    expect(cLogExec).to.contain('[INFO]   Log execution of tasks:\n[\n  "simple_task_with_runtime_log"\n]');
+    let cLogExtern = content.stdout.shift();
+    expect(cLogExtern).to.contain('[INFO]   extern use ;)\n');
+    let cLogTaskInfo = content.stdout.shift();
+    expect(cLogTaskInfo).to.contain(':simple_task_with_runtime_log:0 [INFO]   doing something');
+    let cLogTaskWarn = content.stdout.shift();
+    expect(cLogTaskWarn).to.contain(':simple_task_with_runtime_log:0 [WARN]   doing something wrong');
+    let cLogTaskError = content.stdout.shift();
+    expect(cLogTaskError).to.contain(':simple_task_with_runtime_log:0 [ERROR]  doing something wrong\nnewline');
+
+    //runn
+    await p;
+
+    console.log(x);
+    cLogExtern = x.shift();
+    expect(cLogExtern).to.contain('extern use ;)');
+    cLogTaskInfo = x.shift();
+    expect(cLogTaskInfo).to.contain('doing something');
+    cLogTaskWarn = x.shift();
+    expect(cLogTaskWarn).to.contain('doing something wrong');
+    cLogTaskError = x.shift();
+    expect(cLogTaskError).to.contain('doing something wrong\\nnewline');
+
   }
 
 
@@ -206,20 +366,6 @@ class TasksSpec {
   async 'add remote task '() {
   }
 
-
-  @test.skip
-  async 'task runtime error'() {
-  }
-
-
-  @test.skip
-  async 'map task to new one'() {
-  }
-
-
-  @test.skip
-  async 'map task group to new one'() {
-  }
 
 }
 

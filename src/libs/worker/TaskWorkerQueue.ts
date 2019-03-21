@@ -100,15 +100,24 @@ export class TaskWorkerQueue implements IQueueProcessor<ITaskWorkload> {
     let e = workLoad.event;
     let results: ITaskRunnerResult = null;
     let runner = new TaskRunner(this.tasks, workLoad.names);
-    e.state = 'started';
-    e.data = runner.collectStats();
-    this.fireState(e);
+
+    runner.getReadStream().on('data', (x: any) => {
+      e.state = 'running';
+      e.topic = 'log';
+      e.log = x.toString().split('\n').filter((x: string) => !_.isEmpty(x));
+      this.fireState(e);
+    });
 
     runner.on(TASKRUN_STATE_UPDATE, () => {
       e.state = 'running';
       e.data = runner.collectStats();
       this.fireState(e);
     });
+
+    e.state = 'started';
+    e.data = runner.collectStats();
+    this.fireState(e);
+
 
     try {
 

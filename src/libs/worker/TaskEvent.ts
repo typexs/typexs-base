@@ -50,6 +50,15 @@ export class TaskEvent {
    */
   state: 'enqueue' | 'proposed' | 'started' | 'stopped' | 'running' | 'errored' = 'proposed';
 
+  /**
+   * Topic of this event
+   */
+  topic: 'data' | 'log' = 'data';
+
+  /**
+   * log data
+   */
+  log: any[];
 
   data: ITaskRunnerResult;
 

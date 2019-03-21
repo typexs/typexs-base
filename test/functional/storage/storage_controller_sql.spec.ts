@@ -83,7 +83,7 @@ class Storage_controller_sqlSpec {
         "id": 3,
         "lastName": "Pink"
       }]
-    )
+    );
 
     let car = new Car();
     car.name = 'Team Blue';
@@ -97,14 +97,14 @@ class Storage_controller_sqlSpec {
     expect(car_save_res).to.deep.include({
       name: 'Team Blue',
       id: 1
-    })
+    });
     expect(car_save_res.driver).to.have.length(2);
 
     let car_save_res2 = await controller.save(car_);
     expect(car_save_res2).to.deep.include({
       name: 'Team Yellow',
       id: 2
-    })
+    });
     expect(car_save_res2.driver).to.have.length(1);
 
     let car_found_all = await controller.find(Car);

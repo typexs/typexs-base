@@ -9,5 +9,6 @@ storage:
     synchronize: true
     type: mongodb
     database: typexs
+    useNewUrlParser: true
     # logging: all
     # logger: simple-console

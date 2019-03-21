@@ -203,16 +203,17 @@ class TasksSpec {
   async 'map task to new one (class-registered task)'() {
     const oldName = 'simple_task';
     const newName = 'copy_simple_task';
+
     let tasks = new Tasks();
     let taskRef = tasks.addTask(SimpleTask);
     expect(taskRef.name).to.be.eq(oldName);
 
-
     let copyTaskRef = tasks.taskMap(newName, oldName);
     expect(copyTaskRef.name).to.eq(newName);
+
     let c1 = taskRef.getClassRef();
     let c2 = copyTaskRef.getClassRef();
-    expect(c1).to.not.eq(c2);
+    expect(c1).to.eq(c2);
 
     let runner = new TaskRunner(tasks, [newName]);
     let data = await runner.run();
@@ -223,7 +224,7 @@ class TasksSpec {
   @test
   async 'map task to new one (instance-registered task)'() {
     const oldName = 'simple_task_instance';
-    const newName = 'copy_simple_task';
+    const newName = 'copy_simple_task_instance';
     let tasks = new Tasks();
     let nn = new SimpleTaskInstance();
     let taskRef = tasks.addTask(nn);
@@ -231,6 +232,7 @@ class TasksSpec {
 
     let copyTaskRef = tasks.taskMap(newName, oldName);
     expect(copyTaskRef.name).to.eq(newName);
+
     let c1 = taskRef.getClassRef();
     let c2 = copyTaskRef.getClassRef();
     // if instance is cloned then the classref is the same
@@ -258,7 +260,7 @@ class TasksSpec {
 
     let c1 = taskRef.getClassRef();
     let c2 = copyTaskRef.getClassRef();
-    expect(c1).to.not.eq(c2);
+    expect(c1).to.eq(c2);
 
     let runner = new TaskRunner(tasks, [newName]);
     let data = await runner.run();
@@ -300,7 +302,6 @@ class TasksSpec {
     let data = await runner.run();
     expect(data.results).to.have.length(1);
     expect(_.find(data.results, x => x.has_error)).exist;
-
   }
 
 
@@ -317,7 +318,7 @@ class TasksSpec {
     let x: any[] = [];
     let reader = runner.getReadStream();
     reader.on('data', (data: any) => {
-      x = x.concat(data.toString().split('\n').filter((x:string) => !_.isEmpty(x)));
+      x = x.concat(data.toString().split('\n').filter((x: string) => !_.isEmpty(x)));
     });
 
     let p = new Promise((resolve, reject) => {
@@ -335,13 +336,13 @@ class TasksSpec {
     let cLogExtern = content.stdout.shift();
     expect(cLogExtern).to.contain('[INFO]   extern use ;)\n');
     let cLogTaskInfo = content.stdout.shift();
-    expect(cLogTaskInfo).to.contain(':simple_task_with_runtime_log:0 [INFO]   doing something');
+    expect(cLogTaskInfo).to.match(/:simple_task_with_runtime_log:\d+ \[INFO\]   doing something/);
     let cLogTaskWarn = content.stdout.shift();
-    expect(cLogTaskWarn).to.contain(':simple_task_with_runtime_log:0 [WARN]   doing something wrong');
+    expect(cLogTaskWarn).to.match(/:simple_task_with_runtime_log:\d+ \[WARN\]   doing something wrong/);
     let cLogTaskError = content.stdout.shift();
-    expect(cLogTaskError).to.contain(':simple_task_with_runtime_log:0 [ERROR]  doing something wrong\nnewline');
+    expect(cLogTaskError).to.match(/:simple_task_with_runtime_log:\d+ \[ERROR\]  doing something wrong\nnewline/);
 
-    //runn
+    // runn
     await p;
 
     console.log(x);

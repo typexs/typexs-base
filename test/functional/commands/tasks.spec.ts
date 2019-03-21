@@ -65,7 +65,7 @@ class TasksSpec {
     stdMocks.restore();
     let results = stdMocks.flush();
     expect(results.stdout).to.have.length.gt(0);
-    expect(_.find(results.stdout, x => /\"name\":\"test\".*\"progress\":100/.test(x))).to.exist;
+    expect(_.find(results.stdout, x => /\"name\":\"test\"/.test(x) && /\"progress\":100,/.test(x))).to.exist;
 
   }
 

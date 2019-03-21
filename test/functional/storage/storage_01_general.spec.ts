@@ -3,8 +3,9 @@ import * as path from "path";
 import * as _ from 'lodash';
 import {suite, test} from "mocha-typescript";
 import {expect} from "chai";
-import {Invoker, IStorageOptions, StorageRef} from "../../../src";
-
+import {Invoker} from "../../../src/base/Invoker";
+import {IStorageOptions} from "../../../src/libs/storage/IStorageOptions";
+import {StorageRef} from "../../../src/libs/storage/StorageRef";
 import {Bootstrap} from "../../../src/Bootstrap";
 import {Config} from "commons-config";
 import {BeforeInsert, Column, PrimaryColumn} from "typeorm";
@@ -56,7 +57,7 @@ class Storage_01_generalSpec {
       entityNames.push((<Function>fn).prototype.constructor.name);
     }
     expect(entityNames).to.be.deep.eq([
-      'ModuleEntity', 'TestEntity'
+      'TaskLog', 'ModuleEntity', 'TestEntity'
     ]);
 
     let storageRef = storageManager.forClass('module_entity');
@@ -69,9 +70,9 @@ class Storage_01_generalSpec {
 
 
     let classRef2 = storageRef.getClassRef('TestEntity');
-    expect(classRef2.getClass()).to.be.eq(TestEntity)
+    expect(classRef2.getClass()).to.be.eq(TestEntity);
     let classRef3 = storageRef.getClassRef('test_entity');
-    expect(classRef2.getClass()).to.be.eq(TestEntity)
+    expect(classRef2.getClass()).to.be.eq(TestEntity);
     expect(classRef2).to.be.eq(classRef3);
     expect(classRef2.machineName).to.be.eq('test_entity');
     expect(classRef2.storingName).to.be.eq('test_entity');
@@ -86,7 +87,7 @@ class Storage_01_generalSpec {
 
     let properties = entityRef_1.getPropertyRefs();
     expect(properties).to.have.length(2);
-    expect(_.map(properties, p => p.name)).to.deep.eq(['id','name']);
+    expect(_.map(properties, p => p.name)).to.deep.eq(['id', 'name']);
 
 
   }

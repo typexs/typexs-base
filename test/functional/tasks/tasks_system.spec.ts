@@ -11,7 +11,8 @@ import {System} from "../../../src/libs/system/System";
 import {C_TASKS} from "../../../src/libs/tasks/Constants";
 import {TestHelper} from "../TestHelper";
 import {SpawnHandle} from "../SpawnHandle";
-import {inspect} from "util";
+
+const LOG_EVENT = TestHelper.logEnable(false);
 
 
 @suite('functional/tasks/tasks_system')
@@ -39,7 +40,7 @@ class Tasks_systemSpec {
       .setConfigSources([{type: 'system'}])
       .configure(<ITypexsOptions & any>{
         app: {name: 'test', nodeId: nodeId, path: __dirname + '/fake_app'},
-        logging: {enable: true, level: 'debug'},
+        logging: {enable: LOG_EVENT, level: 'debug'},
         modules: {paths: [__dirname + '/../../..']},
         storage: {default: TEST_STORAGE_OPTIONS},
         eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}}
@@ -76,7 +77,7 @@ class Tasks_systemSpec {
       .setConfigSources([{type: 'system'}])
       .configure(<ITypexsOptions & any>{
         app: {name: 'test', nodeId: nodeId, path: __dirname + '/fake_app'},
-        logging: {enable: true, level: 'debug'},
+        logging: {enable: LOG_EVENT, level: 'debug'},
         modules: {paths: [__dirname + '/../../..']},
         storage: {default: TEST_STORAGE_OPTIONS},
         eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}}
@@ -103,7 +104,7 @@ class Tasks_systemSpec {
       remote: null
     });
 
-    let p = SpawnHandle.do(__dirname + '/fake_app/node.ts').start(false);
+    let p = SpawnHandle.do(__dirname + '/fake_app/node.ts').start(LOG_EVENT);
     await p.started;
     await TestHelper.wait(50);
 
@@ -144,7 +145,7 @@ class Tasks_systemSpec {
       .setConfigSources([{type: 'system'}])
       .configure(<ITypexsOptions & any>{
         app: {name: 'test', nodeId: nodeId, path: __dirname + '/fake_app_main'},
-        logging: {enable: true, level: 'debug'},
+        logging: {enable: LOG_EVENT, level: 'debug'},
         modules: {paths: [__dirname + '/../../..']},
         storage: {default: TEST_STORAGE_OPTIONS},
         eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}}
@@ -163,7 +164,7 @@ class Tasks_systemSpec {
     expect(taskInfos).to.have.length(0);
 
 
-    let p = SpawnHandle.do(__dirname + '/fake_app/node.ts').start(false);
+    let p = SpawnHandle.do(__dirname + '/fake_app/node.ts').start(LOG_EVENT);
     await p.started;
     await TestHelper.wait(50);
 

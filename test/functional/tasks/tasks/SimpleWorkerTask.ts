@@ -10,7 +10,7 @@ export class SimpleWorkerTask implements ITask {
       setTimeout(() => {
         resolve();
       }, 300)
-    })
+    });
     return 'test';
   }
 

@@ -49,7 +49,7 @@ class Storage_controller_mongoSpec {
     let c = await storageRef.connect();
     await c.manager.getMongoRepository(Car).deleteMany({});
     await c.manager.getMongoRepository(Driver).deleteMany({});
-    await c.close()
+    await c.close();
 
 
     let controller = storageRef.getController();
@@ -103,14 +103,14 @@ class Storage_controller_mongoSpec {
     expect(car_save_res).to.deep.include({
       name: 'Team Blue',
       id: "rec-4"
-    })
+    });
     expect(car_save_res.driver).to.have.length(2);
 
     let car_save_res2 = await controller.save(car_);
     expect(car_save_res2).to.deep.include({
       name: 'Team Yellow',
       id: "rec-5"
-    })
+    });
     expect(car_save_res2.driver).to.have.length(1);
 
     let car_found_all = await controller.find(Car);

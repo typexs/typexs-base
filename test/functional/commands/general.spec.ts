@@ -33,13 +33,12 @@ class GeneralSpec {
     let command = _.find(commands, e => e.command == 'dummy');
 
     let result = await command.handler({});
-    expect(result).to.deep.eq({
+    expect(result).to.deep.include({
       connectOnStartup: false,
       name: 'default',
       type: 'sqlite',
       database: ':memory:',
-      synchronize: true,
-      entities: []
+      synchronize: true
     });
 
 

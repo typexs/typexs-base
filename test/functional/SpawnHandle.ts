@@ -33,16 +33,22 @@ export class SpawnHandle {
           resolve();
         }
       });
+      this.process.stdout.on("data", d => {
+        let x = d.toString().trim();
+        if (/startup finished/.test(x)) {
+          resolve();
+        }
+      });
     });
     return this;
   }
 
   withLog() {
     this.process.stdout.on("data", d => {
-      console.log(d.toString().trim());
+      console.log('out=>'+d.toString().trim());
     });
     this.process.stderr.on("data", d => {
-      console.error(d.toString().trim());
+      console.error('err=>'+d.toString().trim());
     });
     return this;
   }

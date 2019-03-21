@@ -110,7 +110,7 @@ class LoggingSpec {
     expect(data_tasklog).to.contain('test_tasklog');
 
     Log._().removeLogger('tasklog-hallo');
-    expect(_.has(Log._()['loggers'],'tasklog-hallo')).to.be.true;
+    expect(_.has(Log._()['loggers'],'tasklog-hallo')).to.be.false;
   }
 
 
@@ -143,7 +143,7 @@ class LoggingSpec {
     Log.info('default_format');
     stdMocks.restore();
     let content = stdMocks.flush();
-    expect(content.stdout[0]).to.contain('{"level":"info","message":"default_format"')
+    expect(content.stdout[0]).to.contain('"level":"info","message":"default_format"')
   }
 
 }

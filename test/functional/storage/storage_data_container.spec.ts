@@ -1,6 +1,7 @@
 import {suite, test} from "mocha-typescript";
 import {expect} from "chai";
-import {DataContainer, TreeUtils, TypeOrmEntityRegistry, WalkValues} from "../../../src";
+import {DataContainer, TreeUtils, WalkValues} from "../../../src";
+import {TypeOrmEntityRegistry} from "../../../src/libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry";
 import {Person} from "./entities/Person";
 import * as _ from "lodash";
 

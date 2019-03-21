@@ -7,7 +7,6 @@ export class TasksApi implements ITasksApi {
   onShutdown(): void {
   }
 
-
   onStart(state: TaskState): void {
   }
 

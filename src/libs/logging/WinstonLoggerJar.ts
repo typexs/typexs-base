@@ -12,7 +12,9 @@ import {ILoggerApi} from "./ILoggerApi";
 import {format} from "logform";
 import {DefaultJsonFormat} from "./DefaultJsonFormat";
 
-const DEFAULT_TRANSPORT_OPTIONS: ConsoleTransportOptions = {};
+const DEFAULT_TRANSPORT_OPTIONS: ConsoleTransportOptions = {
+
+};
 
 
 export class WinstonLoggerJar implements ILoggerApi {
@@ -26,7 +28,7 @@ export class WinstonLoggerJar implements ILoggerApi {
   static formats: { [name: string]: Function } = {
     default: DefaultFormat,
     json: DefaultJsonFormat
-  }
+  };
 
   prefix: string;
 

@@ -31,7 +31,7 @@ export class SaveOp<T> implements ISaveOp<T> {
   }
 
   async run(object: T[] | T, options?: ISaveOptions): Promise<T[] | T> {
-    _.defaults(options, {validate: false, raw: false})
+    _.defaults(options, {validate: false, raw: false});
     let isArray = _.isArray(object);
 
     this.objects = this.prepare(object);
@@ -63,7 +63,7 @@ export class SaveOp<T> implements ISaveOp<T> {
                 }
                 bulk.insert(e);
               }
-            })
+            });
             await bulk.execute();
 
 

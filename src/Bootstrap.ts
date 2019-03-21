@@ -278,7 +278,7 @@ export class Bootstrap {
 
 
   async throwedUncaughtException(err: Error) {
-    Log.error('uncaughtException', err)
+    Log.error('uncaughtException', err);
     await this.shutdown();
   }
 

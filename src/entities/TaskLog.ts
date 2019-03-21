@@ -1,3 +1,4 @@
+import * as _ from "lodash";
 import {
   AfterInsert,
   AfterUpdate,
@@ -28,46 +29,46 @@ export class TaskLog {
   @Column()
   taskNr: number;
 
-  @Column({nullable:true})
+  @Column({nullable: true})
   started: Date;
 
-  @Column({nullable:true})
+  @Column({nullable: true})
   finished: Date;
 
-  @Column({nullable:true})
+  @Column({nullable: true})
   duration: number;
 
-  @Column({nullable:true})
-  data: any;
+  @Column({nullable: true})
+  data: string;
 
 
   @BeforeInsert()
-  bi(){
-    if(this.data){
+  bi() {
+    if (this.data) {
       this.data = JSON.stringify(this.data);
     }
   }
 
 
   @BeforeUpdate()
-  bu(){
-    if(this.data){
+  bu() {
+    if (this.data) {
       this.data = JSON.stringify(this.data);
     }
   }
 
 
   @AfterInsert()
-  ai(){
-    if(this.data){
+  ai() {
+    if (_.isString(this.data)) {
       this.data = JSON.parse(this.data);
     }
   }
 
 
   @AfterUpdate()
-  au(){
-    if(this.data){
+  au() {
+    if (_.isString(this.data)) {
       this.data = JSON.parse(this.data);
     }
   }

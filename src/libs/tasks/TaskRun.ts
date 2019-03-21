@@ -2,12 +2,9 @@ import * as _ from "lodash";
 import {TaskRef} from "./TaskRef";
 import {TaskRuntimeContainer} from "./TaskRuntimeContainer";
 import {TaskRunner} from "./TaskRunner";
-import {Log} from "../logging/Log";
 import {TaskExchangeRef} from "./TaskExchangeRef";
 import {NotSupportedError} from "commons-base";
 import {ITaskRunResult} from "./ITaskRunResult";
-
-import {TasksApi} from "../..";
 import {TaskState} from "./TaskState";
 
 export class TaskRun {
@@ -131,8 +128,11 @@ export class TaskRun {
   }
 
   error(err: Error) {
-    this.status.error = err;
-    this.$runner.api().onError(this.status);
+    if(err){
+      this.status.error = err;
+      this.status.has_error = true;
+      this.$runner.api().onError(this.status);
+    }
   }
 
   result(res: any) {

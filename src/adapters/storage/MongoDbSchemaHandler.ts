@@ -34,7 +34,7 @@ export class MongoDbSchemaHandler extends AbstractSchemaHandler {
     let c = await this.storageRef.connect();
     let collection = this.getDB(c).listCollections({name: name});
     let res = await collection.next();
-    await c.close()
+    await c.close();
     return res;
   }
 
@@ -59,8 +59,6 @@ export class MongoDbSchemaHandler extends AbstractSchemaHandler {
 
       colls.push(_c);
     }
-    ;
-
     return colls;
   }
 

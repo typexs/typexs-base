@@ -283,7 +283,7 @@ export class TaskRunner extends EventEmitter {
     // copy outgoings to incomings
     task.taskRef().getOutgoings().forEach(x => {
       this.$outgoing[x.storingName] = task.status.outgoing[x.name];
-    })
+    });
 
     let name = task.taskRef().name;
 

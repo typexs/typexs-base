@@ -103,7 +103,7 @@ export class TypeOrmEntityRegistry implements ILookupRegistry {
     );
 
     properties.filter(p => p.isReference()).map(p => {
-      let classRef = p.getTargetRef()
+      let classRef = p.getTargetRef();
       if (!classRef.getEntityRef()) {
         let metadata = this._findTableMetadataArgs(classRef.getClass());
         if (metadata) {

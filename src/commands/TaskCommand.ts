@@ -85,7 +85,7 @@ export class TaskCommand {
           event.name = taskNames;
           for (let k of _.keys(args)) {
             if (!/^_/.test(k)) {
-              console.log(k)
+              console.log(k);
               event.addParameter(k, args[k]);
             }
           }

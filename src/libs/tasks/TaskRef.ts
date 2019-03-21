@@ -49,12 +49,27 @@ export class TaskRef extends AbstractRef implements IEntityRef {
       this.$source = null;
 
       if (_.isString(name)) {
-        if (_.isFunction(fn)) {
-          this.$fn = fn ? fn : function (done: Function) {
-            done();
-          };
-        }
         this._type = TaskRefType.CALLBACK;
+
+        if (_.isFunction(fn)) {
+
+          if (!_.isEmpty(fn.name)) {
+            this._type = TaskRefType.CLASS;
+            let x = Reflect.construct(fn, []);
+            this.process(x);
+            this.$fn = fn;
+          } else {
+            this.$fn = fn ? fn : function (done: Function) {
+              done();
+            };
+          }
+
+        } else if (_.isObject(fn)) {
+          this._type = TaskRefType.INSTANCE;
+          this.process(fn);
+          this.$fn = fn;
+        }
+
       } else if (_.isFunction(name)) {
         this._type = TaskRefType.CLASS;
         let x = Reflect.construct(name, []);
@@ -94,32 +109,41 @@ export class TaskRef extends AbstractRef implements IEntityRef {
 
 
   clone(name: string) {
-    let opts, tr;
+    let opts: any;
+    let tr: any;
+    let fn: any;
 
     switch (this.getType()) {
 
       case TaskRefType.REMOTE:
         let source = _.clone(this.$source);
         source.name = name;
-        return new TaskRef(source);
+
+        tr = new TaskRef(source);
+        tr.nodeIds = _.clone(this.nodeIds);
+        tr._hasWorker = this._hasWorker;
+        return tr;
 
       case TaskRefType.GROUP:
         opts = _.clone(this.getOptions());
-        let tr = new TaskRef(name, null, opts);
+        tr = new TaskRef(name, null, opts);
         this.grouping().forEach(x => {
           TaskRef.group(name, x);
         });
+        tr.nodeIds = _.clone(this.nodeIds);
+        tr._hasWorker = this._hasWorker;
         return tr;
 
       default:
-        let fn = _.clone(this.getFn());
+        fn = this.getFn();
         opts = _.clone(this.getOptions());
         tr = new TaskRef(name, fn, opts);
+        tr.nodeIds = _.clone(this.nodeIds);
+        tr._hasWorker = this._hasWorker;
         this.dependencies().forEach(d => {
           tr.dependsOn(d);
         });
         return tr;
-
     }
   }
 

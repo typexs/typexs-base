@@ -51,7 +51,7 @@ export class DeleteOp<T> implements IDeleteOp<T> {
       });
     }
 
-    await this.connection.close()
+    await this.connection.close();
 
     if (!isArray) {
       return this.objects.shift();

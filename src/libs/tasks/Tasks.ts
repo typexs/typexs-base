@@ -162,15 +162,15 @@ export class Tasks {
 
   addRemoteTask(nodeId: string, info: ITaskInfo): TaskRef {
     let task = new TaskRef(info, null, {remote: true});
-    return this.addTaskRef(task);
+    return this.addTaskRef(task,nodeId);
   }
 
 
-  addTaskRef(task: TaskRef) {
+  addTaskRef(task: TaskRef, nodeId:string = Bootstrap.getNodeId()) {
     if (this.access(task.name)) {
       let exists = <TaskRef>this.registry.find(XS_TYPE_ENTITY, (x: TaskRef) => x.name == task.name);
       if (!exists) {
-        task.addNodeId(Bootstrap.getNodeId());
+        task.addNodeId(nodeId);
         this.registry.add(XS_TYPE_ENTITY, task);
         if (task.canHaveProperties()) {
           let ref = task.getClassRef().getClass(false);
@@ -183,7 +183,7 @@ export class Tasks {
         }
         return this.get(task.name);
       } else {
-        exists.addNodeId(Bootstrap.getNodeId());
+        exists.addNodeId(nodeId);
         return exists;
       }
     }

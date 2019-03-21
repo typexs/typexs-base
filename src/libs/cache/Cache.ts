@@ -23,7 +23,7 @@ import {CacheBin} from "./CacheBin";
 
 export const DEFAULT_OPTIONS: ICacheConfig = {
   bins: {default: 'default'}
-}
+};
 
 export class Cache {
 
@@ -115,7 +115,7 @@ export class Cache {
       this.adapterClasses.push({
         type: instance.type,
         clazz: s
-      })
+      });
       return true;
     }
     return false;

@@ -15,6 +15,60 @@ tasks:
     access: allow
 ```
 
+
+### API
+
+
+#### TaskRuntimeContainer
+
+Inject the task runtime container to pass progress information, status updates or
+log entries to the runtime enviroment. Use TaskRuntime annotation to inject the container
+object. The interface ITaskRuntimeContainer definies the providen methods.
+
+```js
+export class SomeTask {
+
+  @TaskRuntime()
+  runtime: ITaskRuntimeContainer;
+
+  ...
+}
+```
+
+##### Task logging
+
+Example:
+
+```js
+  ...
+
+  async exec(){
+    const logger = this.runtime.logger();
+    logger.info('everything is fine');
+  }
+
+  ...
+```
+
+The logger passes the log information to the runtime enviroment, which defines based on
+the configuration which logging mechanism is used. If none is configured then the default
+runtime node mechanism is used.
+
+
+*Configuration*
+```
+
+
+tasks
+  logger:
+  - task: *
+    use: deny
+
+  - task: mytasks_*
+    access: allow
+```
+
+
 ### Integretion / implementation
 
 * as Function

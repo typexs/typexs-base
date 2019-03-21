@@ -1,0 +1,32 @@
+
+
+
+## Logging
+
+
+### Configuration
+
+
+```
+
+logging:
+
+  # global on/off switch
+  enable: true
+
+  # global debug level
+  level: debug
+
+  # define the global available transports for 'winston logger'
+  transports:
+  - console: {}
+
+  # define space for loggers from other modules / runtime parts
+  logger:
+  - name: some_later_used_logger
+    transports:
+    - console: {}
+
+```
+
+

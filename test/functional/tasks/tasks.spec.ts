@@ -21,6 +21,7 @@ import {SimpleTaskUngrouped01} from "./tasks/SimpleTaskUngrouped01";
 import {SimpleTaskUngrouped02} from "./tasks/SimpleTaskUngrouped02";
 import {SimpleTaskError} from "./tasks/SimpleTaskError";
 import {SimpleTaskWithRuntimeLog} from "./tasks/SimpleTaskWithRuntimeLog";
+import {TestHelper} from "../TestHelper";
 
 const stdMocks = require('std-mocks');
 
@@ -312,6 +313,7 @@ class TasksSpec {
     stdMocks.use();
     let runner = new TaskRunner(tasks, [taskRef.name]);
     runner.getLogger().info('extern use ;)');
+    await TestHelper.wait(50);
     let logFile = runner.getLogFile();
     expect(fs.existsSync(logFile)).to.be.true;
 
@@ -328,6 +330,7 @@ class TasksSpec {
     let data = await runner.run();
     stdMocks.restore();
     let content = stdMocks.flush();
+    expect(content.stdout).to.have.length(6);
 
     let cNewLogger = content.stdout.shift();
     expect(cNewLogger).to.contain('[INFO]   create new logger task-runner-');
@@ -345,7 +348,7 @@ class TasksSpec {
     // runn
     await p;
 
-    console.log(x);
+    expect(x).to.have.length(4);
     cLogExtern = x.shift();
     expect(cLogExtern).to.contain('extern use ;)');
     cLogTaskInfo = x.shift();

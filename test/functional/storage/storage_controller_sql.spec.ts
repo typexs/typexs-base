@@ -8,6 +8,7 @@ import {Config} from "commons-config";
 import {PlatformTools} from "typeorm/platform/PlatformTools";
 import {inspect} from "util";
 import {XS_P_$COUNT} from "../../../src";
+import {TestHelper} from "../TestHelper";
 
 
 @suite('functional/storage/storage_controller_sql')
@@ -15,7 +16,7 @@ class Storage_controller_sqlSpec {
 
 
   before() {
-    PlatformTools.getGlobalVariable().typeormMetadataArgsStorage = null;
+    TestHelper.typeOrmReset();
     Bootstrap.reset();
     Config.clear();
   }

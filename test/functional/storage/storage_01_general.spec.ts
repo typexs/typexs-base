@@ -57,7 +57,7 @@ class Storage_01_generalSpec {
       entityNames.push((<Function>fn).prototype.constructor.name);
     }
     expect(entityNames).to.be.deep.eq([
-      'TaskLog', 'ModuleEntity', 'TestEntity'
+      'SystemNodeInfo', 'TaskLog', 'ModuleEntity', 'TestEntity'
     ]);
 
     let storageRef = storageManager.forClass('module_entity');

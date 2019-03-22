@@ -9,6 +9,7 @@ import {Config} from "commons-config";
 //import {Driver} from "./fake_app_mongo/entities/Driver";
 import {inspect} from "util";
 import {PlatformTools} from "typeorm/platform/PlatformTools";
+import {TestHelper} from "../TestHelper";
 
 
 @suite('functional/storage/storage_controller_mongo')
@@ -16,7 +17,7 @@ class Storage_controller_mongoSpec {
 
 
   before() {
-    PlatformTools.getGlobalVariable().typeormMetadataArgsStorage = null;
+    TestHelper.typeOrmReset();
     Bootstrap.reset();
     Config.clear();
   }

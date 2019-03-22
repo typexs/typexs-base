@@ -3,11 +3,12 @@ import {TEST_STORAGE_OPTIONS} from "../../config";
 import {IEventBusConfiguration} from "commons-eventbus";
 
 (async function () {
+  const LOG_EVENT = true;//
   let bootstrap = Bootstrap
     .setConfigSources([{type: 'system'}])
     .configure(<ITypexsOptions & any>{
       app: {name: 'fakeapp01', nodeId: 'fakeapp01', path: __dirname},
-      logging: {enable: true, level: 'debug'},
+      logging: {enable: LOG_EVENT, level: 'debug'},
       modules: {paths: [__dirname + '/../../../..']},
       storage: {default: TEST_STORAGE_OPTIONS},
       //cache: {bins: {default: 'redis1'}, adapter: {redis1: {type: 'redis', host: '127.0.0.1', port: 6379}}},

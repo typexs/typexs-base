@@ -2,15 +2,19 @@ import {suite, test} from "mocha-typescript";
 import {expect} from "chai";
 import {DataContainer, TreeUtils, WalkValues} from "../../../src";
 import {TypeOrmEntityRegistry} from "../../../src/libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry";
-import {Person} from "./entities/Person";
+
 import * as _ from "lodash";
+
 
 @suite('functional/storage/storage_data_container')
 class Storage_data_containerSpec {
 
+  before(){
+  }
 
   @test
   async 'check empty'() {
+    const Person = require('./entities/Person').Person;
     let p = new Person();
     let c = new DataContainer(p, TypeOrmEntityRegistry.$());
     let retCode = await c.validate();
@@ -24,6 +28,7 @@ class Storage_data_containerSpec {
 
   @test
   async 'half filled'() {
+    const Person = require('./entities/Person').Person;
     let p = new Person();
     p.lastName = 'Blacky';
     let c = new DataContainer(p, TypeOrmEntityRegistry.$());
@@ -38,6 +43,7 @@ class Storage_data_containerSpec {
 
   @test
   async 'full filled'() {
+    const Person = require('./entities/Person').Person;
     let p = new Person();
     p.firstName = 'Funny';
     p.lastName = 'Blacky';

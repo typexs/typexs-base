@@ -1,0 +1,10 @@
+app:
+  name: fake_app_startup
+
+
+storage:
+  default:
+    type: sqlite
+    database: ':memory:'
+    connectOnStartup: false
+    synchronize: true

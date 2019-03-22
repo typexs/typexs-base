@@ -7,6 +7,7 @@ import {Config} from "commons-config";
 import {TypeOrmSqlConditionsBuilder} from "../../../src/libs/storage/framework/typeorm/TypeOrmSqlConditionsBuilder";
 import {PlatformTools} from "typeorm/platform/PlatformTools";
 import {TypeOrmEntityRegistry} from "../../../src/libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry";
+import {TestHelper} from "../TestHelper";
 
 let bootstrap: Bootstrap;
 let Car:any = null;
@@ -17,7 +18,7 @@ class Storage_sql_conditions_builderSpec {
 
 
   static async before() {
-    PlatformTools.getGlobalVariable().typeormMetadataArgsStorage = null;
+    TestHelper.typeOrmReset();
     Bootstrap.reset();
     Config.clear();
     let appdir = path.join(__dirname, 'fake_app_conditions');

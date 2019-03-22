@@ -10,12 +10,15 @@ export class SpawnHandle {
   process: ChildProcess;
 
   done: Promise<any>;
+
   started: Promise<any>;
+
 
   constructor(file: string, ...args: any[]) {
     this.file = file;
     this.args = _.isEmpty(args) ? [] : args;
   }
+
 
   start(withLog: boolean = false): SpawnHandle {
     this.process = spawn(process.execPath, ['--require', 'ts-node/register', this.file].concat(this.args));
@@ -43,15 +46,17 @@ export class SpawnHandle {
     return this;
   }
 
+
   withLog() {
     this.process.stdout.on("data", d => {
-      console.log('out=>'+d.toString().trim());
+      console.log('out=>' + d.toString().trim());
     });
     this.process.stderr.on("data", d => {
-      console.error('err=>'+d.toString().trim());
+      console.error('err=>' + d.toString().trim());
     });
     return this;
   }
+
 
   static do(file: string, ...args: any[]): SpawnHandle {
     return new SpawnHandle(file, ...args);

@@ -5,7 +5,6 @@ import {expect} from "chai";
 import {Bootstrap} from "../../../src/Bootstrap";
 import {Config} from "commons-config";
 import {RuntimeLoader} from "../../../src/base/RuntimeLoader";
-import {K_CLS_BOOTSTRAP, K_CLS_STORAGE_SCHEMAHANDLER} from "../../../src";
 import {Container} from "typedi";
 import {Invoker} from "../../../src/base/Invoker";
 import {K_CLS_API, K_CLS_USE_API} from "../../../src/libs/Constants";

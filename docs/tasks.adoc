@@ -75,6 +75,34 @@ tasks
 * as Class
 * as Instance
 
+### Storage
+
+
+How to query over multiple nodes ???
+
+Local node task execution logging
+
+* TaskStorageExtension
+
+
+Distributed query by different backends and nodes
+
+1. nodes have different backends?
+2. nodes have same backend? => create system entry
+
+On startup the system creates or updates the system node entry in the underlaying backend.
+So if a distributed query is executed, we know which nodes using an other backend and
+where an additional query must be executed and the results collected back.
+
+Distributed query:
+
+1. fire query request to known nodes
+2. wait for all responses
+3. sort correctly
+
+
+
+
 
 
 ### Notizen:

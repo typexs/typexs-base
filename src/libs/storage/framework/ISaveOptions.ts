@@ -1,4 +1,5 @@
 export interface ISaveOptions {
   validate?: boolean
-  raw?:boolean
+  raw?: boolean
+  noTransaction?: boolean;
 }

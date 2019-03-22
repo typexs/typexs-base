@@ -46,7 +46,7 @@ export class Invoker {
 
   private async execute(api: Function, method: string, ...args: any[]) {
     let def = _.find(this.apiImpls, apiImpl => apiImpl.api == api);
-    let instances = def.impl.map(impl => Container.get(impl));
+    let instances = def.impl.map(impl => Container. get(impl));
     let results = [];
     // TODO maybe parallel
     for (let instance of instances) {

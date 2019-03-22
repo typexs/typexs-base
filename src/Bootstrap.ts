@@ -11,10 +11,11 @@ import {IModule} from "./api/IModule";
 import {IStorageOptions, K_STORAGE} from "./libs/storage/IStorageOptions";
 import {DEFAULT_STORAGE_OPTIONS, Storage} from "./libs/storage/Storage";
 import {Container} from "typedi";
+import * as os from "os";
 
 import {getMetadataArgsStorage, useContainer} from "typeorm";
 import {BaseUtils} from "./libs/utils/BaseUtils";
-import {MetaArgs, PlatformUtils} from "commons-base";
+import {C_DEFAULT, MetaArgs, PlatformUtils} from "commons-base";
 import {
   CONFIG_NAMESPACE,
   K_CLS_ACTIVATOR,
@@ -33,6 +34,7 @@ import {Invoker} from "./base/Invoker";
 
 import {IShutdown} from "./api/IShutdown";
 import {System} from "./libs/system/System";
+import {TableMetadataArgs} from "typeorm/metadata-args/TableMetadataArgs";
 
 useContainer(Container);
 
@@ -255,9 +257,10 @@ export class Bootstrap {
       if (this.runtimeLoader) {
         let _entities: Function[] = this.runtimeLoader.getClasses(['entity', name].join('.'));
         // Check if classes are realy for typeorm
-        entities = <Function[]>getMetadataArgsStorage().tables
+        const tables:TableMetadataArgs[] = getMetadataArgsStorage().tables;
+        entities = tables
           .filter(t => _entities.indexOf(<Function>t.target) != -1)
-          .map(t => t.target);
+          .map(t => <Function>t.target);
       }
 
       let _settings: IStorageOptions = _.merge(settings, {entities: entities}, {name: name});
@@ -415,15 +418,14 @@ export class Bootstrap {
     process.on('exit', async (code) => {
       await this.shutdown(code);
     });
-    this.createSystemInfo();
 
     return this;
   }
 
 
-  private createSystemInfo() {
+  private async createSystemInfo() {
     let system = Bootstrap.getContainer().get(System);
-    system.initialize(this.getNodeId());
+    await system.initialize(os.hostname(), this.getNodeId());
     Bootstrap.getContainer().set(System.NAME, system);
     // todo ip + command
     return this;
@@ -436,7 +438,7 @@ export class Bootstrap {
     loader.getClasses(K_CLS_USE_API);
     let apis = MetaArgs.key(K_CLS_USE_API);
     apiClasses.forEach(api => {
-      i.register(api, apis.filter(x => x.api).map(x => x.target));
+      i.register(api, apis.filter(x => x.api == api).map(x => x.target));
     });
   }
 
@@ -469,6 +471,8 @@ export class Bootstrap {
   async startup(): Promise<Bootstrap> {
     Log.debug('startup ...');
 
+    await this.createSystemInfo();
+
     let activators = this.getActivators();
     activators = _.filter(activators, a => _.isFunction(a['startup']));
     for (let activator of activators) {
@@ -492,6 +496,7 @@ export class Bootstrap {
         await bootstrap['ready']();
       }
     }
+
 
     Log.debug('startup finished.');
     return this;

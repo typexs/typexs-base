@@ -11,7 +11,6 @@ import {ObjectsNotValidError} from "../../../exceptions/ObjectsNotValidError";
 import {TypeOrmEntityRegistry} from "./schema/TypeOrmEntityRegistry";
 
 
-
 export class SaveOp<T> implements ISaveOp<T> {
 
 
@@ -87,14 +86,24 @@ export class SaveOp<T> implements ISaveOp<T> {
         await Promise.all(promises);
       } else {
         // start transaction, got to leafs and save
-        let results = await this.c.manager.transaction(async em => {
-          let promises = [];
+        if (this.c.isSingleConnection()) {
+          options.noTransaction = true;
+        }
+
+        if (options.noTransaction) {
           for (let entityName of entityNames) {
-            let p = em.getRepository(entityName).save(resolveByEntityDef[entityName]);
-            promises.push(p);
+            await this.c.manager.getRepository(entityName).save(resolveByEntityDef[entityName]);
           }
-          return Promise.all(promises);
-        });
+        } else {
+          let results = await this.c.manager.transaction(async em => {
+            let promises = [];
+            for (let entityName of entityNames) {
+              let p = em.getRepository(entityName).save(resolveByEntityDef[entityName]);
+              promises.push(p);
+            }
+            return Promise.all(promises);
+          });
+        }
       }
 
       await this.c.close();

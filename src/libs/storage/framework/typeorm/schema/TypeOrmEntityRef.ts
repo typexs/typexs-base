@@ -40,20 +40,6 @@ export class TypeOrmEntityRef extends AbstractRef implements IEntityRef {
     return this.getPropertyRefs().find(p => p.name == name);
   }
 
-  /*
-    getPropertyDefs(): TypeOrmPropertyRef[] {
-      if (!this._properties) {
-        this._properties = _.concat(
-          _.map(getMetadataArgsStorage().columns
-              .filter(c => c.target == this.metadata.target),
-            c => new TypeOrmPropertyRef(c, 'column')),
-          _.map(getMetadataArgsStorage().filterRelations(this.metadata.target),
-            c => new TypeOrmPropertyRef(c, 'relation')),
-        );
-      }
-      return this._properties;
-    }
-  */
 
   build<T>(instance: any, options?: IBuildOptions): T {
     return <T>SchemaUtils.transform(this, instance, options);

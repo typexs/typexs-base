@@ -7,8 +7,7 @@ import {Log} from '../libs/logging/Log'
 import {Console} from '../libs/logging/Console'
 import {TasksApi} from "../api/Tasks.api";
 import {System} from "../libs/system/System";
-import {TaskEvent} from "../libs/worker/TaskEvent";
-import {Bootstrap} from "../Bootstrap";
+import {TaskEvent} from "../libs/tasks/worker/TaskEvent";
 import {EventBus} from "commons-eventbus";
 
 /**
@@ -80,7 +79,8 @@ export class TaskCommand {
 
           let event = new TaskEvent();
           if (targetId) {
-            event.targetId = targetId;
+            if (!event.targetIds) event.targetIds = [];
+            event.targetIds.push(targetId);
           }
           event.name = taskNames;
           for (let k of _.keys(args)) {

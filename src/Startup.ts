@@ -9,6 +9,7 @@ import {ICacheConfig} from "./libs/cache/ICacheConfig";
 import {IShutdown} from "./api/IShutdown";
 import {System} from "./libs/system/System";
 import {EventBus, IEventBusConfiguration} from "commons-eventbus";
+import {Workers} from "./libs/worker/Workers";
 
 
 export class Startup implements IBootstrap, IShutdown {
@@ -26,8 +27,12 @@ export class Startup implements IBootstrap, IShutdown {
   system: System;
 
 
+  @Inject(Workers.NAME)
+  workers: Workers;
+
   async bootstrap(): Promise<void> {
     this.tasks.prepare(this.loader);
+    this.workers.prepare(this.loader);
 
     for (let cls of this.loader.getClasses(K_CLS_CACHE_ADAPTER)) {
       await this.cache.register(<any>cls);
@@ -48,6 +53,7 @@ export class Startup implements IBootstrap, IShutdown {
 
   async ready(){
     await this.system.register();
+    await this.workers.startup();
   }
 
 
@@ -56,5 +62,7 @@ export class Startup implements IBootstrap, IShutdown {
     await this.system.unregister();
     await EventBus.$().shutdown();
     this.tasks.reset();
+    await this.workers.shutdown();
+
   }
 }

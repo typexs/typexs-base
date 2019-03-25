@@ -1,9 +1,9 @@
 import * as _ from 'lodash';
 import {TaskRef, TaskRefType} from "./TaskRef";
 import {TaskRunner} from "./TaskRunner";
-import {ClassLoader, MetaArgs} from "commons-base";
+import {ClassLoader, MetaArgs, NotYetImplementedError} from "commons-base";
 import {K_CLS_TASKS, RuntimeLoader} from "../..";
-import {Binding, LookupRegistry, XS_TYPE_ENTITY, XS_TYPE_PROPERTY} from "commons-schema-api";
+import {Binding, ILookupRegistry, LookupRegistry, XS_TYPE_ENTITY, XS_TYPE_PROPERTY} from "commons-schema-api";
 import {
   C_TASKS,
   K_CLS_TASK_DESCRIPTORS,
@@ -17,26 +17,16 @@ import {ITaskRefOptions} from "./ITaskRefOptions";
 import {ITaskInfo} from "./ITaskInfo";
 import {Bootstrap} from "../../Bootstrap";
 
-export class Tasks {
+export class Tasks implements ILookupRegistry {
 
   static NAME: string = 'Tasks';
 
-//  static _self: Tasks = null;
 
   static taskId: number = 0;
 
   config: ITasksConfig = {access: []};
 
   registry: LookupRegistry = LookupRegistry.$(C_TASKS);
-
-  /*
-    static _(): Tasks {
-      if (!Tasks._self) {
-        Tasks._self = new Tasks()
-      }
-      return Tasks._self;
-    }
-  */
 
   setConfig(config: ITasksConfig = {access: []}) {
     this.config = config;
@@ -162,11 +152,11 @@ export class Tasks {
 
   addRemoteTask(nodeId: string, info: ITaskInfo): TaskRef {
     let task = new TaskRef(info, null, {remote: true});
-    return this.addTaskRef(task,nodeId);
+    return this.addTaskRef(task, nodeId);
   }
 
 
-  addTaskRef(task: TaskRef, nodeId:string = Bootstrap.getNodeId()) {
+  addTaskRef(task: TaskRef, nodeId: string = Bootstrap.getNodeId()) {
     if (this.access(task.name)) {
       let exists = <TaskRef>this.registry.find(XS_TYPE_ENTITY, (x: TaskRef) => x.name == task.name);
       if (!exists) {
@@ -216,11 +206,11 @@ export class Tasks {
   }
 
 
-  private containsTask(name:string){
+  private containsTask(name: string) {
     return !!this.registry.find(XS_TYPE_ENTITY, (t: TaskRef) => t.name == name);
   }
 
-  private containsGroup(name:string){
+  private containsGroup(name: string) {
     return !!this.registry.find(<any>XS_TYPE_BINDING_TASK_GROUP, (t: Binding) => t.source == name);
   }
 
@@ -300,6 +290,19 @@ export class Tasks {
   reset() {
     LookupRegistry.reset(C_TASKS);
     this.registry = LookupRegistry.$(C_TASKS);
+  }
+
+  fromJson(json: any): TaskRef {
+    throw new NotYetImplementedError();
+    //return undefined;
+  }
+
+  getEntityRefFor(fn: any): TaskRef {
+    throw new NotYetImplementedError();
+  }
+
+  getPropertyRefsFor(fn: any): TaskExchangeRef[] {
+    throw new NotYetImplementedError();
   }
 
 }

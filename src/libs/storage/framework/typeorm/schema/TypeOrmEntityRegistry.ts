@@ -129,6 +129,7 @@ export class TypeOrmEntityRegistry implements ILookupRegistry {
 
 
   getEntityRefFor(instance: Object | string): TypeOrmEntityRef {
+    if (!instance) return null;
     let entityRef = this.find(instance);
     if (entityRef) {
       return entityRef;

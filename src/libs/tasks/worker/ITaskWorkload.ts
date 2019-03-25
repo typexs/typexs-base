@@ -1,4 +1,4 @@
-import {IQueueWorkload} from "../..";
+import {IQueueWorkload} from "../../..";
 import {TaskEvent} from "./TaskEvent";
 
 export interface ITaskWorkload extends IQueueWorkload {

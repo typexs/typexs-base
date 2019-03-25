@@ -1,33 +1,9 @@
-import {CryptUtils} from "../../libs/utils/CryptUtils";
-import {IError} from "../exceptions/IError";
-import {ITaskRunnerResult} from "../tasks/ITaskRunnerResult";
+import {IError} from "../../exceptions/IError";
+import {ITaskRunnerResult} from "../../tasks/ITaskRunnerResult";
 import * as _ from 'lodash';
+import {AbstractEvent} from "../../events/AbstractEvent";
 
-export class TaskEvent {
-
-  static inc = 0;
-
-  /**
-   * Id of system node which created the event
-   */
-  nodeId: string;
-
-  /**
-   * Id of target system node
-   *
-   * Used for direct task allocation
-   */
-  targetId: string;
-
-  /**
-   * Id of responding system node
-   */
-  respId: string;
-
-  /**
-   * Id of event itself
-   */
-  id: string = CryptUtils.shorthash('task_event-' + (new Date()).getTime() + '' + (TaskEvent.inc++));
+export class TaskEvent extends AbstractEvent {
 
   /**
    * Name or names of task(s) to execute

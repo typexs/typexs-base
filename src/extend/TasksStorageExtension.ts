@@ -3,7 +3,7 @@ import {Inject} from "typedi";
 import {Bootstrap, ITasksApi, StorageRef, Tasks, TasksApi} from "..";
 import {TaskState} from "../libs/tasks/TaskState";
 import subscribe from "commons-eventbus/decorator/subscribe";
-import {TaskEvent} from "../libs/worker/TaskEvent";
+import {TaskEvent} from "../libs/tasks/worker/TaskEvent";
 import {TaskLog} from "../entities/TaskLog";
 
 @UseAPI(TasksApi)

@@ -35,6 +35,7 @@ import {Invoker} from "./base/Invoker";
 import {IShutdown} from "./api/IShutdown";
 import {System} from "./libs/system/System";
 import {TableMetadataArgs} from "typeorm/metadata-args/TableMetadataArgs";
+import {K_CLS_WORKERS} from "./libs/worker/Constants";
 
 useContainer(Container);
 
@@ -148,6 +149,12 @@ export const DEFAULT_RUNTIME_OPTIONS: IRuntimeLoaderOptions = {
         'tasks', 'tasks/*/*', 'src/tasks', 'src/tasks/*/*'
       ]
     },
+    {
+      topic: K_CLS_WORKERS,
+      refs: [
+        'workers', 'workers/*/*', 'src/workers', 'src/workers/*/*'
+      ]
+    },
   ]
 };
 
@@ -212,6 +219,8 @@ export class Bootstrap {
   static reset() {
     this.$self = null;
     Container.reset();
+    Log.reset();
+
   }
 
   static getNodeId() {
@@ -257,7 +266,7 @@ export class Bootstrap {
       if (this.runtimeLoader) {
         let _entities: Function[] = this.runtimeLoader.getClasses(['entity', name].join('.'));
         // Check if classes are realy for typeorm
-        const tables:TableMetadataArgs[] = getMetadataArgsStorage().tables;
+        const tables: TableMetadataArgs[] = getMetadataArgsStorage().tables;
         entities = tables
           .filter(t => _entities.indexOf(<Function>t.target) != -1)
           .map(t => <Function>t.target);

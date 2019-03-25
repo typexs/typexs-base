@@ -1,19 +1,20 @@
-import {AsyncWorkerQueue, IAsyncQueueOptions, IQueueProcessor, TaskRunner, Tasks} from "../..";
-import {Bootstrap} from "../../Bootstrap";
+import {AsyncWorkerQueue, IAsyncQueueOptions, IQueueProcessor, TaskRunner, Tasks} from "..";
+import {Bootstrap} from "../Bootstrap";
 import {Inject} from "typedi";
 import subscribe from "commons-eventbus/decorator/subscribe";
-import {TaskEvent} from "./TaskEvent";
+import {TaskEvent} from "./../libs/tasks/worker/TaskEvent";
 import {EventBus} from "commons-eventbus";
-import {Log} from "../logging/Log";
-import {ITaskWorkload} from "./ITaskWorkload";
+import {Log} from "../libs/logging/Log";
+import {ITaskWorkload} from "./../libs/tasks/worker/ITaskWorkload";
 import * as _ from 'lodash';
-import {ITaskRunnerResult} from "../tasks/ITaskRunnerResult";
-import {TasksHelper} from "../tasks/TasksHelper";
-import {IError} from "../exceptions/IError";
+import {ITaskRunnerResult} from "../libs/tasks/ITaskRunnerResult";
+import {TasksHelper} from "../libs/tasks/TasksHelper";
+import {IError} from "../libs/exceptions/IError";
 import {ClassUtils} from "commons-base";
-import {TASKRUN_STATE_UPDATE} from "../tasks/Constants";
+import {TASKRUN_STATE_UPDATE} from "../libs/tasks/Constants";
+import {IWorker} from "../libs/worker/IWorker";
 
-export class TaskWorkerQueue implements IQueueProcessor<ITaskWorkload> {
+export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker{
 
   inc: number = 0;
 
@@ -37,7 +38,7 @@ export class TaskWorkerQueue implements IQueueProcessor<ITaskWorkload> {
   onTaskEvent(event: TaskEvent) {
     if (event.state != 'proposed') return null;
 
-    if (event.targetId && event.targetId != this.nodeId) {
+    if (event.targetIds && event.targetIds.indexOf(this.nodeId) == -1) {
       // not a task for me
       return null;
     }
@@ -156,4 +157,7 @@ export class TaskWorkerQueue implements IQueueProcessor<ITaskWorkload> {
   */
 
 
+  finish(): void {
+    this.queue.removeAllListeners();
+  }
 }

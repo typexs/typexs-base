@@ -66,7 +66,6 @@ export class System {
       return null;
     }
 
-
     if (nodeInfo instanceof SystemNodeInfo) {
       nodeInfo.restore();
     }
@@ -87,9 +86,9 @@ export class System {
       await this.invoker.use(SystemApi).onNodeUnregister(nodeInfo);
       await this.storageRef.getController().save(nodeInfo);
     }
-
     return this.node;
   }
+
 
   async gatherNodeInfos() {
     let infos: INodeInfo | INodeInfo[] = await this.invoker.use(SystemApi).getNodeInfos();
@@ -105,6 +104,7 @@ export class System {
       }
     }
   }
+
 
   async register() {
     await this.gatherNodeInfos();

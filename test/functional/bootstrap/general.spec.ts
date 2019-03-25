@@ -7,23 +7,25 @@ import {Bootstrap} from "../../../src/Bootstrap";
 import {Config} from "commons-config";
 import {RuntimeLoader} from "../../../src/base/RuntimeLoader";
 import {K_CLS_API, K_CLS_BOOTSTRAP, K_CLS_STORAGE_SCHEMAHANDLER, K_CLS_TASKS, K_CLS_USE_API} from "../../../src";
-import {inspect} from "util";
+import {K_CLS_WORKERS} from "../../../src/libs/worker/Constants";
 
 
 @suite('functional/bootstrap/general')
 class BootstrapGeneralSpec {
+
 
   before() {
     Bootstrap.reset();
     Config.clear();
   }
 
+
   @test
   async 'add additional config options'() {
-
     Bootstrap._({app: {path: __dirname}});
-
-    let cfg = Bootstrap.addConfigOptions({configs: [{type: 'file', file: './config/super.json'}]});
+    let cfg = Bootstrap.addConfigOptions(
+      {configs: [{type: 'file', file: './config/super.json'}]}
+    );
 
     expect(cfg.configs).to.deep.include({
       type: 'file',
@@ -159,6 +161,13 @@ class BootstrapGeneralSpec {
             {
               topic: K_CLS_USE_API,
               refs: ['extend/*', 'src/extend/*']
+            },
+            {
+              topic: K_CLS_WORKERS,
+              refs: ["workers",
+                "workers/*/*",
+                "src/workers",
+                "src/workers/*/*"]
             }
 
 

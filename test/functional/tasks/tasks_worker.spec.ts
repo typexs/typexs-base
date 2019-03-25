@@ -9,12 +9,11 @@ import {Container} from "typedi";
 import {Config} from "commons-config";
 import {TEST_STORAGE_OPTIONS} from "../config";
 import {EventBus, IEventBusConfiguration} from "commons-eventbus";
-import {TaskWorkerQueue} from "../../../src/libs/worker/TaskWorkerQueue";
+import {TaskQueueWorker} from "../../../src/workers/TaskQueueWorker";
 import {SimpleWorkerTask} from "./tasks/SimpleWorkerTask";
-import {TaskEvent} from "../../../src/libs/worker/TaskEvent";
+import {TaskEvent} from "../../../src/libs/tasks/worker/TaskEvent";
 import subscribe from "commons-eventbus/decorator/subscribe";
 import {TestHelper} from "../TestHelper";
-import {spawn} from "child_process";
 import {SpawnHandle} from "../SpawnHandle";
 
 
@@ -53,19 +52,17 @@ class Tasks_workerSpec {
     let events: TaskEvent[] = [];
 
     class T {
-
       @subscribe(TaskEvent)
       on(e: TaskEvent) {
         let _e = _.cloneDeep(e);
         events.push(_e);
-        //console.log(inspect(_e, false, 10));
       }
     }
 
     let tasks: Tasks = Container.get(Tasks.NAME);
     let ref = tasks.addTask(SimpleWorkerTask);
 
-    const worker = <TaskWorkerQueue>Container.get(TaskWorkerQueue);
+    const worker = <TaskQueueWorker>Container.get(TaskQueueWorker);
     await worker.prepare();
     await worker.queue.pause();
 
@@ -107,6 +104,7 @@ class Tasks_workerSpec {
     ])
   }
 
+
   @test
   async 'run job on remote worker'() {
     let bootstrap = Bootstrap
@@ -139,7 +137,7 @@ class Tasks_workerSpec {
 
     await EventBus.register(new T2());
 
-    let p = SpawnHandle.do( __dirname + '/fake_app/node_task_worker.ts').start(LOG_EVENT);
+    let p = SpawnHandle.do(__dirname + '/fake_app/node_task_worker.ts').start(LOG_EVENT);
 
     await p.started;
     await TestHelper.wait(50);
@@ -212,7 +210,7 @@ class Tasks_workerSpec {
 
     await EventBus.register(new T2());
 
-    let p = SpawnHandle.do( __dirname + '/fake_app/node_task_worker.ts').start(LOG_EVENT);
+    let p = SpawnHandle.do(__dirname + '/fake_app/node_task_worker.ts').start(LOG_EVENT);
     await p.started;
     await TestHelper.wait(50);
 
@@ -243,8 +241,8 @@ class Tasks_workerSpec {
       data: {required: 'someValue'},
       message: 'The required value is not passed.'
     }]);
-
   }
+
 
   @test
   async 'run job direct on remote worker'() {
@@ -264,7 +262,6 @@ class Tasks_workerSpec {
     bootstrap = await bootstrap.activateStorage();
     bootstrap = await bootstrap.startup();
     // ---- startup done
-
     // capture events from remote task processing
     let events: TaskEvent[] = [];
 
@@ -278,10 +275,7 @@ class Tasks_workerSpec {
 
     await EventBus.register(new T2());
 
-
-    
     let handle = SpawnHandle.do(__dirname + '/fake_app/node_task_worker.ts').start(LOG_EVENT);
-
     await handle.started;
     await TestHelper.wait(50);
 
@@ -292,7 +286,7 @@ class Tasks_workerSpec {
     let taskEvent = new TaskEvent();
     taskEvent.nodeId = bootstrap.getNodeId();
     taskEvent.name = 'test';
-    taskEvent.targetId = 'fakeapp01';
+    taskEvent.targetIds = ['fakeapp01'];
     taskEvent.parameters = {
       someValue: 'valueSome'
     };
@@ -305,7 +299,7 @@ class Tasks_workerSpec {
     let taskEvent2 = new TaskEvent();
     taskEvent2.nodeId = bootstrap.getNodeId();
     taskEvent2.name = 'test';
-    taskEvent2.targetId = 'fakeapp02';
+    taskEvent2.targetIds = ['fakeapp02'];
     taskEvent2.parameters = {
       someValue: 'valueSome'
     };
@@ -314,14 +308,13 @@ class Tasks_workerSpec {
     // registered subscribers of remote nodes
     await EventBus.post(taskEvent2);
 
-
     await handle.done;
 
     // ---- finished
     await bootstrap.shutdown();
 
-    let events_01: TaskEvent[] = events.filter(x => x.targetId == 'fakeapp01');
-    let events_02: TaskEvent[] = events.filter(x => x.targetId == 'fakeapp02');
+    let events_01: TaskEvent[] = events.filter(x => x.targetIds.indexOf('fakeapp01') != -1);
+    let events_02: TaskEvent[] = events.filter(x => x.targetIds.indexOf('fakeapp02') != -1);
     expect(events_01).to.have.length(4);
     expect(events_02).to.have.length(1);
 
@@ -354,7 +347,7 @@ class Tasks_workerSpec {
   @test
   async 'run job remote over task command'() {
     // typexs task test [--targetId abc] [--mode worker|local /* default is worker if on exists else startup local*/]
-    let handle = SpawnHandle.do(__dirname + '/fake_app/node_task_worker.ts').start(true);
+    let handle = SpawnHandle.do(__dirname + '/fake_app/node_task_worker.ts').start(LOG_EVENT);
     await handle.started;
 
     let bootstrap = Bootstrap
@@ -372,7 +365,7 @@ class Tasks_workerSpec {
     await bootstrap.prepareRuntime();
     bootstrap = await bootstrap.activateStorage();
     bootstrap = await bootstrap.startup();
-    await TestHelper.wait(300);
+    await TestHelper.wait(50);
 
     let commands = bootstrap.getCommands();
     expect(commands.length).to.be.gt(0);
@@ -382,10 +375,7 @@ class Tasks_workerSpec {
     Config.set('argv.someValue', 'value', 'system');
     process.argv = ['typexs', 'task', 'test'];
 
-
     await command.handler({});
-
-
     await bootstrap.shutdown();
   }
 

@@ -44,23 +44,30 @@ export class Workers implements ILookupRegistry {
     let refs: WorkerRef[] = this.registry.list(XS_TYPE_ENTITY);
     for (let ref of refs) {
       let workerInstance = <IWorker>Container.get(ref.getClass());
-      let config = _.get(this.config, 'config.'+ ref.name,null);
-      if(config){
+      let config = _.get(this.config, 'config.' + ref.name, null);
+      if (config) {
         await workerInstance.prepare(config);
-      }else{
+      } else {
         await workerInstance.prepare();
       }
       this.workers.push(workerInstance);
     }
   }
 
-  activeWorkerCount(){
+
+  infos() {
+    return _.map(this.getEntries(), x => {
+      name:x.name
+    });
+  }
+
+  activeWorkerCount() {
     return this.workers.length;
   }
 
 
   async shutdown() {
-    for(let w of this.workers){
+    for (let w of this.workers) {
       await w.finish();
     }
     this.reset();
@@ -105,7 +112,7 @@ export class Workers implements ILookupRegistry {
 
   add(fn: Function) {
     let name = ClassUtils.getClassName(fn);
-    if(this.access(name)){
+    if (this.access(name)) {
       let exists = this.registry.find(XS_TYPE_ENTITY, (d: WorkerRef) => d.name == name);
       if (!exists) {
         exists = new WorkerRef(fn);
@@ -128,9 +135,8 @@ export class Workers implements ILookupRegistry {
   }
 
 
-
-  private getEntries(withRemote: boolean = false) {
-    return this.registry.list(XS_TYPE_ENTITY).filter(x => withRemote || !x.isRemote())
+  private getEntries() {
+    return this.registry.list(XS_TYPE_ENTITY)
   }
 
 

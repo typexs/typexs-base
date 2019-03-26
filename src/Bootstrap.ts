@@ -23,7 +23,6 @@ import {
   K_CLS_BOOTSTRAP,
   K_CLS_CACHE_ADAPTER,
   K_CLS_STORAGE_SCHEMAHANDLER,
-  K_CLS_TASKS,
   K_CLS_USE_API
 } from "./libs/Constants";
 import {IConfigOptions} from "commons-config/config/IConfigOptions";
@@ -36,6 +35,7 @@ import {IShutdown} from "./api/IShutdown";
 import {System} from "./libs/system/System";
 import {TableMetadataArgs} from "typeorm/metadata-args/TableMetadataArgs";
 import {K_CLS_WORKERS} from "./libs/worker/Constants";
+import {K_CLS_TASKS} from "./libs/tasks/Constants";
 
 useContainer(Container);
 

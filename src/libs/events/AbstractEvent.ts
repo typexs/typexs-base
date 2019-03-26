@@ -1,4 +1,4 @@
-import {CryptUtils} from "../..";
+import {CryptUtils} from "../../libs/utils/CryptUtils";
 
 export abstract class AbstractEvent {
 

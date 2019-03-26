@@ -1,15 +1,7 @@
 import * as _ from "lodash";
-import {
-  AfterInsert,
-  AfterUpdate,
-  BeforeInsert,
-  BeforeUpdate,
-  Column,
-  Entity,
-  Index, PrimaryColumn,
-  PrimaryGeneratedColumn
-} from "typeorm";
+import {Column, Entity, Index, PrimaryColumn} from "typeorm";
 import {INodeInfo} from "../libs/system/INodeInfo";
+import {IsNotEmpty} from "class-validator";
 
 
 @Entity()
@@ -21,10 +13,12 @@ export class SystemNodeInfo {
   @PrimaryColumn()
   key: string;
 
+  @IsNotEmpty()
   @Index()
   @Column()
   hostname: string;
 
+  @IsNotEmpty()
   @Index()
   @Column()
   nodeId: string;

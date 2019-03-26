@@ -34,22 +34,24 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
 
   private results: any[] = [];
 
+  private active: boolean = true;
 
-  constructor() {
+
+  constructor(){
     super();
-
+    this.once('postprocess', this.postProcess.bind(this));
   }
-
 
   prepare(controller: DistributedStorageEntityController) {
     this.controller = controller;
+
     return this;
   }
 
 
   @subscribe(QueryResultsEvent)
   onResults(event: QueryResultsEvent) {
-    Log.debug('recieve results', event, this.queryEvent);
+    if (!this.active) return;
 
     // has query event
     if (!this.queryEvent) return;
@@ -68,27 +70,8 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
     this.queryResults.push(event);
 
     if (this.targetIds.length == 0) {
-
-      this.results = _.concat([], ...this.queryResults.map(x => x.results))
-        .map(r => this.entityRef.build(r,{
-          afterBuild:(c:any,f:any,t:any) => _.keys(f)
-            .filter(k => k.startsWith('__'))
-            .map(k => t[k] = f[k])
-        }));
-
-      if (this.queryEvent.sort) {
-        let arr: string[][] = [];
-
-        // order after concat
-        _.keys(this.queryEvent.sort).forEach(k => {
-          arr.push([k, this.queryEvent.sort[k].toUpperCase() == 'ASC' ? 'asc' : 'desc']);
-        });
-
-
-        _.orderBy(this.results, ...arr);
-      }
-
-      this.emit('finished', null, this.results)
+      this.active = false;
+      this.emit('postprocess')
     }
 
   }
@@ -100,7 +83,6 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
       offset: null,
       sort: null
     });
-
 
 
     this.entityRef = TypeOrmEntityRegistry.$().getEntityRefFor(entityType);
@@ -124,29 +106,53 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
       return this.results;
     }
 
-    Log.debug('fire query request', this.queryEvent);
-
     // register as bus
     await EventBus.register(this);
     await EventBus.postAndForget(this.queryEvent);
-
-
     await this.ready();
     await EventBus.unregister(this);
     return this.results;
   }
 
 
+  postProcess(err: Error) {
+
+    this.results = _.concat([], ...this.queryResults.map(x => x.results))
+      .map(r => this.entityRef.build(r, {
+        afterBuild: (c: any, f: any, t: any) => _.keys(f)
+          .filter(k => k.startsWith('__'))
+          .map(k => t[k] = f[k])
+      }));
+
+    if (this.queryEvent.sort) {
+      let arr: string[][] = [];
+      // order after concat
+      _.keys(this.queryEvent.sort).forEach(k => {
+        arr.push([k, this.queryEvent.sort[k].toUpperCase() == 'ASC' ? 'asc' : 'desc']);
+      });
+      _.orderBy(this.results, ...arr);
+    }
+
+    this.emit('finished', err, this.results);
+  }
+
+
   ready() {
     return new Promise((resolve, reject) => {
       const t = setTimeout(() => {
-        reject(new Error('timeout error'))
+        this.emit('postprocess', new Error('timeout error'))
+        clearTimeout(t);
       }, this.timeout);
 
       this.once('finished', (err: Error, data: any) => {
         clearTimeout(t);
         if (err) {
-          reject(err);
+          Log.error(err);
+          if (data) {
+            resolve(data);
+          } else {
+            reject(err);
+          }
         } else {
           resolve(data);
         }

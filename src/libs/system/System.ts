@@ -2,27 +2,37 @@ import * as _ from 'lodash';
 import subscribe from "commons-eventbus/decorator/subscribe";
 import {Log} from "../logging/Log";
 import {EventBus} from "commons-eventbus";
-import {C_KEY_SEPARATOR, C_STORAGE_DEFAULT, Invoker} from "../..";
+import {C_KEY_SEPARATOR, C_STORAGE_DEFAULT, Invoker, SystemInfoEvent} from "../..";
 import {StorageRef} from "../storage/StorageRef";
 import {Inject} from "typedi";
 import {SystemApi} from "../../api/System.api";
 import {INodeInfo} from "./INodeInfo";
 import {SystemNodeInfo} from "../../entities/SystemNodeInfo";
-
+import {SystemInfo} from "./SystemInfo";
+import * as os from "os";
+import {SystemInfoRequestEvent} from "./SystemInfoRequestEvent";
+import {SystemInfoRequest} from "./SystemInfoRequest";
 
 export class System {
 
   @Inject(Invoker.NAME)
   invoker: Invoker;
 
-
   @Inject(C_STORAGE_DEFAULT)
   storageRef: StorageRef;
 
   static NAME: string = 'System';
 
+
+  updateTimer: any;
+
   /**
    * Information about this runtime enviroment
+   */
+  info: SystemInfo = new SystemInfo();
+
+  /**
+   * Information about this node
    */
   node: SystemNodeInfo;
 
@@ -50,6 +60,7 @@ export class System {
     this.node.started = new Date();
     this.node.state = 'startup';
     this.node.isBackend = true;
+    this.updateInfo();
     await this.storageRef.getController().save(this.node);
   }
 
@@ -106,12 +117,51 @@ export class System {
   }
 
 
+  async getNodeInfos(nodeIds: string[] = []) {
+    let request: SystemInfoRequest = new SystemInfoRequest(this);
+    return request.run(nodeIds);
+  }
+
+
+  updateInfo() {
+    this.info.networks = os.networkInterfaces();
+    this.info.cpus = os.cpus();
+    this.info.memory = {
+      total: os.totalmem(),
+      free: os.freemem(),
+    }
+    this.info.uptime = os.uptime();
+    this.info.hostname = os.hostname();
+    this.info.arch = os.arch();
+    this.info.release = os.release();
+    this.info.loadavg = os.loadavg();
+    this.info.memoryUsage = process.memoryUsage();
+    this.info.versions = process.versions;
+    this.info.cpuUsage = process.cpuUsage();
+  }
+
+
+  @subscribe(SystemInfoRequestEvent)
+  onInfoRequest(event: SystemInfoRequestEvent) {
+    if (this.node.nodeId == event.nodeId) return;
+    if (event.targetIds && event.targetIds.indexOf(this.node.nodeId) != -1) {
+      let response = new SystemInfoEvent();
+      response.nodeId = this.node.nodeId;
+      response.targetIds = [event.nodeId];
+      response.respId = this.node.nodeId;
+      response.info = _.cloneDeep(this.info);
+      EventBus.postAndForget(response);
+    }
+  }
+
+
   async register() {
     await this.gatherNodeInfos();
     this.node.state = 'register';
     this._registered = true;
     await EventBus.register(this);
 
+    this.updateTimer = setInterval(this.updateInfo.bind(this), 5000);
     let ret = await EventBus.post(this.node);
     let nodeHandle = [];
     for (let x of ret) {
@@ -132,11 +182,13 @@ export class System {
 
   async unregister() {
     if (!this._registered) return;
+    clearInterval(this.updateTimer);
     this.node.state = 'unregister';
     this.node.finished = new Date();
     await this.storageRef.getController().save(this.node);
     await EventBus.unregister(this);
     await EventBus.postAndForget(this.node);
+
   }
 
 

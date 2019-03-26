@@ -9,11 +9,15 @@ export * from "./api/IModule";
 export * from "./api/IShutdown";
 export * from "./api/IPermissions";
 
+export * from "./decorators/UseAPI";
+
 export * from "./base/Invoker";
 
 export * from './libs/Constants';
 export * from "./libs/ITypexsOptions";
 
+export * from "./libs/logging/ILoggerOptions";
+export * from "./libs/logging/ILoggerApi";
 
 export * from './libs/cache/Cache';
 export * from './libs/cache/CacheBin';
@@ -21,6 +25,9 @@ export * from './libs/cache/ICacheAdapter';
 export * from './libs/cache/ICacheBinConfig';
 export * from './libs/cache/ICacheConfig';
 export * from './libs/cache/ICacheOptions';
+
+export * from './libs/events/AbstractEvent';
+export * from './libs/system/SystemInfoEvent';
 
 
 export * from './libs/storage/DataContainer';

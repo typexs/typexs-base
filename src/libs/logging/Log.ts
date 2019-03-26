@@ -117,12 +117,12 @@ export class Log {
     let l = this.getLogger(name);
     if (l) {
       (<any>l).build(opts, append);
-      Log.info('update logger ' + name, opts);
+      Log.debug('update logger ' + name, opts);
     } else {
       l = new WinstonLoggerJar(opts);
       this.loggers[name] = l;
       if(name !== C_DEFAULT){
-        Log.info('create new logger ' + name, opts);
+        Log.debug('create new logger ' + name, opts);
       }
 
     }

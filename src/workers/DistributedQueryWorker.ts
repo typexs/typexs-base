@@ -42,13 +42,11 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
   @subscribe(QueryEvent)
   onQueryEvent(event: QueryEvent) {
     try {
-      Log.debug('receive query request', event);
 
       // check if its for me
       if (event.targetIds && event.targetIds.indexOf(this.system.node.nodeId) == -1) {
         return;
       }
-
 
       let entityRef = TypeOrmEntityRegistry.$().getEntityRefFor(event.entityType);
       if (!entityRef) {
@@ -57,11 +55,9 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
         resultsEvent.error = 'entity ref not found';
         resultsEvent.results = [];
         EventBus.post(resultsEvent);
-        Log.debug('notthing found', resultsEvent);
         return;
       }
 
-      Log.debug('enqueue request', event);
       let q: IQueryWorkload = {
         entityRef: entityRef,
         event: event
@@ -74,9 +70,9 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
       resultsEvent.results = [];
       EventBus.post(resultsEvent);
       Log.error(err);
-
     }
   }
+
 
   createResultEvent(event: QueryEvent) {
     let resultsEvent = new QueryResultsEvent();
@@ -122,7 +118,6 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
 
 
     // fire query results
-    Log.debug('fire results event', resultsEvent);
     EventBus.postAndForget(resultsEvent);
   }
 

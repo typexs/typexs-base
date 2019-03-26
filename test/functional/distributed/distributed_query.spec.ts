@@ -1,7 +1,8 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
+import * as _ from "lodash";
 import {Bootstrap} from "../../../src/Bootstrap";
-import {ITypexsOptions, Log} from "../../../src";
+import {ITypexsOptions, XS_P_$COUNT} from "../../../src";
 import {Config} from "commons-config";
 import {TEST_STORAGE_OPTIONS} from "../config";
 import {EventBus, IEventBusConfiguration} from "commons-eventbus";
@@ -19,7 +20,7 @@ const LOG_EVENT = TestHelper.logEnable(false);
 
 
 @suite('functional/distributed/query')
-class QuerySpec {
+class Distributed_querySpec {
 
 
   async before() {
@@ -91,7 +92,7 @@ class QuerySpec {
 
 
   @test
-  async 'run on two nodes'() {
+  async 'run query on two nodes'() {
     let bootstrap = Bootstrap
       .setConfigSources([{type: 'system'}])
       .configure(<ITypexsOptions & any>{
@@ -119,6 +120,44 @@ class QuerySpec {
     await bootstrap.shutdown();
 
     expect(results).to.have.length(4);
+    expect(results[0]).to.be.instanceOf(SystemNodeInfo);
+
+  }
+
+
+
+  @test
+  async 'run query on two nodes with conditions'() {
+    let bootstrap = Bootstrap
+      .setConfigSources([{type: 'system'}])
+      .configure(<ITypexsOptions & any>{
+        app: {name: 'test', nodeId: 'system', path: __dirname + '/fake_app'},
+        logging: {enable: LOG_EVENT, level: 'debug'},
+        modules: {paths: [__dirname + '/../../..']},
+        storage: {default: TEST_STORAGE_OPTIONS},
+        eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}},
+        workers: {access: [{name: 'DistributedQueryWorker', access: 'allow'}]}
+      });
+    bootstrap.activateLogger();
+    bootstrap.activateErrorHandling();
+    await bootstrap.prepareRuntime();
+    bootstrap = await bootstrap.activateStorage();
+    bootstrap = await bootstrap.startup();
+
+
+    let p = SpawnHandle.do(__dirname + '/fake_app/node.ts').start(LOG_EVENT);
+    await p.started;
+
+    let controller = new DistributedStorageEntityController();
+    let results = await controller.find(SystemNodeInfo,{nodeId:'system'});
+
+    await p.done;
+    await bootstrap.shutdown();
+
+
+    expect(results).to.have.length(2);
+    expect(results[XS_P_$COUNT]).to.be.eq(2);
+    expect(_.uniq(results.map((x:any) => x.nodeId))).to.be.deep.eq(['system']);
     expect(results[0]).to.be.instanceOf(SystemNodeInfo);
 
   }

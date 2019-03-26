@@ -4,7 +4,8 @@ import * as path from "path";
 import {Bootstrap} from "../../../src/Bootstrap";
 import {Config} from "commons-config";
 import * as _ from "lodash";
-import {TaskCommand} from "../../../src";
+import {TaskCommand} from "../../../src/commands/TaskCommand";
+
 
 const stdMocks = require('std-mocks');
 
@@ -29,6 +30,10 @@ class TasksSpec {
     await bootstrap.startup();
 
 
+  }
+
+  static async after(){
+    await bootstrap.shutdown();
   }
 
   @test

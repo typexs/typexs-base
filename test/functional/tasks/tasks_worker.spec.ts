@@ -4,7 +4,7 @@ import {expect} from 'chai';
 
 import {Bootstrap} from "../../../src/Bootstrap";
 import {Log} from "../../../src/libs/logging/Log";
-import {ITypexsOptions, TaskCommand, Tasks} from "../../../src";
+import {ITypexsOptions,  Tasks} from "../../../src";
 import {Container} from "typedi";
 import {Config} from "commons-config";
 import {TEST_STORAGE_OPTIONS} from "../config";
@@ -15,6 +15,7 @@ import {TaskEvent} from "../../../src/libs/tasks/worker/TaskEvent";
 import subscribe from "commons-eventbus/decorator/subscribe";
 import {TestHelper} from "../TestHelper";
 import {SpawnHandle} from "../SpawnHandle";
+import {TaskCommand} from "../../../src/commands/TaskCommand";
 
 
 const LOG_EVENT = TestHelper.logEnable(false);

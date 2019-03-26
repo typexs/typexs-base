@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 
-import {Invoker, TaskRunner, Tasks, TasksApi} from "../../../src";
+import {Invoker, Log, TaskRunner, Tasks, TasksApi} from "../../../src";
 import {Container} from "typedi";
 import {SimpleTask} from "./tasks/SimpleTask";
 import {SimpleTaskPromise} from "./tasks/SimpleTaskPromise";
@@ -29,6 +29,7 @@ const stdMocks = require('std-mocks');
 class TasksSpec {
 
   static before() {
+    Log.reset();
     let i = new Invoker();
     Container.set(Invoker.NAME, i);
     i.register(TasksApi, []);
@@ -308,6 +309,7 @@ class TasksSpec {
 
   @test
   async 'own task logger'() {
+
     let tasks = new Tasks();
     let taskRef = tasks.addTask(SimpleTaskWithRuntimeLog);
     stdMocks.use();
@@ -330,10 +332,10 @@ class TasksSpec {
     let data = await runner.run();
     stdMocks.restore();
     let content = stdMocks.flush();
-    expect(content.stdout).to.have.length(6);
+    expect(content.stdout).to.have.length(5);
 
-    let cNewLogger = content.stdout.shift();
-    expect(cNewLogger).to.contain('[INFO]   create new logger task-runner-');
+    //let cNewLogger = content.stdout.shift();
+    //expect(cNewLogger).to.contain('[DEBUG]   create new logger task-runner-');
     let cLogExec = content.stdout.shift();
     expect(cLogExec).to.contain('[INFO]   Log execution of tasks:\n[\n  "simple_task_with_runtime_log"\n]');
     let cLogExtern = content.stdout.shift();

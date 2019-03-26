@@ -207,6 +207,7 @@ class BootstrapGeneralSpec {
     await bootstrap.startup();
     let activators = bootstrap.getActivators();
 
+    await bootstrap.shutdown();
     expect(activators).to.have.length(2);
     //expect(activators[0]['done']).to.be.true;
     expect(activators[1]['done']).to.be.true;

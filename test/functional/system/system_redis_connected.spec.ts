@@ -1,7 +1,7 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 import {Bootstrap} from "../../../src/Bootstrap";
-import {Invoker, ITypexsOptions} from "../../../src";
+import {Invoker, ITypexsOptions, Log} from "../../../src";
 import {Config} from "commons-config";
 import {TEST_STORAGE_OPTIONS} from "../config";
 import {IEventBusConfiguration} from "commons-eventbus";
@@ -15,7 +15,7 @@ import {SpawnHandle} from "../SpawnHandle";
 import {SystemNodeInfo} from "../../../src/entities/SystemNodeInfo";
 
 
-const LOG_EVENT = TestHelper.logEnable(true);
+const LOG_EVENT = TestHelper.logEnable(false);
 
 
 @suite('functional/system/system_redis_connected')
@@ -126,6 +126,44 @@ class Tasks_systemSpec {
     await bootstrap.shutdown();
     expect(system.nodes).to.have.length(0)
 
+  }
+
+
+  @test
+  async 'check system information'() {
+    let bootstrap = Bootstrap
+      .setConfigSources([{type: 'system'}])
+      .configure(<ITypexsOptions & any>{
+        app: {name: 'test', nodeId: 'system', path: __dirname + '/fake_app'},
+        logging: {enable: LOG_EVENT, level: 'debug'},
+        modules: {paths: [__dirname + '/../../..']},
+        storage: {default: TEST_STORAGE_OPTIONS},
+        eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}}
+      });
+    bootstrap.activateLogger();
+    bootstrap.activateErrorHandling();
+    await bootstrap.prepareRuntime();
+    bootstrap = await bootstrap.activateStorage();
+    bootstrap = await bootstrap.startup();
+
+    let system: System = Container.get(System.NAME);
+
+    expect(system.info).to.not.be.null;
+    expect(system.info.networks).to.not.be.null;
+    expect(system.info.cpus).to.not.be.null;
+    expect(system.info.uptime).to.be.gt(0);
+
+    let p = SpawnHandle.do(__dirname + '/fake_app/node.ts').start(LOG_EVENT);
+    await p.started;
+    await TestHelper.wait(100);
+
+    let results = await system.getNodeInfos();
+    expect(results).to.have.length(1);
+
+    await p.done;
+    await bootstrap.shutdown();
+
+    expect(system.nodes).to.have.length(0)
   }
 
 

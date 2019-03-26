@@ -26,7 +26,7 @@ class GeneralSpec {
     await bootstrap.activateStorage();
     await bootstrap.startup();
 
-
+    await bootstrap.shutdown();
     let commands = bootstrap.getCommands();
     expect(commands.length).to.be.gt(0);
 

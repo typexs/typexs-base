@@ -15,7 +15,7 @@ import {DistributedQueryWorker} from "../../../src/workers/DistributedQueryWorke
 import {Workers} from "../../../src/libs/worker/Workers";
 
 
-const LOG_EVENT = TestHelper.logEnable(true);
+const LOG_EVENT = TestHelper.logEnable(false);
 
 
 @suite('functional/distributed/query')
@@ -52,9 +52,7 @@ class QuerySpec {
 
     let controller = new DistributedStorageEntityController();
     let results = await controller.find(SystemNodeInfo);
-
     expect(results).to.have.length(1);
-
     await bootstrap.shutdown();
   }
 
@@ -123,7 +121,6 @@ class QuerySpec {
     expect(results).to.have.length(4);
     expect(results[0]).to.be.instanceOf(SystemNodeInfo);
 
-    Log.debug(results);
   }
 }
 

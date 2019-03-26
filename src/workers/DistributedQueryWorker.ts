@@ -1,6 +1,14 @@
 import {QueryEvent} from "./../libs/distributed/QueryEvent";
 import subscribe from "commons-eventbus/decorator/subscribe";
-import {AsyncWorkerQueue, IAsyncQueueOptions, IFindOptions, IQueueProcessor, IQueueWorkload, Log} from "..";
+import {
+  AsyncWorkerQueue,
+  IAsyncQueueOptions,
+  IFindOptions,
+  IQueueProcessor,
+  IQueueWorkload,
+  Log,
+  XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET
+} from "..";
 import {Bootstrap} from './../Bootstrap';
 import {Storage} from '../libs/storage/Storage';
 import {EventBus} from "commons-eventbus";
@@ -111,6 +119,10 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
         workLoad.event.conditions,
         opts
       );
+
+      resultsEvent.count = resultsEvent.results[XS_P_$COUNT];
+      resultsEvent.limit = resultsEvent.results[XS_P_$LIMIT];
+      resultsEvent.offset = resultsEvent.results[XS_P_$OFFSET];
 
     } catch (err) {
       resultsEvent.error = err.message;

@@ -4,7 +4,7 @@ import subscribe from "commons-eventbus/decorator/subscribe";
 import {QueryResultsEvent} from "./QueryResultsEvent";
 import {EventBus} from "commons-eventbus";
 import {IFindOp} from "../storage/framework/IFindOp";
-import {IFindOptions, Log} from "../..";
+import {IFindOptions, Log, XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from "../..";
 import {TypeOrmEntityRegistry} from '../storage/framework/typeorm/schema/TypeOrmEntityRegistry';
 import {QueryEvent} from "./QueryEvent";
 import {EventEmitter} from "events";
@@ -37,7 +37,7 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
   private active: boolean = true;
 
 
-  constructor(){
+  constructor() {
     super();
     this.once('postprocess', this.postProcess.bind(this));
   }
@@ -116,7 +116,10 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
 
 
   postProcess(err: Error) {
-
+    let count = 0;
+    this.queryResults.map(x => {
+      count = x.count;
+    });
     this.results = _.concat([], ...this.queryResults.map(x => x.results))
       .map(r => this.entityRef.build(r, {
         afterBuild: (c: any, f: any, t: any) => _.keys(f)
@@ -132,6 +135,10 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
       });
       _.orderBy(this.results, ...arr);
     }
+
+    this.results[XS_P_$COUNT] = count;
+    this.results[XS_P_$LIMIT] = this.options.limit;
+    this.results[XS_P_$OFFSET] = this.options.offset;
 
     this.emit('finished', err, this.results);
   }

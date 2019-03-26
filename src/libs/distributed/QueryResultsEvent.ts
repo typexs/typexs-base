@@ -8,4 +8,9 @@ export class QueryResultsEvent extends AbstractEvent {
 
   results: any[] = [];
 
+  count: number;
+
+  limit: number;
+
+  offset: number;
 }

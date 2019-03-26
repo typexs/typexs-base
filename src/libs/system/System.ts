@@ -49,14 +49,16 @@ export class System {
 
   async initialize(hostname: string, nodeId: string) {
     const key = [hostname, nodeId].join(C_KEY_SEPARATOR);
-    this.node = await this.storageRef.getController().findOne(SystemNodeInfo, {key: key});
-    if (!this.node) {
-      this.node = new SystemNodeInfo();
-      this.node.key = key;
-      this.node.hostname = hostname;
-      this.node.nodeId = nodeId;
 
-    }
+    // clear table before startup
+    let c = await this.storageRef.connect();
+    await c.manager.clear(SystemNodeInfo);
+    await c.close();
+
+    this.node = new SystemNodeInfo();
+    this.node.key = key;
+    this.node.hostname = hostname;
+    this.node.nodeId = nodeId;
     this.node.started = new Date();
     this.node.state = 'startup';
     this.node.isBackend = true;

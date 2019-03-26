@@ -7,7 +7,9 @@ import {
   IQueueProcessor,
   IQueueWorkload,
   Log,
-  XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET
+  XS_P_$COUNT,
+  XS_P_$LIMIT,
+  XS_P_$OFFSET
 } from "..";
 import {Bootstrap} from './../Bootstrap';
 import {Storage} from '../libs/storage/Storage';
@@ -102,17 +104,7 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
     try {
       let classRef = workLoad.entityRef.getClassRef();
       let entry = this.storage.forClass(classRef);
-
-      let opts: IFindOptions = {};
-      if (o.limit) {
-        opts.limit = o.limit;
-      }
-      if (o.offset) {
-        opts.offset = o.offset;
-      }
-      if (o.sort) {
-        opts.sort = o.sort;
-      }
+      let opts: IFindOptions = o.options;
 
       resultsEvent.results = await entry.getController().find(
         classRef.getClass(),

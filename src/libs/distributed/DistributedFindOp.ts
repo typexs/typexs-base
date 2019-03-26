@@ -83,15 +83,16 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
       offset: null,
       sort: null
     });
-
+    this.options = options;
 
     this.entityRef = TypeOrmEntityRegistry.$().getEntityRefFor(entityType);
 
     this.queryEvent = new QueryEvent();
     this.queryEvent.nodeId = this.system.node.nodeId;
-
     this.queryEvent.entityType = this.entityRef.name;
-    this.options = options;
+    this.queryEvent.conditions = findConditions;
+    this.queryEvent.options = options;
+
 
     // also fire self
     this.targetIds = [this.system.node.nodeId];
@@ -118,7 +119,7 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
   postProcess(err: Error) {
     let count = 0;
     this.queryResults.map(x => {
-      count = x.count;
+      count += x.count;
     });
     this.results = _.concat([], ...this.queryResults.map(x => x.results))
       .map(r => this.entityRef.build(r, {
@@ -127,11 +128,11 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
           .map(k => t[k] = f[k])
       }));
 
-    if (this.queryEvent.sort) {
+    if (_.get(this.queryEvent.options,'sort',false)) {
       let arr: string[][] = [];
       // order after concat
-      _.keys(this.queryEvent.sort).forEach(k => {
-        arr.push([k, this.queryEvent.sort[k].toUpperCase() == 'ASC' ? 'asc' : 'desc']);
+      _.keys(this.queryEvent.options.sort).forEach(k => {
+        arr.push([k, this.queryEvent.options.sort[k].toUpperCase() == 'ASC' ? 'asc' : 'desc']);
       });
       _.orderBy(this.results, ...arr);
     }

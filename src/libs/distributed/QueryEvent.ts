@@ -1,23 +1,24 @@
 import {AbstractEvent} from "../events/AbstractEvent";
-import {CryptUtils} from "../..";
+import {CryptUtils, IFindOptions} from "../..";
 
 export class QueryEvent extends AbstractEvent {
 
-  queryId: string  = CryptUtils.shorthash('qevent-' + (new Date()).getTime() + '' + (AbstractEvent.inc++));
+  queryId: string = CryptUtils.shorthash('qevent-' + (new Date()).getTime() + '' + (AbstractEvent.inc++));
 
   entityType: string;
 
 
   conditions: any;
 
-
-  sort: any;
-
-
-  limit: number = 100;
+  options: IFindOptions;
+  /*
+    sort: any;
 
 
-  offset: number = 0;
+    limit: number = 100;
 
+
+    offset: number = 0;
+  */
 
 }

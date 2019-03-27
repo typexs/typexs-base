@@ -25,6 +25,9 @@ import {TestHelper} from "../TestHelper";
 
 const stdMocks = require('std-mocks');
 
+const LOG_EVENT = TestHelper.logEnable(false);
+
+
 @suite('functional/tasks/tasks')
 class TasksSpec {
 
@@ -337,7 +340,7 @@ class TasksSpec {
     //let cNewLogger = content.stdout.shift();
     //expect(cNewLogger).to.contain('[DEBUG]   create new logger task-runner-');
     let cLogExec = content.stdout.shift();
-    expect(cLogExec).to.contain('[INFO]   Log execution of tasks:\n[\n  "simple_task_with_runtime_log"\n]');
+    expect(cLogExec).to.contain('[INFO]   Execute tasks: simple_task_with_runtime_log');
     let cLogExtern = content.stdout.shift();
     expect(cLogExtern).to.contain('[INFO]   extern use ;)\n');
     let cLogTaskInfo = content.stdout.shift();

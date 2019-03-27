@@ -85,6 +85,7 @@ class LoggingSpec {
     let x = Log._().createLogger('fixed_name', {testKey: 'fixed'});
     expect(x.getOptions()).to.deep.eq({
       name: 'fixed_name',
+      level: 'info',
       enable: true,
       transports:
         [{file: {filename: '/tmp/testfile-fixed.log'}}]
@@ -95,6 +96,7 @@ class LoggingSpec {
     let y = Log._().createLogger('tasklog-hallo', {testKey: 'tasklogfile'});
     expect(y.getOptions()).to.deep.eq({
       name: 'tasklog-*',
+      level: 'info',
       enable: true,
       transports:
         [{file: {filename: '/tmp/testfile-tasklogfile.log'}}]
@@ -110,7 +112,7 @@ class LoggingSpec {
     expect(data_tasklog).to.contain('test_tasklog');
 
     Log._().removeLogger('tasklog-hallo');
-    expect(_.has(Log._()['loggers'],'tasklog-hallo')).to.be.false;
+    expect(_.has(Log._()['loggers'], 'tasklog-hallo')).to.be.false;
   }
 
 
@@ -127,7 +129,7 @@ class LoggingSpec {
 
   @test
   async 'use format default'() {
-    Log.options({enable: true, level: 'debug', format: 'default',transports: [{console: {}}]});
+    Log.options({enable: true, level: 'debug', format: 'default', transports: [{console: {}}]});
     stdMocks.use();
     Log.info('default_format');
     stdMocks.restore();
@@ -138,7 +140,7 @@ class LoggingSpec {
 
   @test
   async 'use format json'() {
-    Log.options({enable: true, level: 'debug', format: 'json',transports: [{console: {}}]});
+    Log.options({enable: true, level: 'debug', format: 'json', transports: [{console: {}}]});
     stdMocks.use();
     Log.info('default_format');
     stdMocks.restore();

@@ -20,7 +20,7 @@ import {TaskExecutionRequest} from "../../../src/libs/tasks/worker/TaskExecution
 import {SimpleTaskWithLog} from "./tasks/SimpleTaskWithLog";
 
 
-const LOG_EVENT = TestHelper.logEnable(true);
+const LOG_EVENT = TestHelper.logEnable(false);
 
 
 @suite('functional/tasks/tasks_worker')

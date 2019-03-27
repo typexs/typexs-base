@@ -4,7 +4,7 @@ import {expect} from 'chai';
 
 import {Bootstrap} from "../../../src/Bootstrap";
 import {Log} from "../../../src/libs/logging/Log";
-import {ITypexsOptions,  Tasks} from "../../../src";
+import {C_STORAGE_DEFAULT, ITypexsOptions, StorageRef, TaskLog, Tasks, Workers} from "../../../src";
 import {Container} from "typedi";
 import {Config} from "commons-config";
 import {TEST_STORAGE_OPTIONS} from "../config";
@@ -16,9 +16,11 @@ import subscribe from "commons-eventbus/decorator/subscribe";
 import {TestHelper} from "../TestHelper";
 import {SpawnHandle} from "../SpawnHandle";
 import {TaskCommand} from "../../../src/commands/TaskCommand";
+import {TaskExecutionRequest} from "../../../src/libs/tasks/worker/TaskExecutionRequest";
+import {SimpleTaskWithLog} from "./tasks/SimpleTaskWithLog";
 
 
-const LOG_EVENT = TestHelper.logEnable(false);
+const LOG_EVENT = TestHelper.logEnable(true);
 
 
 @suite('functional/tasks/tasks_worker')
@@ -40,7 +42,6 @@ class Tasks_workerSpec {
         logging: {enable: LOG_EVENT, level: 'debug'},
         modules: {paths: [__dirname + '/../../..']},
         storage: {default: TEST_STORAGE_OPTIONS},
-        //cache: {bins: {default: 'redis1'}, adapter: {redis1: {type: 'redis', host: '127.0.0.1', port: 6379}}},
         eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}}
       });
     bootstrap.activateLogger();
@@ -53,9 +54,9 @@ class Tasks_workerSpec {
     let events: TaskEvent[] = [];
 
     class T {
-      @subscribe(TaskEvent)
-      on(e: TaskEvent) {
+      @subscribe(TaskEvent) on(e: TaskEvent) {
         let _e = _.cloneDeep(e);
+
         events.push(_e);
       }
     }
@@ -103,8 +104,61 @@ class Tasks_workerSpec {
       {state: 'started', result: null},
       {state: 'stopped', result: 'test'}
     ])
+
+    Log.debug(events)
   }
 
+
+  @test
+  async 'run local job with execution request'() {
+    let bootstrap = Bootstrap
+      .setConfigSources([{type: 'system'}])
+      .configure(<ITypexsOptions & any>{
+        app: {name: 'test', nodeId: 'worker'},
+        logging: {enable: LOG_EVENT, level: 'debug'},
+        modules: {paths: [__dirname + '/../../..']},
+        storage: {default: TEST_STORAGE_OPTIONS},
+        eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}},
+        workers: {access: [{name: 'TaskQueueWorker', access: 'allow'}]}
+      });
+    bootstrap.activateLogger();
+    bootstrap.activateErrorHandling();
+    await bootstrap.prepareRuntime();
+    bootstrap = await bootstrap.activateStorage();
+    bootstrap = await bootstrap.startup();
+    // ---- startup done
+
+
+    let tasks: Tasks = Container.get(Tasks.NAME);
+    let ref = tasks.addTask(SimpleWorkerTask);
+
+    const workers: Workers = Container.get(Workers.NAME);
+    const worker: TaskQueueWorker = <TaskQueueWorker>workers.workers.find(x => x instanceof TaskQueueWorker);
+
+    let execReq = Container.get(TaskExecutionRequest);
+    let results = await execReq.run([ref.name]);
+
+    await TestHelper.wait(50);
+    await worker.queue.await();
+
+    // ---- finished
+    await bootstrap.shutdown();
+
+    expect(results).to.have.length(1);
+    expect(results[0]).to.deep.include({
+      "state": "enqueue",
+      "topic": "data",
+      "nodeId": "worker",
+      "name": [
+        "simple_worker_task"
+      ],
+      "targetIds": [
+        "worker"
+      ],
+      "respId": "worker",
+      "errors": [],
+    });
+  }
 
   @test
   async 'run job on remote worker'() {
@@ -115,7 +169,6 @@ class Tasks_workerSpec {
         logging: {enable: true, level: 'debug'},
         modules: {paths: [__dirname + '/../../..']},
         storage: {default: TEST_STORAGE_OPTIONS},
-        //cache: {bins: {default: 'redis1'}, adapter: {redis1: {type: 'redis', host: '127.0.0.1', port: 6379}}},
         eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}}
       });
     bootstrap.activateLogger();
@@ -159,13 +212,15 @@ class Tasks_workerSpec {
     // ---- finished
     await bootstrap.shutdown();
 
-    expect(events).to.have.length(4);
+    expect(events).to.have.length(6);
     expect(events.map(x => {
       return {state: x.state, respId: x.respId}
     })).to.deep.eq([
       {state: 'proposed', respId: undefined},
       {state: "enqueue", respId: "fakeapp01"},
       {state: 'started', respId: 'fakeapp01'},
+      {state: 'stopped', respId: 'fakeapp01'},
+      {state: 'stopped', respId: 'fakeapp01'},
       {state: 'stopped', respId: 'fakeapp01'}
     ]);
 
@@ -175,9 +230,12 @@ class Tasks_workerSpec {
       {result: null},
       {result: null},
       {result: null},
+      {result: {res: 'okay', value: 'someValueEntry'}},
+      {result: {res: 'okay', value: 'someValueEntry'}},
       {result: {res: 'okay', value: 'someValueEntry'}}
     ]);
   }
+
 
   @test
   async 'run job on remote worker, but without necessary parameters'() {
@@ -188,7 +246,6 @@ class Tasks_workerSpec {
         logging: {enable: LOG_EVENT, level: 'debug'},
         modules: {paths: [__dirname + '/../../..']},
         storage: {default: TEST_STORAGE_OPTIONS},
-        //cache: {bins: {default: 'redis1'}, adapter: {redis1: {type: 'redis', host: '127.0.0.1', port: 6379}}},
         eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}}
       });
     bootstrap.activateLogger();
@@ -254,7 +311,6 @@ class Tasks_workerSpec {
         logging: {enable: LOG_EVENT, level: 'debug'},
         modules: {paths: [__dirname + '/../../..']},
         storage: {default: TEST_STORAGE_OPTIONS},
-        //cache: {bins: {default: 'redis1'}, adapter: {redis1: {type: 'redis', host: '127.0.0.1', port: 6379}}},
         eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}}
       });
     bootstrap.activateLogger();
@@ -296,7 +352,6 @@ class Tasks_workerSpec {
     // registered subscribers of remote nodes
     await EventBus.post(taskEvent);
 
-
     let taskEvent2 = new TaskEvent();
     taskEvent2.nodeId = bootstrap.getNodeId();
     taskEvent2.name = 'test';
@@ -316,7 +371,7 @@ class Tasks_workerSpec {
 
     let events_01: TaskEvent[] = events.filter(x => x.targetIds.indexOf('fakeapp01') != -1);
     let events_02: TaskEvent[] = events.filter(x => x.targetIds.indexOf('fakeapp02') != -1);
-    expect(events_01).to.have.length(4);
+    expect(events_01).to.have.length(6);
     expect(events_02).to.have.length(1);
 
     expect(events_01.map(x => {
@@ -325,6 +380,8 @@ class Tasks_workerSpec {
       {state: 'proposed', respId: undefined},
       {state: "enqueue", respId: "fakeapp01"},
       {state: 'started', respId: 'fakeapp01'},
+      {state: 'stopped', respId: 'fakeapp01'},
+      {state: 'stopped', respId: 'fakeapp01'},
       {state: 'stopped', respId: 'fakeapp01'}
     ]);
 
@@ -340,6 +397,8 @@ class Tasks_workerSpec {
       {result: null},
       {result: null},
       {result: null},
+      {result: {res: 'okay', value: 'valueSome'}},
+      {result: {res: 'okay', value: 'valueSome'}},
       {result: {res: 'okay', value: 'valueSome'}}
     ]);
   }
@@ -348,14 +407,15 @@ class Tasks_workerSpec {
   @test
   async 'run job remote over task command'() {
     // typexs task test [--targetId abc] [--mode worker|local /* default is worker if on exists else startup local*/]
-    let handle = SpawnHandle.do(__dirname + '/fake_app/node_task_worker.ts').start(LOG_EVENT);
+
+    let handle = SpawnHandle.do(__dirname + '/fake_app/node_task_worker.ts', '--timeout', '2000').start(LOG_EVENT);
     await handle.started;
 
     let bootstrap = Bootstrap
       .setConfigSources([{type: 'system'}])
       .configure(<ITypexsOptions & any>{
         app: {name: 'test', nodeId: 'event', path: __dirname + '/fake_app'},
-        logging: {enable: true, level: 'debug'},
+        logging: {enable: LOG_EVENT, level: 'debug', loggers: [{name: '*', level: 'debug'}]},
         modules: {paths: [__dirname + '/../../..']},
         storage: {default: TEST_STORAGE_OPTIONS},
         //cache: {bins: {default: 'redis1'}, adapter: {redis1: {type: 'redis', host: '127.0.0.1', port: 6379}}},
@@ -376,8 +436,86 @@ class Tasks_workerSpec {
     Config.set('argv.someValue', 'value', 'system');
     process.argv = ['typexs', 'task', 'test'];
 
+    let events: TaskEvent[] = [];
+
+    class T2 {
+      @subscribe(TaskEvent)
+      on(e: TaskEvent) {
+        let _e = _.cloneDeep(e);
+        events.push(_e);
+      }
+    }
+
+    await EventBus.register(new T2());
+
     await command.handler({});
+
+    await handle.done;
     await bootstrap.shutdown();
+    //console.log(inspect(events,false,10))
+    expect(events).to.have.length(6);
+    expect(events.map(x => x.state)).to.deep.eq(["proposed",
+      "enqueue",
+      "started",
+      "stopped",
+      "stopped",
+      "stopped"]);
+
   }
 
+
+  @test
+  async 'monitor local task execution'() {
+    let bootstrap = Bootstrap
+      .setConfigSources([{type: 'system'}])
+      .configure(<ITypexsOptions & any>{
+        app: {name: 'test', nodeId: 'worker'},
+        logging: {enable: LOG_EVENT, level: 'debug'},
+        modules: {paths: [__dirname + '/../../..']},
+        storage: {default: TEST_STORAGE_OPTIONS},
+        eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}},
+        workers: {access: [{name: 'Task*Worker', access: 'allow'}]}
+      });
+    bootstrap.activateLogger();
+    bootstrap.activateErrorHandling();
+    await bootstrap.prepareRuntime();
+    bootstrap = await bootstrap.activateStorage();
+    bootstrap = await bootstrap.startup();
+    // ---- startup done
+
+
+    let tasks: Tasks = Container.get(Tasks.NAME);
+    let ref = tasks.addTask(SimpleTaskWithLog);
+
+    const workers: Workers = Container.get(Workers.NAME);
+    const worker: TaskQueueWorker = <TaskQueueWorker>workers.workers.find(x => x instanceof TaskQueueWorker);
+
+    let execReq = Container.get(TaskExecutionRequest);
+    let results = await execReq.run([ref.name]);
+
+    await TestHelper.wait(50);
+    await worker.queue.await();
+
+    let storeRef: StorageRef = Container.get(C_STORAGE_DEFAULT);
+    let logs: any[] = await storeRef.getController().find(TaskLog);
+
+    // ---- finished
+    await bootstrap.shutdown();
+    expect(logs).to.have.length(1);
+
+    expect(results).to.have.length(1);
+    expect(results[0]).to.deep.include({
+      "state": "enqueue",
+      "topic": "data",
+      "nodeId": "worker",
+      "name": [
+        "simple_task_with_log"
+      ],
+      "targetIds": [
+        "worker"
+      ],
+      "respId": "worker",
+      "errors": [],
+    });
+  }
 }

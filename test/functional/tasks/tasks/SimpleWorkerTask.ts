@@ -9,7 +9,7 @@ export class SimpleWorkerTask implements ITask {
     await new Promise((resolve, reject) => {
       setTimeout(() => {
         resolve();
-      }, 300)
+      }, 100)
     });
     return 'test';
   }

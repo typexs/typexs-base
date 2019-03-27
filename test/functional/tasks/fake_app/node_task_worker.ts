@@ -1,6 +1,7 @@
-import {Bootstrap, ITypexsOptions} from "../../../../src";
+import {Bootstrap, ITypexsOptions, Log} from "../../../../src";
 import {TEST_STORAGE_OPTIONS} from "../../config";
 import {IEventBusConfiguration} from "commons-eventbus";
+import {Config} from "commons-config";
 
 
 (async function () {
@@ -9,7 +10,7 @@ import {IEventBusConfiguration} from "commons-eventbus";
     .setConfigSources([{type: 'system'}])
     .configure(<ITypexsOptions & any>{
       app: {name: 'fakeapp01', nodeId: 'fakeapp01', path: __dirname},
-      logging: {enable: true, level: 'debug'},
+      logging: {enable: true, level: 'debug', loggers: [{name: '*', level: 'debug'}]},
       modules: {paths: [__dirname + '/../../../..']},
       storage: {default: TEST_STORAGE_OPTIONS},
       //cache: {bins: {default: 'redis1'}, adapter: {redis1: {type: 'redis', host: '127.0.0.1', port: 6379}}},
@@ -21,7 +22,7 @@ import {IEventBusConfiguration} from "commons-eventbus";
   await bootstrap.prepareRuntime();
   bootstrap = await bootstrap.activateStorage();
   bootstrap = await bootstrap.startup();
-
+  let timeout = parseInt(Config.get('argv.timeout', 1000));
   /*
   let commands = bootstrap.getCommands();
   expect(commands.length).to.be.gt(0);
@@ -31,6 +32,6 @@ import {IEventBusConfiguration} from "commons-eventbus";
 
   setTimeout(async () => {
     await bootstrap.shutdown();
-  }, 500);
+  }, timeout);
 })();
 

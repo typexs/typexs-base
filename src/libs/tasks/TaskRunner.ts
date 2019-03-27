@@ -109,7 +109,7 @@ export class TaskRunner extends EventEmitter {
       taskId: this.id,
       taskNames: this.$todo.join('--')
     });
-    this.taskLogger.info('Log execution of tasks:', this.$todo);
+    this.taskLogger.info('Execute tasks: '+this.$todo.join(', '));
 
     this.taskLoggerFile = path.join(os.tmpdir(), 'typexs-taskrun-' + this.id + '-' + startDate);
     (<WinstonLoggerJar>this.taskLogger).logger().add(

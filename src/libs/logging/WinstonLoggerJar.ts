@@ -1,4 +1,4 @@
-import {ILogLevel, TodoException} from "commons-base";
+import {C_DEFAULT, ILogLevel, TodoException} from "commons-base";
 import * as winston from "winston";
 import {createLogger, Logger, LoggerOptions} from "winston";
 import {ILoggerOptions} from "./ILoggerOptions";
@@ -12,9 +12,7 @@ import {ILoggerApi} from "./ILoggerApi";
 import {format} from "logform";
 import {DefaultJsonFormat} from "./DefaultJsonFormat";
 
-const DEFAULT_TRANSPORT_OPTIONS: ConsoleTransportOptions = {
-
-};
+const DEFAULT_TRANSPORT_OPTIONS: ConsoleTransportOptions = {};
 
 
 export class WinstonLoggerJar implements ILoggerApi {
@@ -38,10 +36,11 @@ export class WinstonLoggerJar implements ILoggerApi {
 
   options: ILoggerOptions;
 
+  name: string = C_DEFAULT;
 
-  constructor(opts?: ILoggerOptions) {
+  constructor(name: string, opts?: ILoggerOptions) {
     this.options = opts;
-    this.build(opts);
+    this.build(name, opts);
   }
 
 
@@ -54,11 +53,11 @@ export class WinstonLoggerJar implements ILoggerApi {
     this.formats[name] = transportClass;
   }
 
-  stream(opts:any = {}){
+  stream(opts: any = {}) {
     return this._logger.stream(opts);
   }
 
-  logger(){
+  logger() {
     return this._logger;
   }
 
@@ -67,7 +66,9 @@ export class WinstonLoggerJar implements ILoggerApi {
   }
 
 
-  build(options: ILoggerOptions, append: boolean = false) {
+  build(name: string, options: ILoggerOptions, append: boolean = false) {
+    this.name = name;
+
     if (append && this.options) {
       options = BaseUtils.merge(this.options, options)
     }
@@ -84,16 +85,18 @@ export class WinstonLoggerJar implements ILoggerApi {
     this.detectFormat(options, opts);
 
     let t: any[] = [];
-    for (let opt of options.transports) {
-      let k = Object.keys(opt).shift();
-      let transportOptions: any = _.defaults(opt[k], DEFAULT_TRANSPORT_OPTIONS);
-      if (_.has(WinstonLoggerJar.transportTypes, k)) {
-        t.push(Reflect.construct(WinstonLoggerJar.transportTypes[k], [transportOptions]));
-      } else {
-        throw new TodoException('log: transport type ' + k + ' not found.')
+    if (_.has(options, 'transports')) {
+      for (let opt of options.transports) {
+        let k = Object.keys(opt).shift();
+        let transportOptions: any = _.defaults(opt[k], DEFAULT_TRANSPORT_OPTIONS);
+        if (_.has(WinstonLoggerJar.transportTypes, k)) {
+          t.push(Reflect.construct(WinstonLoggerJar.transportTypes[k], [transportOptions]));
+        } else {
+          throw new TodoException('log: transport type ' + k + ' not found.')
+        }
       }
+      opts.transports = t;
     }
-    opts.transports = t;
 
     this._logger = createLogger(opts);
     return this;
@@ -128,10 +131,10 @@ export class WinstonLoggerJar implements ILoggerApi {
 
   log(level: string, ...msg: any[]): void {
     if (msg[0] instanceof LogEvent) {
-      this._logger.log(level, msg[0].message(), {event:msg[0]})
+      this._logger.log(level, msg[0].message(), {event: msg[0]})
     } else {
       let l = new LogEvent({args: msg, level: level, prefix: this.prefix});
-      this._logger.log(level, l.message(), {event:l})
+      this._logger.log(level, l.message(), {event: l})
     }
   }
 
@@ -178,5 +181,10 @@ export class WinstonLoggerJar implements ILoggerApi {
 
   close() {
     this._logger.close();
+  }
+
+  remove(){
+    this.close();
+    Log._().removeLogger(this.name);
   }
 }

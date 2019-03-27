@@ -24,7 +24,7 @@ export class DefaultFormat {
       }
     }
 
-    let _prefix = prefix.filter(x => !_.isEmpty(x)).join(':');
+    let _prefix = prefix.filter(x => !_.isEmpty(x)).map(x => x.trim()).join(':');
 
     info[MESSAGE] = '[' + moment(Date.now()).format('YYYY.MM.DD HH:mm:ss.SSS') + '] ' +
       _prefix +

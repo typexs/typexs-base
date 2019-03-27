@@ -1,6 +1,6 @@
 import * as _ from 'lodash'
 import {ILoggerOptions} from "./ILoggerOptions";
-import {C_DEFAULT} from "commons-base";
+import {C_DEFAULT, ClassUtils} from "commons-base";
 import {WinstonLoggerJar} from "./WinstonLoggerJar";
 import {BaseUtils} from "../../libs/utils/BaseUtils";
 import {Minimatch} from "minimatch";
@@ -79,6 +79,15 @@ export class Log {
     return this._().getLogger(name);
   }
 
+  static getLoggerFor(fn: Function,opts:any = {}) {
+    const name = ClassUtils.getClassName(fn);
+    let exists = this._().getLogger(name);
+    if(!exists){
+      opts.prefix = name;
+      exists = this._().createLogger(name,opts);
+    }
+    return exists;
+  }
 
   getLogger(name: string = C_DEFAULT): ILoggerApi {
     if (_.has(this.loggers, name)) {
@@ -89,7 +98,6 @@ export class Log {
 
   getLoggerOptionsFor(name: string) {
     if (_.has(this.globalOptions, 'loggers')) {
-      let count: number = 0;
       for (let a of this.globalOptions.loggers) {
         if (_.isUndefined(a.match)) {
           if (/\+|\.|\(|\\||\)|\*/.test(a.name)) {
@@ -116,10 +124,10 @@ export class Log {
   createOrUpdateLogger(name: string = C_DEFAULT, opts: ILoggerOptions, append: boolean = true) {
     let l = this.getLogger(name);
     if (l) {
-      (<any>l).build(opts, append);
+      (<any>l).build(name,opts, append);
       Log.debug('update logger ' + name, opts);
     } else {
-      l = new WinstonLoggerJar(opts);
+      l = new WinstonLoggerJar(name,opts);
       this.loggers[name] = l;
       if(name !== C_DEFAULT){
         Log.debug('create new logger ' + name, opts);
@@ -135,7 +143,10 @@ export class Log {
     if (!opts) {
       opts = DEFAULT_OPTIONS;
       opts.name = 'logger_' + Log.inc++;
+    }else{
+      _.defaults(opts,DEFAULT_OPTIONS);
     }
+
     let optsClone = _.cloneDeep(opts);
 
     if(params.prefix){
@@ -151,7 +162,7 @@ export class Log {
   removeLogger(name: string) {
     this.getLogger(name).close();
     delete this.loggers[name];
-    Log.info('remove logger ' + name);
+    Log.debug('remove logger ' + name);
   }
 
 

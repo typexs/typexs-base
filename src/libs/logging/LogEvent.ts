@@ -20,8 +20,10 @@ export class LogEvent {
     if (opts.time) {
       opts.time = new Date()
     }
-    this.prefix = [Log.prefix, _.get(opts, 'prefix', '')].filter(x => !_.isEmpty(x)).join('__');
+    this.prefix = [Log.prefix, _.get(opts, 'prefix', '')]
+      .filter(x => !_.isEmpty(x)).join('__');
     this._message = opts.message;
+
     _.assign(this, opts)
   }
 

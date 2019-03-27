@@ -114,7 +114,6 @@ export class TaskMonitorWorker implements IQueueProcessor<TaskEvent>, IWorker {
         let filename = this.getFileName(event.id, event.respId);
         await new Promise((resolve, reject) => {
           let out = event.log.join("\n")+"\n";
-          console.log(out)
           fs.appendFile(filename, out, (err) => {
             if(err){
               this.logger.error('appending log to file ' + filename, err);

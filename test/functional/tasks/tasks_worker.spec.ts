@@ -488,7 +488,6 @@ class Tasks_workerSpec {
     bootstrap = await bootstrap.startup();
     // ---- startup done
 
-
     let tasks: Tasks = Container.get(Tasks.NAME);
     let ref = tasks.addTask(SimpleTaskWithLog);
 
@@ -498,8 +497,8 @@ class Tasks_workerSpec {
     let execReq = Container.get(TaskExecutionRequest);
     let results = await execReq.run([ref.name]);
 
-    await TestHelper.wait(50);
-    await worker.queue.await();
+    await TestHelper.wait(500);
+//    await worker.queue.await();
 
     let storeRef: StorageRef = Container.get(C_STORAGE_DEFAULT);
     let logs: any[] = await storeRef.getController().find(TaskLog);

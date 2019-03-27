@@ -26,17 +26,52 @@ export class TaskLog {
   taskName: string;
 
   @Index()
-  @Column()
+  @Column({nullable: true})
   taskNr: number;
+
+  @Index()
+  @Column()
+  state: string;
+
+  @Index()
+  @Column()
+  nodeId: string;
+
+  @Index()
+  @Column()
+  respId: string;
+
+  @Index()
+  @Column({nullable: true})
+  hasError: boolean;
+
+  @Column({nullable: true})
+  progress: number;
+
+  @Column({nullable: true})
+  total: number;
+
+  @Column({nullable: true})
+  done: boolean;
+
+  @Column({nullable: true})
+  running: boolean;
+
+  @Column({nullable: true})
+  weight: number;
+
+  @Column({nullable: true})
+  created: Date;
 
   @Column({nullable: true})
   started: Date;
 
   @Column({nullable: true})
-  finished: Date;
+  stopped: Date;
 
   @Column({nullable: true})
   duration: number;
+
 
   @Column({nullable: true})
   data: string;

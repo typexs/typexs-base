@@ -57,7 +57,9 @@ export class Workers implements ILookupRegistry {
 
   infos() {
     return _.map(this.getEntries(), x => {
-      name:x.name
+      return {
+        name: x.name
+      }
     });
   }
 

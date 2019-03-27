@@ -80,7 +80,8 @@ export class TaskRunner extends EventEmitter {
 
     this.invoker = Container.get(Invoker.NAME);
 
-    this.id = CryptUtils.shorthash(names.join(';') + ';' + this.nr + Date.now());
+    // id can be overwriten
+    this.id = _.get(options, 'id', CryptUtils.shorthash(names.join(';') + ';' + this.nr + Date.now()));
 
     this.$options = options || {};
 
@@ -103,7 +104,7 @@ export class TaskRunner extends EventEmitter {
     this.loggerName = 'task-runner-' + this.id;
     let startDate = moment(this.$start).toISOString();
     this.taskLogger = Log._().createLogger(this.loggerName, {
-      prefix: this.id,
+      prefix: this.loggerName,
       taskStart: startDate,
       taskId: this.id,
       taskNames: this.$todo.join('--')
@@ -156,7 +157,7 @@ export class TaskRunner extends EventEmitter {
     if (ref) {
       _.set(this.$incoming, ref.storingName, await ref.convert(value));
     } else {
-      throw new NotSupportedError('no required incoming parameter found for ' + key);
+      this.getLogger().warn('no required incoming parameter found for ' + key)
     }
   }
 
@@ -223,7 +224,6 @@ export class TaskRunner extends EventEmitter {
     }
 
     let nextTask = this.selectNextTask();
-
     if (this.$running.length == 0 && !nextTask) {
       throw new Error('Tasks are stucked!')
     }
@@ -353,7 +353,6 @@ export class TaskRunner extends EventEmitter {
 
 
   finish() {
-    //Log.debug('finished ', this.getList());
     this.$stop = new Date();
     this.$duration = this.$stop.getTime() - this.$start.getTime();
 

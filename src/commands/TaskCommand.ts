@@ -1,14 +1,12 @@
-import * as _ from 'lodash';
 import {Config} from "commons-config";
-import {Inject} from "typedi";
+import {Container, Inject} from "typedi";
 import {Invoker} from "../base/Invoker";
 import {Tasks} from "../libs/tasks/Tasks";
 import {Log} from '../libs/logging/Log'
 import {Console} from '../libs/logging/Console'
 import {TasksApi} from "../api/Tasks.api";
 import {System} from "../libs/system/System";
-import {TaskEvent} from "../libs/tasks/worker/TaskEvent";
-import {EventBus} from "commons-eventbus";
+import {TaskExecutionRequest} from "../libs/tasks/worker/TaskExecutionRequest";
 
 /**
  * Starts a task direct or in a running worker
@@ -33,6 +31,8 @@ export class TaskCommand {
   aliases = "t";
 
   describe = "Start task";
+
+
 
 
   builder(yargs: any) {
@@ -64,7 +64,6 @@ export class TaskCommand {
       }
     }
 
-
     if (taskNames.length > 0) {
       let args = Config.get('argv');
       // check nodes for tasks
@@ -77,6 +76,12 @@ export class TaskCommand {
           // all tasks can be send to workers
           // execute
 
+          Log.debug('task command: before request fire');
+          let execReq = Container.get(TaskExecutionRequest);
+          let results = await execReq.run(taskNames, args, targetId ? [targetId] : []);
+          Log.debug('task command: event enqueue results', results);
+
+          /*
           let event = new TaskEvent();
           if (targetId) {
             if (!event.targetIds) event.targetIds = [];
@@ -92,7 +97,7 @@ export class TaskCommand {
           event.nodeId = this.system.node.nodeId;
           Log.debug('Sending event', event);
           await EventBus.post(event);
-
+*/
         } else {
           // there are no worker running!
           Console.error('There are no worker running for tasks: ' + taskNames.join(', '));

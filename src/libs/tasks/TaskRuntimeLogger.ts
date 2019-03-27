@@ -1,10 +1,11 @@
 import {ILogLevel} from "commons-base";
 import {ILoggerApi} from "../logging/ILoggerApi";
 import {ILoggerOptions} from "../logging/ILoggerOptions";
-import {LogEvent} from "../..";
+import {Log, LogEvent} from "../..";
 
 export class TaskRuntimeLogger implements ILoggerApi {
 
+  name:string;
   private taskId: string;
   private taskName: string;
   private taskNr: number;
@@ -15,6 +16,7 @@ export class TaskRuntimeLogger implements ILoggerApi {
     this.taskName = taskName;
     this.taskNr = taskNr;
     this.baseLogger = baseLogger;
+    this.name = [this.taskId,this.taskNr,this.taskName].join(':')
   }
 
 
@@ -68,6 +70,11 @@ export class TaskRuntimeLogger implements ILoggerApi {
 
   getOptions(): ILoggerOptions {
     return undefined;
+  }
+
+
+  remove(){
+
   }
 
 }

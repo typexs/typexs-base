@@ -23,7 +23,6 @@ export class TaskRuntimeContainer implements ITaskRuntimeContainer {
     this.$total = 100;
   }
 
-
   logger() {
     if (!this._logger) {
       this._logger = new TaskRuntimeLogger(this.getRunner().id, this.$_run_.taskRef().name, this.$_run_.id, this.getRunner().getLogger());

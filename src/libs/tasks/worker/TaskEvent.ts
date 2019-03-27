@@ -2,29 +2,33 @@ import {IError} from "../../exceptions/IError";
 import {ITaskRunnerResult} from "../../tasks/ITaskRunnerResult";
 import * as _ from 'lodash';
 import {AbstractEvent} from "../../events/AbstractEvent";
+import {IQueueWorkload} from "../../../libs/queue/IQueueWorkload";
 
-export class TaskEvent extends AbstractEvent {
+/**
+ * Id is the runner id
+ */
+export class TaskEvent extends AbstractEvent implements IQueueWorkload{
 
   /**
    * Name or names of task(s) to execute
    */
   name: string | string[];
 
+
   /**
-   * arguments to pass to task runner
+   * Arguments to pass to task runner
    */
   parameters?: { [name: string]: any };
 
   /**
-   * errors
+   * Errors
    */
   errors: IError[] = [];
 
-
   /**
-   * current state of task
+   * Current state of task
    */
-  state: 'enqueue' | 'proposed' | 'started' | 'stopped' | 'running' | 'errored' = 'proposed';
+  state: 'enqueue' | 'proposed' | 'started' | 'stopped' | 'running' | 'errored' | 'event_errored' = 'proposed';
 
   /**
    * Topic of this event
@@ -35,6 +39,7 @@ export class TaskEvent extends AbstractEvent {
    * log data
    */
   log: any[];
+
 
   data: ITaskRunnerResult;
 

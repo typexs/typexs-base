@@ -1,6 +1,7 @@
 import {Bootstrap, ITypexsOptions} from "../../../../src";
 import {TEST_STORAGE_OPTIONS} from "../../config";
 import {IEventBusConfiguration} from "commons-eventbus";
+import {Config} from "commons-config";
 
 (async function () {
   const LOG_EVENT = true;//
@@ -21,9 +22,23 @@ import {IEventBusConfiguration} from "commons-eventbus";
   bootstrap = await bootstrap.activateStorage();
   bootstrap = await bootstrap.startup();
 
-  setTimeout(async () => {
+
+  let timeout = parseInt(Config.get('argv.timeout', 1000));
+  /*
+  let commands = bootstrap.getCommands();
+  expect(commands.length).to.be.gt(0);
+  let command = _.find(commands, e => e.command == 'worker');
+  command.handler({});
+  */
+
+  let t = setTimeout(async () => {
     await bootstrap.shutdown();
-  }, 1000);
+  }, timeout);
+
+  process.on('exit',async () => {
+    clearTimeout(t);
+    await bootstrap.shutdown();
+  });
 
 })();
 

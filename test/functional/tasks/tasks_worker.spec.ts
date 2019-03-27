@@ -408,7 +408,7 @@ class Tasks_workerSpec {
   async 'run job remote over task command'() {
     // typexs task test [--targetId abc] [--mode worker|local /* default is worker if on exists else startup local*/]
 
-    let handle = SpawnHandle.do(__dirname + '/fake_app/node_task_worker.ts', '--timeout', '4000').start(LOG_EVENT);
+    let handle = SpawnHandle.do(__dirname + '/fake_app/node_task_worker.ts', '--timeout', '40000').start(LOG_EVENT);
     await handle.started;
 
     let bootstrap = Bootstrap
@@ -453,6 +453,7 @@ class Tasks_workerSpec {
     await EventBus.register(new T2());
 
     await command.handler({});
+    await TestHelper.wait(500);
 
 
     await handle.done;

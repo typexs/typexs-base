@@ -57,6 +57,10 @@ export class SpawnHandle {
     return this;
   }
 
+  exit(){
+    this.process.kill();
+  }
+
 
   static do(file: string, ...args: any[]): SpawnHandle {
     return new SpawnHandle(file, ...args);

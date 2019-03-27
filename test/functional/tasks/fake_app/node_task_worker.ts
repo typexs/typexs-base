@@ -30,8 +30,14 @@ import {Config} from "commons-config";
   command.handler({});
   */
 
-  setTimeout(async () => {
+  let t = setTimeout(async () => {
     await bootstrap.shutdown();
   }, timeout);
+
+  process.on('exit',async () => {
+    clearTimeout(t);
+    await bootstrap.shutdown();
+  });
+
 })();
 

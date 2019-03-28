@@ -74,9 +74,11 @@ export * from "./libs/storage/Collection";
 export * from "./libs/storage/AbstractSchemaHandler";
 export * from "./libs/storage/StorageEntityController";
 
-export * from "./libs/distributed/DistributedStorageEntityController"
-export * from "./libs/distributed/QueryResultsEvent"
-export * from "./libs/distributed/QueryEvent"
+export * from "./libs/distributed/DistributedStorageEntityController";
+export * from "./libs/distributed/DistributedOperationFactory";
+export * from "./libs/distributed/DistributedFindOp";
+export * from "./libs/distributed/QueryResultsEvent";
+export * from "./libs/distributed/QueryEvent";
 
 export * from "./libs/tasks/ITask";
 export * from "./libs/tasks/TaskRef";

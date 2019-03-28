@@ -156,7 +156,7 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
   ready() {
     return new Promise((resolve, reject) => {
       const t = setTimeout(() => {
-        this.emit('postprocess', new Error('timeout error'))
+        this.emit('postprocess', new Error('timeout error'));
         clearTimeout(t);
       }, this.timeout);
 

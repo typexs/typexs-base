@@ -1,10 +1,11 @@
-import {Container, Inject, Service} from "typedi";
-import {IFindOptions, Invoker, System} from "../..";
+import {Inject} from "typedi";
+import {System} from "../../libs/system/System";
 import {DistributedFindOp} from "./DistributedFindOp";
 
 
-@Service()
 export class DistributedOperationFactory {
+
+  static NAME:string = 'DistributedOperationFactory';
 
   @Inject(System.NAME)
   system: System;

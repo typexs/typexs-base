@@ -131,7 +131,7 @@ export class System {
     this.info.memory = {
       total: os.totalmem(),
       free: os.freemem(),
-    }
+    };
     this.info.uptime = os.uptime();
     this.info.hostname = os.hostname();
     this.info.arch = os.arch();

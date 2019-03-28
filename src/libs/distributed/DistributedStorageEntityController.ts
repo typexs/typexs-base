@@ -5,7 +5,7 @@ import {DistributedOperationFactory} from "./DistributedOperationFactory";
 
 export class DistributedStorageEntityController {
 
-  @Inject(type => DistributedOperationFactory)
+  @Inject()
   factory: DistributedOperationFactory;
 
   /*

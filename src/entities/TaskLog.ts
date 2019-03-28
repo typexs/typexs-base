@@ -38,7 +38,7 @@ export class TaskLog {
   nodeId: string;
 
   @Index()
-  @Column()
+  @Column({nullable: true})
   respId: string;
 
   @Index()

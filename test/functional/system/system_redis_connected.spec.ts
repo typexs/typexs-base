@@ -104,6 +104,7 @@ class Tasks_systemSpec {
     expect(remoteNode.state).to.be.eq('register');
     expect(system.nodes).to.have.length(1);
     expect(system.nodes[0].nodeId).to.be.eq('fakeapp01');
+    p.shutdown();
     await p.done;
 
     expect(remoteNode.nodeId).to.be.eq('fakeapp01');
@@ -160,6 +161,7 @@ class Tasks_systemSpec {
     let results = await system.getNodeInfos();
     expect(results).to.have.length(1);
 
+    p.shutdown();
     await p.done;
     await bootstrap.shutdown();
 

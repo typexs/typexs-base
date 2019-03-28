@@ -16,8 +16,8 @@ import subscribe from "commons-eventbus/decorator/subscribe";
 import {TestHelper} from "../TestHelper";
 import {SpawnHandle} from "../SpawnHandle";
 import {TaskCommand} from "../../../src/commands/TaskCommand";
-import {TaskExecutionRequest} from "../../../src/libs/tasks/worker/TaskExecutionRequest";
 import {SimpleTaskWithLog} from "./tasks/SimpleTaskWithLog";
+import {TaskExecutionRequestFactory} from "../../../src/libs/tasks/worker/TaskExecutionRequestFactory";
 
 
 const LOG_EVENT = TestHelper.logEnable(false);
@@ -28,6 +28,7 @@ class Tasks_workerSpec {
 
 
   before() {
+
     Bootstrap.reset();
     Config.clear();
   }
@@ -135,7 +136,7 @@ class Tasks_workerSpec {
     const workers: Workers = Container.get(Workers.NAME);
     const worker: TaskQueueWorker = <TaskQueueWorker>workers.workers.find(x => x instanceof TaskQueueWorker);
 
-    let execReq = Container.get(TaskExecutionRequest);
+    let execReq = Container.get(TaskExecutionRequestFactory).createRequest();
     let results = await execReq.run([ref.name]);
 
     await TestHelper.wait(50);
@@ -187,7 +188,7 @@ class Tasks_workerSpec {
         let _e = _.cloneDeep(e);
         events.push(_e);
         if(events.length > 5){
-          p.exit();
+          p.shutdown();
         }
       }
     }
@@ -267,7 +268,7 @@ class Tasks_workerSpec {
         let _e = _.cloneDeep(e);
         events.push(_e);
         if(events.length > 1){
-          p.exit();
+          p.shutdown();
         }
       }
     }
@@ -287,6 +288,7 @@ class Tasks_workerSpec {
     // registered subscribers of remote nodes
     let results = await EventBus.post(taskEvent);
 
+//    await TestHelper.wait(300);
     await p.done;
 
     // ---- finished
@@ -334,7 +336,7 @@ class Tasks_workerSpec {
         let _e = _.cloneDeep(e);
         events.push(_e);
         if(events.length > 6){
-          handle.exit();
+          handle.shutdown();
         }
       }
     }
@@ -454,7 +456,7 @@ class Tasks_workerSpec {
         let _e = _.cloneDeep(e);
         events.push(_e);
         if(events.length == 6){
-           handle.exit();
+           handle.shutdown();
         }
       }
     }
@@ -462,7 +464,7 @@ class Tasks_workerSpec {
     await EventBus.register(new T2());
 
     await command.handler({});
-    await TestHelper.wait(500);
+    await TestHelper.wait(200);
 
 
     await handle.done;
@@ -475,7 +477,6 @@ class Tasks_workerSpec {
       "stopped",
       "stopped",
       "stopped"]);
-
   }
 
 
@@ -504,7 +505,7 @@ class Tasks_workerSpec {
     const workers: Workers = Container.get(Workers.NAME);
     const worker: TaskQueueWorker = <TaskQueueWorker>workers.workers.find(x => x instanceof TaskQueueWorker);
 
-    let execReq = Container.get(TaskExecutionRequest);
+    let execReq = Container.get(TaskExecutionRequestFactory).createRequest();
     let results = await execReq.run([ref.name]);
 
     await TestHelper.wait(500);

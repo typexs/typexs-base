@@ -99,7 +99,7 @@ class Tasks_systemSpec {
 
     let p = SpawnHandle.do(__dirname + '/fake_app/node.ts').start(LOG_EVENT);
     await p.started;
-    await TestHelper.wait(50);
+    await TestHelper.wait(100);
 
     taskInfos = tasks.infos(true);
     expect(system.nodes).to.have.length(1);

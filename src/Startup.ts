@@ -10,6 +10,7 @@ import {IShutdown} from "./api/IShutdown";
 import {System} from "./libs/system/System";
 import {EventBus, IEventBusConfiguration} from "commons-eventbus";
 import {Workers} from "./libs/worker/Workers";
+import {TasksHelper} from "./libs/tasks/TasksHelper";
 
 
 export class Startup implements IBootstrap, IShutdown {
@@ -31,7 +32,7 @@ export class Startup implements IBootstrap, IShutdown {
   workers: Workers;
 
   async bootstrap(): Promise<void> {
-    this.tasks.prepare(this.loader);
+    TasksHelper.prepare(this.tasks, this.loader);
     this.workers.prepare(this.loader);
 
     for (let cls of this.loader.getClasses(K_CLS_CACHE_ADAPTER)) {
@@ -51,7 +52,7 @@ export class Startup implements IBootstrap, IShutdown {
     }
   }
 
-  async ready(){
+  async ready() {
     await this.system.register();
     await this.workers.startup();
   }

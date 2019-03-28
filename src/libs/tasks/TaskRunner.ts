@@ -12,7 +12,6 @@ import {
   TASKRUN_STATE_UPDATE
 } from "./Constants";
 import {ITaskRunnerResult} from "./ITaskRunnerResult";
-import {NotSupportedError} from "commons-base";
 import {CryptUtils, TasksApi} from "../..";
 import {Invoker} from '../../base/Invoker';
 import {TasksHelper} from "./TasksHelper";
@@ -26,6 +25,8 @@ import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
 import {DefaultJsonFormat} from "../logging/DefaultJsonFormat";
+
+import {Stream} from "stream";
 
 
 export class TaskRunner extends EventEmitter {
@@ -74,6 +75,10 @@ export class TaskRunner extends EventEmitter {
 
   private taskLoggerFile: string;
 
+  writeStream: NodeJS.WritableStream;
+
+  readStream: NodeJS.ReadableStream;
+
 
   constructor(registry: Tasks, names: string[], options: any = {}) {
     super();
@@ -109,9 +114,31 @@ export class TaskRunner extends EventEmitter {
       taskId: this.id,
       taskNames: this.$todo.join('--')
     });
-    this.taskLogger.info('Execute tasks: '+this.$todo.join(', '));
+    this.taskLogger.info('Execute tasks: ' + this.$todo.join(', '));
 
     this.taskLoggerFile = path.join(os.tmpdir(), 'typexs-taskrun-' + this.id + '-' + startDate);
+
+    let sefl = this;
+    this.readStream = new Stream.Readable({
+      read(size:number) {
+        return size > 0 ;
+      }
+    });
+
+    this.writeStream = new Stream.Writable({
+      write (chunk: any, encoding: any, next: any)  {
+        (<any>sefl.readStream).push(chunk, encoding);
+        next()
+      }
+    });
+
+
+    (<WinstonLoggerJar>this.taskLogger).logger().add(
+      new winston.transports.Stream({
+        stream: this.writeStream,
+        format: new DefaultJsonFormat()
+      }));
+
     (<WinstonLoggerJar>this.taskLogger).logger().add(
       new winston.transports.Stream({
         stream: fs.createWriteStream(this.taskLoggerFile, {}),
@@ -138,7 +165,7 @@ export class TaskRunner extends EventEmitter {
 
 
   getReadStream() {
-    return fs.createReadStream(this.getLogFile(), {autoClose: true});
+    return this.readStream;
   }
 
 
@@ -363,6 +390,9 @@ export class TaskRunner extends EventEmitter {
     }
 
     this.taskLogger.close();
+    this.writeStream.end();
+    (<any>this.readStream).destroy();
+
     this.emit(TASKRUN_STATE_FINISH_PROMISE, status);
   }
 

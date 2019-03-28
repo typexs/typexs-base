@@ -8,6 +8,7 @@ import {TasksApi} from "../api/Tasks.api";
 import {System} from "../libs/system/System";
 import {TaskExecutionRequest} from "../libs/tasks/worker/TaskExecutionRequest";
 import {TaskExecutionRequestFactory} from "../libs/tasks/worker/TaskExecutionRequestFactory";
+import {TasksHelper} from "../libs/tasks/TasksHelper";
 
 /**
  * Starts a task direct or in a running worker
@@ -32,8 +33,6 @@ export class TaskCommand {
   aliases = "t";
 
   describe = "Start task";
-
-
 
 
   builder(yargs: any) {
@@ -111,7 +110,7 @@ export class TaskCommand {
             dry_mode: Config.get('argv.dry-mode', false)
           };
 
-          let runner = this.tasks.runner(taskNames, options);
+          let runner = TasksHelper.runner(this.tasks, taskNames, options);
           await new Promise((resolve, reject) => {
             runner.run(async (results: any) => {
               Console.log(JSON.stringify(results));

@@ -9,7 +9,7 @@ import {
   XS_TYPE_PROPERTY
 } from "commons-schema-api/browser";
 import {C_TASKS, XS_TYPE_BINDING_TASK_DEPENDS_ON, XS_TYPE_BINDING_TASK_GROUP} from "./Constants";
-import {ClassUtils, NotSupportedError, NotYetImplementedError} from "commons-base";
+import {ClassUtils, NotSupportedError, NotYetImplementedError} from "commons-base/browser";
 import {Container} from "typedi";
 import {TaskExchangeRef} from "./TaskExchangeRef";
 import {ITaskRefOptions} from "./ITaskRefOptions";

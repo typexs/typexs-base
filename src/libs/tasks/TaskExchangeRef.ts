@@ -3,7 +3,7 @@ import {TaskRef} from "./TaskRef";
 import {C_TASKS} from "./Constants";
 import {ClassUtils, NotYetImplementedError} from "commons-base/browser";
 import {ITaskDesc} from "./ITaskDesc";
-import {TreeUtils, WalkValues} from "../..";
+import {TreeUtils, WalkValues} from "../../libs/utils/TreeUtils";
 import * as _ from "lodash";
 
 

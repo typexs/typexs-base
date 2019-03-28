@@ -1,9 +1,7 @@
 import * as _ from 'lodash';
-import {TaskRef, TaskRefType} from "./TaskRef";
-import {TaskRunner} from "./TaskRunner";
-import {ClassLoader, MetaArgs, NotYetImplementedError} from "commons-base";
-import {K_CLS_TASKS, RuntimeLoader} from "../..";
-import {Binding, ILookupRegistry, LookupRegistry, XS_TYPE_ENTITY, XS_TYPE_PROPERTY} from "commons-schema-api";
+import {TaskRef} from "./TaskRef";
+import {MetaArgs, NotYetImplementedError} from "commons-base/browser";
+import {Binding, ILookupRegistry, LookupRegistry, XS_TYPE_ENTITY, XS_TYPE_PROPERTY} from "commons-schema-api/browser";
 import {
   C_TASKS,
   K_CLS_TASK_DESCRIPTORS,
@@ -15,12 +13,13 @@ import {TaskExchangeRef} from "./TaskExchangeRef";
 import {ITasksConfig} from "./ITasksConfig";
 import {ITaskRefOptions} from "./ITaskRefOptions";
 import {ITaskInfo} from "./ITaskInfo";
-import {Bootstrap} from "../../Bootstrap";
+
 
 export class Tasks implements ILookupRegistry {
 
   static NAME: string = 'Tasks';
 
+  readonly nodeId: string;
 
   static taskId: number = 0;
 
@@ -28,37 +27,13 @@ export class Tasks implements ILookupRegistry {
 
   registry: LookupRegistry = LookupRegistry.$(C_TASKS);
 
+
+  constructor(nodeId:string){
+    this.nodeId = nodeId;
+  }
+
   setConfig(config: ITasksConfig = {access: []}) {
     this.config = config;
-  }
-
-
-  prepare(loader: RuntimeLoader) {
-    let klasses = loader.getClasses(K_CLS_TASKS);
-    for (let klass of klasses) {
-      let task = Reflect.construct(klass, []);
-      if (!('name' in task) || !_.isFunction(task['exec'])) throw new Error('task ' + klass + ' has no name');
-      this.addTask(klass);
-    }
-  }
-
-
-  runner(name: string | string[], options: any) {
-    if (_.isArray(name)) {
-      let names = [];
-      for (let i = 0; i < name.length; i++) {
-        if (!this.contains(name[i])) {
-          throw new Error('task ' + name[i] + ' not exists')
-        }
-        names.push(name[i]);
-      }
-      return new TaskRunner(this, names, options);
-    } else {
-      if (this.contains(name)) {
-        return new TaskRunner(this, [name], options);
-      }
-    }
-    throw new Error('task ' + name + ' not exists')
   }
 
 
@@ -146,7 +121,7 @@ export class Tasks implements ILookupRegistry {
 
   addTask(name: string | object | Function, fn: object | Function = null, options: ITaskRefOptions = null): TaskRef {
     let task = new TaskRef(name, fn, options);
-    return this.addTaskRef(task);
+    return this.addTaskRef(task,this.nodeId);
   }
 
 
@@ -156,7 +131,7 @@ export class Tasks implements ILookupRegistry {
   }
 
 
-  addTaskRef(task: TaskRef, nodeId: string = Bootstrap.getNodeId()) {
+  addTaskRef(task: TaskRef, nodeId: string) {
     if (this.access(task.name)) {
       let exists = <TaskRef>this.registry.find(XS_TYPE_ENTITY, (x: TaskRef) => x.name == task.name);
       if (!exists) {
@@ -259,7 +234,7 @@ export class Tasks implements ILookupRegistry {
       taskRef = this.get(name);
       let taskRefClone = taskRef.clone(new_name);
 
-      return this.addTaskRef(taskRefClone);
+      return this.addTaskRef(taskRefClone,this.nodeId);
     } else {
       throw new Error('task doesn\'t exists')
     }
@@ -277,18 +252,10 @@ export class Tasks implements ILookupRegistry {
   }
 
 
-  async addClasses(dir: string) {
-    let klazzes = await ClassLoader.importClassesFromDirectoriesAsync([dir]);
-    for (let klass of klazzes) {
-      let task = Reflect.construct(klass, []);
-      if (!('name' in task) || !_.isFunction(task['exec'])) throw new Error('task ' + klass + ' has no name');
-      this.addTask(klass);
-    }
-  }
 
 
-  toJson(){
-    return this.getEntries(true).map((x:TaskRef) => x.toJson());
+  toJson() {
+    return this.getEntries(true).map((x: TaskRef) => x.toJson());
   }
 
 

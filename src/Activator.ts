@@ -7,6 +7,7 @@ import {Workers} from "./libs/worker/Workers";
 import {C_TASKS} from "./libs/tasks/Constants";
 import {Config} from "commons-config";
 import {C_WORKERS} from "./libs/worker/Constants";
+import {Bootstrap} from "./Bootstrap";
 
 
 export class Activator implements IActivator {
@@ -21,7 +22,8 @@ export class Activator implements IActivator {
 //    system.initialize(Bootstrap.getNodeId());
 //    Container.set(System.NAME, system);
 
-    const tasks = new Tasks();
+    const tasks = new Tasks(Bootstrap.getNodeId());
+
     let cfg = Config.get(C_TASKS, null);
     if (cfg) {
       tasks.setConfig(cfg);

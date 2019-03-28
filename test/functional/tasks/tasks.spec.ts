@@ -23,10 +23,11 @@ import {SimpleTaskError} from "./tasks/SimpleTaskError";
 import {SimpleTaskWithRuntimeLog} from "./tasks/SimpleTaskWithRuntimeLog";
 import {TestHelper} from "../TestHelper";
 import {inspect} from "util";
+import {LookupRegistry} from "commons-schema-api";
 
 const stdMocks = require('std-mocks');
 
-const LOG_EVENT = TestHelper.logEnable(false);
+const LOG_EVENT = TestHelper.logEnable(true);
 
 
 @suite('functional/tasks/tasks')
@@ -37,6 +38,7 @@ class TasksSpec {
     let i = new Invoker();
     Container.set(Invoker.NAME, i);
     i.register(TasksApi, []);
+
   }
 
   static after() {
@@ -46,7 +48,7 @@ class TasksSpec {
 
   @test
   async 'register simple tasks class and run'() {
-    let tasks = new Tasks();
+    let tasks = new Tasks('testnode');
     let taskRef = tasks.addTask(SimpleTask);
     expect(taskRef.name).to.be.eq('simple_task');
     let runner = new TaskRunner(tasks, ['simple_task']);
@@ -60,7 +62,7 @@ class TasksSpec {
 
   @test
   async 'register simple tasks class with promise and run'() {
-    let tasks = new Tasks();
+    let tasks = new Tasks('testnode');
     let taskRef = tasks.addTask(SimpleTaskPromise);
     expect(taskRef.name).to.be.eq('simple_task_promise');
     let runner = new TaskRunner(tasks, ['simple_task_promise']);
@@ -74,7 +76,7 @@ class TasksSpec {
 
   @test
   async 'register simple tasks where name will be generated'() {
-    let tasks = new Tasks();
+    let tasks = new Tasks('testnode');
     let taskRef = tasks.addTask(SimpleTaskNoName);
     expect(taskRef.name).to.be.eq('simple_task_no_name');
     let runner = new TaskRunner(tasks, [taskRef.name]);
@@ -88,7 +90,7 @@ class TasksSpec {
 
   @test
   async 'register simple tasks instance with exec method and run'() {
-    let tasks = new Tasks();
+    let tasks = new Tasks('testnode');
     let nn = new SimpleTaskInstance();
     let taskRef = tasks.addTask(nn);
     expect(taskRef.name).to.be.eq('simple_task_instance');
@@ -103,7 +105,7 @@ class TasksSpec {
 
   @test
   async 'register function callback and run'() {
-    let tasks = new Tasks();
+    let tasks = new Tasks('testnode');
     let taskRef = tasks.addTask('callback_task', function (done: Function) {
       done(null, 'test')
     });
@@ -119,7 +121,7 @@ class TasksSpec {
 
   @test
   async 'register function callback and run as promise'() {
-    let tasks = new Tasks();
+    let tasks = new Tasks('testnode');
     let taskRef = tasks.addTask('callback_task_async', async function () {
       return 'test';
     });
@@ -135,7 +137,7 @@ class TasksSpec {
 
   @test
   async 'register simple tasks class with arguments and run'() {
-    let tasks = new Tasks();
+    let tasks = new Tasks('testnode');
     let taskRef = tasks.addTask(SimpleTaskWithArgs);
     expect(taskRef.name).to.be.eq('simple_task_with_args');
     expect(taskRef.getIncomings().map(x => x.name)).to.be.deep.eq(['incoming', 'list']);
@@ -162,7 +164,7 @@ class TasksSpec {
 
   @test
   async 'grouped tasks without grouping task'() {
-    let tasks = new Tasks();
+    let tasks = new Tasks('testnode');
     let group1 = tasks.addTask(GroupedTask1);
     let group2 = tasks.addTask(GroupedTask2);
 
@@ -176,7 +178,7 @@ class TasksSpec {
 
   @test
   async 'grouped tasks with a grouping task'() {
-    let tasks = new Tasks();
+    let tasks = new Tasks('testnode');
     let grouping = tasks.addTask(GroupingTask);
     let group3 = tasks.addTask(GroupedTask3);
     let group4 = tasks.addTask(GroupedTask4);
@@ -191,7 +193,7 @@ class TasksSpec {
 
   @test
   async 'dependencies tasks'() {
-    let tasks = new Tasks();
+    let tasks = new Tasks('testnode');
     let dependent = tasks.addTask(DependentTask);
     let depending = tasks.addTask(DependingTask);
     depending.dependsOn(dependent.name);
@@ -210,7 +212,7 @@ class TasksSpec {
     const oldName = 'simple_task';
     const newName = 'copy_simple_task';
 
-    let tasks = new Tasks();
+    let tasks = new Tasks('testnode');
     let taskRef = tasks.addTask(SimpleTask);
     expect(taskRef.name).to.be.eq(oldName);
 
@@ -231,7 +233,7 @@ class TasksSpec {
   async 'map task to new one (instance-registered task)'() {
     const oldName = 'simple_task_instance';
     const newName = 'copy_simple_task_instance';
-    let tasks = new Tasks();
+    let tasks = new Tasks('testnode');
     let nn = new SimpleTaskInstance();
     let taskRef = tasks.addTask(nn);
     expect(taskRef.name).to.be.eq(oldName);
@@ -255,7 +257,7 @@ class TasksSpec {
   async 'map task to new one (callback-registered task)'() {
     const oldName = 'callback_test';
     const newName = 'copy_callback_test';
-    let tasks = new Tasks();
+    let tasks = new Tasks('testnode');
     let taskRef = tasks.addTask(oldName, function (done: Function) {
       done(null, 'test')
     });
@@ -276,7 +278,7 @@ class TasksSpec {
 
   @test
   async 'map task group to new one'() {
-    let tasks = new Tasks();
+    let tasks = new Tasks('testnode');
     let t1 = tasks.addTask(SimpleTaskUngrouped01);
     let t2 = tasks.addTask(SimpleTaskUngrouped02);
 
@@ -301,7 +303,9 @@ class TasksSpec {
 
   @test
   async 'toJson'() {
-    let tasks = new Tasks();
+    let tasks = new Tasks('testnode');
+    tasks.reset();
+
     tasks.addTask(SimpleTaskUngrouped01);
     tasks.addTask(SimpleTaskUngrouped02);
     tasks.addTask(SimpleTaskWithArgs);
@@ -315,7 +319,7 @@ class TasksSpec {
 
   @test
   async 'runtime error in (class-registered task)'() {
-    let tasks = new Tasks();
+    let tasks = new Tasks('testnode');
     let taskRef = tasks.addTask(SimpleTaskError);
 
     let runner = new TaskRunner(tasks, [taskRef.name]);
@@ -328,7 +332,7 @@ class TasksSpec {
   @test
   async 'own task logger'() {
 
-    let tasks = new Tasks();
+    let tasks = new Tasks('testnode');
     let taskRef = tasks.addTask(SimpleTaskWithRuntimeLog);
     stdMocks.use();
     let runner = new TaskRunner(tasks, [taskRef.name]);
@@ -344,12 +348,13 @@ class TasksSpec {
     });
 
     let p = new Promise((resolve, reject) => {
-      reader.on('end', resolve);
+      reader.on('close', resolve);
     });
 
     let data = await runner.run();
     stdMocks.restore();
     let content = stdMocks.flush();
+
     expect(content.stdout).to.have.length(5);
 
     //let cNewLogger = content.stdout.shift();

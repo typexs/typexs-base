@@ -187,7 +187,7 @@ class Tasks_workerSpec {
       on(e: TaskEvent) {
         let _e = _.cloneDeep(e);
         events.push(_e);
-        if(events.length > 5){
+        if (events.length > 5) {
           p.shutdown();
         }
       }
@@ -267,7 +267,7 @@ class Tasks_workerSpec {
       on(e: TaskEvent) {
         let _e = _.cloneDeep(e);
         events.push(_e);
-        if(events.length > 1){
+        if (events.length > 1) {
           p.shutdown();
         }
       }
@@ -335,7 +335,7 @@ class Tasks_workerSpec {
       on(e: TaskEvent) {
         let _e = _.cloneDeep(e);
         events.push(_e);
-        if(events.length > 6){
+        if (events.length > 6) {
           handle.shutdown();
         }
       }
@@ -455,28 +455,21 @@ class Tasks_workerSpec {
       on(e: TaskEvent) {
         let _e = _.cloneDeep(e);
         events.push(_e);
-        if(events.length == 6){
-           handle.shutdown();
-        }
       }
     }
 
     await EventBus.register(new T2());
 
     await command.handler({});
-    await TestHelper.wait(200);
+    await TestHelper.wait(1000);
 
-
+    handle.shutdown();
     await handle.done;
     await bootstrap.shutdown();
     //console.log(inspect(events,false,10))
-    expect(events).to.have.length(6);
-    expect(events.map(x => x.state)).to.deep.eq(["proposed",
-      "enqueue",
-      "started",
-      "stopped",
-      "stopped",
-      "stopped"]);
+    expect(events).to.have.length.gt(6);
+    expect(events.map(x => x.state)).to.contain.members(["proposed", "enqueue", "started", "stopped"]);
+    expect(events.map(x => x.topic)).to.contain.members(["data", "log"]);
   }
 
 

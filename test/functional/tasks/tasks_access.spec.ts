@@ -15,7 +15,7 @@ class Tasks_accessSpec {
 
   @test
   async 'allow all by default'() {
-    let t = new Tasks();
+    let t = new Tasks('testaccess');
     t.setConfig({
       access: []
     });
@@ -31,7 +31,7 @@ class Tasks_accessSpec {
 
   @test
   async 'deny all '() {
-    let t = new Tasks();
+    let t = new Tasks('testaccess');
     t.setConfig({
       access: [{task: '*', access: 'deny'}]
     });
@@ -46,7 +46,7 @@ class Tasks_accessSpec {
 
   @test
   async 'allow one task explicit the other is by default allowed'() {
-    let t = new Tasks();
+    let t = new Tasks('testaccess');
     t.setConfig({
       access: [{task: 'hallo', access: 'allow'}]
     });
@@ -69,7 +69,7 @@ class Tasks_accessSpec {
 
   @test
   async 'deny one task explicit the other is by default allowed'() {
-    let t = new Tasks();
+    let t = new Tasks('testaccess');
     t.setConfig({
       access: [{task: 'hallo', access: 'deny'}]
     });
@@ -94,7 +94,7 @@ class Tasks_accessSpec {
 
   @test
   async 'deny all allow one'() {
-    let t = new Tasks();
+    let t = new Tasks('testaccess');
     t.setConfig({
       access: [{task: '*', access: 'deny'},{task: 'hallo_*', access: 'allow'}]
     });

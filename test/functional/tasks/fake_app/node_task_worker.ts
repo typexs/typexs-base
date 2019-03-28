@@ -22,7 +22,7 @@ import {Config} from "commons-config";
   await bootstrap.prepareRuntime();
   bootstrap = await bootstrap.activateStorage();
   bootstrap = await bootstrap.startup();
-  let timeout = parseInt(Config.get('argv.timeout', 1000));
+  let timeout = parseInt(Config.get('argv.timeout', 20000));
   /*
   let commands = bootstrap.getCommands();
   expect(commands.length).to.be.gt(0);

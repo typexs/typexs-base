@@ -110,7 +110,7 @@ class Distributed_querySpec {
     bootstrap = await bootstrap.startup();
 
 
-    let p = SpawnHandle.do(__dirname + '/fake_app/node.ts','--timeout','5000').start(LOG_EVENT);
+    let p = SpawnHandle.do(__dirname + '/fake_app/node.ts').start(LOG_EVENT);
     await p.started;
 
     let controller = new DistributedStorageEntityController();
@@ -146,13 +146,15 @@ class Distributed_querySpec {
     bootstrap = await bootstrap.startup();
 
 
-    let p = SpawnHandle.do(__dirname + '/fake_app/node.ts','--timeout','5000').start(LOG_EVENT);
+    let p = SpawnHandle.do(__dirname + '/fake_app/node.ts').start(LOG_EVENT);
     await p.started;
+    // wait for registration event
+    await TestHelper.wait(100);
 
     let controller = new DistributedStorageEntityController();
     let results = await controller.find(SystemNodeInfo,{nodeId:'system'});
 
-    p.exit()
+    p.exit();
     await p.done;
     await bootstrap.shutdown();
 

@@ -22,8 +22,6 @@ import {SimpleTaskUngrouped02} from "./tasks/SimpleTaskUngrouped02";
 import {SimpleTaskError} from "./tasks/SimpleTaskError";
 import {SimpleTaskWithRuntimeLog} from "./tasks/SimpleTaskWithRuntimeLog";
 import {TestHelper} from "../TestHelper";
-import {inspect} from "util";
-import {LookupRegistry} from "commons-schema-api";
 
 const stdMocks = require('std-mocks');
 
@@ -302,7 +300,7 @@ class TasksSpec {
 
 
   @test
-  async 'toJson'() {
+  async 'toJson and fromJson'() {
     let tasks = new Tasks('testnode');
     tasks.reset();
 
@@ -312,9 +310,29 @@ class TasksSpec {
     tasks.addTask(SimpleTaskWithRuntimeLog);
 
     let out = tasks.toJson();
-    //console.log(inspect(out,false,10));
-    expect(out).to.have.length(4)
+//    console.log(inspect(out,false,10));
+    expect(out).to.have.length(4);
 
+    tasks.reset();
+    let out01 = out.shift();
+    let task01 = tasks.fromJson(out01);
+    expect(task01.name).to.be.eq('simple_task_ungrouped_01');
+
+    let out02 = out.shift();
+    let task02 = tasks.fromJson(out02);
+    expect(task02.name).to.be.eq('simple_task_ungrouped_02');
+
+    let out03 = out.shift();
+    let task03 = tasks.fromJson(out03);
+    let props03 = task03.getPropertyRefs();
+    expect(task03.name).to.be.eq('simple_task_with_args');
+    expect(props03).to.have.length(4);
+
+    let out04 = out.shift();
+    let task04 = tasks.fromJson(out04);
+    let props04 = task04.getPropertyRefs();
+    expect(task04.name).to.be.eq('simple_task_with_runtime_log');
+    expect(props04).to.have.length(1);
   }
 
   @test
@@ -331,8 +349,9 @@ class TasksSpec {
 
   @test
   async 'own task logger'() {
-
+    //Log.options({enable:true})
     let tasks = new Tasks('testnode');
+    tasks.reset();
     let taskRef = tasks.addTask(SimpleTaskWithRuntimeLog);
     stdMocks.use();
     let runner = new TaskRunner(tasks, [taskRef.name]);
@@ -344,17 +363,28 @@ class TasksSpec {
     let x: any[] = [];
     let reader = runner.getReadStream();
     reader.on('data', (data: any) => {
-      x = x.concat(data.toString().split('\n').filter((x: string) => !_.isEmpty(x)));
+      x = _.concat(x,
+        data.toString()
+          .split('\n')
+          .filter((x: string) => !_.isEmpty(x))
+      );
     });
 
+/*
     let p = new Promise((resolve, reject) => {
       reader.on('close', resolve);
     });
+*/
 
     let data = await runner.run();
+    // runn
+    // await p;
+
+    await TestHelper.wait(100);
     stdMocks.restore();
     let content = stdMocks.flush();
 
+    console.log(content,x);
     expect(content.stdout).to.have.length(5);
 
     //let cNewLogger = content.stdout.shift();
@@ -370,8 +400,6 @@ class TasksSpec {
     let cLogTaskError = content.stdout.shift();
     expect(cLogTaskError).to.match(/:simple_task_with_runtime_log:\d+ \[ERROR\]  doing something wrong\nnewline/);
 
-    // runn
-    await p;
 
     expect(x).to.have.length(4);
     cLogExtern = x.shift();

@@ -22,6 +22,7 @@ import {SimpleTaskUngrouped02} from "./tasks/SimpleTaskUngrouped02";
 import {SimpleTaskError} from "./tasks/SimpleTaskError";
 import {SimpleTaskWithRuntimeLog} from "./tasks/SimpleTaskWithRuntimeLog";
 import {TestHelper} from "../TestHelper";
+import {inspect} from "util";
 
 const stdMocks = require('std-mocks');
 
@@ -297,6 +298,20 @@ class TasksSpec {
     expect(data.results).to.have.length(3);
   }
 
+
+  @test
+  async 'toJson'() {
+    let tasks = new Tasks();
+    tasks.addTask(SimpleTaskUngrouped01);
+    tasks.addTask(SimpleTaskUngrouped02);
+    tasks.addTask(SimpleTaskWithArgs);
+    tasks.addTask(SimpleTaskWithRuntimeLog);
+
+    let out = tasks.toJson();
+    //console.log(inspect(out,false,10));
+    expect(out).to.have.length(4)
+
+  }
 
   @test
   async 'runtime error in (class-registered task)'() {

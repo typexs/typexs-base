@@ -12,7 +12,7 @@ import {C_TASKS} from "../../../src/libs/tasks/Constants";
 import {TestHelper} from "../TestHelper";
 import {SpawnHandle} from "../SpawnHandle";
 
-const LOG_EVENT = TestHelper.logEnable(false);
+const LOG_EVENT = TestHelper.logEnable(true);
 
 
 @suite('functional/tasks/tasks_system')
@@ -23,13 +23,6 @@ class Tasks_systemSpec {
     Container.reset();
     Bootstrap.reset();
     Config.clear();
-    /*
-    let r = new RedisClient({host: '127.0.0.1', port: 6379});
-    await new Promise(resolve => {
-      r.flushdb(resolve);
-    });
-    r.quit();
-    */
   }
 
 
@@ -120,7 +113,9 @@ class Tasks_systemSpec {
       remote: null
     });
 
+    p.shutdown();
     await p.done;
+    await TestHelper.wait(500);
     taskInfos = tasks.infos(true);
     await bootstrap.shutdown();
 
@@ -181,6 +176,7 @@ class Tasks_systemSpec {
       remote: true
     });
 
+    p.shutdown();
     await p.done;
     await bootstrap.shutdown();
 

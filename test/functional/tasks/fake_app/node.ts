@@ -1,6 +1,7 @@
 import {Bootstrap, ITypexsOptions} from "../../../../src";
 import {TEST_STORAGE_OPTIONS} from "../../config";
 import {IEventBusConfiguration} from "commons-eventbus";
+import {Config} from "commons-config";
 
 (async function () {
   let bootstrap = Bootstrap
@@ -30,9 +31,22 @@ import {IEventBusConfiguration} from "commons-eventbus";
     await bootstrap.shutdown();
   }, timeout);
 
-  process.on('exit',async () => {
-    clearTimeout(t);
-    await bootstrap.shutdown();
+  let running = true;
+  process.on(<any>'message', async (m: string) => {
+
+    if (m === 'shutdown') {
+      running = false;
+      clearTimeout(t);
+      await bootstrap.shutdown();
+      process.exit(0)
+    }
+  });
+  process.on('exit', async () => {
+    if (running) {
+      running = false;
+      clearTimeout(t);
+      await bootstrap.shutdown();
+    }
   });
 })();
 

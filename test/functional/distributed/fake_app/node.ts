@@ -35,10 +35,24 @@ import {Config} from "commons-config";
     await bootstrap.shutdown();
   }, timeout);
 
-  process.on('exit',async () => {
-    clearTimeout(t);
-    await bootstrap.shutdown();
+  let running = true;
+  process.on(<any>'message', async (m: string) => {
+
+    if (m === 'shutdown') {
+      running = false;
+      clearTimeout(t);
+      await bootstrap.shutdown();
+      process.exit(0)
+    }
   });
+  process.on('exit', async () => {
+    if (running) {
+      running = false;
+      clearTimeout(t);
+      await bootstrap.shutdown();
+    }
+  });
+
 
 })();
 

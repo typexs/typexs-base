@@ -21,7 +21,7 @@ export class SpawnHandle {
 
 
   start(withLog: boolean = false): SpawnHandle {
-    this.process = spawn(process.execPath, ['--require', 'ts-node/register', this.file].concat(this.args));
+    this.process = spawn(process.execPath, ['--require', 'ts-node/register', this.file].concat(this.args),{stdio:['pipe', 'pipe', 'pipe', 'ipc']});
     if (withLog) {
       this.withLog();
     }
@@ -59,6 +59,10 @@ export class SpawnHandle {
 
   exit(){
     this.process.kill();
+  }
+
+  shutdown(){
+    this.process.send('shutdown');
   }
 
 

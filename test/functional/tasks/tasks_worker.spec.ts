@@ -186,6 +186,9 @@ class Tasks_workerSpec {
       on(e: TaskEvent) {
         let _e = _.cloneDeep(e);
         events.push(_e);
+        if(events.length > 5){
+          p.exit();
+        }
       }
     }
 
@@ -263,6 +266,9 @@ class Tasks_workerSpec {
       on(e: TaskEvent) {
         let _e = _.cloneDeep(e);
         events.push(_e);
+        if(events.length > 1){
+          p.exit();
+        }
       }
     }
 
@@ -327,6 +333,9 @@ class Tasks_workerSpec {
       on(e: TaskEvent) {
         let _e = _.cloneDeep(e);
         events.push(_e);
+        if(events.length > 6){
+          handle.exit();
+        }
       }
     }
 
@@ -408,7 +417,7 @@ class Tasks_workerSpec {
   async 'run job remote over task command'() {
     // typexs task test [--targetId abc] [--mode worker|local /* default is worker if on exists else startup local*/]
 
-    let handle = SpawnHandle.do(__dirname + '/fake_app/node_task_worker.ts', '--timeout', '40000').start(LOG_EVENT);
+    let handle = SpawnHandle.do(__dirname + '/fake_app/node_task_worker.ts').start(LOG_EVENT);
     await handle.started;
 
     let bootstrap = Bootstrap

@@ -125,7 +125,8 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
     EventBus.postAndForget(resultsEvent);
   }
 
-  finish(): void {
+  async finish() {
+    await EventBus.unregister(this);
     this.queue.removeAllListeners();
   }
 

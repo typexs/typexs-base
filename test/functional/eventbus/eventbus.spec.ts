@@ -33,7 +33,7 @@ class TestEvent {
 class TestEventHandler {
   id: number = inc++;
 
-  collect:any[] = []
+  collect:any[] = [];
 
   @subscribe(TestEvent)
   on(e: TestEvent) {

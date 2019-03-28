@@ -104,7 +104,7 @@ class Tasks_workerSpec {
       {state: 'enqueue', result: null},
       {state: 'started', result: null},
       {state: 'stopped', result: 'test'}
-    ])
+    ]);
 
     Log.debug(events)
   }

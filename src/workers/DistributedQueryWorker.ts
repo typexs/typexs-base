@@ -115,9 +115,10 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
       resultsEvent.count = resultsEvent.results[XS_P_$COUNT];
       resultsEvent.limit = resultsEvent.results[XS_P_$LIMIT];
       resultsEvent.offset = resultsEvent.results[XS_P_$OFFSET];
-
+      Log.debug('distributed query worker:  found ' + resultsEvent.count + ' entries for ' + classRef.name + '[qId: ' + resultsEvent.queryId + ']');
     } catch (err) {
       resultsEvent.error = err.message;
+      Log.error(err);
     }
 
 

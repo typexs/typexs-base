@@ -1,10 +1,12 @@
-import {Container} from "typedi";
-import {IFindOptions, Invoker} from "../..";
-import {DistributedFindOp} from "./DistributedFindOp";
+import {Inject} from "typedi";
+import {IFindOptions} from "../..";
+import {DistributedOperationFactory} from "./DistributedOperationFactory";
 
 
 export class DistributedStorageEntityController {
 
+  @Inject(type => DistributedOperationFactory)
+  factory: DistributedOperationFactory;
 
   /*
     async save<T>(object: T, options?: ISaveOptions): Promise<T>;
@@ -20,7 +22,7 @@ export class DistributedStorageEntityController {
 
 
   async find<T>(fn: Function | string, conditions: any = null, options: IFindOptions = {limit: 100}): Promise<T[]> {
-    return (<DistributedFindOp<T>>Container.get(DistributedFindOp).prepare(this)).run(fn, conditions, options);
+    return this.factory.createFindOp<T>().prepare(this).run(fn, conditions, options);
 
   }
 

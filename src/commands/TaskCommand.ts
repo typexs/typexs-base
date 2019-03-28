@@ -7,6 +7,7 @@ import {Console} from '../libs/logging/Console'
 import {TasksApi} from "../api/Tasks.api";
 import {System} from "../libs/system/System";
 import {TaskExecutionRequest} from "../libs/tasks/worker/TaskExecutionRequest";
+import {TaskExecutionRequestFactory} from "../libs/tasks/worker/TaskExecutionRequestFactory";
 
 /**
  * Starts a task direct or in a running worker
@@ -77,7 +78,7 @@ export class TaskCommand {
           // execute
 
           Log.debug('task command: before request fire');
-          let execReq = Container.get(TaskExecutionRequest);
+          let execReq = Container.get(TaskExecutionRequestFactory).createRequest();
           let results = await execReq.run(taskNames, args, targetId ? [targetId] : []);
           Log.debug('task command: event enqueue results', results);
 

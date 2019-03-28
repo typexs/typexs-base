@@ -8,14 +8,13 @@ import {IFindOptions, Log, XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from "../..";
 import {TypeOrmEntityRegistry} from '../storage/framework/typeorm/schema/TypeOrmEntityRegistry';
 import {QueryEvent} from "./QueryEvent";
 import {EventEmitter} from "events";
-import {Inject} from "typedi";
+import {Container, Inject} from "typedi";
 import {System} from "../system/System";
 import {IEntityRef} from "commons-schema-api";
 
 
 export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
 
-  @Inject(System.NAME)
   private system: System;
 
   private controller: DistributedStorageEntityController;
@@ -26,7 +25,7 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
 
   private targetIds: string[] = [];
 
-  private queryEvent: QueryEvent;
+  private queryEvent: QueryEvent = new QueryEvent();
 
   private queryResults: QueryResultsEvent[] = [];
 
@@ -37,8 +36,9 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
   private active: boolean = true;
 
 
-  constructor() {
+  constructor(system: System) {
     super();
+    this.system = system;
     this.once('postprocess', this.postProcess.bind(this));
   }
 
@@ -56,6 +56,7 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
     // has query event
     if (!this.queryEvent) return;
 
+    Log.debug('receive distributed find results: ', event);
     // check if response is mine
     if (this.queryEvent.queryId != event.queryId) return;
 
@@ -87,7 +88,7 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
 
     this.entityRef = TypeOrmEntityRegistry.$().getEntityRefFor(entityType);
 
-    this.queryEvent = new QueryEvent();
+
     this.queryEvent.nodeId = this.system.node.nodeId;
     this.queryEvent.entityType = this.entityRef.name;
     this.queryEvent.conditions = findConditions;
@@ -107,10 +108,17 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
       return this.results;
     }
 
+
     // register as bus
     await EventBus.register(this);
+    Log.debug('fire query event with id: ' + this.queryEvent.queryId);
     await EventBus.postAndForget(this.queryEvent);
-    await this.ready();
+    try {
+      await this.ready();
+    } catch (err) {
+      Log.error(err);
+    }
+
     await EventBus.unregister(this);
     return this.results;
   }
@@ -128,7 +136,7 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
           .map(k => t[k] = f[k])
       }));
 
-    if (_.get(this.queryEvent.options,'sort',false)) {
+    if (_.get(this.queryEvent.options, 'sort', false)) {
       let arr: string[][] = [];
       // order after concat
       _.keys(this.queryEvent.options.sort).forEach(k => {

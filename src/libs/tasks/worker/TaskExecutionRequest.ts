@@ -1,24 +1,22 @@
 import * as _ from "lodash";
 
-import {ITaskInfo, Log, TaskRef, Tasks} from "../../..";
+import {Log, TaskRef, Tasks} from "../../..";
 import {System} from "../../system/System";
 import {EventEmitter} from "events";
 
 import subscribe from "commons-eventbus/decorator/subscribe";
 import {EventBus} from "commons-eventbus";
 import {TaskEvent} from "./TaskEvent";
-import {Inject} from "typedi";
-import {worker} from "cluster";
 import {TaskQueueWorker} from "../../../workers/TaskQueueWorker";
 import {IWorkerInfo} from "../../worker/IWorkerInfo";
 
 
 export class TaskExecutionRequest extends EventEmitter {
 
-  @Inject(System.NAME)
+
   private system: System;
 
-  @Inject(Tasks.NAME)
+
   private tasks: Tasks;
 
   private timeout: number = 5000;
@@ -33,9 +31,10 @@ export class TaskExecutionRequest extends EventEmitter {
 
   private active: boolean = true;
 
-  constructor(system: System) {
+  constructor(system: System, tasks: Tasks) {
     super();
     this.system = system;
+    this.tasks = tasks;
     this.once('postprocess', this.postProcess.bind(this));
   }
 

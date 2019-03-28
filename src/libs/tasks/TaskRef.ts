@@ -3,7 +3,7 @@ import {
   AbstractRef,
   Binding,
   IBuildOptions,
-  IEntityRef,
+  IEntityRef, IEntityRefMetadata,
   LookupRegistry,
   XS_TYPE_ENTITY,
   XS_TYPE_PROPERTY
@@ -213,6 +213,19 @@ export class TaskRef extends AbstractRef implements IEntityRef {
       nodeIds: this.nodeIds,
       remote: this.isRemote()
     }
+  }
+
+  toJson(withProperties: boolean = true): IEntityRefMetadata {
+    let data = super.toJson();
+    data.mode = this._type.toString();
+    if (data._type == TaskRefType.CLASS || data._type == TaskRefType.INSTANCE) {
+      data.target = this.getClassRef().toJson(false);
+    }
+    data.options = _.merge(data.options || {}, this.info());
+    if (withProperties) {
+      data.properties = this.getPropertyRefs().map(p => p.toJson());
+    }
+    return data;
   }
 
 

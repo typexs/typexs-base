@@ -287,6 +287,11 @@ export class Tasks implements ILookupRegistry {
   }
 
 
+  toJson(){
+    return this.getEntries(true).map((x:TaskRef) => x.toJson());
+  }
+
+
   reset() {
     LookupRegistry.reset(C_TASKS);
     this.registry = LookupRegistry.$(C_TASKS);

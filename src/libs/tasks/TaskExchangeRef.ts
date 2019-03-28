@@ -86,8 +86,6 @@ export class TaskExchangeRef extends AbstractRef implements IPropertyRef {
         delete v.parent[v.key]
       }
     });
-
-
     return o;
   }
 

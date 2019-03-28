@@ -391,8 +391,10 @@ export class TaskRunner extends EventEmitter {
 
     this.taskLogger.close();
     this.writeStream.end();
-    (<any>this.readStream).destroy();
-
+    //this.writeStream = null;
+    //this.readStream.emit('close');
+    //(<any>this.readStream).destroy();
+    //this.writeStream = null;
     this.emit(TASKRUN_STATE_FINISH_PROMISE, status);
   }
 

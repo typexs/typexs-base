@@ -1,7 +1,16 @@
 import * as _ from 'lodash';
 import {TaskRef} from "./TaskRef";
 import {MetaArgs, NotYetImplementedError} from "commons-base/browser";
-import {Binding, ILookupRegistry, LookupRegistry, XS_TYPE_ENTITY, XS_TYPE_PROPERTY} from "commons-schema-api/browser";
+import {
+  AbstractRef,
+  Binding,
+  ClassRef,
+  IEntityRefMetadata,
+  ILookupRegistry,
+  LookupRegistry,
+  XS_TYPE_ENTITY,
+  XS_TYPE_PROPERTY
+} from "commons-schema-api/browser";
 import {
   C_TASKS,
   K_CLS_TASK_DESCRIPTORS,
@@ -13,6 +22,9 @@ import {TaskExchangeRef} from "./TaskExchangeRef";
 import {ITasksConfig} from "./ITasksConfig";
 import {ITaskRefOptions} from "./ITaskRefOptions";
 import {ITaskInfo} from "./ITaskInfo";
+import {ITaskDesc, REGISTRY_TYPEORM, TypeOrmPropertyRef} from "../..";
+import {RelationMetadataArgs} from "typeorm/browser/metadata-args/RelationMetadataArgs";
+import {ColumnMetadataArgs} from "typeorm/browser/metadata-args/ColumnMetadataArgs";
 
 
 export class Tasks implements ILookupRegistry {
@@ -28,7 +40,7 @@ export class Tasks implements ILookupRegistry {
   registry: LookupRegistry = LookupRegistry.$(C_TASKS);
 
 
-  constructor(nodeId:string){
+  constructor(nodeId: string) {
     this.nodeId = nodeId;
   }
 
@@ -121,7 +133,7 @@ export class Tasks implements ILookupRegistry {
 
   addTask(name: string | object | Function, fn: object | Function = null, options: ITaskRefOptions = null): TaskRef {
     let task = new TaskRef(name, fn, options);
-    return this.addTaskRef(task,this.nodeId);
+    return this.addTaskRef(task, this.nodeId);
   }
 
 
@@ -234,7 +246,7 @@ export class Tasks implements ILookupRegistry {
       taskRef = this.get(name);
       let taskRefClone = taskRef.clone(new_name);
 
-      return this.addTaskRef(taskRefClone,this.nodeId);
+      return this.addTaskRef(taskRefClone, this.nodeId);
     } else {
       throw new Error('task doesn\'t exists')
     }
@@ -252,8 +264,6 @@ export class Tasks implements ILookupRegistry {
   }
 
 
-
-
   toJson() {
     return this.getEntries(true).map((x: TaskRef) => x.toJson());
   }
@@ -264,10 +274,45 @@ export class Tasks implements ILookupRegistry {
     this.registry = LookupRegistry.$(C_TASKS);
   }
 
-  fromJson(json: any): TaskRef {
-    throw new NotYetImplementedError();
-    //return undefined;
+
+  fromJson(orgJson: IEntityRefMetadata): TaskRef {
+    const json = _.cloneDeep(orgJson);
+
+    let entityRef: TaskRef = this.getEntries(true).find(x => x.name === json.name);
+    if (!entityRef) {
+      entityRef = TaskRef.fromJson(json);
+      this.register(entityRef);
+    }
+
+    if (entityRef) {
+      for (let prop of json.properties) {
+        let classRef = entityRef.getClassRef();
+        let propRef: TaskExchangeRef = this.registry.find(XS_TYPE_PROPERTY, (x: TaskExchangeRef) => x.name == prop.name && x.getClassRef() === classRef);
+        if (!propRef) {
+          let desc: ITaskDesc = (<any>prop).descriptor;
+          desc.target = classRef.getClass();
+          propRef = new TaskExchangeRef(desc);
+          this.register(propRef);
+        }
+      }
+    }
+
+    return entityRef;
   }
+
+
+  register(xsdef: AbstractRef | Binding): AbstractRef | Binding {
+    if (xsdef instanceof TaskRef) {
+      return this.registry.add(XS_TYPE_ENTITY, xsdef);
+    } else if (xsdef instanceof TaskExchangeRef) {
+      return this.registry.add(XS_TYPE_PROPERTY, xsdef);
+    } else if (xsdef instanceof Binding) {
+      return this.registry.add(xsdef.bindingType, xsdef);
+    } else {
+      throw new NotYetImplementedError();
+    }
+  }
+
 
   getEntityRefFor(fn: any): TaskRef {
     throw new NotYetImplementedError();

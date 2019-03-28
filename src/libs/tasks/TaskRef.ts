@@ -2,8 +2,10 @@ import * as _ from 'lodash'
 import {
   AbstractRef,
   Binding,
+  ClassRef,
   IBuildOptions,
-  IEntityRef, IEntityRefMetadata,
+  IEntityRef,
+  IEntityRefMetadata,
   LookupRegistry,
   XS_TYPE_ENTITY,
   XS_TYPE_PROPERTY
@@ -218,14 +220,35 @@ export class TaskRef extends AbstractRef implements IEntityRef {
   toJson(withProperties: boolean = true): IEntityRefMetadata {
     let data = super.toJson();
     data.mode = this._type.toString();
-    if (data._type == TaskRefType.CLASS || data._type == TaskRefType.INSTANCE) {
-      data.target = this.getClassRef().toJson(false);
-    }
-    data.options = _.merge(data.options || {}, this.info());
+    data.hasWorker = this._hasWorker;
+    data.permissions = this.permissions;
+    data.description = this.description;
+    data.remote = this.isRemote();
+    data.groups = this.groups();
+    data.nodeIds = this.nodeIds;
+    data.target = this.getClassRef().toJson(false);
+    data.options = _.merge(data.options);
     if (withProperties) {
       data.properties = this.getPropertyRefs().map(p => p.toJson());
     }
     return data;
+  }
+
+
+  static fromJson(json: IEntityRefMetadata & any): TaskRef {
+    let target = ClassRef.get(json.target.className, C_TASKS).getClass(true);
+    let taskRef = new TaskRef(json.name, target);
+    taskRef._type = <any>TaskRefType[json.mode];
+    taskRef.description = json.description;
+    taskRef.permissions = json.permissions;
+    taskRef._hasWorker = json.hasWorker;
+    taskRef.nodeIds = _.get(json, 'nodeIds', []);
+    let groups = _.get(json, 'groups', []);
+    taskRef.setOptions(json.options);
+    groups.forEach((group: string) => {
+      taskRef.group(group);
+    });
+    return taskRef;
   }
 
 

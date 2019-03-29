@@ -81,12 +81,12 @@ export class TaskExecutionRequest extends EventEmitter {
 
     await EventBus.register(this);
     await EventBus.postAndForget(this.event);
-    try{
+    try {
       await this.ready();
-    }catch (err) {
+    } catch (err) {
       Log.error(err);
       throw err;
-    }finally {
+    } finally {
       await EventBus.unregister(this);
     }
     return this.results;
@@ -101,6 +101,7 @@ export class TaskExecutionRequest extends EventEmitter {
 
   @subscribe(TaskEvent)
   onResults(event: TaskEvent): any {
+    Log.debug('task event entered ' + event.id + ' ' + event.state + ' '+event.respId);
     if (!this.active) return;
 
     // has query event

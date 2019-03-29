@@ -64,12 +64,16 @@ const DEFAULT_CONFIG_LOAD_ORDER = [
       'secrets',
       '${app.name}--${os.hostname}',
       '${app.name}--${argv.nodeId}',
+      '${app.name}--${app.nodeId}',
       '${app.name}--${env.stage}',
       '${app.name}--${argv.stage}',
       '${app.name}--${os.hostname}--${argv.stage}',
       '${app.name}--${os.hostname}--${env.stage}',
       '${app.name}--${os.hostname}--${argv.nodeId}',
+      '${app.name}--${os.hostname}--${app.nodeId}',
       '${app.name}--${os.hostname}--${env.stage}--${argv.nodeId}',
+      '${app.name}--${os.hostname}--${env.stage}--${app.nodeId}',
+      '${app.name}--${os.hostname}--${argv.stage}--${argv.nodeId}',
       '${app.name}--${os.hostname}--${argv.stage}--${argv.nodeId}'
     ]
   }
@@ -235,7 +239,7 @@ export class Bootstrap {
 
   activateLogger(): Bootstrap {
     Log.prefix = this.getNodeId() + ' ';
-    Log.options(this._options.logging || {enable: false});
+    Log.options(this._options.logging || {enable: false}, true);
     return this;
   }
 

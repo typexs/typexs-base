@@ -81,14 +81,20 @@ export class TaskExecutionRequest extends EventEmitter {
 
     await EventBus.register(this);
     await EventBus.postAndForget(this.event);
+    let _err:Error = null;
     try {
       await this.ready();
     } catch (err) {
+      _err = err;
       Log.error(err);
-      throw err;
     } finally {
       await EventBus.unregister(this);
     }
+
+    if(_err){
+      throw _err;
+    }
+
     return this.results;
   }
 

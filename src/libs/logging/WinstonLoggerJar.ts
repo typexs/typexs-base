@@ -9,7 +9,6 @@ import {ConsoleTransportOptions} from "winston/lib/winston/transports";
 import {DefaultFormat} from "./DefaultFormat";
 import {LogEvent} from "./LogEvent";
 import {ILoggerApi} from "./ILoggerApi";
-import {format} from "logform";
 import {DefaultJsonFormat} from "./DefaultJsonFormat";
 
 const DEFAULT_TRANSPORT_OPTIONS: ConsoleTransportOptions = {};
@@ -70,7 +69,7 @@ export class WinstonLoggerJar implements ILoggerApi {
     this.name = name;
 
     if (append && this.options) {
-      options = BaseUtils.merge(this.options, options)
+      this.options = BaseUtils.merge(this.options, options)
     }
 
     if (options.prefix) {

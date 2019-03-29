@@ -523,23 +523,34 @@ class Tasks_workerSpec {
     bootstrap = await bootstrap.startup();
     // ---- startup done
 
+    let events: TaskEvent[] = [];
+    class T2 {
+      @subscribe(TaskEvent)
+      on(e: TaskEvent) {
+        let _e = _.cloneDeep(e);
+        events.push(_e);
+      }
+    }
+
+    let l = new T2();
+    await EventBus.register(l);
+
+
     let tasks: Tasks = Container.get(Tasks.NAME);
     let ref = tasks.addTask(SimpleTaskWithLog);
 
-    const workers: Workers = Container.get(Workers.NAME);
-    const worker: TaskQueueWorker = <TaskQueueWorker>workers.workers.find(x => x instanceof TaskQueueWorker);
-    const monitor: TaskMonitorWorker = <TaskMonitorWorker>workers.workers.find(x => x instanceof TaskMonitorWorker);
+    //const workers: Workers = Container.get(Workers.NAME);
+    //const worker: TaskQueueWorker = <TaskQueueWorker>workers.workers.find(x => x instanceof TaskQueueWorker);
+    //const monitor: TaskMonitorWorker = <TaskMonitorWorker>workers.workers.find(x => x instanceof TaskMonitorWorker);
 
     let execReq = Container.get(TaskExecutionRequestFactory).createRequest();
     let results = await execReq.run([ref.name]);
-
-//    await TestHelper.wait(500);
-    await worker.queue.await();
-    await monitor.queue.await();
+    await TestHelper.waitFor(() => events.length >= 9);
 
     let storeRef: StorageRef = Container.get(C_STORAGE_DEFAULT);
     let logs: any[] = await storeRef.getController().find(TaskLog);
 
+    await EventBus.unregister(l);
     // ---- finished
     await bootstrap.shutdown();
     expect(logs).to.have.length(1);

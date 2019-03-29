@@ -37,6 +37,7 @@ export class Cache {
 
   private bins: { [k: string]: CacheBin } = {};
 
+  private nodeId: string;
 
   getBin(name: string) {
     if (this.bins[name]) {
@@ -54,11 +55,12 @@ export class Cache {
 
   async set(key: string, value: any, bin: string = XS_DEFAULT, options?: ICacheSetOptions) {
     let cacheBin = this.getBin(bin);
-    return cacheBin.set(key, value,bin, options);
+    return cacheBin.set(key, value, bin, options);
   }
 
 
-  async configure(config?: ICacheConfig) {
+  async configure(nodeId: string, config?: ICacheConfig) {
+    this.nodeId = nodeId;
     if (config && _.isPlainObject(config)) {
       _.defaultsDeep(config || {}, DEFAULT_OPTIONS);
       this.options = config;
@@ -72,7 +74,7 @@ export class Cache {
       if (!entry) {
         entry = this.adapterClasses.find(c => c.type == 'memory');
         adapter = Reflect.construct(entry.clazz, []);
-        await adapter.configure(key, {type: 'memory'});
+        await adapter.configure(key, {type: 'memory', nodeId: nodeId});
         this.adapters[key] = adapter;
       } else {
         adapter = Reflect.construct(entry.clazz, []);
@@ -89,7 +91,7 @@ export class Cache {
       let entry = this.adapterClasses.find(c => c.type == 'memory');
       if (entry) {
         let adapter: ICacheAdapter = Reflect.construct(entry.clazz, []);
-        await adapter.configure(XS_DEFAULT, {type: 'memory'});
+        await adapter.configure(XS_DEFAULT, {type: 'memory', nodeId: nodeId});
         this.adapters[XS_DEFAULT] = adapter;
       }
     }

@@ -64,7 +64,7 @@ export class RedisCacheAdapter implements ICacheAdapter {
 
   async clearBin(name:string){
     await this.client.connect();
-    await this.client.removeKeysByPattern('bin:'+name+'--*');
+    await this.client.removeKeysByPattern(this.nodeId+'--bin:'+name+'--*');
   }
 
 

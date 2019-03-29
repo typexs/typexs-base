@@ -108,7 +108,7 @@ export class TaskExecutionRequest extends EventEmitter {
     if (!this.event) return;
 
     // check state
-    if (['enqueue', 'event_errored'].indexOf(event.state) === -1) return null;
+    if (['enqueue', 'request_error'].indexOf(event.state) === -1) return null;
 
     // has same id
     if (this.event.id !== event.id) return;

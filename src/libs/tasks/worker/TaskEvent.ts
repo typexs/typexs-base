@@ -28,7 +28,7 @@ export class TaskEvent extends AbstractEvent implements IQueueWorkload{
   /**
    * Current state of task
    */
-  state: 'enqueue' | 'proposed' | 'started' | 'stopped' | 'running' | 'errored' | 'event_errored' = 'proposed';
+  state: 'enqueue' | 'proposed' | 'started' | 'stopped' | 'running' | 'errored' | 'request_error' = 'proposed';
 
   /**
    * Topic of this event

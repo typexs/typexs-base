@@ -70,6 +70,8 @@ export class WinstonLoggerJar implements ILoggerApi {
 
     if (append && this.options) {
       this.options = BaseUtils.merge(this.options, options)
+    } else if (!append) {
+      this.options = options;
     }
 
     if (options.prefix) {
@@ -96,8 +98,11 @@ export class WinstonLoggerJar implements ILoggerApi {
       }
       opts.transports = t;
     }
-
-    this._logger = createLogger(opts);
+    if (this._logger) {
+      this._logger.configure(opts)
+    } else {
+      this._logger = createLogger(opts);
+    }
     return this;
   }
 
@@ -182,7 +187,7 @@ export class WinstonLoggerJar implements ILoggerApi {
     this._logger.close();
   }
 
-  remove(){
+  remove() {
     this.close();
     Log._().removeLogger(this.name);
   }

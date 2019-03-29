@@ -239,7 +239,7 @@ export class Bootstrap {
 
   activateLogger(): Bootstrap {
     Log.prefix = this.getNodeId() + ' ';
-    Log.options(this._options.logging || {enable: false}, true);
+    Log.options(this._options.logging || {enable: false});
     return this;
   }
 

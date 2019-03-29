@@ -431,6 +431,11 @@ export class Bootstrap {
     process.on('exit', async (code) => {
       await this.shutdown(code);
     });
+    process.on('SIGINT', async () => {
+      Log.info("Caught interrupt signal");
+      await this.shutdown();
+      process.exit();
+    });
 
     return this;
   }

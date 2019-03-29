@@ -1,6 +1,6 @@
 {
   "name": "@typexs/base",
-  "version": "0.8.7",
+  "version": "0.8.8",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -54,12 +54,12 @@
   "dependencies": {
     "@angular-devkit/core": "0.3.2",
     "@angular-devkit/schematics": "0.3.2",
-    "commons-base": "latest",
-    "commons-config": "latest",
-    "commons-eventbus": "latest",
-    "commons-expressions": "latest",
-    "commons-schema-api": "latest",
-    "commons-moduls": "latest",
+    "commons-base": "^1.1.2",
+    "commons-config": "^0.4.19",
+    "commons-eventbus": "^0.10.4",
+    "commons-expressions": "^1.0.3",
+    "commons-schema-api": "^1.1.2",
+    "commons-moduls": "^1.1.5",
     "class-validator": "^0.9.1",
     "js-yaml": "^3.12.1",
     "moment": "^2.24.0",

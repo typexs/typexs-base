@@ -4,7 +4,7 @@ import {expect} from 'chai';
 
 import {Bootstrap} from "../../../src/Bootstrap";
 import {Log} from "../../../src/libs/logging/Log";
-import {C_STORAGE_DEFAULT, ITypexsOptions, StorageRef, TaskLog, Tasks, Workers} from "../../../src";
+import {C_STORAGE_DEFAULT, ITypexsOptions, StorageRef, TaskLog, Tasks} from "../../../src";
 import {Container} from "typedi";
 import {Config} from "commons-config";
 import {TEST_STORAGE_OPTIONS} from "../config";

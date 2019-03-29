@@ -77,26 +77,28 @@ export class TaskExecutionRequest extends EventEmitter {
       }
     }
 
-    Log.debug('fire execution result: ', this.event);
 
     await EventBus.register(this);
-    await EventBus.postAndForget(this.event);
+    Log.debug('fire execution result: ', this.event);
     let _err: Error = null;
     try {
-      await this.ready();
+      const ready = this.ready();
+      EventBus.postAndForget(this.event);
+      await ready;
     } catch (err) {
       _err = err;
       Log.error(err);
     } finally {
-      await EventBus.unregister(this);
     }
+
+    await EventBus.unregister(this);
+    this.removeAllListeners();
 
     Log.debug('fire execution finished for ' + this.event.id);
     if (_err) {
       throw _err;
     }
 
-    this.removeAllListeners();
 
     return this.results;
   }

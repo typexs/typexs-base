@@ -111,9 +111,10 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
     // register as bus
     await EventBus.register(this);
     Log.debug('fire query event with id: ' + this.queryEvent.queryId);
-    await EventBus.postAndForget(this.queryEvent);
     try {
-      await this.ready();
+      const ready = this.ready();
+      EventBus.postAndForget(this.queryEvent);
+      await ready;
     } catch (err) {
       Log.error(err);
     }

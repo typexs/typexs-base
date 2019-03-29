@@ -2,7 +2,8 @@ import * as _ from "lodash";
 import {TaskRef} from "./TaskRef";
 import {TaskExchangeRef} from "./TaskExchangeRef";
 import {K_CLS_TASKS, RuntimeLoader, TaskRunner, Tasks} from "../..";
-import {ClassLoader} from "commons-base";
+import {ClassLoader, PlatformUtils} from "commons-base";
+import {Config} from "commons-config";
 
 
 export class TasksHelper {
@@ -59,5 +60,12 @@ export class TasksHelper {
     }
     throw new Error('task ' + name + ' not exists')
   }
+
+
+  static getTaskLogFile(runnerId: string, nodeId: string) {
+    const logdir = Config.get('tasks.logdir', Config.get('os.tmpdir'));
+    return PlatformUtils.join(logdir, 'taskmonitor-' + runnerId + '-' + nodeId + '.log');
+  }
+
 
 }

@@ -18,10 +18,9 @@ import {SpawnHandle} from "../SpawnHandle";
 import {TaskCommand} from "../../../src/commands/TaskCommand";
 import {SimpleTaskWithLog} from "./tasks/SimpleTaskWithLog";
 import {TaskExecutionRequestFactory} from "../../../src/libs/tasks/worker/TaskExecutionRequestFactory";
-import {TaskMonitorWorker} from "../../../src/workers/TaskMonitorWorker";
 
 
-const LOG_EVENT = TestHelper.logEnable(false);
+const LOG_EVENT = true;//TestHelper.logEnable(true);
 let bootstrap: Bootstrap = null;
 
 @suite('functional/tasks/tasks_worker')
@@ -64,7 +63,6 @@ class Tasks_workerSpec {
     class T {
       @subscribe(TaskEvent) on(e: TaskEvent) {
         let _e = _.cloneDeep(e);
-
         events.push(_e);
       }
     }
@@ -96,7 +94,7 @@ class Tasks_workerSpec {
 
     worker.queue.resume();
     await TestHelper.waitFor(() => events.length >= 4);
-    await worker.queue.await();
+    //await worker.queue.await();
 
     await EventBus.unregister(t);
 
@@ -154,14 +152,14 @@ class Tasks_workerSpec {
     let tasks: Tasks = Container.get(Tasks.NAME);
     let ref = tasks.addTask(SimpleWorkerTask);
 
-    const workers: Workers = Container.get(Workers.NAME);
-    const worker: TaskQueueWorker = <TaskQueueWorker>workers.workers.find(x => x instanceof TaskQueueWorker);
+   // const workers: Workers = Container.get(Workers.NAME);
+   // const worker: TaskQueueWorker = <TaskQueueWorker>workers.workers.find(x => x instanceof TaskQueueWorker);
 
     let execReq = Container.get(TaskExecutionRequestFactory).createRequest();
     let results = await execReq.run([ref.name]);
 
     await TestHelper.waitFor(() => events.length >= 4, 100);
-    await worker.queue.await();
+    //await worker.queue.await();
 
     // ---- finished
     await EventBus.unregister(z);
@@ -209,9 +207,11 @@ class Tasks_workerSpec {
       on(e: TaskEvent) {
         let _e = _.cloneDeep(e);
         events.push(_e);
+        /*
         if (events.length > 5) {
           p.shutdown();
         }
+        */
       }
     }
 
@@ -234,9 +234,11 @@ class Tasks_workerSpec {
     // registered subscribers of remote nodes
     let results = await EventBus.post(taskEvent);
 
+    await TestHelper.waitFor(() => events.length > 5);
+    p.shutdown();
     await p.done;
 
-    EventBus.unregister(l);
+    await EventBus.unregister(l);
     // ---- finished
     await bootstrap.shutdown();
 
@@ -291,9 +293,11 @@ class Tasks_workerSpec {
       on(e: TaskEvent) {
         let _e = _.cloneDeep(e);
         events.push(_e);
+/*
         if (events.length > 1) {
           p.shutdown();
         }
+        */
       }
     }
 
@@ -314,6 +318,10 @@ class Tasks_workerSpec {
     let results = await EventBus.post(taskEvent);
 
 //    await TestHelper.wait(300);
+
+    await TestHelper.waitFor(() => events.length > 1);
+    p.shutdown();
+
     await p.done;
 
     await EventBus.unregister(l);
@@ -361,9 +369,11 @@ class Tasks_workerSpec {
       on(e: TaskEvent) {
         let _e = _.cloneDeep(e);
         events.push(_e);
+        /*
         if (events.length > 6) {
           handle.shutdown();
         }
+        */
       }
     }
 
@@ -401,6 +411,9 @@ class Tasks_workerSpec {
     // the result are null cause of not
     // registered subscribers of remote nodes
     await EventBus.post(taskEvent2);
+
+    await TestHelper.waitFor(() => events.length > 6);
+    handle.shutdown();
 
     await handle.done;
 
@@ -491,7 +504,10 @@ class Tasks_workerSpec {
     await EventBus.register(l);
 
     await command.handler({});
-    await TestHelper.wait(1000);
+
+    await TestHelper.waitFor(() => events.length > 6);
+    handle.shutdown();
+
     await EventBus.unregister(l);
 
     handle.shutdown();

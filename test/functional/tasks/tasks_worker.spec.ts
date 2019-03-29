@@ -22,7 +22,7 @@ import {TaskMonitorWorker} from "../../../src/workers/TaskMonitorWorker";
 
 
 const LOG_EVENT = TestHelper.logEnable(false);
-let bootstrap:Bootstrap = null;
+let bootstrap: Bootstrap = null;
 
 @suite('functional/tasks/tasks_worker')
 class Tasks_workerSpec {
@@ -35,8 +35,8 @@ class Tasks_workerSpec {
   }
 
 
-  async after(){
-    if(bootstrap){
+  async after() {
+    if (bootstrap) {
       await bootstrap.shutdown()
     }
   }
@@ -95,9 +95,10 @@ class Tasks_workerSpec {
     expect(work.state).to.be.eq('enqueue');
 
     worker.queue.resume();
-    await TestHelper.wait(50);
+    await TestHelper.waitFor(() => events.length >= 4);
     await worker.queue.await();
 
+    await EventBus.unregister(t);
 
     // ---- finished
     await bootstrap.shutdown();
@@ -137,6 +138,19 @@ class Tasks_workerSpec {
     // ---- startup done
 
 
+    let events: TaskEvent[] = [];
+
+    class T02 {
+      @subscribe(TaskEvent) on(e: TaskEvent) {
+        let _e = _.cloneDeep(e);
+        events.push(_e);
+      }
+    }
+
+    let z = new T02();
+    await EventBus.register(z);
+
+
     let tasks: Tasks = Container.get(Tasks.NAME);
     let ref = tasks.addTask(SimpleWorkerTask);
 
@@ -146,10 +160,11 @@ class Tasks_workerSpec {
     let execReq = Container.get(TaskExecutionRequestFactory).createRequest();
     let results = await execReq.run([ref.name]);
 
-    await TestHelper.wait(50);
+    await TestHelper.waitFor(() => events.length >= 4, 100);
     await worker.queue.await();
 
     // ---- finished
+    await EventBus.unregister(z);
     await bootstrap.shutdown();
 
     expect(results).to.have.length(1);
@@ -200,7 +215,8 @@ class Tasks_workerSpec {
       }
     }
 
-    await EventBus.register(new T2());
+    let l = new T2()
+    await EventBus.register(l);
 
     let p = SpawnHandle.do(__dirname + '/fake_app/node_task_worker.ts').start(LOG_EVENT);
 
@@ -220,6 +236,7 @@ class Tasks_workerSpec {
 
     await p.done;
 
+    EventBus.unregister(l);
     // ---- finished
     await bootstrap.shutdown();
 
@@ -280,7 +297,8 @@ class Tasks_workerSpec {
       }
     }
 
-    await EventBus.register(new T2());
+    let l = new T2();
+    await EventBus.register(l);
 
     let p = SpawnHandle.do(__dirname + '/fake_app/node_task_worker.ts').start(LOG_EVENT);
     await p.started;
@@ -298,6 +316,7 @@ class Tasks_workerSpec {
 //    await TestHelper.wait(300);
     await p.done;
 
+    await EventBus.unregister(l);
     // ---- finished
     await bootstrap.shutdown();
 
@@ -348,7 +367,8 @@ class Tasks_workerSpec {
       }
     }
 
-    await EventBus.register(new T2());
+    let l = new T2();
+    await EventBus.register(l);
 
     let handle = SpawnHandle.do(__dirname + '/fake_app/node_task_worker.ts').start(LOG_EVENT);
     await handle.started;
@@ -383,6 +403,8 @@ class Tasks_workerSpec {
     await EventBus.post(taskEvent2);
 
     await handle.done;
+
+    await EventBus.unregister(l);
 
     // ---- finished
     await bootstrap.shutdown();
@@ -465,10 +487,12 @@ class Tasks_workerSpec {
       }
     }
 
-    await EventBus.register(new T2());
+    let l = new T2();
+    await EventBus.register(l);
 
     await command.handler({});
     await TestHelper.wait(1000);
+    await EventBus.unregister(l);
 
     handle.shutdown();
     await handle.done;

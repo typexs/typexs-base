@@ -207,11 +207,6 @@ class Tasks_workerSpec {
       on(e: TaskEvent) {
         let _e = _.cloneDeep(e);
         events.push(_e);
-        /*
-        if (events.length > 5) {
-          p.shutdown();
-        }
-        */
       }
     }
 
@@ -293,11 +288,6 @@ class Tasks_workerSpec {
       on(e: TaskEvent) {
         let _e = _.cloneDeep(e);
         events.push(_e);
-/*
-        if (events.length > 1) {
-          p.shutdown();
-        }
-        */
       }
     }
 
@@ -317,13 +307,9 @@ class Tasks_workerSpec {
     // registered subscribers of remote nodes
     let results = await EventBus.post(taskEvent);
 
-//    await TestHelper.wait(300);
-
     await TestHelper.waitFor(() => events.length > 1);
     p.shutdown();
-
     await p.done;
-
     await EventBus.unregister(l);
     // ---- finished
     await bootstrap.shutdown();
@@ -331,9 +317,9 @@ class Tasks_workerSpec {
     expect(events).to.have.length(2);
     expect(events.map(x => {
       return {state: x.state}
-    })).to.deep.eq([{state: 'proposed'}, {state: 'errored'}]);
+    })).to.deep.eq([{state: 'proposed'}, {state: 'request_error'}]);
     let e = events.pop();
-    expect(e.state).to.eq('errored');
+    expect(e.state).to.eq('request_error');
     expect(e.respId).to.eq('fakeapp01');
     expect(e.errors).to.have.length(1);
     expect(e.errors).to.deep.eq([{

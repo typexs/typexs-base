@@ -9,7 +9,7 @@ import {Container} from "typedi";
 import {XS_DEFAULT} from "commons-schema-api";
 import {Cache} from "../../../src/libs/cache/Cache";
 import {RedisCacheAdapter} from "../../../src/adapters/cache/RedisCacheAdapter";
-
+let bootstrap:Bootstrap = null;
 @suite('functional/cache/cache_redis')
 class Cache_redisSpec {
 
@@ -19,10 +19,14 @@ class Cache_redisSpec {
     Config.clear();
   }
 
+  async after(){
+    bootstrap ? await bootstrap.shutdown() : null;
+  }
+
 
   @test
   async 'use redis cache with options'() {
-    let bootstrap = Bootstrap
+    bootstrap = Bootstrap
       .setConfigSources([{type: 'system'}])
       .configure({
       app: {name: 'test'},

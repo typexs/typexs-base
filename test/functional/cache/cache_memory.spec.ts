@@ -9,7 +9,7 @@ import {Container} from "typedi";
 import {XS_DEFAULT} from "commons-schema-api";
 import {Cache} from "../../../src/libs/cache/Cache";
 import {MemoryCacheAdapter} from "../../../src/adapters/cache/MemoryCacheAdapter";
-
+let bootstrap:Bootstrap = null;
 @suite('functional/cache/memory')
 class Cache_memorySpec {
 
@@ -19,10 +19,14 @@ class Cache_memorySpec {
     Config.clear();
   }
 
+  async after(){
+    bootstrap ? await bootstrap.shutdown() : null;
+  }
+
 
   @test
   async 'use default runtime memory cache with default options'() {
-    let bootstrap = Bootstrap
+    bootstrap = Bootstrap
       .setConfigSources([{type: 'system'}])
       .configure({
         app: {name: 'test'},

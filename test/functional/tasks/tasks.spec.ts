@@ -357,8 +357,6 @@ class TasksSpec {
     let runner = new TaskRunner(tasks, [taskRef.name]);
     runner.getLogger().info('extern use ;)');
     await TestHelper.wait(50);
-    let logFile = runner.getLogFile();
-    expect(fs.existsSync(logFile)).to.be.true;
 
     let x: any[] = [];
     let reader = runner.getReadStream();
@@ -370,21 +368,11 @@ class TasksSpec {
       );
     });
 
-/*
-    let p = new Promise((resolve, reject) => {
-      reader.on('close', resolve);
-    });
-*/
-
     let data = await runner.run();
-    // runn
-    // await p;
 
     await TestHelper.wait(100);
     stdMocks.restore();
     let content = stdMocks.flush();
-
-    console.log(content,x);
     expect(content.stdout).to.have.length(5);
 
     //let cNewLogger = content.stdout.shift();

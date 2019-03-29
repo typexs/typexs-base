@@ -22,8 +22,6 @@ import {WinstonLoggerJar} from "../logging/WinstonLoggerJar";
 
 import * as winston from "winston";
 import * as fs from "fs";
-import * as os from "os";
-import * as path from "path";
 import {DefaultJsonFormat} from "../logging/DefaultJsonFormat";
 
 import {Stream} from "stream";
@@ -73,7 +71,7 @@ export class TaskRunner extends EventEmitter {
 
   private taskLogger: ILoggerApi;
 
-  private taskLoggerFile: string;
+//  private taskLoggerFile: string;
 
   writeStream: NodeJS.WritableStream;
 
@@ -116,8 +114,6 @@ export class TaskRunner extends EventEmitter {
     });
     this.taskLogger.info('Execute tasks: ' + this.$todo.join(', '));
 
-    this.taskLoggerFile = path.join(os.tmpdir(), 'typexs-taskrun-' + this.id + '-' + startDate);
-
     let sefl = this;
     this.readStream = new Stream.Readable({
       read(size:number) {
@@ -139,11 +135,6 @@ export class TaskRunner extends EventEmitter {
         format: new DefaultJsonFormat()
       }));
 
-    (<WinstonLoggerJar>this.taskLogger).logger().add(
-      new winston.transports.Stream({
-        stream: fs.createWriteStream(this.taskLoggerFile, {}),
-        format: new DefaultJsonFormat()
-      }));
 
     //this.$todo = _.keys(this.$tasks);
 
@@ -153,10 +144,6 @@ export class TaskRunner extends EventEmitter {
     this.on(TASKRUN_STATE_DONE, this.taskDone.bind(this))
   }
 
-
-  getLogFile() {
-    return this.taskLoggerFile;
-  }
 
 
   getLogger() {
@@ -418,11 +405,7 @@ export class TaskRunner extends EventEmitter {
 
 
   async finalize() {
-    if (fs.existsSync(this.taskLoggerFile)) {
-      await new Promise((resolve, reject) => {
-        fs.unlink(this.taskLoggerFile, resolve);
-      })
-    }
+    // TODO ...
   }
 
 }

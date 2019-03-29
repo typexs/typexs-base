@@ -14,6 +14,8 @@ export class RedisCacheAdapter implements ICacheAdapter {
 
   client: IRedisCacheClient;
 
+  nodeId: string = 'global';
+
   name: string;
 
   options: ICacheBinConfig;
@@ -40,7 +42,7 @@ export class RedisCacheAdapter implements ICacheAdapter {
 
   cacheKey(bin: string, key: string) {
     let hash = CryptUtils.shorthash(key);
-    return ['bin:'+bin, key, hash].join('--').replace(/[^\w\d\-:]/, '');
+    return [this.nodeId,'bin:'+bin, key, hash].join('--').replace(/[^\w\d\-:]/, '');
   }
 
 

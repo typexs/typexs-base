@@ -39,7 +39,7 @@ export class Startup implements IBootstrap, IShutdown {
       await this.cache.register(<any>cls);
     }
     let cache: ICacheConfig = Config.get('cache');
-    await this.cache.configure(cache);
+    await this.cache.configure(this.system.node.nodeId, cache);
 
     let bus: { [name: string]: IEventBusConfiguration } = Config.get(C_EVENTBUS, false);
     if (bus) {

@@ -6,7 +6,8 @@ import {
   IQueueProcessor,
   StorageRef,
   TaskLog,
-  Tasks
+  Tasks,
+  Cache
 } from "..";
 import {Bootstrap} from "../Bootstrap";
 import {Inject} from "typedi";
@@ -19,7 +20,8 @@ import * as _ from "lodash";
 import {ITaskRunResult} from "../libs/tasks/ITaskRunResult";
 import {Config} from "commons-config";
 import * as fs from "fs";
-import * as path from "path";
+import {PlatformUtils} from "commons-base";
+import {TasksHelper} from "../libs/tasks/TasksHelper";
 
 export class TaskMonitorWorker implements IQueueProcessor<TaskEvent>, IWorker {
 
@@ -30,6 +32,9 @@ export class TaskMonitorWorker implements IQueueProcessor<TaskEvent>, IWorker {
   nodeId: string;
 
   queue: AsyncWorkerQueue<TaskEvent>;
+
+  @Inject(Cache.NAME)
+  cache: Cache;
 
   @Inject(Tasks.NAME)
   tasks: Tasks;
@@ -47,6 +52,10 @@ export class TaskMonitorWorker implements IQueueProcessor<TaskEvent>, IWorker {
     this.queue = new AsyncWorkerQueue<TaskEvent>(this, options);
     await EventBus.register(this);
     this.logdir = Config.get('tasks.logdir', Config.get('os.tmpdir'));
+    // create logdir if not exists
+    if (!PlatformUtils.fileExist(this.logdir)) {
+      PlatformUtils.mkdir(this.logdir);
+    }
     this.logger.debug('waiting for tasks events ...');
   }
 
@@ -56,10 +65,6 @@ export class TaskMonitorWorker implements IQueueProcessor<TaskEvent>, IWorker {
     this.queue.push(event);
   }
 
-  getFileName(id: string, respId: string) {
-    let filename = path.join(this.logdir, 'taskmonitor-' + id + '-' + respId + '.log');
-    return filename;
-  }
 
   async do(event: TaskEvent, queue?: AsyncWorkerQueue<any>): Promise<any> {
     try {
@@ -105,19 +110,23 @@ export class TaskMonitorWorker implements IQueueProcessor<TaskEvent>, IWorker {
             };
           }
 
+          if (exists.tasksId && exists.respId) {
+            const cacheKey = [exists.tasksId, exists.respId].join(':');
+            this.cache.set(cacheKey, exists);
+          }
 
+          // TODO notify a push api if it exists
         }
-
         await this.storageRef.getController().save(logs);
 
       } else if (event.topic == 'log') {
-        let filename = this.getFileName(event.id, event.respId);
+        let filename = TasksHelper.getTaskLogFile(event.id, event.respId);
         await new Promise((resolve, reject) => {
-          let out = event.log.join("\n")+"\n";
+          let out = event.log.join("\n") + "\n";
           fs.appendFile(filename, out, (err) => {
-            if(err){
+            if (err) {
               this.logger.error('appending log to file ' + filename, err);
-            }else{
+            } else {
               this.logger.debug('appending log to file ' + filename);
             }
             resolve();

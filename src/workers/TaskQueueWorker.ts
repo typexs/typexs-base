@@ -64,7 +64,7 @@ export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker 
         parameters = event.parameters;
         for (let p of props) {
           if (!_.has(parameters, p.storingName) && !_.has(parameters, p.name)) {
-            event.state = 'errored';
+            event.state = 'request_error';
             event.errors.push(<IError>{
               context: 'required_parameter',
               data: {
@@ -82,7 +82,7 @@ export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker 
       }
 
     } else {
-      event.state = 'event_errored';
+      event.state = 'request_error';
       event.errors.push(<IError>{
         context: 'task_not_allowed',
         message: 'The task a not supported by this worker.'

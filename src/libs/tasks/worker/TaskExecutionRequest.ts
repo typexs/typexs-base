@@ -81,8 +81,14 @@ export class TaskExecutionRequest extends EventEmitter {
 
     await EventBus.register(this);
     await EventBus.postAndForget(this.event);
-    await this.ready();
-    await EventBus.unregister(this);
+    try{
+      await this.ready();
+    }catch (err) {
+      Log.error(err);
+      throw err;
+    }finally {
+      await EventBus.unregister(this);
+    }
     return this.results;
   }
 

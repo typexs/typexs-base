@@ -8,7 +8,6 @@ import {IFindOptions, Log, XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from "../..";
 import {TypeOrmEntityRegistry} from '../storage/framework/typeorm/schema/TypeOrmEntityRegistry';
 import {QueryEvent} from "./QueryEvent";
 import {EventEmitter} from "events";
-import {Container, Inject} from "typedi";
 import {System} from "../system/System";
 import {IEntityRef} from "commons-schema-api";
 
@@ -17,7 +16,7 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
 
   private system: System;
 
-  private controller: DistributedStorageEntityController;
+  //private controller: DistributedStorageEntityController;
 
   private options: IFindOptions;
 
@@ -43,7 +42,7 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
   }
 
   prepare(controller: DistributedStorageEntityController) {
-    this.controller = controller;
+    //this.controller = controller;
 
     return this;
   }
@@ -120,6 +119,7 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
     }
 
     await EventBus.unregister(this);
+    this.removeAllListeners();
     return this.results;
   }
 

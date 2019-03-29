@@ -157,7 +157,7 @@ class Tasks_workerSpec {
 
     let execReq = Container.get(TaskExecutionRequestFactory).createRequest();
     let results = await execReq.run([ref.name]);
-
+    Log.debug('got results')
     await TestHelper.waitFor(() => events.length >= 4, 100);
     //await worker.queue.await();
 

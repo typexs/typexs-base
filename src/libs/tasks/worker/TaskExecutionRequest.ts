@@ -81,7 +81,7 @@ export class TaskExecutionRequest extends EventEmitter {
 
     await EventBus.register(this);
     await EventBus.postAndForget(this.event);
-    let _err:Error = null;
+    let _err: Error = null;
     try {
       await this.ready();
     } catch (err) {
@@ -91,9 +91,12 @@ export class TaskExecutionRequest extends EventEmitter {
       await EventBus.unregister(this);
     }
 
-    if(_err){
+    Log.debug('fire execution finished for ' + this.event.id);
+    if (_err) {
       throw _err;
     }
+
+    this.removeAllListeners();
 
     return this.results;
   }
@@ -107,7 +110,7 @@ export class TaskExecutionRequest extends EventEmitter {
 
   @subscribe(TaskEvent)
   onResults(event: TaskEvent): any {
-    Log.debug('task event entered ' + event.id + ' ' + event.state + ' '+event.respId);
+    Log.debug('task event entered ' + event.id + ' ' + event.state + ' ' + event.respId);
     if (!this.active) return;
 
     // has query event

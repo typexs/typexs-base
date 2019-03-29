@@ -18,10 +18,11 @@ import {SpawnHandle} from "../SpawnHandle";
 import {TaskCommand} from "../../../src/commands/TaskCommand";
 import {SimpleTaskWithLog} from "./tasks/SimpleTaskWithLog";
 import {TaskExecutionRequestFactory} from "../../../src/libs/tasks/worker/TaskExecutionRequestFactory";
+import {TaskMonitorWorker} from "../../../src/workers/TaskMonitorWorker";
 
 
 const LOG_EVENT = TestHelper.logEnable(false);
-
+let bootstrap:Bootstrap = null;
 
 @suite('functional/tasks/tasks_worker')
 class Tasks_workerSpec {
@@ -34,9 +35,15 @@ class Tasks_workerSpec {
   }
 
 
+  async after(){
+    if(bootstrap){
+      await bootstrap.shutdown()
+    }
+  }
+
   @test
   async 'run local job'() {
-    let bootstrap = Bootstrap
+    bootstrap = Bootstrap
       .setConfigSources([{type: 'system'}])
       .configure(<ITypexsOptions & any>{
         app: {name: 'test', nodeId: 'worker'},
@@ -112,7 +119,7 @@ class Tasks_workerSpec {
 
   @test
   async 'run local job with execution request'() {
-    let bootstrap = Bootstrap
+    bootstrap = Bootstrap
       .setConfigSources([{type: 'system'}])
       .configure(<ITypexsOptions & any>{
         app: {name: 'test', nodeId: 'worker'},
@@ -163,7 +170,7 @@ class Tasks_workerSpec {
 
   @test
   async 'run job on remote worker'() {
-    let bootstrap = Bootstrap
+    bootstrap = Bootstrap
       .setConfigSources([{type: 'system'}])
       .configure(<ITypexsOptions & any>{
         app: {name: 'test', nodeId: 'system', path: __dirname + '/fake_app'},
@@ -243,7 +250,7 @@ class Tasks_workerSpec {
 
   @test
   async 'run job on remote worker, but without necessary parameters'() {
-    let bootstrap = Bootstrap
+    bootstrap = Bootstrap
       .setConfigSources([{type: 'system'}])
       .configure(<ITypexsOptions & any>{
         app: {name: 'test', nodeId: 'system', path: __dirname + '/fake_app'},
@@ -312,7 +319,7 @@ class Tasks_workerSpec {
 
   @test
   async 'run job direct on remote worker'() {
-    let bootstrap = Bootstrap
+    bootstrap = Bootstrap
       .setConfigSources([{type: 'system'}])
       .configure(<ITypexsOptions & any>{
         app: {name: 'test', nodeId: 'system', path: __dirname + '/fake_app'},
@@ -422,7 +429,7 @@ class Tasks_workerSpec {
     let handle = SpawnHandle.do(__dirname + '/fake_app/node_task_worker.ts').start(LOG_EVENT);
     await handle.started;
 
-    let bootstrap = Bootstrap
+    bootstrap = Bootstrap
       .setConfigSources([{type: 'system'}])
       .configure(<ITypexsOptions & any>{
         app: {name: 'test', nodeId: 'event', path: __dirname + '/fake_app'},
@@ -475,7 +482,7 @@ class Tasks_workerSpec {
 
   @test
   async 'monitor local task execution'() {
-    let bootstrap = Bootstrap
+    bootstrap = Bootstrap
       .setConfigSources([{type: 'system'}])
       .configure(<ITypexsOptions & any>{
         app: {name: 'test', nodeId: 'worker'},
@@ -497,12 +504,14 @@ class Tasks_workerSpec {
 
     const workers: Workers = Container.get(Workers.NAME);
     const worker: TaskQueueWorker = <TaskQueueWorker>workers.workers.find(x => x instanceof TaskQueueWorker);
+    const monitor: TaskMonitorWorker = <TaskMonitorWorker>workers.workers.find(x => x instanceof TaskMonitorWorker);
 
     let execReq = Container.get(TaskExecutionRequestFactory).createRequest();
     let results = await execReq.run([ref.name]);
 
-    await TestHelper.wait(500);
-//    await worker.queue.await();
+//    await TestHelper.wait(500);
+    await worker.queue.await();
+    await monitor.queue.await();
 
     let storeRef: StorageRef = Container.get(C_STORAGE_DEFAULT);
     let logs: any[] = await storeRef.getController().find(TaskLog);

@@ -8,6 +8,7 @@ import * as _ from "lodash";
 import {Minimatch} from "minimatch";
 import {Container} from "typedi";
 import {IWorker} from "./IWorker";
+import {IWorkerInfo} from "./IWorkerInfo";
 
 
 const DEFAULT_OPTIONS: IWorkerConfig = {access: [{access: 'deny', name: '*'}]};
@@ -44,7 +45,7 @@ export class Workers implements ILookupRegistry {
     let refs: WorkerRef[] = this.registry.list(XS_TYPE_ENTITY);
     for (let ref of refs) {
       let workerInstance = <IWorker>Container.get(ref.getClass());
-      let config = _.get(this.config, 'config.' + ref.name, null);
+      let config = _.get(this.config, 'config.' + ref.name, _.get(this.config, 'config.' + workerInstance.name, null));
       if (config) {
         await workerInstance.prepare(config);
       } else {
@@ -55,13 +56,24 @@ export class Workers implements ILookupRegistry {
   }
 
 
-  infos() {
-    return _.map(this.getEntries(), x => {
-      return {
-        name: x.name
+  metadata(){
+    return _.map(this.getEntries(), (x: IWorker) => {
+      return <IWorkerInfo>{
+        name: x.name,
       }
     });
   }
+
+  infos(): IWorkerInfo[] {
+    return _.map(this.workers, (x: IWorker) => {
+      return <IWorkerInfo>{
+        name: x.name,
+        className: x.constructor.name,
+        statistics: x.statistic ? x.statistic() : null
+      }
+    });
+  }
+
 
   activeWorkerCount() {
     return this.workers.length;

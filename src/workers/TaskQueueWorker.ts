@@ -1,4 +1,4 @@
-import {AsyncWorkerQueue, IAsyncQueueOptions, ILoggerApi, IQueueProcessor,  TaskRunner, Tasks} from "..";
+import {AsyncWorkerQueue, IAsyncQueueOptions, ILoggerApi, IQueueProcessor, TaskRunner, Tasks} from "..";
 import {Bootstrap} from "../Bootstrap";
 import {Inject} from "typedi";
 import subscribe from "commons-eventbus/decorator/subscribe";
@@ -13,11 +13,14 @@ import {IError} from "../libs/exceptions/IError";
 import {ClassUtils} from "commons-base";
 import {TASKRUN_STATE_UPDATE} from "../libs/tasks/Constants";
 import {IWorker} from "../libs/worker/IWorker";
+import {IWorkerStatisitic} from "../libs/worker/IWorkerStatisitic";
 
 
 export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker {
 
   static NAME: string = 'TaskQueueWorker';
+
+  name:string = 'task_queue_worker';
 
   inc: number = 0;
 
@@ -165,6 +168,18 @@ export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker 
   }
   */
 
+
+  statistic(): IWorkerStatisitic {
+    let stats: IWorkerStatisitic = {
+      stats: this.queue.status(),
+      paused: this.queue.isPaused(),
+      idle:this.queue.isIdle(),
+      occupied:this.queue.isOccupied(),
+      running:this.queue.isPaused(),
+    };
+
+    return stats;
+  }
 
   async finish() {
     await EventBus.unregister(this);

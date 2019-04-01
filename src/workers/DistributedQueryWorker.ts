@@ -20,6 +20,7 @@ import {System} from "../libs/system/System";
 import {IEntityRef} from "commons-schema-api";
 import {QueryResultsEvent} from "./../libs/distributed/QueryResultsEvent";
 import {IWorker} from "../libs/worker/IWorker";
+import {IWorkerStatisitic} from "../libs/worker/IWorkerStatisitic";
 
 
 export interface IQueryWorkload extends IQueueWorkload {
@@ -32,9 +33,11 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
   @Inject(System.NAME)
   private system: System;
 
-
   @Inject(Storage.NAME)
   private storage: Storage;
+
+
+  name: string = 'distributed_query_worker';
 
   nodeId: string;
 
@@ -125,6 +128,20 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
     // fire query results
     EventBus.postAndForget(resultsEvent);
   }
+
+
+  statistic(): IWorkerStatisitic {
+    let stats: IWorkerStatisitic = {
+      stats: this.queue.status(),
+      paused: this.queue.isPaused(),
+      idle: this.queue.isIdle(),
+      occupied: this.queue.isOccupied(),
+      running: this.queue.isPaused(),
+    };
+
+    return stats;
+  }
+
 
   async finish() {
     await EventBus.unregister(this);

@@ -22,10 +22,13 @@ import {Config} from "commons-config";
 import * as fs from "fs";
 import {PlatformUtils} from "commons-base";
 import {TasksHelper} from "../libs/tasks/TasksHelper";
+import {IWorkerStatisitic} from "../libs/worker/IWorkerStatisitic";
 
 export class TaskMonitorWorker implements IQueueProcessor<TaskEvent>, IWorker {
 
   static NAME: string = 'TaskMonitorWorker';
+
+  name: string = 'task_monitor_worker';
 
   inc: number = 0;
 
@@ -136,6 +139,19 @@ export class TaskMonitorWorker implements IQueueProcessor<TaskEvent>, IWorker {
     } catch (err) {
       this.logger.error(err);
     }
+  }
+
+
+  statistic(): IWorkerStatisitic {
+    let stats: IWorkerStatisitic = {
+      stats: this.queue.status(),
+      paused: this.queue.isPaused(),
+      idle: this.queue.isIdle(),
+      occupied: this.queue.isOccupied(),
+      running: this.queue.isPaused(),
+    };
+
+    return stats;
   }
 
 

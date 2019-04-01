@@ -4,7 +4,7 @@ import {expect} from 'chai';
 
 import {Bootstrap} from "../../../src/Bootstrap";
 import {Log} from "../../../src/libs/logging/Log";
-import {C_STORAGE_DEFAULT, ITypexsOptions, StorageRef, TaskLog, Tasks} from "../../../src";
+import {C_STORAGE_DEFAULT, ITypexsOptions, StorageRef, TaskLog, Tasks, Workers} from "../../../src";
 import {Container} from "typedi";
 import {Config} from "commons-config";
 import {TEST_STORAGE_OPTIONS} from "../config";
@@ -18,6 +18,7 @@ import {SpawnHandle} from "../SpawnHandle";
 import {TaskCommand} from "../../../src/commands/TaskCommand";
 import {SimpleTaskWithLog} from "./tasks/SimpleTaskWithLog";
 import {TaskExecutionRequestFactory} from "../../../src/libs/tasks/worker/TaskExecutionRequestFactory";
+import {inspect} from "util";
 
 
 const LOG_EVENT = true;//TestHelper.logEnable(true);
@@ -69,6 +70,7 @@ class Tasks_workerSpec {
 
     let tasks: Tasks = Container.get(Tasks.NAME);
     let ref = tasks.addTask(SimpleWorkerTask);
+
 
     const worker = <TaskQueueWorker>Container.get(TaskQueueWorker);
     await worker.prepare();
@@ -136,6 +138,26 @@ class Tasks_workerSpec {
     // ---- startup done
 
 
+    const workers: Workers = Container.get(Workers.NAME);
+    let workerInfos = workers.infos();
+
+    expect(workerInfos).to.have.length(1);
+    expect(workerInfos[0]).to.deep.include({
+      name: 'task_queue_worker',
+      className: 'TaskQueueWorker',
+      statistics:
+        {
+          stats: { all: 0, done: 0, running: 0, enqueued: 0, active: 0 },
+          paused: false,
+          idle: true,
+          occupied: false,
+          running: false
+        }
+    });
+
+
+
+
     let events: TaskEvent[] = [];
 
     class T02 {
@@ -152,8 +174,8 @@ class Tasks_workerSpec {
     let tasks: Tasks = Container.get(Tasks.NAME);
     let ref = tasks.addTask(SimpleWorkerTask);
 
-   // const workers: Workers = Container.get(Workers.NAME);
-   // const worker: TaskQueueWorker = <TaskQueueWorker>workers.workers.find(x => x instanceof TaskQueueWorker);
+    // const workers: Workers = Container.get(Workers.NAME);
+    // const worker: TaskQueueWorker = <TaskQueueWorker>workers.workers.find(x => x instanceof TaskQueueWorker);
 
     let execReq = Container.get(TaskExecutionRequestFactory).createRequest();
     let results = await execReq.run([ref.name]);
@@ -526,6 +548,7 @@ class Tasks_workerSpec {
     // ---- startup done
 
     let events: TaskEvent[] = [];
+
     class T2 {
       @subscribe(TaskEvent)
       on(e: TaskEvent) {

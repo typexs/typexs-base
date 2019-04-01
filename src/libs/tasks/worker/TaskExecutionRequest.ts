@@ -46,7 +46,7 @@ export class TaskExecutionRequest extends EventEmitter {
     let workerIds = _.concat([], [this.system.node], this.system.nodes)
       .filter(n => {
         let x = _.find(n.contexts, c => c.context == 'workers');
-        return _.get(x, 'workers', []).find((y: IWorkerInfo) => y.name == TaskQueueWorker.NAME);
+        return _.get(x, 'workers', []).find((y: IWorkerInfo) => y.className == TaskQueueWorker.NAME);
       }).map(x => x.nodeId);
 
 

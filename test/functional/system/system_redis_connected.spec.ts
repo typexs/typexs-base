@@ -1,7 +1,7 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 import {Bootstrap} from "../../../src/Bootstrap";
-import {Invoker, ITypexsOptions, Log} from "../../../src";
+import {Invoker, ITypexsOptions} from "../../../src";
 import {Config} from "commons-config";
 import {TEST_STORAGE_OPTIONS} from "../config";
 import {IEventBusConfiguration} from "commons-eventbus";
@@ -160,12 +160,12 @@ class Tasks_systemSpec {
 
     let results = await system.getNodeInfos();
     expect(results).to.have.length(1);
+    expect(results[0].machineId).to.be.eq(system.info.machineId);
 
     p.shutdown();
     await p.done;
     await bootstrap.shutdown();
 
-    expect(system.nodes).to.have.length(0)
   }
 
 

@@ -5,6 +5,7 @@ import {IQueueProcessor} from "./IQueueProcessor";
 import {IQueueWorkload} from "./IQueueWorkload";
 import {QueueJob} from "./QueueJob";
 import {Log} from "../logging/Log";
+import {IAsyncQueueStats} from "./IAsyncQueueStats";
 
 
 const ASYNC_QUEUE_DEFAULT: IAsyncQueueOptions = {
@@ -61,7 +62,7 @@ export class AsyncWorkerQueue<T extends IQueueWorkload> extends events.EventEmit
 
   }
 
-  status() {
+  status() :IAsyncQueueStats{
     return {
       all: this._inc,
       done: this._done,

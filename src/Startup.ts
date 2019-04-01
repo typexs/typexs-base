@@ -33,7 +33,7 @@ export class Startup implements IBootstrap, IShutdown {
 
   async bootstrap(): Promise<void> {
     TasksHelper.prepare(this.tasks, this.loader);
-    this.workers.prepare(this.loader);
+    await this.workers.prepare(this.loader);
 
     for (let cls of this.loader.getClasses(K_CLS_CACHE_ADAPTER)) {
       await this.cache.register(<any>cls);
@@ -53,8 +53,9 @@ export class Startup implements IBootstrap, IShutdown {
   }
 
   async ready() {
-    await this.system.register();
     await this.workers.startup();
+    await this.system.register();
+
   }
 
 

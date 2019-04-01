@@ -16,6 +16,11 @@ export class SystemNodeInfo {
   @IsNotEmpty()
   @Index()
   @Column()
+  machineId: string;
+
+  @IsNotEmpty()
+  @Index()
+  @Column()
   hostname: string;
 
   @IsNotEmpty()

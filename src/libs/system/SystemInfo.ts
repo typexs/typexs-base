@@ -52,11 +52,17 @@ export interface MemoryUsage {
   heapUsed: number;
   external: number;
 }
+
 export interface CpuUsage {
   user: number;
   system: number;
 }
+
 export class SystemInfo {
+  machineId: string;
+
+  nodeId: string;
+
   hostname: string;
 
   networks: { [index: string]: NetworkInterfaceInfo[] };

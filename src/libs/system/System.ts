@@ -12,6 +12,8 @@ import {SystemInfo} from "./SystemInfo";
 import * as os from "os";
 import {SystemInfoRequestEvent} from "./SystemInfoRequestEvent";
 import {SystemInfoRequest} from "./SystemInfoRequest";
+import * as machineId from "node-machine-id";
+
 
 export class System {
 
@@ -56,9 +58,10 @@ export class System {
     await c.close();
 
     this.node = new SystemNodeInfo();
-    this.node.key = key;
+    this.node.machineId = await machineId.machineId(true);
     this.node.hostname = hostname;
     this.node.nodeId = nodeId;
+    this.node.key = key;
     this.node.started = new Date();
     this.node.state = 'startup';
     this.node.isBackend = true;
@@ -126,6 +129,8 @@ export class System {
 
 
   updateInfo() {
+    this.info.nodeId = this.node.nodeId;
+    this.info.machineId = this.node.machineId;
     this.info.networks = os.networkInterfaces();
     this.info.cpus = os.cpus();
     this.info.memory = {

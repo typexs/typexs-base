@@ -78,45 +78,48 @@ export class TaskMonitorWorker implements IQueueProcessor<TaskEvent>, IWorker {
 
         const taskNames = _.isArray(event.name) ? event.name : [event.name];
         const results = _.get(event, "data.results", null);
-        for (let taskName of taskNames) {
-          let exists = _.find(logs, l => l.taskName === taskName);
-          if (!exists) {
-            exists = new TaskLog();
-            exists.tasksId = event.id;
-            exists.taskName = taskName;
-            logs.push(exists);
-          }
-          exists.state = event.state;
-          exists.nodeId = event.nodeId;
-          exists.respId = event.respId;
+        for(let targetId of event.targetIds){
+          for (let taskName of taskNames) {
+            let exists = _.find(logs, l => l.taskName === taskName && l.respId == targetId);
+            if (!exists) {
+              exists = new TaskLog();
+              exists.tasksId = event.id;
+              exists.nodeId = event.nodeId;
+              exists.taskName = taskName;
+              exists.respId = targetId;
+              logs.push(exists);
+            }
+            exists.state = event.state;
 
-          if (results) {
-            const result: ITaskRunResult = _.find(results, r => r.name == taskName);
-            exists.taskNr = result.nr;
-            exists.hasError = result.has_error;
-            //exists.errors = JSON.stringify(result.error);
-            exists.started = result.start;
-            exists.stopped = result.stop;
-            exists.created = result.created;
-            exists.duration = result.duration;
-            exists.progress = result.progress;
-            exists.total = result.total;
-            exists.done = _.get(result, 'done', false);
-            exists.running = _.get(result, 'running', false);
-            exists.weight = _.get(result, 'weight', -1);
+            if (results) {
+              const result: ITaskRunResult = _.find(results, r => r.name == taskName);
+              exists.taskNr = result.nr;
+              exists.hasError = result.has_error;
+              //exists.errors = JSON.stringify(result.error);
+              exists.started = result.start;
+              exists.stopped = result.stop;
+              exists.created = result.created;
+              exists.duration = result.duration;
+              exists.progress = result.progress;
+              exists.total = result.total;
+              exists.done = _.get(result, 'done', false);
+              exists.running = _.get(result, 'running', false);
+              exists.weight = _.get(result, 'weight', -1);
 
-            exists.data = <any>{
-              results: result.result,
-              incoming: result.incoming,
-              outgoing: result.outgoing,
-              error: result.error
-            };
-          }
+              exists.data = <any>{
+                results: result.result,
+                incoming: result.incoming,
+                outgoing: result.outgoing,
+                error: result.error
+              };
+            }
 
-          if (exists.tasksId && exists.respId) {
-            const cacheKey = [exists.tasksId, exists.respId].join(':');
-            this.cache.set(cacheKey, exists);
-          }
+            if (exists.tasksId && exists.respId) {
+              const cacheKey = [exists.tasksId, targetId].join(':');
+              this.cache.set(cacheKey, exists);
+            }
+
+        }
 
           // TODO notify a push api if it exists
         }

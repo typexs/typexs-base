@@ -82,8 +82,10 @@ export function cli():Promise<Bootstrap>{
         .alias("h", "help")
         .argv;
 
+
       return _bootstrap;
     })
+
     .catch(err => {
       Log.error(err);
       throw err;

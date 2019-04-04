@@ -4,7 +4,7 @@ import {Config} from "commons-config";
 import {terminal,} from '@angular-devkit/core';
 import * as _ from 'lodash';
 
-import {PlatformUtils,FileUtils} from "commons-base";
+import {PlatformUtils, FileUtils} from "commons-base";
 import {SchematicsExecutor} from "../index";
 
 export class GenerateCommand {
@@ -63,23 +63,23 @@ export class GenerateCommand {
           console.log(schema);
 
         } else {
-          console.log('\n'+argv.schematic + ' from  '+info.name+'\n');
+          console.log('\n' + argv.schematic + ' from  ' + info.name + '\n');
 
           let workdir = _argv.workdir ? _argv.workdir : '.';
           let appdir = _argv.appdir ? _argv.appdir : '.';
 
           let requiredChecked = true;
 
-          if(schema.required){
-            for(let r of schema.required){
-              if(!_.has(_argv,r)){
+          if (schema.required) {
+            for (let r of schema.required) {
+              if (!_.has(_argv, r)) {
                 requiredChecked = false;
-                console.log(' - required parameter \"'+r+'\" is not set');
+                console.log(' - required parameter \"' + r + '\" is not set');
               }
             }
           }
 
-          if(requiredChecked){
+          if (requiredChecked) {
 
             let executor = new SchematicsExecutor({
               workdir: PlatformUtils.pathResolve(workdir),
@@ -95,7 +95,7 @@ export class GenerateCommand {
               console.error(e);
             }
 
-          }else{
+          } else {
             console.log('\nMissing required parameter. Processing skipped.\n');
           }
         }
@@ -108,7 +108,7 @@ export class GenerateCommand {
       }
     }
 
-
+    process.exit();
   }
 }
 

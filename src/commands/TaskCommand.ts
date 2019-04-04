@@ -6,7 +6,6 @@ import {Log} from '../libs/logging/Log'
 import {Console} from '../libs/logging/Console'
 import {TasksApi} from "../api/Tasks.api";
 import {System} from "../libs/system/System";
-import {TaskExecutionRequest} from "../libs/tasks/worker/TaskExecutionRequest";
 import {TaskExecutionRequestFactory} from "../libs/tasks/worker/TaskExecutionRequestFactory";
 import {TasksHelper} from "../libs/tasks/TasksHelper";
 
@@ -135,5 +134,6 @@ export class TaskCommand {
 
   async shutdown() {
     await this.invoker.use(TasksApi).onShutdown();
+    process.exit();
   }
 }

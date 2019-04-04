@@ -134,6 +134,5 @@ export class TaskCommand {
 
   async shutdown() {
     await this.invoker.use(TasksApi).onShutdown();
-    process.exit();
   }
 }

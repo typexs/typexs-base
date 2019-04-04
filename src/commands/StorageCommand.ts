@@ -38,8 +38,7 @@ export class StorageCommand {
 
     let storageName = parts.shift();
 
-    await this[subcommand](storageName, parts, argv);
-    process.exit();
+    return await this[subcommand](storageName, parts, argv);
   }
 
 

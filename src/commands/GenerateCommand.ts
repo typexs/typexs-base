@@ -108,7 +108,6 @@ export class GenerateCommand {
       }
     }
 
-    process.exit();
   }
 }
 

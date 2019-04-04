@@ -25,9 +25,6 @@ export class ModulesCommand {
       }
 
     }
-
-    process.exit()
-
   }
 }
 

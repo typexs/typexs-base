@@ -62,6 +62,13 @@ const DEFAULT_CONFIG_LOAD_ORDER = [
     file: {dirname: './config', filename: '${app.name}'},
     pattern: [
       'secrets',
+      'secrets--${os.hostname}',
+      'secrets--${argv.nodeId}',
+      'secrets--${app.nodeId}',
+      'secrets--${env.nodeId}',
+      'secrets--${os.hostname}--${argv.nodeId}',
+      'secrets--${os.hostname}--${app.nodeId}',
+      'secrets--${os.hostname}--${env.nodeId}',
       '${app.name}--${os.hostname}',
       '${app.name}--${argv.nodeId}',
       '${app.name}--${app.nodeId}',

@@ -226,7 +226,8 @@ export class TaskRef extends AbstractRef implements IEntityRef {
     data.remote = this.isRemote();
     data.groups = this.groups();
     data.nodeIds = this.nodeIds;
-    data.target = this.getClassRef().toJson(false);
+    let ref = this.getClassRef();
+    data.target = ref ? ref.toJson(false) : null;
     data.options = _.merge(data.options);
     if (withProperties) {
       data.properties = this.getPropertyRefs().map(p => p.toJson());
@@ -236,7 +237,10 @@ export class TaskRef extends AbstractRef implements IEntityRef {
 
 
   static fromJson(json: IEntityRefMetadata & any): TaskRef {
-    let target = ClassRef.get(json.target.className, C_TASKS).getClass(true);
+    let target = null;
+    if (json.target) {
+      target = ClassRef.get(json.target.className, C_TASKS).getClass(true);
+    }
     let taskRef = new TaskRef(json.name, target);
     taskRef._type = <any>TaskRefType[json.mode];
     taskRef.description = json.description;

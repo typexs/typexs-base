@@ -8,6 +8,8 @@ import {TasksApi} from "../api/Tasks.api";
 import {System} from "../libs/system/System";
 import {TaskExecutionRequestFactory} from "../libs/tasks/worker/TaskExecutionRequestFactory";
 import {TasksHelper} from "../libs/tasks/TasksHelper";
+import * as _ from "lodash";
+import {IError} from "../libs/exceptions/IError";
 
 /**
  * Starts a task direct or in a running worker
@@ -80,23 +82,6 @@ export class TaskCommand {
           let results = await execReq.run(taskNames, args, targetId ? [targetId] : []);
           Log.debug('task command: event enqueue results', results);
 
-          /*
-          let event = new TaskEvent();
-          if (targetId) {
-            if (!event.targetIds) event.targetIds = [];
-            event.targetIds.push(targetId);
-          }
-          event.name = taskNames;
-          for (let k of _.keys(args)) {
-            if (!/^_/.test(k)) {
-              console.log(k);
-              event.addParameter(k, args[k]);
-            }
-          }
-          event.nodeId = this.system.node.nodeId;
-          Log.debug('Sending event', event);
-          await EventBus.post(event);
-*/
         } else {
           // there are no worker running!
           Console.error('There are no worker running for tasks: ' + taskNames.join(', '));
@@ -109,13 +94,34 @@ export class TaskCommand {
             dry_mode: Config.get('argv.dry-mode', false)
           };
 
-          let runner = TasksHelper.runner(this.tasks, taskNames, options);
-          await new Promise((resolve, reject) => {
-            runner.run(async (results: any) => {
-              Console.log(JSON.stringify(results));
-              resolve()
-            });
+          // add parameters
+          let parameters: any = {};
+          _.keys(argv).map(k => {
+            if (!/^_/.test(k)) {
+              parameters[_.snakeCase(k)] = argv[k];
+            }
           })
+
+          // validate arguments
+          let props = TasksHelper.getRequiredIncomings(taskNames.map(t => this.tasks.get(t)));
+          if (props.length > 0) {
+            for (let p of props) {
+              if (!_.has(parameters, p.storingName) && !_.has(parameters, p.name)) {
+                throw new Error('The required value is not passed');
+              }
+            }
+          }
+
+          let runner = TasksHelper.runner(this.tasks, taskNames, options);
+          for (let p in parameters) {
+            await runner.setIncoming(p, parameters[p]);
+          }
+          try {
+            let results = await runner.run();
+            Console.log(JSON.stringify(results));
+          } catch (err) {
+            Log.error(err);
+          }
         } else {
           Console.error('There are no tasks: ' + taskNames.join(', '));
         }

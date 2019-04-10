@@ -67,15 +67,19 @@ export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker 
         parameters = event.parameters;
         for (let p of props) {
           if (!_.has(parameters, p.storingName) && !_.has(parameters, p.name)) {
-            event.state = 'request_error';
-            event.errors.push(<IError>{
-              context: 'required_parameter',
-              data: {
-                required: p.name
-              },
-              message: 'The required value is not passed.'
-            });
-            this.logger.error('task worker: necessery parameter "' + p.name + '" for ' + taskNames.join(', ') + ' not found')
+            if(p.isOptional()){
+              this.logger.warn('task worker: optional parameter "' + p.name + '" for ' + taskNames.join(', ') + ' not found')
+            }else{
+              event.state = 'request_error';
+              event.errors.push(<IError>{
+                context: 'required_parameter',
+                data: {
+                  required: p.name
+                },
+                message: 'The required value is not passed.'
+              });
+              this.logger.error('task worker: necessery parameter "' + p.name + '" for ' + taskNames.join(', ') + ' not found')
+            }
           }
         }
       }

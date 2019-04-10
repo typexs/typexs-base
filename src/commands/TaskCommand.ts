@@ -100,14 +100,18 @@ export class TaskCommand {
             if (!/^_/.test(k)) {
               parameters[_.snakeCase(k)] = argv[k];
             }
-          })
+          });
 
           // validate arguments
           let props = TasksHelper.getRequiredIncomings(taskNames.map(t => this.tasks.get(t)));
           if (props.length > 0) {
             for (let p of props) {
               if (!_.has(parameters, p.storingName) && !_.has(parameters, p.name)) {
-                throw new Error('The required value is not passed');
+                if (p.isOptional()) {
+                  Log.warn('task command: optional parameter "' + p.name + '" for ' + taskNames.join(', ') + ' not found')
+                } else {
+                  throw new Error('The required value is not passed');
+                }
               }
             }
           }

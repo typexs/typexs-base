@@ -54,14 +54,10 @@ export class SaveOp<T> implements ISaveOp<T> {
           if (options.raw) {
             let bulk = repo.initializeOrderedBulkOp();
             resolveByEntityDef[entityName].forEach((e: any) => {
-              if (e._id) {
-                bulk.find({_id: e._id}).replaceOne(e);
-              } else {
-                if (!e._id && propertyDef.name != '_id') {
-                  _.set(e, '_id', _.get(e, propertyDef.name, null));
-                }
-                bulk.insert(e);
+              if (!e._id && propertyDef.name != '_id') {
+                _.set(e, '_id', _.get(e, propertyDef.name, null));
               }
+              bulk.find({_id: e._id}).upsert().replaceOne(e);
             });
             await bulk.execute();
 

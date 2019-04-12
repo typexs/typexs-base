@@ -235,6 +235,10 @@ export class Tasks implements ILookupRegistry {
     let task = this.addTask(name, function (done: Function) {
       done()
     });
+
+    if(!task){
+      return new NullTaskRef();
+    }
     return task;
   }
 
@@ -244,7 +248,6 @@ export class Tasks implements ILookupRegistry {
     if (this.contains(name)) {
       taskRef = this.get(name);
       let taskRefClone = taskRef.clone(new_name);
-
       return this.addTaskRef(taskRefClone, this.nodeId);
     } else {
       throw new Error('task doesn\'t exists')

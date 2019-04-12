@@ -80,6 +80,7 @@ export * from "./libs/distributed/DistributedFindOp";
 export * from "./libs/distributed/QueryResultsEvent";
 export * from "./libs/distributed/QueryEvent";
 
+export * from "./libs/tasks/NullTaskRef";
 export * from "./libs/tasks/ITask";
 export * from "./libs/tasks/TaskRuntimeContainer";
 export * from "./libs/tasks/TaskRun";
@@ -91,6 +92,7 @@ export * from "./libs/tasks/decorators/Outgoing";
 export * from "./libs/tasks/decorators/IExchange";
 export * from "./libs/tasks/decorators/TaskRuntime";
 export * from "./libs/tasks/TaskState";
+
 
 
 export * from "./libs/worker/Workers";

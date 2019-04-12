@@ -6,7 +6,7 @@ export class NullTaskRef extends TaskRef {
     super('null');
   }
 
-  prepare(fn: object | Function = null) {
+  prepare(name: any = null, fn: object | Function = null) {
 
   }
 

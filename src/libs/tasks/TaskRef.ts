@@ -46,6 +46,11 @@ export class TaskRef extends AbstractRef implements IEntityRef {
   constructor(name: string | object | Function, fn: object | Function = null, options: ITaskRefOptions = null) {
     super(XS_TYPE_ENTITY, TaskRef.getTaskName(name), TaskRef.getTaskObject(name, fn), C_TASKS);
     this.setOptions(options || {});
+    this.prepare(fn)
+  }
+
+  prepare(fn:object|Function = null){
+    let options = this.getOptions();
 
     if (!this.isRemote()) {
       this.$source = null;
@@ -98,6 +103,7 @@ export class TaskRef extends AbstractRef implements IEntityRef {
       this.description = this.$source.description;
       this.permissions = this.$source.permissions;
     }
+
   }
 
 

@@ -4,7 +4,6 @@ import {MetaArgs, NotYetImplementedError} from "commons-base/browser";
 import {
   AbstractRef,
   Binding,
-  ClassRef,
   IEntityRefMetadata,
   ILookupRegistry,
   LookupRegistry,
@@ -22,9 +21,8 @@ import {TaskExchangeRef} from "./TaskExchangeRef";
 import {ITasksConfig} from "./ITasksConfig";
 import {ITaskRefOptions} from "./ITaskRefOptions";
 import {ITaskInfo} from "./ITaskInfo";
-import {ITaskDesc, REGISTRY_TYPEORM, TypeOrmPropertyRef} from "../..";
-import {RelationMetadataArgs} from "typeorm/browser/metadata-args/RelationMetadataArgs";
-import {ColumnMetadataArgs} from "typeorm/browser/metadata-args/ColumnMetadataArgs";
+import {ITaskDesc} from "../..";
+import {NullTaskRef} from "./NullTaskRef";
 
 
 export class Tasks implements ILookupRegistry {
@@ -164,6 +162,7 @@ export class Tasks implements ILookupRegistry {
         return exists;
       }
     }
+
     return null;
   }
 
@@ -260,6 +259,9 @@ export class Tasks implements ILookupRegistry {
       }
     }
     let task = this.addTask(name, fn, options);
+    if (!task) {
+      return new NullTaskRef();
+    }
     return task;
   }
 

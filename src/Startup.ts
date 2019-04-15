@@ -1,5 +1,5 @@
 import {IBootstrap} from "./api/IBootstrap";
-import {Inject} from "typedi";
+import {Container, Inject} from "typedi";
 import {RuntimeLoader} from "./base/RuntimeLoader";
 import {Tasks} from "./libs/tasks/Tasks";
 import {Cache} from "./libs/cache/Cache";
@@ -11,6 +11,7 @@ import {System} from "./libs/system/System";
 import {EventBus, IEventBusConfiguration} from "commons-eventbus";
 import {Workers} from "./libs/worker/Workers";
 import {TasksHelper} from "./libs/tasks/TasksHelper";
+import {TaskMonitor} from "./libs/tasks/TaskMonitor";
 
 
 export class Startup implements IBootstrap, IShutdown {
@@ -33,6 +34,8 @@ export class Startup implements IBootstrap, IShutdown {
 
   async bootstrap(): Promise<void> {
     TasksHelper.prepare(this.tasks, this.loader);
+
+
     await this.workers.prepare(this.loader);
 
     for (let cls of this.loader.getClasses(K_CLS_CACHE_ADAPTER)) {
@@ -53,6 +56,7 @@ export class Startup implements IBootstrap, IShutdown {
   }
 
   async ready() {
+    await (<TaskMonitor>Container.get(TaskMonitor.NAME)).prepare();
     await this.workers.startup();
     await this.system.register();
 
@@ -63,6 +67,7 @@ export class Startup implements IBootstrap, IShutdown {
     await this.cache.shutdown();
     await this.system.unregister();
     await EventBus.$().shutdown();
+    await (<TaskMonitor>Container.get(TaskMonitor.NAME)).finish();
     this.tasks.reset();
     await this.workers.shutdown();
 

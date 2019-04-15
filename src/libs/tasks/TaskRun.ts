@@ -77,7 +77,7 @@ export class TaskRun {
 
     this.status.running = true;
     this.status.start = new Date();
-    this.$runner.api().onStart(this.status);
+    this.$runner.api().onStart(this);
 
     if (this.$runner.$dry_mode) {
       this.$wrapper.logger().debug('dry taskRef start: ' + this.taskRef().name);
@@ -128,10 +128,10 @@ export class TaskRun {
   }
 
   error(err: Error) {
-    if(err){
+    if (err) {
       this.status.error = err;
       this.status.has_error = true;
-      this.$runner.api().onError(this.status);
+      this.$runner.api().onError(this);
     }
   }
 
@@ -150,7 +150,7 @@ export class TaskRun {
     this.status.stop = new Date();
     this.status.calcDuration();
 
-    this.$runner.api().onStop(this.status);
+    this.$runner.api().onStop(this);
 
     this.$wrapper.done();
   }
@@ -161,6 +161,7 @@ export class TaskRun {
   }
 
   update() {
+    this.$runner.api().onProgress(this);
     this.getRunner().update(this.taskRef().name);
   }
 

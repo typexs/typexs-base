@@ -88,8 +88,8 @@ class Tasks_workerSpec {
 
     expect(res).to.have.length(1);
     res = res.shift();
-    expect(res).to.have.length(2);
-    let work = res.shift();
+    expect(res).to.have.length(3);
+    let work = _.find(res, (x: any) => x && x.nodeId == 'worker');
     expect(work.nodeId).to.be.eq('worker');
     expect(work.respId).to.be.eq('worker');
     expect(work.state).to.be.eq('enqueue');
@@ -147,15 +147,13 @@ class Tasks_workerSpec {
       className: 'TaskQueueWorker',
       statistics:
         {
-          stats: { all: 0, done: 0, running: 0, enqueued: 0, active: 0 },
+          stats: {all: 0, done: 0, running: 0, enqueued: 0, active: 0},
           paused: false,
           idle: true,
           occupied: false,
           running: false
         }
     });
-
-
 
 
     let events: TaskEvent[] = [];
@@ -493,7 +491,7 @@ class Tasks_workerSpec {
     expect(commands.length).to.be.gt(0);
 
     let command: TaskCommand = _.find(commands, e => e.command == 'task');
-    Config.set('argv.local', false, 'system');
+    Config.set('argv.remote', true, 'system');
     Config.set('argv.someValue', 'value', 'system');
     process.argv = ['typexs', 'task', 'test'];
 

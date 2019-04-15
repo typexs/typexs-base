@@ -1,3 +1,4 @@
+//process.env.SQL_LOG = "1";
 import {suite, test} from "mocha-typescript";
 import {expect} from "chai";
 import * as path from "path";
@@ -5,6 +6,9 @@ import {Bootstrap} from "../../../src/Bootstrap";
 import {Config} from "commons-config";
 import * as _ from "lodash";
 import {TaskCommand} from "../../../src/commands/TaskCommand";
+import {TEST_STORAGE_OPTIONS} from "../config";
+import {Container} from "typedi";
+import {C_STORAGE_DEFAULT, StorageRef, TaskLog} from "../../../src";
 
 
 const stdMocks = require('std-mocks');
@@ -21,10 +25,18 @@ class TasksSpec {
 
 
     let appdir = path.join(__dirname, 'fake_app');
-    bootstrap = await Bootstrap.configure({
+    bootstrap = await Bootstrap .setConfigSources([{type: 'system'}]).configure({
+      // logging:{
+      //   level:'debug',enable:false,
+      //   transports:[{console:{}}],
+      //   loggers:[{name:'*',level:'debug'}]
+      // },
       app: {path: appdir},
+      storage:{default:TEST_STORAGE_OPTIONS},
       modules: {paths: [__dirname + '/../../..']}
     });
+    bootstrap.activateLogger();
+    bootstrap.activateErrorHandling();
     await bootstrap.prepareRuntime();
     await bootstrap.activateStorage();
     await bootstrap.startup();
@@ -68,10 +80,14 @@ class TasksSpec {
     stdMocks.use();
     await command.handler({});
     stdMocks.restore();
+
     let results = stdMocks.flush();
     expect(results.stdout).to.have.length.gt(0);
     expect(_.find(results.stdout, x => /\"name\":\"test\"/.test(x) && /\"progress\":100,/.test(x))).to.exist;
 
+    let ref :StorageRef = Container.get(C_STORAGE_DEFAULT);
+    let res = await ref.getController().find(TaskLog);
+    expect(res).to.have.length(1);
   }
 
 }

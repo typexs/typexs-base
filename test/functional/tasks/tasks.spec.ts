@@ -1,5 +1,4 @@
 import * as _ from 'lodash';
-import * as fs from 'fs';
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 

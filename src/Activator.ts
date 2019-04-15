@@ -8,6 +8,7 @@ import {C_TASKS} from "./libs/tasks/Constants";
 import {Config} from "commons-config";
 import {C_WORKERS} from "./libs/worker/Constants";
 import {Bootstrap} from "./Bootstrap";
+import {TaskMonitor} from "./libs/tasks/TaskMonitor";
 
 
 export class Activator implements IActivator {
@@ -18,7 +19,10 @@ export class Activator implements IActivator {
 
 
   startup(): void {
-//    const system = new System();
+    const cache = new Cache();
+    Container.set(Cache.NAME, cache);
+
+    //    const system = new System();
 //    system.initialize(Bootstrap.getNodeId());
 //    Container.set(System.NAME, system);
 
@@ -30,8 +34,9 @@ export class Activator implements IActivator {
     }
     Container.set(Tasks.NAME, tasks);
 
-    const cache = new Cache();
-    Container.set(Cache.NAME, cache);
+
+    let taskMonitor = Container.get(TaskMonitor);
+    Container.set(TaskMonitor.NAME, taskMonitor);
 
     const workers = new Workers();
     cfg = Config.get(C_WORKERS, null);

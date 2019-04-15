@@ -16,3 +16,6 @@ export const TASKRUN_STATE_UPDATE = 'update';
 
 export const K_CLS_TASKS: string = 'tasks';
 export const K_CLS_TASK_DESCRIPTORS = 'task_descriptors';
+
+
+export type TASK_STATES = 'enqueue' | 'proposed' | 'started' | 'stopped' | 'running' | 'errored' | 'request_error';

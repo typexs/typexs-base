@@ -1,16 +1,24 @@
 import {TaskState} from "../libs/tasks/TaskState";
+import {TaskRunner} from "../libs/tasks/TaskRunner";
+import {TaskRun} from "..";
 
 
 export interface ITasksApi {
 
-  onShutdown(): void;
+  onInit?(): void;
 
-  onStart?(state: TaskState): void;
+  onShutdown?(): void;
 
-  onProgress?(state: TaskState): void;
+  onBefore?(runner: TaskRunner): void;
 
-  onStop?(state: TaskState): void;
+  onStart?(run: TaskRun): void;
 
-  onError?(state: TaskState): void;
+  onProgress?(run: TaskRun): void;
+
+  onStop?(run: TaskRun): void;
+
+  onAfter?(runner: TaskRunner): void;
+
+  onError?(run: TaskRun | TaskRunner): void;
 
 }

@@ -3,11 +3,12 @@ import {ITaskRunnerResult} from "../../tasks/ITaskRunnerResult";
 import * as _ from 'lodash';
 import {AbstractEvent} from "../../events/AbstractEvent";
 import {IQueueWorkload} from "../../../libs/queue/IQueueWorkload";
+import {TASK_STATES} from "../Constants";
 
 /**
  * Id is the runner id
  */
-export class TaskEvent extends AbstractEvent implements IQueueWorkload{
+export class TaskEvent extends AbstractEvent implements IQueueWorkload {
 
   /**
    * Name or names of task(s) to execute
@@ -28,7 +29,7 @@ export class TaskEvent extends AbstractEvent implements IQueueWorkload{
   /**
    * Current state of task
    */
-  state: 'enqueue' | 'proposed' | 'started' | 'stopped' | 'running' | 'errored' | 'request_error' = 'proposed';
+  state: TASK_STATES = 'proposed';
 
   /**
    * Topic of this event

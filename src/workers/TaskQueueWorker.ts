@@ -20,7 +20,7 @@ export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker 
 
   static NAME: string = 'TaskQueueWorker';
 
-  name:string = 'task_queue_worker';
+  name: string = 'task_queue_worker';
 
   inc: number = 0;
 
@@ -67,9 +67,9 @@ export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker 
         parameters = event.parameters;
         for (let p of props) {
           if (!_.has(parameters, p.storingName) && !_.has(parameters, p.name)) {
-            if(p.isOptional()){
+            if (p.isOptional()) {
               this.logger.warn('task worker: optional parameter "' + p.name + '" for ' + taskNames.join(', ') + ' not found')
-            }else{
+            } else {
               event.state = 'request_error';
               event.errors.push(<IError>{
                 context: 'required_parameter',
@@ -113,7 +113,12 @@ export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker 
   async do(workLoad: ITaskWorkload, queue?: AsyncWorkerQueue<any>): Promise<any> {
     let e = workLoad.event;
     let results: ITaskRunnerResult = null;
-    let runner = new TaskRunner(this.tasks, workLoad.names, {id: e.id});
+
+    let runner = new TaskRunner(this.tasks, workLoad.names, {
+      id: e.id,
+      nodeId: this.nodeId,
+      targetIds: e.targetIds
+    });
 
     runner.getReadStream().on('data', (x: any) => {
       e.topic = 'log';
@@ -177,9 +182,9 @@ export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker 
     let stats: IWorkerStatisitic = {
       stats: this.queue.status(),
       paused: this.queue.isPaused(),
-      idle:this.queue.isIdle(),
-      occupied:this.queue.isOccupied(),
-      running:this.queue.isPaused(),
+      idle: this.queue.isIdle(),
+      occupied: this.queue.isOccupied(),
+      running: this.queue.isPaused(),
     };
 
     return stats;

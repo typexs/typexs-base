@@ -11,6 +11,7 @@ import {TasksHelper} from "../libs/tasks/TasksHelper";
 import * as _ from "lodash";
 import {IError} from "../libs/exceptions/IError";
 
+
 /**
  * Starts a task direct or in a running worker
  * Command: typexs task test [--targetId abc] [--mode worker|local]
@@ -43,12 +44,20 @@ export class TaskCommand {
   async handler(argv: any) {
 
     let targetId = Config.get('argv.targetId', null);
-    let isLocal = Config.get('argv.local', false);
+    let isLocal = true;// Config.get('argv.local', false);
+    let isRemote = Config.get('argv.remote', false);
+
+    if (targetId == null && !isRemote) {
+      isLocal = true;
+    }else{
+      isLocal = false;
+    }
 
     // filter task names from request
     let taskNames: string[] = [];
     let start = false;
     let notask = false;
+
     for (let i = 0; i < process.argv.length; i++) {
       if (process.argv[i] == 'task') {
         start = true;
@@ -64,6 +73,9 @@ export class TaskCommand {
         }
       }
     }
+
+
+    await this.init();
 
     if (taskNames.length > 0) {
       let args = Config.get('argv');
@@ -137,12 +149,15 @@ export class TaskCommand {
       Console.log('\t- ' + res.join('\n\t') + '\n');
     }
 
-
     await this.shutdown();
   }
 
+  async init() {
+    await this.invoker.use(TasksApi).onInit();
+  }
 
   async shutdown() {
+
     await this.invoker.use(TasksApi).onShutdown();
   }
 }

@@ -4,6 +4,7 @@ import {TaskExchangeRef} from "./TaskExchangeRef";
 import {K_CLS_TASKS, RuntimeLoader, TaskRunner, Tasks} from "../..";
 import {ClassLoader, PlatformUtils} from "commons-base";
 import {Config} from "commons-config";
+import {ITaskRunnerOptions} from "./ITaskRunnerOptions";
 
 
 export class TasksHelper {
@@ -43,7 +44,8 @@ export class TasksHelper {
     }
   }
 
-  static runner(tasks: Tasks, name: string | string[], options: any) {
+
+  static runner(tasks: Tasks, name: string | string[], options: ITaskRunnerOptions) {
     if (_.isArray(name)) {
       let names = [];
       for (let i = 0; i < name.length; i++) {

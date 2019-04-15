@@ -41,6 +41,7 @@ export class Workers implements ILookupRegistry {
     }
   }
 
+
   async startup() {
     let refs: WorkerRef[] = this.registry.list(XS_TYPE_ENTITY);
     for (let ref of refs) {
@@ -63,6 +64,7 @@ export class Workers implements ILookupRegistry {
       }
     });
   }
+
 
   infos(): IWorkerInfo[] {
     return _.map(this.workers, (x: IWorker) => {

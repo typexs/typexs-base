@@ -4,6 +4,7 @@ import {Tasks} from "./Tasks";
 import {TaskRun} from "./TaskRun";
 import {Log} from "../logging/Log";
 import {
+  TASK_STATES,
   TASKRUN_STATE_DONE,
   TASKRUN_STATE_FINISH_PROMISE,
   TASKRUN_STATE_FINISHED,
@@ -13,6 +14,7 @@ import {
 } from "./Constants";
 import {ITaskRunnerResult} from "./ITaskRunnerResult";
 import {CryptUtils, TasksApi} from "../..";
+import {Bootstrap} from "../../Bootstrap";
 import {Invoker} from '../../base/Invoker';
 import {TasksHelper} from "./TasksHelper";
 import {Container} from "typedi";
@@ -21,10 +23,10 @@ import * as moment from "moment";
 import {WinstonLoggerJar} from "../logging/WinstonLoggerJar";
 
 import * as winston from "winston";
-import * as fs from "fs";
 import {DefaultJsonFormat} from "../logging/DefaultJsonFormat";
 
 import {Stream} from "stream";
+import {ITaskRunnerOptions} from "./ITaskRunnerOptions";
 
 
 export class TaskRunner extends EventEmitter {
@@ -35,7 +37,7 @@ export class TaskRunner extends EventEmitter {
 
   id: string;
 
-  $options: any;
+  $options: ITaskRunnerOptions;
 
   $registry: Tasks;
 
@@ -65,6 +67,8 @@ export class TaskRunner extends EventEmitter {
 
   $outgoing: any = {};
 
+  state: TASK_STATES = 'proposed';
+
   private invoker: Invoker;
 
   private loggerName: string;
@@ -78,15 +82,18 @@ export class TaskRunner extends EventEmitter {
   readStream: NodeJS.ReadableStream;
 
 
-  constructor(registry: Tasks, names: string[], options: any = {}) {
+  constructor(registry: Tasks, names: string[], options: ITaskRunnerOptions = null) {
     super();
 
+    this.$options = options || <any>{};
+    _.defaults(this.$options, {
+      nodeId: Bootstrap.getNodeId(),
+      targetIds: [Bootstrap.getNodeId()]
+    });
     this.invoker = Container.get(Invoker.NAME);
 
     // id can be overwriten
     this.id = _.get(options, 'id', CryptUtils.shorthash(names.join(';') + ';' + this.nr + Date.now()));
-
-    this.$options = options || {};
 
     this.$registry = registry;
     this.$parallel = this.$options['parallel'] || 5;
@@ -116,13 +123,13 @@ export class TaskRunner extends EventEmitter {
 
     let sefl = this;
     this.readStream = new Stream.Readable({
-      read(size:number) {
-        return size > 0 ;
+      read(size: number) {
+        return size > 0;
       }
     });
 
     this.writeStream = new Stream.Writable({
-      write (chunk: any, encoding: any, next: any)  {
+      write(chunk: any, encoding: any, next: any) {
         (<any>sefl.readStream).push(chunk, encoding);
         next()
       }
@@ -142,8 +149,9 @@ export class TaskRunner extends EventEmitter {
     this.on(TASKRUN_STATE_NEXT, this.next.bind(this));
     this.on(TASKRUN_STATE_RUN, this.taskRun.bind(this));
     this.on(TASKRUN_STATE_DONE, this.taskDone.bind(this))
-  }
 
+    this.state = "started";
+  }
 
 
   getLogger() {
@@ -238,6 +246,7 @@ export class TaskRunner extends EventEmitter {
     }
 
     let nextTask = this.selectNextTask();
+    this.state = "running";
     if (this.$running.length == 0 && !nextTask) {
       throw new Error('Tasks are stucked!')
     }
@@ -322,18 +331,23 @@ export class TaskRunner extends EventEmitter {
   }
 
 
-  run(cb?: Function): Promise<ITaskRunnerResult> {
+  async run(cb?: Function): Promise<ITaskRunnerResult> {
     this.$finish = cb;
+
+    this.api().onBefore(this);
 
     return new Promise((resolve, reject) => {
       // TODO timeout?
-      this.once(TASKRUN_STATE_FINISH_PROMISE, (x: any) => {
+      this.once(TASKRUN_STATE_FINISH_PROMISE, async (x: any) => {
         if (_.isError(x)) {
+          this.api().onError(this);
           reject(x);
         } else {
+          this.api().onAfter(this);
           resolve(x);
         }
       });
+
       this.emit(TASKRUN_STATE_NEXT);
     })
   }
@@ -367,33 +381,32 @@ export class TaskRunner extends EventEmitter {
 
 
   finish() {
+    this.state = "stopped";
     this.$stop = new Date();
     this.$duration = this.$stop.getTime() - this.$start.getTime();
-
     let status = this.collectStats();
 
     if (this.$finish) {
       this.$finish(status);
     }
-
     this.taskLogger.close();
     this.writeStream.end();
-    //this.writeStream = null;
-    //this.readStream.emit('close');
-    //(<any>this.readStream).destroy();
-    //this.writeStream = null;
     this.emit(TASKRUN_STATE_FINISH_PROMISE, status);
   }
 
 
-  collectStats(taskName: string = null) {
+  collectStats(taskName: string = null): ITaskRunnerResult {
     // todo collect results
     let results = [];
     for (let task of this.$tasks) {
       results.push(task.stats());
     }
 
-    let status = {
+    let status: ITaskRunnerResult = {
+      id: this.id,
+      state: this.state,
+      nodeId: this.$options.nodeId,
+      targetIds: this.$options.targetIds,
       start: this.$start,
       stop: this.$stop,
       duration: this.$duration,

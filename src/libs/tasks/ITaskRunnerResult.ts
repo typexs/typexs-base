@@ -1,6 +1,16 @@
 import {ITaskRunResult} from "./ITaskRunResult";
+import {TASK_STATES} from "./Constants";
 
 export interface ITaskRunnerResult {
+
+  // TaskRunner id
+  id: string;
+
+  nodeId: string;
+
+  targetIds: string[];
+
+  state: TASK_STATES;
 
   start: Date;
 
@@ -9,6 +19,8 @@ export interface ITaskRunnerResult {
   duration: number;
 
   progress?: number;
+
+  tasks?: string[];
 
   results: ITaskRunResult[];
 

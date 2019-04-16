@@ -35,11 +35,13 @@ export class StorageRef {
 
   private options: IStorageOptions = null;
 
-  private entitySchemas: EntitySchema[] = [];
+  //private entitySchemas: EntitySchema[] = [];
 
   private schemaHandler: AbstractSchemaHandler;
 
   private controller: StorageEntityController;
+
+  private _forceReload: boolean = false;
 
   private _prepared: boolean = false;
 
@@ -133,8 +135,7 @@ export class StorageRef {
   }
 
   addEntityType(type: EntitySchema | Function): void {
-    let opts: any /*IStorageOptions*/ = {
-      //entitySchemas: [],
+    let opts: any = {
       entities: []
     };
 
@@ -142,12 +143,14 @@ export class StorageRef {
       opts.entities = this.options.entities;
     }
 
-    //if (_.isFunction(type)) {
     let exists = opts.entities.indexOf(type);
 
     if (exists < 0) {
       opts.entities.push(type);
       this.options = _.assign(this.options, opts)
+    }
+    if (this._prepared) {
+      this._forceReload = true;
     }
   }
 
@@ -168,7 +171,7 @@ export class StorageRef {
     return null;
   }
 
-  private static getClassName(x: string | EntitySchema | Function){
+  private static getClassName(x: string | EntitySchema | Function) {
     return ClassUtils.getClassName(x instanceof EntitySchema ? x.options.target : x)
   }
 
@@ -183,7 +186,7 @@ export class StorageRef {
 
   getEntityClass(ref: IClassRef | string | Function) {
     if (_.isString(ref)) {
-      const  _ref = _.snakeCase(ref);
+      const _ref = _.snakeCase(ref);
       return this.options.entities.find(x => _ref === StorageRef.machineName(x))
     } else if (_.isFunction(ref)) {
       let _ref = ClassRef.get(ref, REGISTRY_TYPEORM);
@@ -202,12 +205,18 @@ export class StorageRef {
     this.schemaHandler = handler;
   }
 
-  async reload(full: boolean = true): Promise<any> {
+  async reset(full: boolean = true): Promise<any> {
     this._prepared = false;
     if (getConnectionManager().has(this.name)) {
       // let name = this.name
       await this.shutdown(full)
     }
+    // return this.prepare()
+  }
+
+
+  async reload(full: boolean = true): Promise<any> {
+    await this.reset(full);
     return this.prepare()
   }
 
@@ -270,7 +279,10 @@ export class StorageRef {
 
 
   async connect(): Promise<ConnectionWrapper> {
-    if (!this._prepared) {
+    if (this._forceReload) {
+      this._forceReload = false;
+      await this.reload();
+    } else if (!this._prepared) {
       await this.prepare()
     }
     return (await this.wrap()).connect()

@@ -53,9 +53,11 @@ export class System {
     const key = [hostname, nodeId].join(C_KEY_SEPARATOR);
 
     // clear table before startup
-    let c = await this.storageRef.connect();
-    await c.manager.clear(SystemNodeInfo);
-    await c.close();
+    if (this.storageRef) {
+      let c = await this.storageRef.connect();
+      await c.manager.clear(SystemNodeInfo);
+      await c.close();
+    }
 
     this.node = new SystemNodeInfo();
     this.node.machineId = await machineId.machineId(true);
@@ -66,7 +68,9 @@ export class System {
     this.node.state = 'startup';
     this.node.isBackend = true;
     this.updateInfo();
-    await this.storageRef.getController().save(this.node);
+    if (this.storageRef) {
+      await this.storageRef.getController().save(this.node);
+    }
   }
 
 
@@ -183,7 +187,10 @@ export class System {
     await Promise.all(nodeHandle);
     this.node.state = 'idle';
 
-    await this.storageRef.getController().save(this.node);
+    if (this.storageRef) {
+      await this.storageRef.getController().save(this.node);
+    }
+
   }
 
 
@@ -192,7 +199,9 @@ export class System {
     clearInterval(this.updateTimer);
     this.node.state = 'unregister';
     this.node.finished = new Date();
-    await this.storageRef.getController().save(this.node);
+    if (this.storageRef) {
+      await this.storageRef.getController().save(this.node);
+    }
     await EventBus.unregister(this);
     await EventBus.postAndForget(this.node);
 

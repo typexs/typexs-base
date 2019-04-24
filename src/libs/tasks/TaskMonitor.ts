@@ -79,10 +79,14 @@ export class TaskMonitor implements IQueueProcessor<TaskEvent> {
   }
 
   onTaskResults(results: ITaskRunnerResult) {
-    let event = new TaskEvent();
-    event.topic = 'data';
-    event.data = results;
-    this.queue.push(event);
+    if(results){
+      let event = new TaskEvent();
+      event.topic = 'data';
+      event.data = results;
+      this.queue.push(event);
+    }else{
+      this.logger.warn('taskmonitor: results are empty?');
+    }
   }
 
 

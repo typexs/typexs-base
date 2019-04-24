@@ -33,9 +33,9 @@ export class Startup implements IBootstrap, IShutdown {
   @Inject(Workers.NAME)
   workers: Workers;
 
+
   async bootstrap(): Promise<void> {
     TasksHelper.prepare(this.tasks, this.loader);
-
 
     await this.workers.prepare(this.loader);
 
@@ -56,6 +56,7 @@ export class Startup implements IBootstrap, IShutdown {
     }
   }
 
+
   async ready() {
     await (<TaskMonitor>Container.get(TaskMonitor.NAME)).prepare();
     await this.workers.startup();
@@ -67,7 +68,6 @@ export class Startup implements IBootstrap, IShutdown {
         setTimeout(resolve, wait);
       })
     }
-
   }
 
 
@@ -78,6 +78,6 @@ export class Startup implements IBootstrap, IShutdown {
     await (<TaskMonitor>Container.get(TaskMonitor.NAME)).finish();
     this.tasks.reset();
     await this.workers.shutdown();
-
   }
+
 }

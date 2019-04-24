@@ -92,20 +92,29 @@ export class System {
 
     // clear local info
     delete nodeInfo.isBackend;
-
+    let doSave = false;
     let node = _.find(this.nodes, n => n.nodeId == nodeInfo.nodeId);
     if (!node && (nodeInfo.state == 'register' || nodeInfo.state == 'idle')) {
       this.nodes.push(nodeInfo);
-      Log.debug('add remote node ', nodeInfo);
+      Log.debug('add remote node ' + nodeInfo.hostname + ':' + nodeInfo.nodeId);
+      doSave = true;
+      await EventBus.post(this.node);
       await this.invoker.use(SystemApi).onNodeRegister(nodeInfo);
-      await this.storageRef.getController().save(nodeInfo);
-      EventBus.postAndForget(this.node);
     } else if (node && nodeInfo.state == 'unregister') {
       _.remove(this.nodes, n => n.nodeId == nodeInfo.nodeId);
-      Log.debug('remove remote node ', nodeInfo);
+      doSave = true;
+      Log.debug('remove remote node ' + nodeInfo.hostname + ':' + nodeInfo.nodeId);
       await this.invoker.use(SystemApi).onNodeUnregister(nodeInfo);
-      await this.storageRef.getController().save(nodeInfo);
     }
+
+    if (doSave) {
+      try {
+        await this.storageRef.getController().save(nodeInfo);
+      } catch (e) {
+        Log.error(e);
+      }
+    }
+
     return this.node;
   }
 

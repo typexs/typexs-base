@@ -12,6 +12,7 @@ import {EventBus, IEventBusConfiguration} from "commons-eventbus";
 import {Workers} from "./libs/worker/Workers";
 import {TasksHelper} from "./libs/tasks/TasksHelper";
 import {TaskMonitor} from "./libs/tasks/TaskMonitor";
+import {Log} from "./libs/logging/Log";
 
 
 export class Startup implements IBootstrap, IShutdown {
@@ -59,6 +60,13 @@ export class Startup implements IBootstrap, IShutdown {
     await (<TaskMonitor>Container.get(TaskMonitor.NAME)).prepare();
     await this.workers.startup();
     await this.system.register();
+    let wait = Config.get('nodes.ready.wait', 500);
+    if (wait > 0) {
+      Log.debug('wait for node registration feedback ...');
+      await new Promise((resolve, reject) => {
+        setTimeout(resolve, wait);
+      })
+    }
 
   }
 

@@ -49,6 +49,8 @@ export class TaskCommand {
 
     if (targetId == null && !isRemote) {
       isLocal = true;
+      // wait moment for
+
     }else{
       isLocal = false;
     }

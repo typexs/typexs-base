@@ -179,10 +179,12 @@ const DEFAULT_OPTIONS: ITypexsOptions = {
   modules: DEFAULT_RUNTIME_OPTIONS,
 
   logging: {enable: false},
-
+/*
   storage: {
     'default': DEFAULT_STORAGE_OPTIONS
   }
+
+ */
 };
 
 

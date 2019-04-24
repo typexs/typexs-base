@@ -14,6 +14,7 @@ export const DEFAULT_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions
   name: 'default',
   type: "sqlite",
   database: ":memory:",
+  synchronize: true,
   connectOnStartup: false
 };
 

@@ -10,13 +10,7 @@ import {DefaultSchemaHandler} from "../../adapters/storage/DefaultSchemaHandler"
 import {IClassRef} from "commons-schema-api";
 
 
-export const DEFAULT_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions & IStorageOptions>{
-  name: 'default',
-  type: "sqlite",
-  database: ":memory:",
-  synchronize: true,
-  connectOnStartup: false
-};
+
 
 
 export class Storage {

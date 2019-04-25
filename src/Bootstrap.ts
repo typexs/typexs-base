@@ -9,7 +9,7 @@ import {Config} from "commons-config/config/Config";
 import {IModule} from "./api/IModule";
 
 import {IStorageOptions, K_STORAGE} from "./libs/storage/IStorageOptions";
-import {DEFAULT_STORAGE_OPTIONS, Storage} from "./libs/storage/Storage";
+import {Storage} from "./libs/storage/Storage";
 import {Container} from "typedi";
 import * as os from "os";
 
@@ -36,6 +36,7 @@ import {System} from "./libs/system/System";
 import {TableMetadataArgs} from "typeorm/metadata-args/TableMetadataArgs";
 import {K_CLS_WORKERS} from "./libs/worker/Constants";
 import {K_CLS_TASKS} from "./libs/tasks/Constants";
+import {SqliteConnectionOptions} from "typeorm/driver/sqlite/SqliteConnectionOptions";
 
 useContainer(Container);
 
@@ -169,6 +170,14 @@ export const DEFAULT_RUNTIME_OPTIONS: IRuntimeLoaderOptions = {
   ]
 };
 
+
+export const DEFAULT_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions & IStorageOptions>{
+  name: 'default',
+  type: "sqlite",
+  database: ":memory:",
+  synchronize: true,
+  connectOnStartup: false
+};
 
 const DEFAULT_OPTIONS: ITypexsOptions = {
   app: {

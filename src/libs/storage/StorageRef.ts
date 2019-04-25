@@ -3,7 +3,7 @@ import {TableMetadataArgs} from "typeorm/metadata-args/TableMetadataArgs";
 import {Connection, ConnectionOptions, EntityOptions, getConnectionManager, getMetadataArgsStorage} from "typeorm";
 import {ConnectionWrapper} from "./ConnectionWrapper";
 import {Config} from "commons-config";
-import {DEFAULT_STORAGE_OPTIONS} from "./Storage";
+
 import {EntitySchema} from "typeorm/entity-schema/EntitySchema";
 import {K_WORKDIR} from "../Constants";
 import {IStorageOptions} from "./IStorageOptions";
@@ -19,6 +19,11 @@ import {StorageEntityController} from "./StorageEntityController";
 import {ClassRef, IClassRef, IEntityRef} from "commons-schema-api";
 import {REGISTRY_TYPEORM} from "./framework/typeorm/schema/TypeOrmConstants";
 import {TypeOrmEntityRegistry} from "./framework/typeorm/schema/TypeOrmEntityRegistry";
+
+
+export const DEFAULT_STORAGEREF_OPTIONS: IStorageOptions = <SqliteConnectionOptions & IStorageOptions>{
+  connectOnStartup: false
+};
 
 
 export class StorageRef {
@@ -79,7 +84,7 @@ export class StorageRef {
       }
     }
 
-    this.options = Object.assign({}, DEFAULT_STORAGE_OPTIONS, options);
+    this.options = _.assign({}, DEFAULT_STORAGEREF_OPTIONS, options);
 
     if (this.options.type == 'sqlite') {
       this.singleConnection = true;

@@ -70,7 +70,7 @@ export class TaskMonitor implements IQueueProcessor<TaskEvent> {
 
   @subscribe(TaskEvent)
   onTaskEvent(event: TaskEvent) {
-    if (event.topic == 'data' && event.nodeId == this.nodeId) {
+    if (event.topic == 'data' && event.respId == this.nodeId) {
       return;
     } else {
       this.queue.push(event);

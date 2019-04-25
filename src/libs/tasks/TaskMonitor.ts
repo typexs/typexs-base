@@ -29,8 +29,6 @@ export class TaskMonitor implements IQueueProcessor<TaskEvent> {
   static NAME: string = TaskMonitor.name;
 
 
-
-
   inc: number = 0;
 
   nodeId: string;
@@ -73,18 +71,21 @@ export class TaskMonitor implements IQueueProcessor<TaskEvent> {
     if (event.topic == 'data' && event.respId == this.nodeId) {
       return;
     } else {
+
       this.queue.push(event);
+
+
     }
 
   }
 
   onTaskResults(results: ITaskRunnerResult) {
-    if(results){
+    if (results) {
       let event = new TaskEvent();
       event.topic = 'data';
       event.data = results;
       this.queue.push(event);
-    }else{
+    } else {
       this.logger.warn('taskmonitor: results are empty?');
     }
   }
@@ -95,9 +96,13 @@ export class TaskMonitor implements IQueueProcessor<TaskEvent> {
       if (event.topic == "data") {
         if (this.storageRef) {
           // storage may be not initialized
-          await TasksStorageHelper.save(event.data, this.storageRef, this.cache);
+          if (event.data) {
+            await TasksStorageHelper.save(event.data, this.storageRef, this.cache);
+          } else {
+            this.logger.error('event from ' + event.nodeId + ' has no data to save', event);
+          }
         } else {
-          this.logger.debug('can\'t save task log cause storage.default is not present')
+          this.logger.debug('can\'t save task log cause storage.default is not present');
         }
 
       } else if (event.topic == 'log') {

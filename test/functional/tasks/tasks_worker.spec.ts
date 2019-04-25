@@ -268,16 +268,16 @@ class Tasks_workerSpec {
       {state: 'stopped', respId: 'fakeapp01'},
       {state: 'stopped', respId: 'fakeapp01'}
     ]);
-
-    expect(events.map(x => {
+    let x = events.map(x => {
       return {result: x.data ? x.data.results[0].result : null}
-    })).to.deep.eq([
+    })
+    expect(x).to.deep.eq([
       {result: null},
       {result: null},
       {result: null},
       {result: {res: 'okay', value: 'someValueEntry'}},
-      {result: {res: 'okay', value: 'someValueEntry'}},
-      {result: {res: 'okay', value: 'someValueEntry'}}
+      {result: null},
+      {result: null}
     ]);
   }
 
@@ -457,8 +457,8 @@ class Tasks_workerSpec {
       {result: null},
       {result: null},
       {result: {res: 'okay', value: 'valueSome'}},
-      {result: {res: 'okay', value: 'valueSome'}},
-      {result: {res: 'okay', value: 'valueSome'}}
+      {result: null},
+      {result: null}
     ]);
   }
 

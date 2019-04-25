@@ -116,7 +116,7 @@ export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker 
 
     let runner = new TaskRunner(this.tasks, workLoad.names, {
       id: e.id,
-      nodeId: this.nodeId,
+      nodeId: e.nodeId,
       targetIds: e.targetIds
     });
 
@@ -128,6 +128,7 @@ export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker 
 
     runner.on(TASKRUN_STATE_UPDATE, () => {
       e.topic = "data";
+
       e.data = runner.collectStats();
       this.fireState(e);
     });
@@ -167,6 +168,7 @@ export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker 
 
   fireState(e: TaskEvent): TaskEvent {
     let _e = _.cloneDeep(e);
+    _e.topic == 'log' ? _e.data = null : _e.log = null;
     EventBus.postAndForget(_e);
     return _e;
   }

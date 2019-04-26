@@ -14,19 +14,24 @@ export class TasksStorageHelper {
       .getController()
       .find(TaskLog, {tasksId: taskRunnerResults.id});
 
+    let toremove: TaskLog[] = [];
     const taskNames = _.isArray(taskRunnerResults.tasks) ? taskRunnerResults.tasks : [taskRunnerResults.tasks];
     const results = _.get(taskRunnerResults, "results", null);
     for (let targetId of taskRunnerResults.targetIds) {
       for (let taskName of taskNames) {
-        let exists = _.find(logs, l => l.taskName === taskName && l.respId == targetId);
+        let existsAll = _.remove(logs, l => l.taskName === taskName && l.respId == targetId);
+        let exists = existsAll.shift();
+        if (existsAll.length > 0) {
+          toremove = _.concat(toremove, existsAll);
+        }
         if (!exists) {
           exists = new TaskLog();
           exists.tasksId = taskRunnerResults.id;
           exists.nodeId = taskRunnerResults.nodeId;
           exists.taskName = taskName;
           exists.respId = targetId;
-          logs.push(exists);
         }
+        logs.push(exists);
         exists.state = taskRunnerResults.state;
 
         if (results) {
@@ -53,13 +58,19 @@ export class TasksStorageHelper {
         }
 
         if (exists.tasksId && exists.respId && cache) {
-          const cacheKey = [exists.tasksId, targetId].join(':');
+          const cacheKey = ['tasklog',exists.tasksId, targetId].join(':');
           cache.set(cacheKey, exists);
         }
       }
       // TODO notify a push api if it exists
     }
+
     await storageRef.getController().save(logs);
+
+    if (toremove.length > 0) {
+      await storageRef.getController().remove(toremove);
+    }
+
   }
 
 

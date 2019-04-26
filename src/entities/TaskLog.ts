@@ -6,7 +6,7 @@ import {
   BeforeUpdate,
   Column,
   Entity,
-  Index,
+  Index,AfterLoad,
   PrimaryGeneratedColumn
 } from "typeorm";
 
@@ -103,6 +103,14 @@ export class TaskLog {
 
   @AfterUpdate()
   au() {
+    if (_.isString(this.data)) {
+      this.data = JSON.parse(this.data);
+    }
+  }
+
+
+  @AfterLoad()
+  al() {
     if (_.isString(this.data)) {
       this.data = JSON.parse(this.data);
     }

@@ -143,6 +143,14 @@ class BootstrapGeneralSpec {
             {topic: 'flow', refs: ['flow']},
             {topic: 'generators', refs: ['generators', 'src/generators']},
             {
+              "refs": [
+                "adapters/scheduler/*Factory.*",
+                "src/adapters/scheduler/*Factory.*"
+              ],
+              "topic": "scheduler-factories"
+            },
+
+            {
               topic: K_CLS_STORAGE_SCHEMAHANDLER,
               refs: [
                 "adapters/storage/*SchemaHandler.*",

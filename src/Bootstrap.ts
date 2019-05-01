@@ -21,7 +21,7 @@ import {
   K_CLS_ACTIVATOR,
   K_CLS_API,
   K_CLS_BOOTSTRAP,
-  K_CLS_CACHE_ADAPTER,
+  K_CLS_CACHE_ADAPTER, K_CLS_COMMANDS,
   K_CLS_STORAGE_SCHEMAHANDLER,
   K_CLS_USE_API
 } from "./libs/Constants";
@@ -37,6 +37,7 @@ import {TableMetadataArgs} from "typeorm/metadata-args/TableMetadataArgs";
 import {K_CLS_WORKERS} from "./libs/worker/Constants";
 import {K_CLS_TASKS} from "./libs/tasks/Constants";
 import {SqliteConnectionOptions} from "typeorm/driver/sqlite/SqliteConnectionOptions";
+import {ICommand} from "./libs/commands/ICommand";
 
 useContainer(Container);
 
@@ -126,7 +127,7 @@ export const DEFAULT_RUNTIME_OPTIONS: IRuntimeLoaderOptions = {
       refs: ['extend/*', 'src/extend/*']
     },
     {
-      topic: 'commands',
+      topic: K_CLS_COMMANDS,
       refs: ['commands', 'src/commands']
     },
     {
@@ -214,6 +215,8 @@ export class Bootstrap {
   private activators: IActivator[] = null;
 
   private bootstraps: IBootstrap[] = null;
+
+  private commands: ICommand[] = null;
 
   private storage: Storage;
 
@@ -364,6 +367,10 @@ export class Bootstrap {
   }
 
 
+  detectCommand() {
+    const commands = this.getCommands(false).map(c => c.command);
+  }
+
   configure(c: any = null) {
     if (this.CONFIG_LOADED) {
       Log.warn('already configured');
@@ -411,7 +418,7 @@ export class Bootstrap {
 
       this.cfgOptions.configs.forEach(_c => {
         if (_c.state && _c.type != 'system') {
-          Log.info('Loaded configuration from ' + (_.isString(_c.file) ? _c.file : _c.file.dirname + '/' + _c.file.filename));
+          Log.debug('Loaded configuration from ' + (_.isString(_c.file) ? _c.file : _c.file.dirname + '/' + _c.file.filename));
         }
       })
 
@@ -498,14 +505,17 @@ export class Bootstrap {
       if (clz != Bootstrap) {
         this.bootstraps.push(Bootstrap.getContainer().get(clz));
       }
-
     }
     return this.bootstraps;
   }
 
 
-  async startup(): Promise<Bootstrap> {
+  async startup(command: ICommand = null): Promise<Bootstrap> {
     Log.debug('startup ...');
+
+    if (command && command.beforeStartup) {
+      await command.beforeStartup();
+    }
 
     await this.createSystemInfo();
 
@@ -524,6 +534,11 @@ export class Bootstrap {
       await bootstrap.bootstrap();
     }
 
+    if (command && command.afterStartup) {
+      await command.afterStartup();
+    }
+
+
     this.running = true;
 
     // system ready
@@ -533,11 +548,14 @@ export class Bootstrap {
       }
     }
 
-
     Log.debug('startup finished.');
     return this;
   }
 
+  async execCommand(clazz: Function, argv: any) {
+    let command: ICommand = Container.get(clazz);
+    return await command.handler(argv);
+  }
 
   async shutdown(exitCode: number = 0) {
     if (!this.running) return;
@@ -567,10 +585,14 @@ export class Bootstrap {
   }
 
 
-  getCommands() {
+  getCommands(withInject: boolean = true): ICommand[] {
     let commands = [];
-    for (let clz of this.runtimeLoader.getClasses('commands')) {
-      commands.push(Bootstrap.getContainer().get(clz));
+    for (let clz of this.runtimeLoader.getClasses(K_CLS_COMMANDS)) {
+      if (withInject) {
+        commands.push(Bootstrap.getContainer().get(clz));
+      } else {
+        commands.push(Reflect.construct(clz, []));
+      }
     }
     return commands;
   }

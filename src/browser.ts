@@ -26,6 +26,8 @@ export * from './libs/cache/ICacheBinConfig';
 export * from './libs/cache/ICacheConfig';
 export * from './libs/cache/ICacheOptions';
 
+export * from './libs/commands/ICommand';
+
 export * from './libs/events/AbstractEvent';
 export * from './libs/system/SystemInfoEvent';
 

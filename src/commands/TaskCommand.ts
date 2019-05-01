@@ -9,7 +9,7 @@ import {System} from "../libs/system/System";
 import {TaskExecutionRequestFactory} from "../libs/tasks/worker/TaskExecutionRequestFactory";
 import {TasksHelper} from "../libs/tasks/TasksHelper";
 import * as _ from "lodash";
-import {IError} from "../libs/exceptions/IError";
+import {ICommand} from "..";
 
 
 /**
@@ -19,7 +19,7 @@ import {IError} from "../libs/exceptions/IError";
  * mode is per default 'worker' if one exists  else startup local
  *
  */
-export class TaskCommand {
+export class TaskCommand implements ICommand {
 
   @Inject(Tasks.NAME)
   tasks: Tasks;
@@ -51,7 +51,7 @@ export class TaskCommand {
       isLocal = true;
       // wait moment for
 
-    }else{
+    } else {
       isLocal = false;
     }
 

@@ -2,8 +2,9 @@ import * as _ from 'lodash';
 import {Storage} from "../libs/storage/Storage";
 import {Log} from '../libs/logging/Log';
 import {Inject} from "typedi";
+import {ICommand} from "../libs/commands/ICommand";
 
-export class StorageCommand {
+export class StorageCommand implements ICommand {
 
   command = "storage";
 

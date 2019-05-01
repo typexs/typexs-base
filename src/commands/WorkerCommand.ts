@@ -1,9 +1,10 @@
 import {Inject} from "typedi";
 import {Workers} from "../libs/worker/Workers";
 import {Log} from "../libs/logging/Log";
+import {ICommand} from "../libs/commands/ICommand";
 
 
-export class WorkerCommand {
+export class WorkerCommand implements ICommand {
 
 
   @Inject(Workers.NAME)

@@ -6,13 +6,13 @@ import * as _ from 'lodash';
 
 import {PlatformUtils, FileUtils} from "commons-base";
 import {SchematicsExecutor} from "../index";
+import {ICommand} from "../libs/commands/ICommand";
 
-export class GenerateCommand {
+export class GenerateCommand implements ICommand {
 
 
   @Inject('RuntimeLoader')
   loader: RuntimeLoader;
-
 
   command = "generate [schematic] [collection]";
 

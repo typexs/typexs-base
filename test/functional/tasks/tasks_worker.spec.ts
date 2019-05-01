@@ -18,7 +18,6 @@ import {SpawnHandle} from "../SpawnHandle";
 import {TaskCommand} from "../../../src/commands/TaskCommand";
 import {SimpleTaskWithLog} from "./tasks/SimpleTaskWithLog";
 import {TaskExecutionRequestFactory} from "../../../src/libs/tasks/worker/TaskExecutionRequestFactory";
-import {inspect} from "util";
 
 
 const LOG_EVENT = true;//TestHelper.logEnable(true);
@@ -487,10 +486,10 @@ class Tasks_workerSpec {
     bootstrap = await bootstrap.startup();
     await TestHelper.wait(50);
 
-    let commands = bootstrap.getCommands();
-    expect(commands.length).to.be.gt(0);
+    let command = Container.get(TaskCommand);;
+    //expect(commands.length).to.be.gt(0);
 
-    let command: TaskCommand = _.find(commands, e => e.command == 'task');
+    //let command: TaskCommand = _.find(commands, e => e.command == 'task');
     Config.set('argv.remote', true, 'system');
     Config.set('argv.someValue', 'value', 'system');
     process.argv = ['typexs', 'task', 'test'];

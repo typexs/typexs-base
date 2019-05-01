@@ -2,10 +2,17 @@ import "reflect-metadata";
 
 import {Bootstrap} from "./../Bootstrap";
 import {ConfigHandler, SystemConfig} from "commons-config";
-import {Log} from "./../libs/logging/Log";
+import {ICommand} from "../libs/commands/ICommand";
 
-export function cli(): Promise<Bootstrap> {
-// todo ... make this configurable
+export async function cli(): Promise<Bootstrap> {
+
+  require("yargonaut")
+    .style("blue")
+    .style("yellow", "required")
+    .helpStyle("green")
+    .errorsStyle("red");
+
+  // todo ... make this configurable
   // process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 // need be done at this point, if not,  ConfigHandler has an undefined a
@@ -16,88 +23,55 @@ export function cli(): Promise<Bootstrap> {
   let cfg = jar.get('argv.config');
   let bootstrap = Bootstrap.configure(cfg);
 
-  return bootstrap
-    .activateLogger()
+
+  await bootstrap
     .activateErrorHandling()
-    .prepareRuntime()
-    .then(_bootstrap => {
-      return _bootstrap.activateStorage();
+    .prepareRuntime();
+
+  let selectedCommand: ICommand = null;
+  const yargs2 = require("yargs").usage("Usage: $0 <command> [options]");
+  for (let command of bootstrap.getCommands(false)) {
+    let c: any = {
+      command: command.command,
+      aliases: command.aliases,
+      describe: command.describe
+    };
+
+    if (command.builder) {
+      c.builder = command.builder.bind(command);
+      c.handler = () => selectedCommand = command
+    }
+    yargs2.command(c);
+  }
+
+
+  const argv = yargs2.demandCommand(1)
+    .option("config", {
+      alias: 'c',
+      describe: "JSON string with configuration or name of the config file.",
+      'default': false
     })
-    .then(_bootstrap => {
-      return _bootstrap.startup();
+    .option("verbose", {
+      alias: '-v',
+      describe: "Enable logging.",
+      'default': false
     })
-    .then(_bootstrap => {
-      require("yargonaut")
-        .style("blue")
-        .style("yellow", "required")
-        .helpStyle("green")
-        .errorsStyle("red");
-
-      return new Promise<any>((resolve, reject) => {
-        let yargs = require("yargs")
-          .usage("Usage: $0 <command> [options]");
-
-        for (let command of _bootstrap.getCommands()) {
-          let yargsCommand: any = {};
-
-          if (command.command) {
-            yargsCommand.command = command.command
-          }
-
-          if (command.aliases) {
-            yargsCommand.aliases = command.aliases
-          }
-
-          if (command.describe) {
-            yargsCommand.describe = command.describe
-          }
-
-          if (command.builder) {
-            yargsCommand.builder = command.builder.bind(command);
-          }
-
-          if (command.handler) {
-            yargsCommand.handler = async (argv: any) => {
-              try {
-                let res = command.handler(argv);
-                resolve(res);
-              } catch (err) {
-                reject(err)
-              }
-            }
-          }
-
-          yargs.command(yargsCommand);
-        }
-
-        yargs
-          .option("config", {
-            alias: 'c',
-            describe: "JSON string with configuration or name of the config file.",
-            'default': false
-          })
-          .option("verbose", {
-            alias: '-v',
-            describe: "Enable logging.",
-            'default': false
-          })
-          .coerce('verbose', (c: any) => {
-            Bootstrap.verbose(c)
-          })
-          .demandCommand(1)
-          .help("h")
-          .alias("h", "help")
-          .argv
-      })
+    .coerce('verbose', (c: any) => {
+      Bootstrap.verbose(c)
     })
-    .then(async x => {
-      await bootstrap.shutdown();
-      return bootstrap;
-    })
-    .catch(async err => {
-      Log.error(err);
-      await bootstrap.shutdown();
-      throw err;
-    });
+    .help("h")
+    .alias("h", "help")
+    .argv;
 
+  if (selectedCommand) {
+    bootstrap.activateLogger();
+    if(selectedCommand.beforeStorage){
+      await selectedCommand.beforeStorage();
+    }
+    await bootstrap.activateStorage();
+    await bootstrap.startup(selectedCommand);
+    await bootstrap.execCommand(selectedCommand.constructor, argv);
+    await bootstrap.shutdown();
+  }
+  return bootstrap;
 }

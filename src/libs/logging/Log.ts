@@ -79,12 +79,12 @@ export class Log {
     return this._().getLogger(name);
   }
 
-  static getLoggerFor(fn: Function,opts:any = {}) {
+  static getLoggerFor(fn: Function, opts: any = {}) {
     const name = ClassUtils.getClassName(fn);
     let exists = this._().getLogger(name);
-    if(!exists){
+    if (!exists) {
       opts.prefix = name;
-      exists = this._().createLogger(name,opts);
+      exists = this._().createLogger(name, opts);
     }
     return exists;
   }
@@ -124,15 +124,10 @@ export class Log {
   createOrUpdateLogger(name: string = C_DEFAULT, opts: ILoggerOptions, append: boolean = true) {
     let l = this.getLogger(name);
     if (l) {
-      (<any>l).build(name,opts, append);
-      Log.debug('update logger ' + name, opts);
+      (<any>l).build(name, opts, append);
     } else {
-      l = new WinstonLoggerJar(name,opts);
+      l = new WinstonLoggerJar(name, opts);
       this.loggers[name] = l;
-      if(name !== C_DEFAULT){
-        Log.debug('create new logger ' + name, opts);
-      }
-
     }
     return l;
   }
@@ -143,13 +138,13 @@ export class Log {
     if (!opts) {
       opts = DEFAULT_OPTIONS;
       opts.name = 'logger_' + Log.inc++;
-    }else{
-      _.defaults(opts,DEFAULT_OPTIONS);
+    } else {
+      _.defaults(opts, DEFAULT_OPTIONS);
     }
 
     let optsClone = _.cloneDeep(opts);
 
-    if(params.prefix){
+    if (params.prefix) {
       optsClone.prefix = params.prefix;
     }
 
@@ -162,7 +157,6 @@ export class Log {
   removeLogger(name: string) {
     this.getLogger(name).close();
     delete this.loggers[name];
-    Log.debug('remove logger ' + name);
   }
 
 

@@ -28,8 +28,6 @@ export class TypeOrmEntityRef extends AbstractRef implements IEntityRef {
     this.metadata = metadata;
   }
 
-  /*
-*/
 
   getPropertyRefs(): TypeOrmPropertyRef[] {
     return this.getLookupRegistry().filter(XS_TYPE_PROPERTY, (e: TypeOrmPropertyRef) => e.getSourceRef().getClass() === this.getClass());

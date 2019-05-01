@@ -1,7 +1,13 @@
-import {setTimeout, clearTimeout} from "timers";
+import {clearTimeout} from "timers";
+import {IScheduleDef} from "./IScheduleDef";
 import Timer = NodeJS.Timer;
 
+
 export class Schedule {
+
+  options: IScheduleDef;
+
+  name: string;
 
   timer: Timer;
 
@@ -11,8 +17,32 @@ export class Schedule {
 
   enable: boolean = false;
 
+  reschedule: Function;
 
-  reschedule(){
+  execute: Function;
 
+  constructor(o: IScheduleDef) {
+    this.options = o;
+    this.name = o.name;
+  }
+
+  doReschedule() {
+    if (this.reschedule) {
+      this.reschedule.bind(this)()
+    }
+  }
+
+  runSchedule() {
+    if (this.execute) {
+      this.execute.bind(this)()
+    }
+    clearTimeout(this.timer);
+    this.doReschedule();
+  }
+
+
+  shutdown() {
+    this.enable = false;
+    clearTimeout(this.timer);
   }
 }

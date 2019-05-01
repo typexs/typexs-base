@@ -6,13 +6,14 @@ export const K_WORKDIR: string = 'workdir';
 export const K_CLS_ACTIVATOR = 'activator.js';
 export const K_CLS_BOOTSTRAP = 'bootstrap.js';
 export const K_CLS_COMMANDS = 'commands';
+export const K_CLS_SCHEDULE_ADAPTER_FACTORIES = 'scheduler-factories';
+
+
 export const K_CLS_STORAGE_SCHEMAHANDLER: string = 'storage.schemahandler.adapters';
 export const K_CLS_CACHE_ADAPTER = 'cache.adapters';
 
 
-
 export const C_EVENTBUS: string = 'eventbus';
-
 
 
 export const XS_P_$COUNT = '$count';

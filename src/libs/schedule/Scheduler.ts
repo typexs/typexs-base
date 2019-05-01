@@ -1,3 +1,4 @@
+import * as _ from "lodash";
 /**
  *
  * Define and control schedules
@@ -33,36 +34,44 @@
  *
  */
 import {Schedule} from "./Schedule";
-
-export interface IScheduleExecute {
-
-}
-
-export interface IScheduleCalc {
-
-}
-
-export interface IScheduleDef extends IScheduleCalc, IScheduleExecute {
-
-}
+import {IScheduleFactory} from "./IScheduleFactory";
+import {IScheduleDef} from "./IScheduleDef";
 
 
 export class Scheduler {
 
+  static NAME: string = Scheduler.name;
+
+  private factories: IScheduleFactory[] = [];
+
+
   private schedules: Schedule[] = [];
 
 
-
-  prepare() {
-
+  async prepare(factories: IScheduleFactory[]) {
+    for (let f of factories) {
+      if (await f.isAvailable()) {
+        this.factories.push(f);
+      }
+    }
   }
 
-  shutdown() {
 
-  }
+  async register(schedule: IScheduleDef) {
+    const exists = _.find(this.schedules, s => s.name == schedule.name);
+    if (exists) {
+      throw new Error('schedule with name ' + schedule.name + ' already exists')
+    }
 
-  register(schedule: IScheduleDef) {
-
+    let s = new Schedule(schedule);
+    this.schedules.push(s);
+    for (let f of this.factories) {
+      if (await f.detect(schedule)) {
+        await f.attach(s);
+      }
+    }
+    s.doReschedule();
+    return s;
   }
 
   get() {
@@ -71,5 +80,10 @@ export class Scheduler {
 
   unregister() {
 
+  }
+
+
+  async shutdown() {
+    await Promise.all(this.schedules.map(async x => x.shutdown()))
   }
 }

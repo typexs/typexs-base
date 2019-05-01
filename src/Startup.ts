@@ -1,9 +1,10 @@
+import * as _ from "lodash";
 import {IBootstrap} from "./api/IBootstrap";
 import {Container, Inject} from "typedi";
 import {RuntimeLoader} from "./base/RuntimeLoader";
 import {Tasks} from "./libs/tasks/Tasks";
 import {Cache} from "./libs/cache/Cache";
-import {C_EVENTBUS, K_CLS_CACHE_ADAPTER} from "./libs/Constants";
+import {C_EVENTBUS, K_CLS_CACHE_ADAPTER, K_CLS_SCHEDULE_ADAPTER_FACTORIES} from "./libs/Constants";
 import {Config} from "commons-config";
 import {ICacheConfig} from "./libs/cache/ICacheConfig";
 import {IShutdown} from "./api/IShutdown";
@@ -13,6 +14,8 @@ import {Workers} from "./libs/worker/Workers";
 import {TasksHelper} from "./libs/tasks/TasksHelper";
 import {TaskMonitor} from "./libs/tasks/TaskMonitor";
 import {Log} from "./libs/logging/Log";
+import {Scheduler} from "./libs/schedule/Scheduler";
+import {IScheduleDef} from "./libs/schedule/IScheduleDef";
 
 
 export class Startup implements IBootstrap, IShutdown {
@@ -34,9 +37,21 @@ export class Startup implements IBootstrap, IShutdown {
   workers: Workers;
 
 
-  async bootstrap(): Promise<void> {
-    TasksHelper.prepare(this.tasks, this.loader);
+  private async schedule() {
+    const scheduler: Scheduler = Container.get(Scheduler.NAME);
+    await scheduler.prepare(this.loader.getClasses(K_CLS_SCHEDULE_ADAPTER_FACTORIES).map(x => Container.get(x)));
+    let schedules: IScheduleDef[] = Config.get('schedules', []);
+    if (_.isArray(schedules)) {
+      for (let s of schedules) {
+        await scheduler.register(s);
+      }
+    }
+  }
 
+  async bootstrap(): Promise<void> {
+    await this.schedule();
+
+    TasksHelper.prepare(this.tasks, this.loader);
     await this.workers.prepare(this.loader);
 
     for (let cls of this.loader.getClasses(K_CLS_CACHE_ADAPTER)) {

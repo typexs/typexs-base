@@ -21,7 +21,7 @@ import {
   K_CLS_ACTIVATOR,
   K_CLS_API,
   K_CLS_BOOTSTRAP,
-  K_CLS_CACHE_ADAPTER, K_CLS_COMMANDS,
+  K_CLS_CACHE_ADAPTER, K_CLS_COMMANDS, K_CLS_SCHEDULE_ADAPTER_FACTORIES,
   K_CLS_STORAGE_SCHEMAHANDLER,
   K_CLS_USE_API
 } from "./libs/Constants";
@@ -146,6 +146,13 @@ export const DEFAULT_RUNTIME_OPTIONS: IRuntimeLoaderOptions = {
       refs: [
         "adapters/cache/*CacheAdapter.*",
         "src/adapters/cache/*CacheAdapter.*"
+      ]
+    },
+    {
+      topic: K_CLS_SCHEDULE_ADAPTER_FACTORIES,
+      refs: [
+        "adapters/scheduler/*Factory.*",
+        "src/adapters/scheduler/*Factory.*"
       ]
     },
     {

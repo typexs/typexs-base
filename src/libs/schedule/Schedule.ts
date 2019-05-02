@@ -21,6 +21,8 @@ export class Schedule {
 
   execute: Function;
 
+  lastResults:any;
+
   constructor(o: IScheduleDef) {
     this.options = o;
     this.name = o.name;
@@ -32,9 +34,9 @@ export class Schedule {
     }
   }
 
-  runSchedule() {
+  async runSchedule() {
     if (this.execute) {
-      this.execute.bind(this)()
+      this.lastResults = await this.execute.bind(this)()
     }
     clearTimeout(this.timer);
     this.doReschedule();

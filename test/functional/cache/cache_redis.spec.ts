@@ -9,6 +9,7 @@ import {Container} from "typedi";
 import {XS_DEFAULT} from "commons-schema-api";
 import {Cache} from "../../../src/libs/cache/Cache";
 import {RedisCacheAdapter} from "../../../src/adapters/cache/RedisCacheAdapter";
+
 let bootstrap:Bootstrap = null;
 @suite('functional/cache/cache_redis')
 class Cache_redisSpec {

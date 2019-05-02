@@ -6,10 +6,11 @@ import {Scheduler} from "../../../src/libs/schedule/Scheduler";
 import subscribe from "commons-eventbus/decorator/subscribe";
 import {EventBus} from "commons-eventbus";
 import {TestHelper} from "../TestHelper";
-import {K_CLS_SCHEDULE_ADAPTER_FACTORIES, Log, RuntimeLoader} from "../../../src";
+import {Invoker, K_CLS_SCHEDULE_ADAPTER_FACTORIES, Log, RuntimeLoader, Tasks, TasksApi} from "../../../src";
 import moment = require("moment");
 import {IScheduleFactory} from "../../../src/libs/schedule/IScheduleFactory";
 import {Container} from "typedi";
+import {SimpleTask} from "../tasks/tasks/SimpleTask";
 
 let loader: RuntimeLoader = null;
 let factories: IScheduleFactory[] = [];
@@ -20,7 +21,7 @@ class SchedulerSpec {
 
   async before() {
     Bootstrap.reset();
-    Log.options({enable: false})
+    Log.options({enable: false, level: 'debug'});
     Config.clear();
     loader = new RuntimeLoader({
       appdir: __dirname + '/../../..',
@@ -33,6 +34,15 @@ class SchedulerSpec {
     });
     await loader.prepare()
     factories = loader.getClasses(K_CLS_SCHEDULE_ADAPTER_FACTORIES).map(x => Container.get(x));
+
+
+    let i = new Invoker();
+    Container.set(Invoker.NAME, i);
+    i.register(TasksApi, []);
+  }
+
+  static after() {
+    Container.reset();
   }
 
 
@@ -150,6 +160,80 @@ class SchedulerSpec {
 
     await EventBus.unregister(listenr);
     await scheduler.shutdown();
+  }
+
+
+  @test
+  async 'default schedule'() {
+    let scheduler = new Scheduler();
+    await scheduler.prepare(factories);
+
+    let schedule = await scheduler.register({
+      name: 'test01',
+      offset: '5s'
+    });
+    let now = new Date();
+    expect(schedule.name).to.eq('test01');
+    expect(schedule.next).to.be.gt(now);
+    expect(schedule.next).to.be.lte(moment(now).add(5, "s").toDate());
+
+    schedule = await scheduler.register({
+      name: 'test02',
+      offset: '5m'
+    });
+    now = new Date();
+
+    expect(schedule.name).to.eq('test02');
+    expect(schedule.next).to.be.gt(now);
+    expect(schedule.next).to.be.lte(moment(now).add(5, "m").toDate());
+
+
+    schedule = await scheduler.register({
+      name: 'test03',
+      offset: '10m',
+      start: '10:00'
+    });
+    now = new Date();
+    expect(schedule.name).to.eq('test03');
+    expect(schedule.next).to.be.gt(now);
+    expect(schedule.next).to.be.lte(moment(now).add(10, "m").toDate());
+
+    let str = moment().add(1, 'd').subtract(1, "hour").toISOString();
+    schedule = await scheduler.register({
+      name: 'test04',
+      offset: '10m',
+      start: str
+    });
+    now = new Date();
+
+    expect(schedule.name).to.eq('test04');
+    expect(schedule.next).to.be.gte(moment(now).add(1, "d").subtract(2, "hour").toDate());
+    expect(schedule.next).to.be.lte(moment(now).add(2, "d").toDate());
+    await scheduler.shutdown();
+
+  }
+
+  @test
+  async 'execute task'() {
+    let tasks = new Tasks('testnode');
+    let taskRef = tasks.addTask(SimpleTask);
+    Container.set(Tasks.NAME, tasks);
+
+    let scheduler = new Scheduler();
+    await scheduler.prepare(factories);
+    let schedule = await scheduler.register({
+      name: 'test01',
+      task: {
+        name: 'simple_task',
+        remote: false
+      }
+    });
+
+    await schedule.runSchedule();
+    expect(schedule.lastResults).to.not.be.null;
+    expect(schedule.lastResults.tasks).to.be.deep.eq(['simple_task']);
+
+
   }
 
 

@@ -83,7 +83,7 @@ class TasksSpec {
 
     let results = stdMocks.flush();
     expect(results.stdout).to.have.length.gt(0);
-    expect(_.find(results.stdout, x => /\"name\":\"test\"/.test(x) && /\"progress\":100,/.test(x))).to.exist;
+    expect(_.find(results.stdout, x => /("|')name("|'):\s*("|')test("|')/.test(x) && /("|')progress("|'):\s*100/.test(x))).to.exist;
 
     let ref :StorageRef = Container.get(C_STORAGE_DEFAULT);
     let res = await ref.getController().find(TaskLog);

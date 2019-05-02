@@ -1,14 +1,11 @@
 import {Config} from "commons-config";
-import {Container, Inject} from "typedi";
+import {Inject} from "typedi";
 import {Invoker} from "../base/Invoker";
 import {Tasks} from "../libs/tasks/Tasks";
-import {Log} from '../libs/logging/Log'
 import {Console} from '../libs/logging/Console'
 import {TasksApi} from "../api/Tasks.api";
 import {System} from "../libs/system/System";
-import {TaskExecutionRequestFactory} from "../libs/tasks/worker/TaskExecutionRequestFactory";
 import {TasksHelper} from "../libs/tasks/TasksHelper";
-import * as _ from "lodash";
 import {ICommand} from "..";
 
 
@@ -81,70 +78,80 @@ export class TaskCommand implements ICommand {
 
     if (taskNames.length > 0) {
       let args = Config.get('argv');
-      // check nodes for tasks
-      let tasks = this.tasks.getTasks(taskNames);
 
-      if (!isLocal) {
-        let tasksForWorkers = tasks.filter(t => t.hasWorker() && (targetId == null || (targetId && t.hasTargetNodeId(targetId))));
+      let results = await TasksHelper.exec(taskNames, {
+        isLocal: isLocal,
+        remote: isRemote,
+        targetId: targetId,
+        ...args
+      });
 
-        if (tasks.length == tasksForWorkers.length) {
-          // all tasks can be send to workers
-          // execute
+      Console.log(JSON.stringify(results,null,2));
+      /*
+            // check nodes for tasks
+            let tasks = this.tasks.getTasks(taskNames);
 
-          Log.debug('task command: before request fire');
-          let execReq = Container.get(TaskExecutionRequestFactory).createRequest();
-          let results = await execReq.run(taskNames, args, targetId ? [targetId] : []);
-          Log.debug('task command: event enqueue results', results);
+            if (!isLocal) {
+              let tasksForWorkers = tasks.filter(t => t.hasWorker() && (targetId == null || (targetId && t.hasTargetNodeId(targetId))));
 
-        } else {
-          // there are no worker running!
-          Console.error('There are no worker running for tasks: ' + taskNames.join(', '));
-        }
-      } else if (isLocal) {
+              if (tasks.length == tasksForWorkers.length) {
+                // all tasks can be send to workers
+                // execute
 
-        if (taskNames.length == tasks.length) {
-          let options: any = {
-            parallel: 5,
-            dry_mode: Config.get('argv.dry-mode', false)
-          };
+                Log.debug('task command: before request fire');
+                let execReq = Container.get(TaskExecutionRequestFactory).createRequest();
+                let results = await execReq.run(taskNames, args, targetId ? [targetId] : []);
+                Log.debug('task command: event enqueue results', results);
 
-          // add parameters
-          let parameters: any = {};
-          _.keys(argv).map(k => {
-            if (!/^_/.test(k)) {
-              parameters[_.snakeCase(k)] = argv[k];
-            }
-          });
+              } else {
+                // there are no worker running!
+                Console.error('There are no worker running for tasks: ' + taskNames.join(', '));
+              }
+            } else if (isLocal) {
 
-          // validate arguments
-          let props = TasksHelper.getRequiredIncomings(taskNames.map(t => this.tasks.get(t)));
-          if (props.length > 0) {
-            for (let p of props) {
-              if (!_.has(parameters, p.storingName) && !_.has(parameters, p.name)) {
-                if (p.isOptional()) {
-                  Log.warn('task command: optional parameter "' + p.name + '" for ' + taskNames.join(', ') + ' not found')
-                } else {
-                  throw new Error('The required value is not passed');
+              if (taskNames.length == tasks.length) {
+                let options: any = {
+                  parallel: 5,
+                  dry_mode: Config.get('argv.dry-mode', false)
+                };
+
+                // add parameters
+                let parameters: any = {};
+                _.keys(argv).map(k => {
+                  if (!/^_/.test(k)) {
+                    parameters[_.snakeCase(k)] = argv[k];
+                  }
+                });
+
+                // validate arguments
+                let props = TasksHelper.getRequiredIncomings(taskNames.map(t => this.tasks.get(t)));
+                if (props.length > 0) {
+                  for (let p of props) {
+                    if (!_.has(parameters, p.storingName) && !_.has(parameters, p.name)) {
+                      if (p.isOptional()) {
+                        Log.warn('task command: optional parameter "' + p.name + '" for ' + taskNames.join(', ') + ' not found')
+                      } else {
+                        throw new Error('The required value is not passed');
+                      }
+                    }
+                  }
                 }
+
+                let runner = TasksHelper.runner(this.tasks, taskNames, options);
+                for (let p in parameters) {
+                  await runner.setIncoming(p, parameters[p]);
+                }
+                try {
+                  let results = await runner.run();
+                  Console.log(JSON.stringify(results));
+                } catch (err) {
+                  Log.error(err);
+                }
+              } else {
+                Console.error('There are no tasks: ' + taskNames.join(', '));
               }
             }
-          }
-
-          let runner = TasksHelper.runner(this.tasks, taskNames, options);
-          for (let p in parameters) {
-            await runner.setIncoming(p, parameters[p]);
-          }
-          try {
-            let results = await runner.run();
-            Console.log(JSON.stringify(results));
-          } catch (err) {
-            Log.error(err);
-          }
-        } else {
-          Console.error('There are no tasks: ' + taskNames.join(', '));
-        }
-      }
-
+      */
     } else {
       let res = this.tasks.names();
       Console.log('List of supported tasks:');

@@ -15,7 +15,7 @@ import {DistributedStorageEntityController} from "../../../src/libs/distributed/
 import {DistributedQueryWorker} from "../../../src/workers/DistributedQueryWorker";
 import {Workers} from "../../../src/libs/worker/Workers";
 import {C_DEFAULT} from "commons-base";
-import subscribe from "commons-eventbus/decorator/subscribe";
+import {subscribe} from 'commons-eventbus';
 
 
 const LOG_EVENT = TestHelper.logEnable(true);

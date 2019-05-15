@@ -3,7 +3,7 @@ import {expect} from "chai";
 import {Bootstrap} from "../../../src/Bootstrap";
 import {Config} from "commons-config";
 import {Scheduler} from "../../../src/libs/schedule/Scheduler";
-import subscribe from "commons-eventbus/decorator/subscribe";
+import {subscribe} from 'commons-eventbus';
 import {EventBus} from "commons-eventbus";
 import {TestHelper} from "../TestHelper";
 import {Invoker, K_CLS_SCHEDULE_ADAPTER_FACTORIES, Log, RuntimeLoader, Tasks, TasksApi} from "../../../src";

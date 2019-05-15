@@ -1,7 +1,7 @@
 import {AsyncWorkerQueue, IAsyncQueueOptions, ILoggerApi, IQueueProcessor, TaskRunner, Tasks} from "..";
 import {Bootstrap} from "../Bootstrap";
 import {Inject} from "typedi";
-import subscribe from "commons-eventbus/decorator/subscribe";
+import {subscribe} from 'commons-eventbus';
 import {TaskEvent} from "./../libs/tasks/worker/TaskEvent";
 import {EventBus} from "commons-eventbus";
 import {Log} from "../libs/logging/Log";

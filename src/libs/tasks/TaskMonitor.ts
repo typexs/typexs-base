@@ -11,7 +11,7 @@ import {
 } from "../..";
 import {Bootstrap} from "../../Bootstrap";
 import {Inject} from "typedi";
-import subscribe from "commons-eventbus/decorator/subscribe";
+import {subscribe} from 'commons-eventbus';
 import {TaskEvent} from "./worker/TaskEvent";
 import {EventBus} from "commons-eventbus";
 

@@ -1,6 +1,6 @@
 import * as _ from 'lodash'
 import {DistributedStorageEntityController} from "./DistributedStorageEntityController";
-import subscribe from "commons-eventbus/decorator/subscribe";
+import {subscribe} from 'commons-eventbus';
 import {QueryResultsEvent} from "./QueryResultsEvent";
 import {EventBus} from "commons-eventbus";
 import {IFindOp} from "../storage/framework/IFindOp";

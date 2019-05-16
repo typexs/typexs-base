@@ -5,7 +5,7 @@ import {EventEmitter} from "events";
 
 import * as _ from "lodash";
 
-import subscribe from "commons-eventbus/decorator/subscribe";
+import {subscribe} from 'commons-eventbus';
 import {EventBus} from "commons-eventbus";
 import {SystemInfo} from "./SystemInfo";
 

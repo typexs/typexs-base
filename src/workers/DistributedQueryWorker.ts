@@ -1,5 +1,5 @@
 import {QueryEvent} from "./../libs/distributed/QueryEvent";
-import subscribe from "commons-eventbus/decorator/subscribe";
+import {subscribe} from 'commons-eventbus';
 import {
   AsyncWorkerQueue,
   IAsyncQueueOptions,

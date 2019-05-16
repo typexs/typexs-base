@@ -4,7 +4,7 @@ import {Log, TaskRef, Tasks} from "../../..";
 import {System} from "../../system/System";
 import {EventEmitter} from "events";
 
-import subscribe from "commons-eventbus/decorator/subscribe";
+import {subscribe} from 'commons-eventbus';
 import {EventBus} from "commons-eventbus";
 import {TaskEvent} from "./TaskEvent";
 import {TaskQueueWorker} from "../../../workers/TaskQueueWorker";

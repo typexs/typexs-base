@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import subscribe from "commons-eventbus/decorator/subscribe";
+import {subscribe} from 'commons-eventbus';
 import {Log} from "../logging/Log";
 import {EventBus} from "commons-eventbus";
 import {C_KEY_SEPARATOR, C_STORAGE_DEFAULT, Invoker, SystemInfoEvent} from "../..";

@@ -12,7 +12,7 @@ import {EventBus, IEventBusConfiguration} from "commons-eventbus";
 import {TaskQueueWorker} from "../../../src/workers/TaskQueueWorker";
 import {SimpleWorkerTask} from "./tasks/SimpleWorkerTask";
 import {TaskEvent} from "../../../src/libs/tasks/worker/TaskEvent";
-import subscribe from "commons-eventbus/decorator/subscribe";
+import {subscribe} from 'commons-eventbus';
 import {TestHelper} from "../TestHelper";
 import {SpawnHandle} from "../SpawnHandle";
 import {TaskCommand} from "../../../src/commands/TaskCommand";

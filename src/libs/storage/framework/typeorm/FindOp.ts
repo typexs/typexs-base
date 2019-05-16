@@ -9,6 +9,7 @@ import {XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from "../../../Constants";
 
 import {TypeOrmSqlConditionsBuilder} from "./TypeOrmSqlConditionsBuilder";
 import {TypeOrmEntityRegistry} from "./schema/TypeOrmEntityRegistry";
+import {TreeUtils} from "../../../..";
 
 
 export class FindOp<T> implements IFindOp<T> {
@@ -30,11 +31,11 @@ export class FindOp<T> implements IFindOp<T> {
     this.options = options;
 
     this.connection = await this.controller.storageRef.connect();
-    let results:T[] = [];
+    let results: T[] = [];
     if (this.controller.storageRef.dbType == 'mongodb') {
       results = await this.findMongo(entityType, findConditions);
     } else {
-      results = await  this.find(entityType, findConditions);
+      results = await this.find(entityType, findConditions);
     }
     await this.connection.close();
     return results;
@@ -74,7 +75,7 @@ export class FindOp<T> implements IFindOp<T> {
       })
     }
 
-    let results = this.options.raw ? await  qb.getRawMany() : await qb.getMany();
+    let results = this.options.raw ? await qb.getRawMany() : await qb.getMany();
     results[XS_P_$COUNT] = recordCount;
     results[XS_P_$OFFSET] = this.options.offset;
     results[XS_P_$LIMIT] = this.options.limit;
@@ -86,8 +87,17 @@ export class FindOp<T> implements IFindOp<T> {
   private async findMongo(entityType: Function | string, findConditions?: any): Promise<T[]> {
     let repo = this.connection.manager.getMongoRepository(entityType);
 
-    let qb = this.options.raw ? repo.createCursor(findConditions) : repo.createEntityCursor(findConditions);
+    if (findConditions) {
+      TreeUtils.walk(findConditions, x => {
+        if (x.key && _.isString(x.key)) {
+          if (x.key == '$like') {
+            x.parent['$regex'] = x.parent[x.key].replace('%%', '#$#').replace('%', '.*').replace('#$#', '%%');
+          }
+        }
+      });
+    }
 
+    let qb = this.options.raw ? repo.createCursor(findConditions) : repo.createEntityCursor(findConditions);
 
 
     if (!_.isNull(this.options.limit) && _.isNumber(this.options.limit)) {
@@ -99,19 +109,19 @@ export class FindOp<T> implements IFindOp<T> {
     }
 
     if (!_.isNull(this.options.sort)) {
-      let s:any[] = [];
+      let s: any[] = [];
       _.keys(this.options.sort).forEach(sortKey => {
         let v: string = this.options.sort[sortKey];
-        s.push([sortKey,v === 'asc' ? 1 : -1]);
+        s.push([sortKey, v === 'asc' ? 1 : -1]);
       });
       qb.sort(s);
     }
 
     let recordCount = await qb.count(false);
 
-    let results:T[] = [];
+    let results: T[] = [];
 
-    while (await qb.hasNext()){
+    while (await qb.hasNext()) {
       results.push(await qb.next());
     }
 

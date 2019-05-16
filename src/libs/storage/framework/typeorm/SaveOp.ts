@@ -50,7 +50,6 @@ export class SaveOp<T> implements ISaveOp<T> {
           let repo = this.c.manager.getMongoRepository(entityName);
           let entityDef = TypeOrmEntityRegistry.$().getEntityRefFor(entityName);
           let propertyDef = entityDef.getPropertyRefs().find(p => p.isIdentifier());
-
           if (options.raw) {
             let bulk = repo.initializeOrderedBulkOp();
             resolveByEntityDef[entityName].forEach((e: any) => {

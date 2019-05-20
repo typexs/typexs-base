@@ -1,17 +1,16 @@
-import {IActivator} from "./api/IActivator";
-import {Tasks} from "./libs/tasks/Tasks";
-import {Cache} from "./libs/cache/Cache";
-import {Container, Inject} from "typedi";
-import {RuntimeLoader} from "./base/RuntimeLoader";
-import {Workers} from "./libs/worker/Workers";
-import {C_TASKS} from "./libs/tasks/Constants";
 import {Config} from "commons-config";
-import {C_WORKERS} from "./libs/worker/Constants";
+import {Container, Inject} from "typedi";
+import {IActivator} from "./api/IActivator";
+import {RuntimeLoader} from "./base/RuntimeLoader";
 import {Bootstrap} from "./Bootstrap";
-import {TaskMonitor} from "./libs/tasks/TaskMonitor";
+import {Cache} from "./libs/cache/Cache";
 import {Scheduler} from "./libs/schedule/Scheduler";
-import {K_CLS_SCHEDULE_ADAPTER_FACTORIES} from "./libs/Constants";
-
+import {C_TASKS} from "./libs/tasks/Constants";
+import {TaskMonitor} from "./libs/tasks/TaskMonitor";
+import {Tasks} from "./libs/tasks/Tasks";
+import {WatcherRegistry} from './libs/watchers/WatcherRegistry';
+import {C_WORKERS} from "./libs/worker/Constants";
+import {Workers} from "./libs/worker/Workers";
 
 export class Activator implements IActivator {
 
@@ -51,7 +50,7 @@ export class Activator implements IActivator {
     }
     Container.set(Workers.NAME, workers);
 
-
+    Container.set(WatcherRegistry.NAME, new WatcherRegistry());
   }
 
 

@@ -1,16 +1,10 @@
 import {EventBus, IEventDef} from 'commons-eventbus';
 import EventBusMeta from 'commons-eventbus/bus/EventBusMeta';
-import {FSWatcher} from "fs";
+import {FSWatcher} from 'fs';
 import {TasksHelper} from '../tasks/TasksHelper';
-
-/**
- * Check if something is string
- *
- * @param something Something to check
- */
-function isString(something: any): something is string {
-  return typeof something === 'string';
-}
+import {AbstractWatcherConfig} from './AbstractWatcherConfig';
+import {hasEvent, hasTask, isWatcherConfig} from './WatcherConfig';
+import {InvalidWatcherConfig} from './WatcherErrors';
 
 /**
  * An abstract watcher
@@ -61,24 +55,20 @@ export abstract class AbstractWatcher {
    *
    * @param config Watcher config
    */
-  protected constructor(config: any) {
+  protected constructor(config: AbstractWatcherConfig) {
     this.name = config.name;
 
-    if (typeof config.eventDef === 'string') {
-      this.eventDef = EventBusMeta.$().findEvent(config.eventDef);
+    if (!isWatcherConfig(config)) {
+      throw new InvalidWatcherConfig(this.name);
     }
 
-    if (typeof config.task !== 'undefined') {
-      if (!Array.isArray(config.task.names) || !config.task.names.every(isString)) {
-        throw new Error('Task names must be an array of strings.');
-      }
+    if (hasEvent(config)) {
+      this.eventDef = EventBusMeta.$().findEvent(config.event);
+    }
 
+    if (hasTask(config)) {
       this.taskNames = config.task.names;
       this.taskParams = config.task.params;
-    }
-
-    if (typeof this.eventDef === 'undefined' && this.taskNames.length === 0) {
-      throw new Error('Either an event or at least one task has to be provided.');
     }
   }
 

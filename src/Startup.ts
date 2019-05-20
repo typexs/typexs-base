@@ -1,21 +1,22 @@
-import * as _ from "lodash";
-import {IBootstrap} from "./api/IBootstrap";
-import {Container, Inject} from "typedi";
-import {RuntimeLoader} from "./base/RuntimeLoader";
-import {Tasks} from "./libs/tasks/Tasks";
-import {Cache} from "./libs/cache/Cache";
-import {C_EVENTBUS, K_CLS_CACHE_ADAPTER, K_CLS_SCHEDULE_ADAPTER_FACTORIES} from "./libs/Constants";
 import {Config} from "commons-config";
-import {ICacheConfig} from "./libs/cache/ICacheConfig";
-import {IShutdown} from "./api/IShutdown";
-import {System} from "./libs/system/System";
 import {EventBus, IEventBusConfiguration} from "commons-eventbus";
-import {Workers} from "./libs/worker/Workers";
-import {TasksHelper} from "./libs/tasks/TasksHelper";
-import {TaskMonitor} from "./libs/tasks/TaskMonitor";
+import * as _ from "lodash";
+import {Container, Inject} from "typedi";
+import {IBootstrap} from "./api/IBootstrap";
+import {IShutdown} from "./api/IShutdown";
+import {RuntimeLoader} from "./base/RuntimeLoader";
+import {Cache} from "./libs/cache/Cache";
+import {ICacheConfig} from "./libs/cache/ICacheConfig";
+import {C_EVENTBUS, K_CLS_CACHE_ADAPTER, K_CLS_SCHEDULE_ADAPTER_FACTORIES} from "./libs/Constants";
 import {Log} from "./libs/logging/Log";
-import {Scheduler} from "./libs/schedule/Scheduler";
 import {IScheduleDef} from "./libs/schedule/IScheduleDef";
+import {Scheduler} from "./libs/schedule/Scheduler";
+import {System} from "./libs/system/System";
+import {TaskMonitor} from "./libs/tasks/TaskMonitor";
+import {Tasks} from "./libs/tasks/Tasks";
+import {TasksHelper} from "./libs/tasks/TasksHelper";
+import {WatcherRegistry} from './libs/watchers/WatcherRegistry';
+import {Workers} from "./libs/worker/Workers";
 
 
 export class Startup implements IBootstrap, IShutdown {
@@ -32,10 +33,11 @@ export class Startup implements IBootstrap, IShutdown {
   @Inject(System.NAME)
   system: System;
 
-
   @Inject(Workers.NAME)
   workers: Workers;
 
+  @Inject(WatcherRegistry.NAME)
+  watcherRegistry: WatcherRegistry;
 
   private async schedule() {
     const scheduler: Scheduler = Container.get(Scheduler.NAME);
@@ -69,6 +71,9 @@ export class Startup implements IBootstrap, IShutdown {
         //console.log(x);
       }
     }
+
+    await this.watcherRegistry.init();
+    await this.watcherRegistry.startAll();
   }
 
 
@@ -93,6 +98,7 @@ export class Startup implements IBootstrap, IShutdown {
     await (<TaskMonitor>Container.get(TaskMonitor.NAME)).finish();
     this.tasks.reset();
     await this.workers.shutdown();
+    await this.watcherRegistry.stopAll();
   }
 
 }

@@ -1,22 +1,9 @@
-import {Event} from 'commons-eventbus';
 import {existsSync, PathLike, watch} from 'fs';
 import {resolve} from 'path';
+import {Log} from '../..';
 import {AbstractWatcher} from './AbstractWatcher';
-
-
-/**
- * Supposed to be emitted by FileWatcher
- */
-@Event()
-export class FileChanged {
-  /**
-   * Parameters passed by FileWatcher
-   */
-  $watcher: {
-    filename: PathLike;
-    type: string;
-  };
-}
+import {FileWatcherConfig, isFileWatcherConfig} from './FileWatcherConfig';
+import {InvalidWatcherConfig, WatcherStarted, WatcherStopped} from './WatcherErrors';
 
 /**
  * A file watcher
@@ -25,18 +12,23 @@ export class FileWatcher extends AbstractWatcher {
   /**
    * Watched path
    */
-  protected readonly path: PathLike;
+  private readonly path: PathLike;
 
   /**
    * Whether or not the watcher is recursive
    */
-  protected readonly recursive: boolean;
+  private readonly recursive: boolean;
 
-  constructor(config: any) {
+  /**
+   * Create a new file watcher
+   *
+   * @param config Config for the file watcher
+   */
+  constructor(config: FileWatcherConfig) {
     super(config);
 
-    if (typeof config.path !== 'string') {
-      throw new Error('Parameter path must be a string.');
+    if (!isFileWatcherConfig(config)) {
+      throw new InvalidWatcherConfig(this.name);
     }
 
     this.path = resolve(config.path);
@@ -44,12 +36,17 @@ export class FileWatcher extends AbstractWatcher {
   }
 
   async isValid(): Promise<boolean> {
-    return existsSync(this.path);
+    if (!existsSync(this.path)) {
+      Log.error(`Path '${this.path}' does not exist!`);
+      return false;
+    }
+
+    return true;
   }
 
   async start(): Promise<void> {
     if (typeof this.watcher !== 'undefined') {
-      throw new Error('Watcher is already started!');
+      throw new WatcherStarted(this.name);
     }
 
     this.watcher = watch(this.path, {
@@ -70,7 +67,7 @@ export class FileWatcher extends AbstractWatcher {
 
   async stop(): Promise<void> {
     if (typeof this.watcher === 'undefined') {
-      throw new Error('Watcher is not started!');
+      throw new WatcherStopped(this.name);
     }
 
     this.watcher.close();

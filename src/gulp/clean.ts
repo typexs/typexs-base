@@ -1,7 +1,7 @@
-import * as gulp from "gulp";
-const del = require("del");
+import * as gulp from 'gulp';
+import * as del from 'del';
 
 
-gulp.task('clean',(cb:Function)=> {
-  return del(["./build/**"], cb);
+gulp.task('clean', () => {
+  return del(['./build/**']);
 });

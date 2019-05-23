@@ -1,7 +1,13 @@
 import * as _ from 'lodash';
-import {ChildProcess, spawn} from "child_process";
+import {ChildProcess, spawn} from 'child_process';
 
 export class SpawnHandle {
+
+
+  constructor(file: string, ...args: any[]) {
+    this.file = file;
+    this.args = _.isEmpty(args) ? [] : args;
+  }
 
   file: string;
 
@@ -14,14 +20,13 @@ export class SpawnHandle {
   started: Promise<any>;
 
 
-  constructor(file: string, ...args: any[]) {
-    this.file = file;
-    this.args = _.isEmpty(args) ? [] : args;
+  static do(file: string, ...args: any[]): SpawnHandle {
+    return new SpawnHandle(file, ...args);
   }
 
 
   start(withLog: boolean = false): SpawnHandle {
-    this.process = spawn(process.execPath, ['--require', 'ts-node/register', this.file].concat(this.args),{stdio:['pipe', 'pipe', 'pipe', 'ipc']});
+    this.process = spawn(process.execPath, ['--require', 'ts-node/register', this.file].concat(this.args), {stdio: ['pipe', 'pipe', 'pipe', 'ipc']});
     if (withLog) {
       this.withLog();
     }
@@ -30,14 +35,14 @@ export class SpawnHandle {
     });
 
     this.started = new Promise(resolve => {
-      this.process.stderr.on("data", d => {
-        let x = d.toString().trim();
+      this.process.stderr.on('data', d => {
+        const x = d.toString().trim();
         if (/startup finished/.test(x)) {
           resolve();
         }
       });
-      this.process.stdout.on("data", d => {
-        let x = d.toString().trim();
+      this.process.stdout.on('data', d => {
+        const x = d.toString().trim();
         if (/startup finished/.test(x)) {
           resolve();
         }
@@ -48,25 +53,20 @@ export class SpawnHandle {
 
 
   withLog() {
-    this.process.stdout.on("data", d => {
+    this.process.stdout.on('data', d => {
       console.log('out=>' + d.toString().trim());
     });
-    this.process.stderr.on("data", d => {
+    this.process.stderr.on('data', d => {
       console.error('err=>' + d.toString().trim());
     });
     return this;
   }
 
-  exit(){
+  exit() {
     this.process.kill();
   }
 
-  shutdown(){
+  shutdown() {
     this.process.send('shutdown');
-  }
-
-
-  static do(file: string, ...args: any[]): SpawnHandle {
-    return new SpawnHandle(file, ...args);
   }
 }

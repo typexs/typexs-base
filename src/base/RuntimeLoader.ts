@@ -1,18 +1,17 @@
 import * as _ from 'lodash';
-import {ModuleRegistry} from "commons-moduls/registry/ModuleRegistry";
-import {ClassesLoader, Module} from "commons-moduls";
-import {IRuntimeLoaderOptions} from "./IRuntimeLoaderOptions";
+import {ModuleRegistry} from 'commons-moduls/registry/ModuleRegistry';
+import {ClassesLoader, Module} from 'commons-moduls';
+import {IRuntimeLoaderOptions} from './IRuntimeLoaderOptions';
 
-import {DEFAULT_RUNTIME_OPTIONS} from "../Bootstrap";
-import {TYPEXS_NAME} from "../libs/Constants";
-import {PlatformUtils} from "commons-base";
-import {Log} from "./../libs/logging/Log";
-import {ISchematicsInfo} from "../libs/schematics/ISchematicsInfo";
+import {DEFAULT_RUNTIME_OPTIONS} from '../Bootstrap';
+import {TYPEXS_NAME} from '../libs/Constants';
+import {PlatformUtils} from 'commons-base';
+import {Log} from './../libs/logging/Log';
 
 
 export class RuntimeLoader {
 
-  static NAME: string = 'RuntimeLoader';
+  static NAME = 'RuntimeLoader';
 
   _options: IRuntimeLoaderOptions;
 
@@ -34,7 +33,7 @@ export class RuntimeLoader {
   constructor(options: IRuntimeLoaderOptions) {
     _.defaults(options, _.cloneDeep(DEFAULT_RUNTIME_OPTIONS));
     this._options = options;
-    let appdir = this._options.appdir || PlatformUtils.pathResolve('.');
+    const appdir = this._options.appdir || PlatformUtils.pathResolve('.');
 
     if (appdir && this._options.paths.indexOf(appdir) === -1) {
       this._options.paths.unshift(appdir);
@@ -46,14 +45,14 @@ export class RuntimeLoader {
       } else {
         return PlatformUtils.join(appdir, p);
       }
-    })
+    });
 
 
   }
 
 
   async prepare() {
-    await this.rebuild()
+    await this.rebuild();
   }
 
 
@@ -64,8 +63,8 @@ export class RuntimeLoader {
     }
     this._options.packageKeys = modulePackageJsonKeys;
 
-    let modulPaths = [];
-    for (let _path of this._options.paths) {
+    const modulPaths = [];
+    for (const _path of this._options.paths) {
       if (PlatformUtils.fileExist(_path)) {
         modulPaths.push(_path);
       } else {
@@ -84,7 +83,7 @@ export class RuntimeLoader {
     await this.registry.rebuild();
 
 
-    let settingsLoader = await this.registry.createSettingsLoader({
+    const settingsLoader = await this.registry.createSettingsLoader({
       ref: 'package.json',
       path: 'typexs'
     });
@@ -92,17 +91,21 @@ export class RuntimeLoader {
     this.settings = settingsLoader.getSettings();
     // todo enable all, check against storage
 
-    for (let moduleName in this.settings) {
+
+    for (const moduleName in this.settings) {
+      if (!this.settings.hasOwnProperty(moduleName)) {
+        continue;
+      }
       if (!this.isIncluded(moduleName)) {
         this.includeModule(moduleName);
       }
 
       if (this.isEnabled(moduleName)) {
         Log.debug('Load settings from module ' + moduleName);
-        let modulSettings = this.settings[moduleName];
+        const modulSettings = this.settings[moduleName];
         if (_.has(modulSettings, 'declareLibs')) {
-          for (let s of modulSettings['declareLibs']) {
-            let topicData = _.find(this._options.libs, (lib) => lib.topic === s.topic);
+          for (const s of modulSettings['declareLibs']) {
+            const topicData = _.find(this._options.libs, (lib) => lib.topic === s.topic);
             if (topicData) {
               topicData.refs.push(...s.refs);
               topicData.refs = _.uniq(topicData.refs);
@@ -134,12 +137,12 @@ export class RuntimeLoader {
   }
 
   async getSettings(key: string) {
-    let settingsLoader = await this.registry.createSettingsLoader({
+    const settingsLoader = await this.registry.createSettingsLoader({
       ref: 'package.json',
       path: key
     });
     if (settingsLoader) {
-      let list = settingsLoader.getSettings();
+      const list = settingsLoader.getSettings();
       return list;
     }
     return {};
@@ -161,34 +164,34 @@ export class RuntimeLoader {
   }
 
 
-  async getSchematicsInfos(): Promise<ISchematicsInfo[]> {
-    let infos: ISchematicsInfo[] = [];
-    let schematics = await this.getSettings('schematics');
-    for (let moduleName in schematics) {
-      let schematic = schematics[moduleName];
-      if (schematic) {
-        let module = this.getModule(moduleName);
-        let coll = await PlatformUtils.readFile(PlatformUtils.join(module.path, schematic));
-        let collectionContent = {};
-        if (coll) {
-          try {
-            collectionContent = JSON.parse(coll.toString('utf-8'))
-          } catch (err) {
-          }
-        }
-
-        infos.push(<ISchematicsInfo>{
-          name: moduleName,
-          internal: module.internal,
-          submodule: module.submodule,
-          path: module.path,
-          collectionSource: schematic,
-          collection: collectionContent
-        })
-      }
-    }
-    return infos;
-  }
+  // async getSchematicsInfos(): Promise<ISchematicsInfo[]> {
+  //   const infos: ISchematicsInfo[] = [];
+  //   const schematics = await this.getSettings('schematics');
+  //   for (const moduleName in schematics) {
+  //     const schematic = schematics[moduleName];
+  //     if (schematic) {
+  //       const module = this.getModule(moduleName);
+  //       const coll = await PlatformUtils.readFile(PlatformUtils.join(module.path, schematic));
+  //       let collectionContent = {};
+  //       if (coll) {
+  //         try {
+  //           collectionContent = JSON.parse(coll.toString('utf-8'));
+  //         } catch (err) {
+  //         }
+  //       }
+  //
+  //       infos.push(<ISchematicsInfo>{
+  //         name: moduleName,
+  //         internal: module.internal,
+  //         submodule: module.submodule,
+  //         path: module.path,
+  //         collectionSource: schematic,
+  //         collection: collectionContent
+  //       });
+  //     }
+  //   }
+  //   return infos;
+  // }
 
 
 }

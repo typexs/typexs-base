@@ -1,22 +1,22 @@
-import {Config} from "commons-config";
-import {EventBus, IEventBusConfiguration} from "commons-eventbus";
-import * as _ from "lodash";
-import {Container, Inject} from "typedi";
-import {IBootstrap} from "./api/IBootstrap";
-import {IShutdown} from "./api/IShutdown";
-import {RuntimeLoader} from "./base/RuntimeLoader";
-import {Cache} from "./libs/cache/Cache";
-import {ICacheConfig} from "./libs/cache/ICacheConfig";
-import {C_EVENTBUS, K_CLS_CACHE_ADAPTER, K_CLS_SCHEDULE_ADAPTER_FACTORIES} from "./libs/Constants";
-import {Log} from "./libs/logging/Log";
-import {IScheduleDef} from "./libs/schedule/IScheduleDef";
-import {Scheduler} from "./libs/schedule/Scheduler";
-import {System} from "./libs/system/System";
-import {TaskMonitor} from "./libs/tasks/TaskMonitor";
-import {Tasks} from "./libs/tasks/Tasks";
-import {TasksHelper} from "./libs/tasks/TasksHelper";
+import {Config} from 'commons-config';
+import {EventBus, IEventBusConfiguration} from 'commons-eventbus';
+import * as _ from 'lodash';
+import {Container, Inject} from 'typedi';
+import {IBootstrap} from './api/IBootstrap';
+import {IShutdown} from './api/IShutdown';
+import {RuntimeLoader} from './base/RuntimeLoader';
+import {Cache} from './libs/cache/Cache';
+import {ICacheConfig} from './libs/cache/ICacheConfig';
+import {C_EVENTBUS, K_CLS_CACHE_ADAPTER, K_CLS_SCHEDULE_ADAPTER_FACTORIES} from './libs/Constants';
+import {Log} from './libs/logging/Log';
+import {IScheduleDef} from './libs/schedule/IScheduleDef';
+import {Scheduler} from './libs/schedule/Scheduler';
+import {System} from './libs/system/System';
+import {TaskMonitor} from './libs/tasks/TaskMonitor';
+import {Tasks} from './libs/tasks/Tasks';
+import {TasksHelper} from './libs/tasks/TasksHelper';
 import {WatcherRegistry} from './libs/watchers/WatcherRegistry';
-import {Workers} from "./libs/worker/Workers";
+import {Workers} from './libs/worker/Workers';
 
 
 export class Startup implements IBootstrap, IShutdown {
@@ -42,9 +42,9 @@ export class Startup implements IBootstrap, IShutdown {
   private async schedule() {
     const scheduler: Scheduler = Container.get(Scheduler.NAME);
     await scheduler.prepare(this.loader.getClasses(K_CLS_SCHEDULE_ADAPTER_FACTORIES).map(x => Container.get(x)));
-    let schedules: IScheduleDef[] = Config.get('schedules', []);
+    const schedules: IScheduleDef[] = Config.get('schedules', []);
     if (_.isArray(schedules)) {
-      for (let s of schedules) {
+      for (const s of schedules) {
         await scheduler.register(s);
       }
     }
@@ -56,19 +56,21 @@ export class Startup implements IBootstrap, IShutdown {
     TasksHelper.prepare(this.tasks, this.loader);
     await this.workers.prepare(this.loader);
 
-    for (let cls of this.loader.getClasses(K_CLS_CACHE_ADAPTER)) {
+    for (const cls of this.loader.getClasses(K_CLS_CACHE_ADAPTER)) {
       await this.cache.register(<any>cls);
     }
-    let cache: ICacheConfig = Config.get('cache');
+    const cache: ICacheConfig = Config.get('cache');
     await this.cache.configure(this.system.node.nodeId, cache);
 
-    let bus: { [name: string]: IEventBusConfiguration } = Config.get(C_EVENTBUS, false);
+    const bus: { [name: string]: IEventBusConfiguration } = Config.get(C_EVENTBUS, false);
     if (bus) {
-      for (let name in bus) {
-        let busCfg: IEventBusConfiguration = bus[name];
-        busCfg.name = name;
-        let x = EventBus.$().addConfiguration(busCfg);
-        //console.log(x);
+      for (const name in bus) {
+        if (bus.hasOwnProperty(name)) {
+          const busCfg: IEventBusConfiguration = bus[name];
+          busCfg.name = name;
+          const x = EventBus.$().addConfiguration(busCfg);
+          // console.log(x);
+        }
       }
     }
 
@@ -81,12 +83,12 @@ export class Startup implements IBootstrap, IShutdown {
     await (<TaskMonitor>Container.get(TaskMonitor.NAME)).prepare();
     await this.workers.startup();
     await this.system.register();
-    let wait = Config.get('nodes.ready.wait', 500);
+    const wait = Config.get('nodes.ready.wait', 500);
     if (wait > 0) {
       Log.debug('wait for node registration feedback ...');
       await new Promise((resolve, reject) => {
         setTimeout(resolve, wait);
-      })
+      });
     }
   }
 

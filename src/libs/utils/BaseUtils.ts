@@ -1,40 +1,42 @@
-import * as _ from 'lodash'
-import {InterpolationSupport, Utils} from "commons-config";
-import {TreeUtils, WalkValues} from "./TreeUtils";
+import * as _ from 'lodash';
+import {InterpolationSupport, Utils} from 'commons-config';
+import {TreeUtils, WalkValues} from './TreeUtils';
 
 
 export class BaseUtils {
+
+
 
 
   static wait(time: number): Promise<any> {
     return new Promise(resolve => {
       setTimeout(function () {
         resolve();
-      }, time)
-    })
+      }, time);
+    });
   }
 
   static interpolate(msg: string, parameter: { [k: string]: string }): string {
-    let data = {msg: msg};
+    const data = {msg: msg};
     try {
       InterpolationSupport.exec(data, parameter);
     } catch (e) {
       throw e;
     }
-    return data.msg
+    return data.msg;
   }
 
   static flattenDate(d: Date) {
     // reset milliseconds for datefields
-    let rest = d.getTime() % 1000;
-    return new Date(d.getTime() - rest)
+    const rest = d.getTime() % 1000;
+    return new Date(d.getTime() - rest);
   }
 
   static now() {
-    let now = new Date();
+    const now = new Date();
     // reset milliseconds for datefields
-    let rest = now.getTime() % 1000;
-    return new Date(now.getTime() - rest)
+    const rest = now.getTime() % 1000;
+    return new Date(now.getTime() - rest);
   }
 
   /**
@@ -43,7 +45,7 @@ export class BaseUtils {
    * @returns {any[]}
    */
   static unique_array(arr: any[]): any[] {
-    return _.uniq(arr)
+    return _.uniq(arr);
     // return arr.filter((v, i, a) => a.indexOf(v) === i);
   }
 
@@ -52,12 +54,12 @@ export class BaseUtils {
   }
 
   static clone(obj: any) {
-    return _.clone(obj)
+    return _.clone(obj);
   }
 
 
   static uniqArr(res: any[]) {
-    return Utils.uniqArr(res)
+    return Utils.uniqArr(res);
   }
 
   static merge(...args: any[]): any {
@@ -72,39 +74,39 @@ export class BaseUtils {
 
   static get(arr: any, path: string = null): any {
     if (path) {
-      let paths = path.split('.');
+      const paths = path.split('.');
       let first: string | number = paths.shift();
       if (/^[1-9]+\d*$/.test(first)) {
-        first = parseInt(first)
+        first = parseInt(first);
       }
       if (arr.hasOwnProperty(first)) {
-        let pointer: any = arr[first];
+        const pointer: any = arr[first];
         if (paths.length === 0) {
-          return pointer
+          return pointer;
         } else {
-          return BaseUtils.get(pointer, paths.join('.'))
+          return BaseUtils.get(pointer, paths.join('.'));
         }
       } else {
         // not found
-        return null
+        return null;
       }
 
     }
-    return arr
+    return arr;
   }
 
   static splitTyped(arr: string, sep: string = '.'): any[] {
-    let paths = arr.split('.');
-    let normPaths: any[] = [];
+    const paths = arr.split('.');
+    const normPaths: any[] = [];
     paths.forEach(function (_x) {
       if (typeof _x === 'string' && /\d+/.test(_x)) {
-        normPaths.push(parseInt(_x))
+        normPaths.push(parseInt(_x));
       } else {
-        normPaths.push(_x)
+        normPaths.push(_x);
       }
 
     });
-    return normPaths
+    return normPaths;
   }
 
   static set(arr: any, path: string | any[], value: any): boolean {
@@ -112,57 +114,57 @@ export class BaseUtils {
     let first: string | number = null;
 
     if (typeof path === 'string') {
-      paths = BaseUtils.splitTyped(path)
+      paths = BaseUtils.splitTyped(path);
     } else {
-      paths = path
+      paths = path;
     }
     first = paths.shift();
-    let next = paths.length > 0 ? paths[0] : null;
+    const next = paths.length > 0 ? paths[0] : null;
 
 
     if (!arr.hasOwnProperty(first)) {
       // new, key doesn't exists
       if (typeof next === 'number') {
         // if next value is a number then this must be an array!
-        arr[first] = []
+        arr[first] = [];
       } else {
-        arr[first] = {}
+        arr[first] = {};
       }
     } else {
       if (Array.isArray(arr)) {
         if (!(typeof first === 'number')) {
-          return false
+          return false;
         }
       } else if (Array.isArray(arr[first])) {
         if (!(typeof next === 'number')) {
-          return false
+          return false;
         }
       } else if (!BaseUtils.isObject(arr[first])) {
         // primative
         if (BaseUtils.isObject(value)) {
-          return false
+          return false;
         }
       } else {
         if (typeof next === 'number') {
           // must be array
           if (!Array.isArray(arr[first])) {
-            return false
+            return false;
           }
         }
       }
     }
 
     if (paths.length > 0) {
-      return BaseUtils.set(arr[first], paths, value)
+      return BaseUtils.set(arr[first], paths, value);
     } else {
       arr[first] = value;
-      return true
+      return true;
     }
   }
 
 
   static isObject(o: any) {
-    return _.isPlainObject(o)
+    return _.isPlainObject(o);
   }
 
 

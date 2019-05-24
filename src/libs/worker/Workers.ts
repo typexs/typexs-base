@@ -5,10 +5,10 @@ import {ClassUtils, NotYetImplementedError} from 'commons-base';
 import {WorkerRef} from './WorkerRef';
 import {IWorkerConfig} from './IWorkerConfig';
 import * as _ from 'lodash';
-import {isMatch} from 'micromatch';
 import {Container} from 'typedi';
 import {IWorker} from './IWorker';
 import {IWorkerInfo} from './IWorkerInfo';
+import {MatchUtils} from '../utils/MatchUtils';
 
 
 const DEFAULT_OPTIONS: IWorkerConfig = {access: [{access: 'deny', name: '*'}]};
@@ -36,7 +36,7 @@ export class Workers implements ILookupRegistry {
   setConfig(config: IWorkerConfig = DEFAULT_OPTIONS) {
     this.config = config;
     // deny all, it must be explizit allowed!
-    if (this.config.access.length === 0 || (this.config.access[0].name != '*' && this.config.access[0].access != 'deny')) {
+    if (this.config.access.length === 0 || (this.config.access[0].name !== '*' && this.config.access[0].access !== 'deny')) {
       this.config.access.unshift({access: 'deny', name: '*'});
     }
   }
@@ -110,7 +110,7 @@ export class Workers implements ILookupRegistry {
             return allow;
           }
         } else {
-          if (isMatch(name, a.match)) {
+          if (MatchUtils.miniMatch(a.match, name)) {
             allow = allow || a.access === 'allow';
             count++;
           }

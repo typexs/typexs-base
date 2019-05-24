@@ -16,13 +16,15 @@ import {
   XS_TYPE_BINDING_TASK_DEPENDS_ON,
   XS_TYPE_BINDING_TASK_GROUP
 } from './Constants';
-import {isMatch} from 'micromatch';
+import {Minimatch} from 'minimatch';
 import {TaskExchangeRef} from './TaskExchangeRef';
 import {ITasksConfig} from './ITasksConfig';
 import {ITaskRefOptions} from './ITaskRefOptions';
 import {ITaskInfo} from './ITaskInfo';
 import {ITaskDesc} from '../..';
 import {NullTaskRef} from './NullTaskRef';
+import * as M from 'minimatch';
+import {MatchUtils} from '../utils/MatchUtils';
 
 
 export class Tasks implements ILookupRegistry {
@@ -113,7 +115,7 @@ export class Tasks implements ILookupRegistry {
             return allow;
           }
         } else {
-          if (isMatch(name, a.match)) {
+          if (MatchUtils.miniMatch(a.match, name)) {
             allow = allow || a.access === 'allow';
             count++;
           }

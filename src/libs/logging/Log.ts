@@ -3,9 +3,9 @@ import {ILoggerOptions} from './ILoggerOptions';
 import {C_DEFAULT, ClassUtils} from 'commons-base';
 import {WinstonLoggerJar} from './WinstonLoggerJar';
 import {BaseUtils} from '../../libs/utils/BaseUtils';
-import {isMatch} from 'micromatch';
 import {InterpolationSupport} from 'commons-config';
 import {ILoggerApi} from './ILoggerApi';
+import {MatchUtils} from '../utils/MatchUtils';
 
 
 const DEFAULT_OPTIONS: ILoggerOptions = {
@@ -218,7 +218,7 @@ export class Log {
             return a;
           }
         } else {
-          if (isMatch(name, a.match)) {
+          if (MatchUtils.miniMatch(a.match, name)) {
             return a;
           }
         }

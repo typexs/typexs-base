@@ -1,14 +1,14 @@
-import {ILookupRegistry, IPropertyRef, LookupRegistry, XS_TYPE_ENTITY} from "commons-schema-api";
-import {C_WORKERS, K_CLS_WORKERS} from "./Constants";
-import {RuntimeLoader} from "../..";
-import {ClassUtils, NotYetImplementedError} from "commons-base";
-import {WorkerRef} from "./WorkerRef";
-import {IWorkerConfig} from "./IWorkerConfig";
-import * as _ from "lodash";
-import {Minimatch} from "minimatch";
-import {Container} from "typedi";
-import {IWorker} from "./IWorker";
-import {IWorkerInfo} from "./IWorkerInfo";
+import {ILookupRegistry, IPropertyRef, LookupRegistry, XS_TYPE_ENTITY} from 'commons-schema-api';
+import {C_WORKERS, K_CLS_WORKERS} from './Constants';
+import {RuntimeLoader} from '../..';
+import {ClassUtils, NotYetImplementedError} from 'commons-base';
+import {WorkerRef} from './WorkerRef';
+import {IWorkerConfig} from './IWorkerConfig';
+import * as _ from 'lodash';
+import {isMatch} from 'micromatch';
+import {Container} from 'typedi';
+import {IWorker} from './IWorker';
+import {IWorkerInfo} from './IWorkerInfo';
 
 
 const DEFAULT_OPTIONS: IWorkerConfig = {access: [{access: 'deny', name: '*'}]};
@@ -16,7 +16,7 @@ const DEFAULT_OPTIONS: IWorkerConfig = {access: [{access: 'deny', name: '*'}]};
 
 export class Workers implements ILookupRegistry {
 
-  static NAME: string = 'Workers';
+  static NAME = 'Workers';
 
   registry: LookupRegistry = LookupRegistry.$(C_WORKERS);
 
@@ -26,8 +26,8 @@ export class Workers implements ILookupRegistry {
 
 
   prepare(loader: RuntimeLoader) {
-    let klasses = loader.getClasses(K_CLS_WORKERS);
-    for (let klass of klasses) {
+    const klasses = loader.getClasses(K_CLS_WORKERS);
+    for (const klass of klasses) {
       this.add(klass);
     }
   }
@@ -36,17 +36,17 @@ export class Workers implements ILookupRegistry {
   setConfig(config: IWorkerConfig = DEFAULT_OPTIONS) {
     this.config = config;
     // deny all, it must be explizit allowed!
-    if (this.config.access.length == 0 || (this.config.access[0].name != '*' && this.config.access[0].access != 'deny')) {
-      this.config.access.unshift({access: "deny", name: "*"})
+    if (this.config.access.length === 0 || (this.config.access[0].name != '*' && this.config.access[0].access != 'deny')) {
+      this.config.access.unshift({access: 'deny', name: '*'});
     }
   }
 
 
   async startup() {
-    let refs: WorkerRef[] = this.registry.list(XS_TYPE_ENTITY);
-    for (let ref of refs) {
-      let workerInstance = <IWorker>Container.get(ref.getClass());
-      let config = _.get(this.config, 'config.' + ref.name, _.get(this.config, 'config.' + workerInstance.name, null));
+    const refs: WorkerRef[] = this.registry.list(XS_TYPE_ENTITY);
+    for (const ref of refs) {
+      const workerInstance = <IWorker>Container.get(ref.getClass());
+      const config = _.get(this.config, 'config.' + ref.name, _.get(this.config, 'config.' + workerInstance.name, null));
       if (config) {
         await workerInstance.prepare(config);
       } else {
@@ -57,11 +57,11 @@ export class Workers implements ILookupRegistry {
   }
 
 
-  metadata(){
+  metadata() {
     return _.map(this.getEntries(), (x: IWorker) => {
       return <IWorkerInfo>{
         name: x.name,
-      }
+      };
     });
   }
 
@@ -72,7 +72,7 @@ export class Workers implements ILookupRegistry {
         name: x.name,
         className: x.constructor.name,
         statistics: x.statistic ? x.statistic() : null
-      }
+      };
     });
   }
 
@@ -83,7 +83,7 @@ export class Workers implements ILookupRegistry {
 
 
   async shutdown() {
-    for (let w of this.workers) {
+    for (const w of this.workers) {
       await w.finish();
     }
     this.reset();
@@ -94,11 +94,11 @@ export class Workers implements ILookupRegistry {
     if (_.has(this.config, 'access')) {
       // if access empty then
       let allow = this.config.access.length > 0 ? false : true;
-      let count: number = 0;
-      for (let a of this.config.access) {
+      let count = 0;
+      for (const a of this.config.access) {
         if (_.isUndefined(a.match)) {
           if (/\+|\.|\(|\\||\)|\*/.test(a.name)) {
-            a.match = new Minimatch(a.name);
+            a.match = a.name;
           } else {
             a.match = false;
           }
@@ -106,18 +106,18 @@ export class Workers implements ILookupRegistry {
         if (_.isBoolean(a.match)) {
           if (a.name === name) {
             count++;
-            allow = a.access == 'allow';
+            allow = a.access === 'allow';
             return allow;
           }
         } else {
-          if (a.match.match(name)) {
-            allow = allow || a.access == 'allow';
+          if (isMatch(name, a.match)) {
+            allow = allow || a.access === 'allow';
             count++;
           }
         }
       }
       // no allowed or denied
-      if (count == 0) {
+      if (count === 0) {
         allow = true;
       }
       return allow;
@@ -127,9 +127,9 @@ export class Workers implements ILookupRegistry {
 
 
   add(fn: Function) {
-    let name = ClassUtils.getClassName(fn);
+    const name = ClassUtils.getClassName(fn);
     if (this.access(name)) {
-      let exists = this.registry.find(XS_TYPE_ENTITY, (d: WorkerRef) => d.name == name);
+      let exists = this.registry.find(XS_TYPE_ENTITY, (d: WorkerRef) => d.name === name);
       if (!exists) {
         exists = new WorkerRef(fn);
         this.registry.add(XS_TYPE_ENTITY, exists);
@@ -147,12 +147,12 @@ export class Workers implements ILookupRegistry {
 
   fromJson(json: any): WorkerRef {
     throw new NotYetImplementedError();
-    //return undefined;
+    // return undefined;
   }
 
 
   private getEntries() {
-    return this.registry.list(XS_TYPE_ENTITY)
+    return this.registry.list(XS_TYPE_ENTITY);
   }
 
 

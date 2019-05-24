@@ -1,11 +1,11 @@
-import * as _ from 'lodash'
-import {ILoggerOptions} from "./ILoggerOptions";
-import {C_DEFAULT, ClassUtils} from "commons-base";
-import {WinstonLoggerJar} from "./WinstonLoggerJar";
-import {BaseUtils} from "../../libs/utils/BaseUtils";
-import {Minimatch} from "minimatch";
-import {InterpolationSupport} from "commons-config";
-import {ILoggerApi} from "./ILoggerApi";
+import * as _ from 'lodash';
+import {ILoggerOptions} from './ILoggerOptions';
+import {C_DEFAULT, ClassUtils} from 'commons-base';
+import {WinstonLoggerJar} from './WinstonLoggerJar';
+import {BaseUtils} from '../../libs/utils/BaseUtils';
+import {isMatch} from 'micromatch';
+import {InterpolationSupport} from 'commons-config';
+import {ILoggerApi} from './ILoggerApi';
 
 
 const DEFAULT_OPTIONS: ILoggerOptions = {
@@ -26,30 +26,38 @@ const DEFAULT_OPTIONS: ILoggerOptions = {
 
 export class Log {
 
+
+  private constructor() {
+  }
+
+
+  get logger(): ILoggerApi {
+    if (!this.initial) {
+      this.options(DEFAULT_OPTIONS);
+    }
+    return this.getLogger();
+  }
+
   static self: Log = null;
 
-  static enable: boolean = true;
+  static enable = true;
 
-  static prefix: string = '';
+  static prefix = '';
 
-  static inc: number = 0;
+  static inc = 0;
 
 //  static enableEvents: boolean = false;
 
-  //static console: boolean = false;
+  // static console: boolean = false;
 
   /**
    * check if configuration was loaded
    */
-  private initial: boolean = false;
+  private initial = false;
 
   private globalOptions: ILoggerOptions;
 
   private loggers: { [k: string]: ILoggerApi } = {};
-
-
-  private constructor() {
-  }
 
 
   static reset() {
@@ -61,17 +69,9 @@ export class Log {
 
   static _() {
     if (!this.self) {
-      this.self = new Log()
+      this.self = new Log();
     }
-    return this.self
-  }
-
-
-  get logger(): ILoggerApi {
-    if (!this.initial) {
-      this.options(DEFAULT_OPTIONS)
-    }
-    return this.getLogger();
+    return this.self;
   }
 
 
@@ -89,92 +89,9 @@ export class Log {
     return exists;
   }
 
-  getLogger(name: string = C_DEFAULT): ILoggerApi {
-    if (_.has(this.loggers, name)) {
-      return this.loggers[name];
-    }
-    return null;
-  }
-
-  getLoggerOptionsFor(name: string) {
-    if (_.has(this.globalOptions, 'loggers')) {
-      for (let a of this.globalOptions.loggers) {
-        if (_.isUndefined(a.match)) {
-          if (/\+|\.|\(|\\||\)|\*/.test(a.name)) {
-            a.match = new Minimatch(a.name);
-          } else {
-            a.match = false;
-          }
-        }
-        if (_.isBoolean(a.match)) {
-          if (a.name === name) {
-            return a;
-          }
-        } else {
-          if (a.match.match(name)) {
-            return a;
-          }
-        }
-      }
-    }
-    return null;
-  }
-
-
-  createOrUpdateLogger(name: string = C_DEFAULT, opts: ILoggerOptions, append: boolean = true) {
-    let l = this.getLogger(name);
-    if (l) {
-      (<any>l).build(name, opts, append);
-    } else {
-      l = new WinstonLoggerJar(name, opts);
-      this.loggers[name] = l;
-    }
-    return l;
-  }
-
-
-  createLogger(name: string, params: any = {}) {
-    let opts = this.getLoggerOptionsFor(name);
-    if (!opts) {
-      opts = DEFAULT_OPTIONS;
-      opts.name = 'logger_' + Log.inc++;
-    } else {
-      _.defaults(opts, DEFAULT_OPTIONS);
-    }
-
-    let optsClone = _.cloneDeep(opts);
-
-    if (params.prefix) {
-      optsClone.prefix = params.prefix;
-    }
-
-    delete optsClone.match;
-    InterpolationSupport.exec(optsClone, params);
-    return this.createOrUpdateLogger(name, optsClone);
-  }
-
-
-  removeLogger(name: string) {
-    this.getLogger(name).close();
-    delete this.loggers[name];
-  }
-
 
   static options(options: ILoggerOptions, append: boolean = false): ILoggerOptions {
-    return this._().options(options, append)
-  }
-
-
-  private options(options: ILoggerOptions, append: boolean = false) {
-    if (append && this.globalOptions) {
-      options = BaseUtils.merge(this.globalOptions, options)
-    }
-    this.globalOptions = _.defaults(options, DEFAULT_OPTIONS);
-    Log.enable = this.globalOptions.enable;
-    //  Log.enableEvents = this.globalOptions.events;
-    this.initial = true;
-    this.createOrUpdateLogger(C_DEFAULT, this.globalOptions, append);
-    return this.globalOptions;
+    return this._().options(options, append);
   }
 
   /*
@@ -257,25 +174,109 @@ export class Log {
 
   static info(...args: any[]) {
     args.unshift('INFO');
-    Log.log.apply(Log, args)
+    Log.log.apply(Log, args);
   }
 
 
   static warn(...args: any[]) {
     args.unshift('WARN');
-    Log.log.apply(Log, args)
+    Log.log.apply(Log, args);
   }
 
 
   static debug(...args: any[]) {
     args.unshift('DEBUG');
-    Log.log.apply(Log, args)
+    Log.log.apply(Log, args);
   }
 
 
   static error(...args: any[]) {
     args.unshift('ERROR');
-    Log.log.apply(Log, args)
+    Log.log.apply(Log, args);
+  }
+
+  getLogger(name: string = C_DEFAULT): ILoggerApi {
+    if (_.has(this.loggers, name)) {
+      return this.loggers[name];
+    }
+    return null;
+  }
+
+
+  getLoggerOptionsFor(name: string) {
+    if (_.has(this.globalOptions, 'loggers')) {
+      for (const a of this.globalOptions.loggers) {
+        if (_.isUndefined(a.match)) {
+          if (/\+|\.|\(|\\||\)|\*/.test(a.name)) {
+            a.match = a.name;
+          } else {
+            a.match = false;
+          }
+        }
+        if (_.isBoolean(a.match)) {
+          if (a.name === name) {
+            return a;
+          }
+        } else {
+          if (isMatch(name, a.match)) {
+            return a;
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+
+  createOrUpdateLogger(name: string = C_DEFAULT, opts: ILoggerOptions, append: boolean = true) {
+    let l = this.getLogger(name);
+    if (l) {
+      (<any>l).build(name, opts, append);
+    } else {
+      l = new WinstonLoggerJar(name, opts);
+      this.loggers[name] = l;
+    }
+    return l;
+  }
+
+
+  createLogger(name: string, params: any = {}) {
+    let opts = this.getLoggerOptionsFor(name);
+    if (!opts) {
+      opts = DEFAULT_OPTIONS;
+      opts.name = 'logger_' + Log.inc++;
+    } else {
+      _.defaults(opts, DEFAULT_OPTIONS);
+    }
+
+    const optsClone = _.cloneDeep(opts);
+
+    if (params.prefix) {
+      optsClone.prefix = params.prefix;
+    }
+
+    delete optsClone.match;
+    InterpolationSupport.exec(optsClone, params);
+    return this.createOrUpdateLogger(name, optsClone);
+  }
+
+
+  removeLogger(name: string) {
+    this.getLogger(name).close();
+    delete this.loggers[name];
+  }
+
+
+  private options(options: ILoggerOptions, append: boolean = false) {
+    if (append && this.globalOptions) {
+      options = BaseUtils.merge(this.globalOptions, options);
+    }
+    this.globalOptions = _.defaults(options, DEFAULT_OPTIONS);
+    Log.enable = this.globalOptions.enable;
+    //  Log.enableEvents = this.globalOptions.events;
+    this.initial = true;
+    this.createOrUpdateLogger(C_DEFAULT, this.globalOptions, append);
+    return this.globalOptions;
   }
 
 }

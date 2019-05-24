@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
-import {TaskRef} from "./TaskRef";
-import {MetaArgs, NotYetImplementedError} from "commons-base/browser";
+import {TaskRef} from './TaskRef';
+import {MetaArgs, NotYetImplementedError} from 'commons-base/browser';
 import {
   AbstractRef,
   Binding,
@@ -9,38 +9,38 @@ import {
   LookupRegistry,
   XS_TYPE_ENTITY,
   XS_TYPE_PROPERTY
-} from "commons-schema-api/browser";
+} from 'commons-schema-api/browser';
 import {
   C_TASKS,
   K_CLS_TASK_DESCRIPTORS,
   XS_TYPE_BINDING_TASK_DEPENDS_ON,
   XS_TYPE_BINDING_TASK_GROUP
-} from "./Constants";
-import {Minimatch} from 'minimatch';
-import {TaskExchangeRef} from "./TaskExchangeRef";
-import {ITasksConfig} from "./ITasksConfig";
-import {ITaskRefOptions} from "./ITaskRefOptions";
-import {ITaskInfo} from "./ITaskInfo";
-import {ITaskDesc} from "../..";
-import {NullTaskRef} from "./NullTaskRef";
+} from './Constants';
+import {isMatch} from 'micromatch';
+import {TaskExchangeRef} from './TaskExchangeRef';
+import {ITasksConfig} from './ITasksConfig';
+import {ITaskRefOptions} from './ITaskRefOptions';
+import {ITaskInfo} from './ITaskInfo';
+import {ITaskDesc} from '../..';
+import {NullTaskRef} from './NullTaskRef';
 
 
 export class Tasks implements ILookupRegistry {
-
-  static NAME: string = 'Tasks';
-
-  readonly nodeId: string;
-
-  static taskId: number = 0;
-
-  config: ITasksConfig = {access: []};
-
-  registry: LookupRegistry = LookupRegistry.$(C_TASKS);
 
 
   constructor(nodeId: string) {
     this.nodeId = nodeId;
   }
+
+  static NAME = 'Tasks';
+
+  static taskId = 0;
+
+  readonly nodeId: string;
+
+  config: ITasksConfig = {access: []};
+
+  registry: LookupRegistry = LookupRegistry.$(C_TASKS);
 
   setConfig(config: ITasksConfig = {access: []}) {
     this.config = config;
@@ -48,7 +48,7 @@ export class Tasks implements ILookupRegistry {
 
 
   private getEntries(withRemote: boolean = false) {
-    return this.registry.list(XS_TYPE_ENTITY).filter(x => withRemote || !x.isRemote())
+    return this.registry.list(XS_TYPE_ENTITY).filter(x => withRemote || !x.isRemote());
   }
 
 
@@ -56,14 +56,14 @@ export class Tasks implements ILookupRegistry {
     if (!_.isArray(names)) {
       names = [names];
     }
-    let _names: string[] = [];
+    const _names: string[] = [];
     for (let i = 0; i < names.length; i++) {
       if (!this.contains(names[i])) {
-        throw new Error('task ' + names[i] + ' not exists')
+        throw new Error('task ' + names[i] + ' not exists');
       }
       _names.push(names[i]);
     }
-    return this.getEntries(true).filter((x: TaskRef) => _names.indexOf(x.name) != -1)
+    return this.getEntries(true).filter((x: TaskRef) => _names.indexOf(x.name) !== -1);
   }
 
 
@@ -86,9 +86,9 @@ export class Tasks implements ILookupRegistry {
 
   get(name: string): TaskRef {
     if (this.containsTask(name)) {
-      return this.registry.find(XS_TYPE_ENTITY, (t: TaskRef) => t.name == name);
+      return this.registry.find(XS_TYPE_ENTITY, (t: TaskRef) => t.name === name);
     }
-    let task = this.addTask(name, null, {group: true});
+    const task = this.addTask(name, null, {group: true});
     return task;
   }
 
@@ -97,11 +97,11 @@ export class Tasks implements ILookupRegistry {
     if (_.has(this.config, 'access')) {
       // if access empty then
       let allow = this.config.access.length > 0 ? false : true;
-      let count: number = 0;
-      for (let a of this.config.access) {
+      let count = 0;
+      for (const a of this.config.access) {
         if (_.isUndefined(a.match)) {
           if (/\+|\.|\(|\\||\)|\*/.test(a.task)) {
-            a.match = new Minimatch(a.task);
+            a.match = a.task;
           } else {
             a.match = false;
           }
@@ -109,18 +109,18 @@ export class Tasks implements ILookupRegistry {
         if (_.isBoolean(a.match)) {
           if (a.task === name) {
             count++;
-            allow = a.access == 'allow';
+            allow = a.access === 'allow';
             return allow;
           }
         } else {
-          if (a.match.match(name)) {
-            allow = allow || a.access == 'allow';
+          if (isMatch(name, a.match)) {
+            allow = allow || a.access === 'allow';
             count++;
           }
         }
       }
       // no allowed or denied
-      if (count == 0) {
+      if (count === 0) {
         allow = true;
       }
       return allow;
@@ -130,30 +130,30 @@ export class Tasks implements ILookupRegistry {
 
 
   addTask(name: string | object | Function, fn: object | Function = null, options: ITaskRefOptions = null): TaskRef {
-    let task = new TaskRef(name, fn, options);
+    const task = new TaskRef(name, fn, options);
     return this.addTaskRef(task, this.nodeId);
   }
 
 
   addRemoteTask(nodeId: string, info: ITaskInfo): TaskRef {
-    let task = new TaskRef(info, null, {remote: true});
+    const task = new TaskRef(info, null, {remote: true});
     return this.addTaskRef(task, nodeId);
   }
 
 
   addTaskRef(task: TaskRef, nodeId: string) {
     if (this.access(task.name)) {
-      let exists = <TaskRef>this.registry.find(XS_TYPE_ENTITY, (x: TaskRef) => x.name == task.name);
+      const exists = <TaskRef>this.registry.find(XS_TYPE_ENTITY, (x: TaskRef) => x.name === task.name);
       if (!exists) {
         task.addNodeId(nodeId);
         this.registry.add(XS_TYPE_ENTITY, task);
         if (task.canHaveProperties()) {
-          let ref = task.getClassRef().getClass(false);
+          const ref = task.getClassRef().getClass(false);
           if (ref) {
-            MetaArgs.key(K_CLS_TASK_DESCRIPTORS).filter(x => x.target == ref).map(desc => {
-              let prop = new TaskExchangeRef(desc);
+            MetaArgs.key(K_CLS_TASK_DESCRIPTORS).filter(x => x.target === ref).map(desc => {
+              const prop = new TaskExchangeRef(desc);
               this.registry.add(XS_TYPE_PROPERTY, prop);
-            })
+            });
           }
         }
         return this.get(task.name);
@@ -168,10 +168,10 @@ export class Tasks implements ILookupRegistry {
 
 
   removeTask(task: TaskRef) {
-    this.registry.remove(XS_TYPE_ENTITY, (x: TaskRef) => x.name == task.name);
-    this.registry.remove(XS_TYPE_PROPERTY, (x: TaskExchangeRef) => x.getClassRef() == task.getClassRef());
-    this.registry.remove(<any>XS_TYPE_BINDING_TASK_GROUP, (x: Binding) => x.source == task.name || x.target == task.name);
-    this.registry.remove(<any>XS_TYPE_BINDING_TASK_DEPENDS_ON, (x: Binding) => x.source == task.name || x.target == task.name);
+    this.registry.remove(XS_TYPE_ENTITY, (x: TaskRef) => x.name === task.name);
+    this.registry.remove(XS_TYPE_PROPERTY, (x: TaskExchangeRef) => x.getClassRef() === task.getClassRef());
+    this.registry.remove(<any>XS_TYPE_BINDING_TASK_GROUP, (x: Binding) => x.source === task.name || x.target === task.name);
+    this.registry.remove(<any>XS_TYPE_BINDING_TASK_DEPENDS_ON, (x: Binding) => x.source === task.name || x.target === task.name);
   }
 
 
@@ -193,11 +193,11 @@ export class Tasks implements ILookupRegistry {
 
 
   private containsTask(name: string) {
-    return !!this.registry.find(XS_TYPE_ENTITY, (t: TaskRef) => t.name == name);
+    return !!this.registry.find(XS_TYPE_ENTITY, (t: TaskRef) => t.name === name);
   }
 
   private containsGroup(name: string) {
-    return !!this.registry.find(<any>XS_TYPE_BINDING_TASK_GROUP, (t: Binding) => t.source == name);
+    return !!this.registry.find(<any>XS_TYPE_BINDING_TASK_GROUP, (t: Binding) => t.source === name);
   }
 
   /**
@@ -232,11 +232,11 @@ export class Tasks implements ILookupRegistry {
     if (this.contains(name)) {
       return this.get(name);
     }
-    let task = this.addTask(name, function (done: Function) {
-      done()
+    const task = this.addTask(name, function (done: Function) {
+      done();
     });
 
-    if(!task){
+    if (!task) {
       return new NullTaskRef();
     }
     return task;
@@ -247,10 +247,10 @@ export class Tasks implements ILookupRegistry {
     let taskRef = null;
     if (this.contains(name)) {
       taskRef = this.get(name);
-      let taskRefClone = taskRef.clone(new_name);
+      const taskRefClone = taskRef.clone(new_name);
       return this.addTaskRef(taskRefClone, this.nodeId);
     } else {
-      throw new Error('task doesn\'t exists')
+      throw new Error('task doesn\'t exists');
     }
   }
 
@@ -261,7 +261,7 @@ export class Tasks implements ILookupRegistry {
         return this.get(name);
       }
     }
-    let task = this.addTask(name, fn, options);
+    const task = this.addTask(name, fn, options);
     if (!task) {
       return new NullTaskRef();
     }
@@ -290,11 +290,12 @@ export class Tasks implements ILookupRegistry {
     }
 
     if (entityRef) {
-      for (let prop of json.properties) {
-        let classRef = entityRef.getClassRef();
-        let propRef: TaskExchangeRef = this.registry.find(XS_TYPE_PROPERTY, (x: TaskExchangeRef) => x.name == prop.name && x.getClassRef() === classRef);
+      for (const prop of json.properties) {
+        const classRef = entityRef.getClassRef();
+        let propRef: TaskExchangeRef = this.registry.find(XS_TYPE_PROPERTY,
+          (x: TaskExchangeRef) => x.name === prop.name && x.getClassRef() === classRef);
         if (!propRef) {
-          let desc: ITaskDesc = (<any>prop).descriptor;
+          const desc: ITaskDesc = (<any>prop).descriptor;
           desc.target = classRef.getClass();
           propRef = new TaskExchangeRef(desc);
           this.register(propRef);

@@ -114,5 +114,6 @@
       "check-separator",
       "check-type"
     ]
+    // ,"completed-docs": true
   }
 }

@@ -92,7 +92,15 @@ export class Startup implements IBootstrap, IShutdown {
     }
   }
 
-
+  /**
+   * impl. shutdown function, shutdowns following components:
+   * - cache
+   * - distributed system
+   * - EventBus
+   * - tasks
+   * - workers
+   * - watchers
+   */
   async shutdown() {
     await this.cache.shutdown();
     await this.system.unregister();

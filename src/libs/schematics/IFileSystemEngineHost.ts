@@ -1,4 +1,4 @@
-export interface IFileSystemEngineHost {
-  basedir: string;
-  lookupPaths?: string[];
-}
+// export interface IFileSystemEngineHost {
+//   basedir: string;
+//   lookupPaths?: string[];
+// }

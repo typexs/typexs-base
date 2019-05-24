@@ -1,6 +1,6 @@
 {
   "name": "@typexs/base",
-  "version": "0.9.4",
+  "version": "0.9.3",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -49,7 +49,7 @@
     "merge-stream": "^2.0.0",
     "mocha": "^6.1.4",
     "mocha-typescript": "^1.1.17",
-    "mongodb": "^3.2.5",
+    "mongodb": "^3.2.6",
     "nyc": "^14.1.0",
     "redis": "^2.8.0",
     "sqlite3": "^4.0.2",
@@ -60,8 +60,6 @@
     "typescript-require": "^0.2.10"
   },
   "dependencies": {
-    "@angular-devkit/core": "0.3.2",
-    "@angular-devkit/schematics": "0.3.2",
     "class-validator": "^0.9.1",
     "commons-base": "^1.1.2",
     "commons-config": "^0.4.19",
@@ -72,7 +70,6 @@
     "js-yaml": "^3.12.1",
     "moment": "^2.24.0",
     "node-machine-id": "^1.1.10",
-    "rxjs": "^5.5.12",
     "typedi": "^0.8.0",
     "typeorm": "^0.2.12",
     "winston": "3.2.1",

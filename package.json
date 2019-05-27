@@ -17,6 +17,7 @@
   "author": "Robert Kania",
   "license": "MIT",
   "devDependencies": {
+    "@types/brace-expansion": "^1.1.0",
     "@types/chai": "^4.1.7",
     "@types/chai-as-promised": "^7.1.0",
     "@types/chai-spies": "^1.0.0",
@@ -60,6 +61,7 @@
     "typescript-require": "^0.2.10"
   },
   "dependencies": {
+    "@cezaryrk/minimatch": "^3.0.4",
     "class-validator": "^0.9.1",
     "commons-base": "^1.1.2",
     "commons-config": "^0.4.19",

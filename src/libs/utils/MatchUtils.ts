@@ -5,7 +5,7 @@ export class MatchUtils {
   static miniMatch(pattern: string, string: string) {
     try {
       if (!MatchUtils.MATCHER) {
-        MatchUtils.MATCHER = require('minimatch');
+        MatchUtils.MATCHER = require('@cezaryrk/minimatch');
       }
       return new MatchUtils.MATCHER.Minimatch(pattern).match(string);
     } catch (e) {
@@ -13,3 +13,5 @@ export class MatchUtils {
     }
   }
 }
+
+

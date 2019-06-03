@@ -3,11 +3,11 @@
 
 export class ObjectsNotValidError extends Error {
 
-  isArray:boolean = false;
+  isArray = false;
 
-  objects:any[];
+  objects: any[];
 
-  constructor(objects:any[], isArray:boolean = false){
+  constructor(objects: any[], isArray: boolean = false) {
     super('Object(s) are not valid');
     Object.setPrototypeOf(this, ObjectsNotValidError.prototype);
     this.objects = objects;

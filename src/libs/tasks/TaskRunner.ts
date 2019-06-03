@@ -1,8 +1,8 @@
 import * as _ from 'lodash';
-import {EventEmitter} from 'events'
-import {Tasks} from "./Tasks";
-import {TaskRun} from "./TaskRun";
-import {Log} from "../logging/Log";
+import {EventEmitter} from 'events';
+import {Tasks} from './Tasks';
+import {TaskRun} from './TaskRun';
+import {Log} from '../logging/Log';
 import {
   TASK_STATES,
   TASKRUN_STATE_DONE,
@@ -11,27 +11,27 @@ import {
   TASKRUN_STATE_NEXT,
   TASKRUN_STATE_RUN,
   TASKRUN_STATE_UPDATE
-} from "./Constants";
-import {ITaskRunnerResult} from "./ITaskRunnerResult";
-import {CryptUtils, TasksApi} from "../..";
-import {Bootstrap} from "../../Bootstrap";
+} from './Constants';
+import {ITaskRunnerResult} from './ITaskRunnerResult';
+import {CryptUtils, TasksApi} from '../..';
+import {Bootstrap} from '../../Bootstrap';
 import {Invoker} from '../../base/Invoker';
-import {TasksHelper} from "./TasksHelper";
-import {Container} from "typedi";
-import {ILoggerApi} from "../logging/ILoggerApi";
-import * as moment from "moment";
-import {WinstonLoggerJar} from "../logging/WinstonLoggerJar";
+import {TasksHelper} from './TasksHelper';
+import {Container} from 'typedi';
+import {ILoggerApi} from '../logging/ILoggerApi';
+import * as moment from 'moment';
+import {WinstonLoggerJar} from '../logging/WinstonLoggerJar';
 
-import * as winston from "winston";
-import {DefaultJsonFormat} from "../logging/DefaultJsonFormat";
+import * as winston from 'winston';
+import {DefaultJsonFormat} from '../logging/DefaultJsonFormat';
 
-import {Stream} from "stream";
-import {ITaskRunnerOptions} from "./ITaskRunnerOptions";
+import {Stream} from 'stream';
+import {ITaskRunnerOptions} from './ITaskRunnerOptions';
 
 
 export class TaskRunner extends EventEmitter {
 
-  static taskRunnerId: number = 0;
+  static taskRunnerId = 0;
 
   nr: number = TaskRunner.taskRunnerId++;
 
@@ -97,7 +97,7 @@ export class TaskRunner extends EventEmitter {
 
     this.$registry = registry;
     this.$parallel = this.$options['parallel'] || 5;
-    //this.$inital = names;
+    // this.$inital = names;
     this.$dry_mode = this.$options['dry_mode'] || false;
     this.$start = new Date();
 
@@ -112,7 +112,7 @@ export class TaskRunner extends EventEmitter {
 
     this.$todo = this.$tasks.map(x => x.taskRef().name);
     this.loggerName = 'task-runner-' + this.id;
-    let startDate = moment(this.$start).toISOString();
+    const startDate = moment(this.$start).toISOString();
     this.taskLogger = Log._().createLogger(this.loggerName, {
       prefix: this.loggerName,
       taskStart: startDate,
@@ -121,7 +121,7 @@ export class TaskRunner extends EventEmitter {
     });
     this.taskLogger.info('Execute tasks: ' + this.$todo.join(', '));
 
-    let sefl = this;
+    const sefl = this;
     this.readStream = new Stream.Readable({
       read(size: number) {
         return size > 0;
@@ -131,7 +131,7 @@ export class TaskRunner extends EventEmitter {
     this.writeStream = new Stream.Writable({
       write(chunk: any, encoding: any, next: any) {
         (<any>sefl.readStream).push(chunk, encoding);
-        next()
+        next();
       }
     });
 
@@ -143,14 +143,14 @@ export class TaskRunner extends EventEmitter {
       }));
 
 
-    //this.$todo = _.keys(this.$tasks);
+    // this.$todo = _.keys(this.$tasks);
 
     this.on(TASKRUN_STATE_FINISHED, this.finish.bind(this));
     this.on(TASKRUN_STATE_NEXT, this.next.bind(this));
     this.on(TASKRUN_STATE_RUN, this.taskRun.bind(this));
-    this.on(TASKRUN_STATE_DONE, this.taskDone.bind(this))
+    this.on(TASKRUN_STATE_DONE, this.taskDone.bind(this));
 
-    this.state = "started";
+    this.state = 'started';
   }
 
 
@@ -175,11 +175,11 @@ export class TaskRunner extends EventEmitter {
 
 
   async setIncoming(key: string, value: any) {
-    let ref = this.getRequiredIncomings().find(i => i.storingName == _.snakeCase(key));
+    const ref = this.getRequiredIncomings().find(i => i.storingName == _.snakeCase(key));
     if (ref) {
       _.set(this.$incoming, ref.storingName, await ref.convert(value));
     } else {
-      this.getLogger().warn('no required incoming parameter found for ' + key)
+      this.getLogger().warn('no required incoming parameter found for ' + key);
     }
   }
 
@@ -188,7 +188,7 @@ export class TaskRunner extends EventEmitter {
    * Check if subtask or depending tasks are ready
    */
   selectNextTask() {
-    for (let taskRun of this.$tasks) {
+    for (const taskRun of this.$tasks) {
       if (taskRun.ready()) {
         return taskRun;
       }
@@ -199,11 +199,11 @@ export class TaskRunner extends EventEmitter {
 
   resolveDeps(task_names: string[]) {
     for (let i = 0; i < task_names.length; i++) {
-      let name = task_names[i];
+      const name = task_names[i];
       let taskRun = _.find(this.$tasks, x => x.taskRef().name == name);
-      if (taskRun) continue;
+      if (taskRun) { continue; }
 
-      let task = this.$registry.get(name);
+      const task = this.$registry.get(name);
       taskRun = new TaskRun(this, task);
       this.$tasks.push(taskRun);
 
@@ -223,7 +223,7 @@ export class TaskRunner extends EventEmitter {
   areTasksDone(tasks: string[]) {
     // console.log('check',tasks, 'done',this.$done)
     for (let i = 0; i < tasks.length; i++) {
-      let tName = tasks[i];
+      const tName = tasks[i];
       if (this.$done.indexOf(tName) == -1) {
         // not done
         return false;
@@ -234,7 +234,7 @@ export class TaskRunner extends EventEmitter {
 
 
   next() {
-    let self = this;
+    const self = this;
     if (this.$finished) {
       return;
     }
@@ -245,10 +245,10 @@ export class TaskRunner extends EventEmitter {
       return;
     }
 
-    let nextTask = this.selectNextTask();
-    this.state = "running";
+    const nextTask = this.selectNextTask();
+    this.state = 'running';
     if (this.$running.length == 0 && !nextTask) {
-      throw new Error('Tasks are stucked!')
+      throw new Error('Tasks are stucked!');
     }
 
     if (nextTask) {
@@ -260,28 +260,28 @@ export class TaskRunner extends EventEmitter {
 
 
   api() {
-    return this.invoker.use(TasksApi)
+    return this.invoker.use(TasksApi);
   }
 
 
   async taskRun(taskRun: TaskRun) {
-    let self = this;
-    let name = taskRun.taskRef().name;
+    const self = this;
+    const name = taskRun.taskRef().name;
 
-    let ridx = this.$running.indexOf(name);
+    const ridx = this.$running.indexOf(name);
     if (ridx == -1) {
       this.$running.push(name);
     } else {
       throw new Error('TaskRef already running!!!');
     }
 
-    let idx = this.$todo.indexOf(name);
+    const idx = this.$todo.indexOf(name);
     if (idx == -1) {
       throw new Error('TaskRef not in todo list!');
     }
     this.$todo.splice(idx, 1);
 
-    let doneCallback = function (err: Error, res: any) {
+    const doneCallback = function (err: Error, res: any) {
       if (err) {
         self.taskLogger.error(err);
       }
@@ -290,7 +290,7 @@ export class TaskRunner extends EventEmitter {
       self.emit(TASKRUN_STATE_DONE, taskRun, err);
     };
 
-    let incoming: any = {};
+    const incoming: any = {};
     taskRun.taskRef().getIncomings().forEach(x => {
       incoming[x.name] = this.$incoming[x.storingName] || this.$outgoing[x.storingName];
     });
@@ -308,16 +308,16 @@ export class TaskRunner extends EventEmitter {
       this.$outgoing[x.storingName] = task.status.outgoing[x.name];
     });
 
-    let name = task.taskRef().name;
+    const name = task.taskRef().name;
 
-    let ridx = this.$done.indexOf(name);
+    const ridx = this.$done.indexOf(name);
     if (ridx == -1) {
       this.$done.push(name);
     } else {
       throw new Error('TaskRef already in done list!!!');
     }
 
-    let idx = this.$running.indexOf(name);
+    const idx = this.$running.indexOf(name);
     if (idx == -1) {
       throw new Error('TaskRef not in running list!');
     }
@@ -349,7 +349,7 @@ export class TaskRunner extends EventEmitter {
       });
 
       this.emit(TASKRUN_STATE_NEXT);
-    })
+    });
   }
 
 
@@ -371,20 +371,20 @@ export class TaskRunner extends EventEmitter {
 
 
   getList() {
-    return this.$tasks.map(t => t.taskRef().name)
+    return this.$tasks.map(t => t.taskRef().name);
   }
 
 
   update(taskName: string) {
-    this.emit(TASKRUN_STATE_UPDATE, taskName, this.collectStats())
+    this.emit(TASKRUN_STATE_UPDATE, taskName, this.collectStats());
   }
 
 
   finish() {
-    this.state = "stopped";
+    this.state = 'stopped';
     this.$stop = new Date();
     this.$duration = this.$stop.getTime() - this.$start.getTime();
-    let status = this.collectStats();
+    const status = this.collectStats();
 
     if (this.$finish) {
       this.$finish(status);
@@ -397,12 +397,12 @@ export class TaskRunner extends EventEmitter {
 
   collectStats(taskName: string = null): ITaskRunnerResult {
     // todo collect results
-    let results = [];
-    for (let task of this.$tasks) {
+    const results = [];
+    for (const task of this.$tasks) {
       results.push(task.stats());
     }
 
-    let status: ITaskRunnerResult = {
+    const status: ITaskRunnerResult = {
       id: this.id,
       state: this.state,
       nodeId: this.$options.nodeId,

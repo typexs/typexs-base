@@ -1,7 +1,7 @@
-import * as _ from "lodash";
+import * as _ from 'lodash';
 
-import {TableMetadataArgs} from "typeorm/browser/metadata-args/TableMetadataArgs";
-import {TypeOrmPropertyRef} from "./TypeOrmPropertyRef";
+import {TableMetadataArgs} from 'typeorm/browser/metadata-args/TableMetadataArgs';
+import {TypeOrmPropertyRef} from './TypeOrmPropertyRef';
 import {
   AbstractRef,
   IBuildOptions,
@@ -11,10 +11,10 @@ import {
   SchemaUtils,
   XS_TYPE_ENTITY,
   XS_TYPE_PROPERTY
-} from "commons-schema-api/browser";
-import {ClassUtils} from "commons-base/browser";
-import {REGISTRY_TYPEORM} from "./TypeOrmConstants";
-import {getFromContainer, MetadataStorage} from "class-validator";
+} from 'commons-schema-api/browser';
+import {ClassUtils} from 'commons-base/browser';
+import {REGISTRY_TYPEORM} from './TypeOrmConstants';
+import {getFromContainer, MetadataStorage} from 'class-validator';
 
 export class TypeOrmEntityRef extends AbstractRef implements IEntityRef {
 
@@ -35,7 +35,7 @@ export class TypeOrmEntityRef extends AbstractRef implements IEntityRef {
 
 
   getPropertyRef(name: string): TypeOrmPropertyRef {
-    return this.getPropertyRefs().find(p => p.name == name);
+    return this.getPropertyRefs().find(p => p.name === name);
   }
 
 
@@ -49,28 +49,29 @@ export class TypeOrmEntityRef extends AbstractRef implements IEntityRef {
   }
 
   id() {
-    return this.getSourceRef().id().toLowerCase(); //_.snakeCase(_.isString(this.metadata.target) ? this.metadata.target : this.metadata.target.name)
+    return this.getSourceRef().id().toLowerCase();
+    // _.snakeCase(_.isString(this.metadata.target) ? this.metadata.target : this.metadata.target.name)
   }
 
 
   toJson(withProperties: boolean = true): IEntityRefMetadata {
-    let o = super.toJson();
+    const o = super.toJson();
     o.schema = this.object.getSchema();
     if (withProperties) {
       o.properties = this.getPropertyRefs().map(p => p.toJson());
     }
 
-    let storage = getFromContainer(MetadataStorage);
-    let metadata = storage.getTargetValidationMetadatas(this.object.getClass(), null);
+    const storage = getFromContainer(MetadataStorage);
+    const metadata = storage.getTargetValidationMetadatas(this.object.getClass(), null);
 
     metadata.forEach(m => {
-      let prop = _.find(o.properties, p => p.name === m.propertyName);
+      const prop = _.find(o.properties, p => p.name === m.propertyName);
       if (prop) {
         if (!prop.validator) {
           prop.validator = [];
         }
 
-        let args: IValidationMetadataArgs = {
+        const args: IValidationMetadataArgs = {
           type: m.type,
           target: this.object.className,
           propertyName: m.propertyName,

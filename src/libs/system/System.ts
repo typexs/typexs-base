@@ -1,29 +1,29 @@
 import * as _ from 'lodash';
 import {subscribe} from 'commons-eventbus';
-import {Log} from "../logging/Log";
-import {EventBus} from "commons-eventbus";
-import {C_KEY_SEPARATOR, C_STORAGE_DEFAULT, Invoker, SystemInfoEvent} from "../..";
-import {StorageRef} from "../storage/StorageRef";
-import {Inject} from "typedi";
-import {SystemApi} from "../../api/System.api";
-import {INodeInfo} from "./INodeInfo";
-import {SystemNodeInfo} from "../../entities/SystemNodeInfo";
-import {SystemInfo} from "./SystemInfo";
-import * as os from "os";
-import {SystemInfoRequestEvent} from "./SystemInfoRequestEvent";
-import {SystemInfoRequest} from "./SystemInfoRequest";
-import * as machineId from "node-machine-id";
+import {Log} from '../logging/Log';
+import {EventBus} from 'commons-eventbus';
+import {C_KEY_SEPARATOR, C_STORAGE_DEFAULT, Invoker, SystemInfoEvent} from '../..';
+import {StorageRef} from '../storage/StorageRef';
+import {Inject} from 'typedi';
+import {SystemApi} from '../../api/System.api';
+import {INodeInfo} from './INodeInfo';
+import {SystemNodeInfo} from '../../entities/SystemNodeInfo';
+import {SystemInfo} from './SystemInfo';
+import * as os from 'os';
+import {SystemInfoRequestEvent} from './SystemInfoRequestEvent';
+import {SystemInfoRequest} from './SystemInfoRequest';
+import * as machineId from 'node-machine-id';
 
 
 export class System {
+
+  static NAME = 'System';
 
   @Inject(Invoker.NAME)
   invoker: Invoker;
 
   @Inject(C_STORAGE_DEFAULT)
   storageRef: StorageRef;
-
-  static NAME: string = 'System';
 
 
   updateTimer: any;
@@ -46,7 +46,7 @@ export class System {
   /**
    *
    */
-  _registered: boolean = false;
+  _registered = false;
 
 
   async initialize(hostname: string, nodeId: string) {
@@ -54,7 +54,7 @@ export class System {
 
     // clear table before startup
     if (this.storageRef) {
-      let c = await this.storageRef.connect();
+      const c = await this.storageRef.connect();
       await c.manager.clear(SystemNodeInfo);
       await c.close();
     }
@@ -81,7 +81,7 @@ export class System {
 
 
   async handleNode(nodeInfo: SystemNodeInfo) {
-    if (this.node.nodeId == nodeInfo.nodeId) {
+    if (this.node.nodeId === nodeInfo.nodeId) {
       // own information can be ignored
       return null;
     }
@@ -93,15 +93,15 @@ export class System {
     // clear local info
     delete nodeInfo.isBackend;
     let doSave = false;
-    let node = _.find(this.nodes, n => n.nodeId == nodeInfo.nodeId);
-    if (!node && (nodeInfo.state == 'register' || nodeInfo.state == 'idle')) {
+    const node = _.find(this.nodes, n => n.nodeId === nodeInfo.nodeId);
+    if (!node && (nodeInfo.state === 'register' || nodeInfo.state === 'idle')) {
       this.nodes.push(nodeInfo);
       Log.debug('add remote node ' + nodeInfo.hostname + ':' + nodeInfo.nodeId);
       doSave = true;
       await EventBus.post(this.node);
       await this.invoker.use(SystemApi).onNodeRegister(nodeInfo);
-    } else if (node && nodeInfo.state == 'unregister') {
-      _.remove(this.nodes, n => n.nodeId == nodeInfo.nodeId);
+    } else if (node && nodeInfo.state === 'unregister') {
+      _.remove(this.nodes, n => n.nodeId === nodeInfo.nodeId);
       doSave = true;
       Log.debug('remove remote node ' + nodeInfo.hostname + ':' + nodeInfo.nodeId);
       await this.invoker.use(SystemApi).onNodeUnregister(nodeInfo);
@@ -120,23 +120,23 @@ export class System {
 
 
   async gatherNodeInfos() {
-    let infos: INodeInfo | INodeInfo[] = await this.invoker.use(SystemApi).getNodeInfos();
+    const infos: INodeInfo | INodeInfo[] = await this.invoker.use(SystemApi).getNodeInfos();
     if (_.isArray(infos)) {
-      for (let info of infos) {
+      for (const info of infos) {
         if (!_.isEmpty(info)) {
-          this.node.contexts.push(info)
+          this.node.contexts.push(info);
         }
       }
     } else {
       if (!_.isEmpty(infos)) {
-        this.node.contexts.push(infos)
+        this.node.contexts.push(infos);
       }
     }
   }
 
 
   async getNodeInfos(nodeIds: string[] = []) {
-    let request: SystemInfoRequest = new SystemInfoRequest(this);
+    const request: SystemInfoRequest = new SystemInfoRequest(this);
     return request.run(nodeIds);
   }
 
@@ -163,9 +163,9 @@ export class System {
 
   @subscribe(SystemInfoRequestEvent)
   onInfoRequest(event: SystemInfoRequestEvent) {
-    if (this.node.nodeId == event.nodeId) return;
-    if (event.targetIds && event.targetIds.indexOf(this.node.nodeId) != -1) {
-      let response = new SystemInfoEvent();
+    if (this.node.nodeId === event.nodeId) { return; }
+    if (event.targetIds && event.targetIds.indexOf(this.node.nodeId) !== -1) {
+      const response = new SystemInfoEvent();
       response.nodeId = this.node.nodeId;
       response.targetIds = [event.nodeId];
       response.respId = this.node.nodeId;
@@ -182,9 +182,9 @@ export class System {
     await EventBus.register(this);
 
     this.updateTimer = setInterval(this.updateInfo.bind(this), 5000);
-    let ret = await EventBus.post(this.node);
-    let nodeHandle = [];
-    for (let x of ret) {
+    const ret = await EventBus.post(this.node);
+    const nodeHandle = [];
+    for (const x of ret) {
       for (let y of x) {
         if (!y) {
           continue;
@@ -204,7 +204,7 @@ export class System {
 
 
   async unregister() {
-    if (!this._registered) return;
+    if (!this._registered) { return; }
     clearInterval(this.updateTimer);
     this.node.state = 'unregister';
     this.node.finished = new Date();

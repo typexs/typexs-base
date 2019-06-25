@@ -1,35 +1,24 @@
-import {
-  AsyncWorkerQueue,
-  C_STORAGE_DEFAULT,
-  IAsyncQueueOptions,
-  ILoggerApi,
-  IQueueProcessor,
-  StorageRef,
-  TaskLog,
-  Tasks,
-  Cache, Log
-} from "../..";
-import {Bootstrap} from "../../Bootstrap";
-import {Inject} from "typedi";
-import {subscribe} from 'commons-eventbus';
-import {TaskEvent} from "./worker/TaskEvent";
-import {EventBus} from "commons-eventbus";
+import {AsyncWorkerQueue, C_STORAGE_DEFAULT, Cache, IAsyncQueueOptions, ILoggerApi, IQueueProcessor, Log, StorageRef, Tasks} from '../..';
+import {Bootstrap} from '../../Bootstrap';
+import {Inject} from 'typedi';
+import {EventBus, subscribe} from 'commons-eventbus';
+import {TaskEvent} from './worker/TaskEvent';
 
 
-import {Config} from "commons-config";
-import * as fs from "fs";
-import {PlatformUtils} from "commons-base";
-import {ITaskRunnerResult} from "./ITaskRunnerResult";
-import {TasksStorageHelper} from "./helper/TasksStorageHelper";
-import {TasksHelper} from "./TasksHelper";
-import {IWorkerStatisitic} from "../worker/IWorkerStatisitic";
+import {Config} from 'commons-config';
+import * as fs from 'fs';
+import {PlatformUtils} from 'commons-base';
+import {ITaskRunnerResult} from './ITaskRunnerResult';
+import {TasksStorageHelper} from './helper/TasksStorageHelper';
+import {TasksHelper} from './TasksHelper';
+import {IWorkerStatisitic} from '../worker/IWorkerStatisitic';
 
 export class TaskMonitor implements IQueueProcessor<TaskEvent> {
 
   static NAME: string = TaskMonitor.name;
 
 
-  inc: number = 0;
+  inc = 0;
 
   nodeId: string;
 
@@ -68,20 +57,17 @@ export class TaskMonitor implements IQueueProcessor<TaskEvent> {
 
   @subscribe(TaskEvent)
   onTaskEvent(event: TaskEvent) {
-    if (event.topic == 'data' && event.respId == this.nodeId) {
+    if (event.topic === 'data' && event.respId === this.nodeId) {
       return;
     } else {
-
       this.queue.push(event);
-
-
     }
 
   }
 
   onTaskResults(results: ITaskRunnerResult) {
     if (results) {
-      let event = new TaskEvent();
+      const event = new TaskEvent();
       event.topic = 'data';
       event.data = results;
       this.queue.push(event);
@@ -93,7 +79,7 @@ export class TaskMonitor implements IQueueProcessor<TaskEvent> {
 
   async do(event: TaskEvent, queue?: AsyncWorkerQueue<any>): Promise<any> {
     try {
-      if (event.topic == "data") {
+      if (event.topic === 'data') {
         if (this.storageRef) {
           // storage may be not initialized
           if (event.data) {
@@ -105,10 +91,10 @@ export class TaskMonitor implements IQueueProcessor<TaskEvent> {
           this.logger.debug('can\'t save task log cause storage.default is not present');
         }
 
-      } else if (event.topic == 'log') {
-        let filename = TasksHelper.getTaskLogFile(event.id, event.respId);
-        await new Promise((resolve, reject) => {
-          let out = event.log.join("\n") + "\n";
+      } else if (event.topic === 'log') {
+        const filename = TasksHelper.getTaskLogFile(event.id, event.respId);
+        await new Promise((resolve) => {
+          const out = event.log.join('\n') + '\n';
           fs.appendFile(filename, out, (err) => {
             if (err) {
               this.logger.error('appending log to file ' + filename, err);
@@ -117,7 +103,7 @@ export class TaskMonitor implements IQueueProcessor<TaskEvent> {
             }
             resolve();
           });
-        })
+        });
       }
     } catch (err) {
       this.logger.error(err);
@@ -126,7 +112,7 @@ export class TaskMonitor implements IQueueProcessor<TaskEvent> {
 
 
   statistic(): IWorkerStatisitic {
-    let stats: IWorkerStatisitic = {
+    const stats: IWorkerStatisitic = {
       stats: this.queue.status(),
       paused: this.queue.isPaused(),
       idle: this.queue.isIdle(),

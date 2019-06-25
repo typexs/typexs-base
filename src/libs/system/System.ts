@@ -1,7 +1,6 @@
 import * as _ from 'lodash';
-import {subscribe} from 'commons-eventbus';
+import {EventBus, subscribe} from 'commons-eventbus';
 import {Log} from '../logging/Log';
-import {EventBus} from 'commons-eventbus';
 import {C_KEY_SEPARATOR, C_STORAGE_DEFAULT, Invoker, SystemInfoEvent} from '../..';
 import {StorageRef} from '../storage/StorageRef';
 import {Inject} from 'typedi';
@@ -98,8 +97,12 @@ export class System {
       this.nodes.push(nodeInfo);
       Log.debug('add remote node ' + nodeInfo.hostname + ':' + nodeInfo.nodeId);
       doSave = true;
-      await EventBus.post(this.node);
-      await this.invoker.use(SystemApi).onNodeRegister(nodeInfo);
+      await EventBus.postAndForget(this.node);
+      try {
+        await this.invoker.use(SystemApi).onNodeRegister(nodeInfo);
+      } catch (e) {
+        Log.error(e);
+      }
     } else if (node && nodeInfo.state === 'unregister') {
       _.remove(this.nodes, n => n.nodeId === nodeInfo.nodeId);
       doSave = true;
@@ -163,7 +166,9 @@ export class System {
 
   @subscribe(SystemInfoRequestEvent)
   onInfoRequest(event: SystemInfoRequestEvent) {
-    if (this.node.nodeId === event.nodeId) { return; }
+    if (this.node.nodeId === event.nodeId) {
+      return;
+    }
     if (event.targetIds && event.targetIds.indexOf(this.node.nodeId) !== -1) {
       const response = new SystemInfoEvent();
       response.nodeId = this.node.nodeId;
@@ -204,7 +209,9 @@ export class System {
 
 
   async unregister() {
-    if (!this._registered) { return; }
+    if (!this._registered) {
+      return;
+    }
     clearInterval(this.updateTimer);
     this.node.state = 'unregister';
     this.node.finished = new Date();

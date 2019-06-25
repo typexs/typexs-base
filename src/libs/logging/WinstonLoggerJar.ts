@@ -1,15 +1,16 @@
-import {C_DEFAULT, ILogLevel, TodoException} from "commons-base";
-import * as winston from "winston";
-import {createLogger, Logger, LoggerOptions} from "winston";
-import {ILoggerOptions} from "./ILoggerOptions";
-import {Log} from "../../libs/logging/Log";
-import {BaseUtils} from "../../libs/utils/BaseUtils";
-import * as _ from "lodash";
-import {ConsoleTransportOptions} from "winston/lib/winston/transports";
-import {DefaultFormat} from "./DefaultFormat";
-import {LogEvent} from "./LogEvent";
-import {ILoggerApi} from "./ILoggerApi";
-import {DefaultJsonFormat} from "./DefaultJsonFormat";
+import {C_DEFAULT, ILogLevel, TodoException} from 'commons-base';
+import * as winston from 'winston';
+import {createLogger, Logger, LoggerOptions} from 'winston';
+import {ILoggerOptions} from './ILoggerOptions';
+import {Log} from '../../libs/logging/Log';
+import {BaseUtils} from '../../libs/utils/BaseUtils';
+import * as _ from 'lodash';
+import {ConsoleTransportOptions} from 'winston/lib/winston/transports';
+import {DefaultFormat} from './DefaultFormat';
+import {LogEvent} from './LogEvent';
+import {ILoggerApi} from './ILoggerApi';
+import {DefaultJsonFormat} from './DefaultJsonFormat';
+
 
 const DEFAULT_TRANSPORT_OPTIONS: ConsoleTransportOptions = {};
 
@@ -29,7 +30,7 @@ export class WinstonLoggerJar implements ILoggerApi {
 
   prefix: string;
 
-  enabled: boolean = true;
+  enabled = true;
 
   _logger: Logger;
 
@@ -69,7 +70,7 @@ export class WinstonLoggerJar implements ILoggerApi {
     this.name = name;
 
     if (append && this.options) {
-      this.options = BaseUtils.merge(this.options, options)
+      this.options = BaseUtils.merge(this.options, options);
     } else if (!append) {
       this.options = options;
     }
@@ -78,28 +79,28 @@ export class WinstonLoggerJar implements ILoggerApi {
       this.prefix = options.prefix;
     }
 
-    let opts: LoggerOptions = {
+    const opts: LoggerOptions = {
       level: this.options.level,
       transports: [],
     };
 
     this.detectFormat(options, opts);
 
-    let t: any[] = [];
+    const t: any[] = [];
     if (_.has(options, 'transports')) {
-      for (let opt of options.transports) {
-        let k = Object.keys(opt).shift();
-        let transportOptions: any = _.defaults(opt[k], DEFAULT_TRANSPORT_OPTIONS);
+      for (const opt of options.transports) {
+        const k = Object.keys(opt).shift();
+        const transportOptions: any = _.defaults(opt[k], DEFAULT_TRANSPORT_OPTIONS);
         if (_.has(WinstonLoggerJar.transportTypes, k)) {
           t.push(Reflect.construct(WinstonLoggerJar.transportTypes[k], [transportOptions]));
         } else {
-          throw new TodoException('log: transport type ' + k + ' not found.')
+          throw new TodoException('log: transport type ' + k + ' not found.');
         }
       }
       opts.transports = t;
     }
     if (this._logger) {
-      this._logger.configure(opts)
+      this._logger.configure(opts);
     } else {
       this._logger = createLogger(opts);
     }
@@ -109,7 +110,7 @@ export class WinstonLoggerJar implements ILoggerApi {
 
   detectFormat(options: ILoggerOptions, opts: LoggerOptions) {
     if (!_.has(options, 'format')) {
-      opts.format = new DefaultFormat()
+      opts.format = new DefaultFormat();
     } else {
       if (_.isFunction(options.format)) {
         opts.format = <any>options.format;
@@ -135,10 +136,10 @@ export class WinstonLoggerJar implements ILoggerApi {
 
   log(level: string, ...msg: any[]): void {
     if (msg[0] instanceof LogEvent) {
-      this._logger.log(level, msg[0].message(), {event: msg[0]})
+      this._logger.log(level, msg[0].message(), {event: msg[0]});
     } else {
-      let l = new LogEvent({args: msg, level: level, prefix: this.prefix});
-      this._logger.log(level, l.message(), {event: l})
+      const l = new LogEvent({args: msg, level: level, prefix: this.prefix});
+      this._logger.log(level, l.message(), {event: l});
     }
   }
 

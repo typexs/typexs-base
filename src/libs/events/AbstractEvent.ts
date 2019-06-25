@@ -1,10 +1,14 @@
-import {CryptUtils} from "../../libs/utils/CryptUtils";
+import {CryptUtils} from '../../libs/utils/CryptUtils';
 
 export abstract class AbstractEvent {
 
 
   static inc = 0;
 
+  /**
+   * creation date of this task
+   */
+  created: Date = new Date();
 
   /**
    * Id of event itself

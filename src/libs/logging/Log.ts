@@ -94,76 +94,6 @@ export class Log {
     return this._().options(options, append);
   }
 
-  /*
-  createLogger(name:string,){
-    let l = new (winston.Logger)(opts);
-  }
-
-
-  private create(opts: LoggerOptions): Log {
-    this.loggers[C_DEFAULT] = new WinstonLoggerJar(opts);
-    this.initial = true;
-    return this
-  }
-
-  private options(options: ILoggerOptions, append: boolean = false) {
-    if (append && this._options) {
-      options = BaseUtils.merge(this._options, options)
-    }
-
-    this._options = _.defaults(options, DEFAULT_OPTIONS);
-    Log.enable = this._options.enable;
-    Log.enableEvents = this._options.events;
-    let opts: LoggerOptions = {
-      level: this._options.level,
-      transports: []
-    };
-
-
-    for (let opt of options.transports) {
-
-      let k = Object.keys(opt).shift();
-      let transportOptions: any = _.defaults(opt[k], DEFAULT_TRANSPORT_OPTIONS);
-
-      if (!transportOptions.formatter && transportOptions['defaultFormatter']) {
-        transportOptions.formatter = Log.defaultFormatter;
-      }
-
-      switch (k) {
-        case 'file':
-          opts.transports.push(new File(transportOptions));
-          break;
-        case 'console':
-          opts.transports.push(new Console(transportOptions));
-          break;
-        case 'dailyrotatefile':
-          require('winston-daily-rotate-file');
-          opts.transports.push(new DailyRotateFile(transportOptions));
-          break;
-        case 'http':
-          opts.transports.push(new Http(transportOptions));
-          break;
-        case 'memory':
-          opts.transports.push(new Memory(transportOptions));
-          break;
-        case 'webhook':
-          opts.transports.push(new winston.transports.Webhook(transportOptions));
-          break;
-        case 'winstonmodule':
-          opts.transports.push(new winston.transports.Loggly(transportOptions));
-          break;
-        default:
-          throw new TodoException()
-      }
-    }
-    this.create(opts);
-    return this._options
-  }
-
-  static options(options: ILoggerOptions, append: boolean = false): ILoggerOptions {
-    return this._().options(options, append)
-}
-*/
 
   static log(level: string, ...args: any[]) {
     if (Log.enable) {
@@ -194,6 +124,7 @@ export class Log {
     args.unshift('ERROR');
     Log.log.apply(Log, args);
   }
+
 
   getLogger(name: string = C_DEFAULT): ILoggerApi {
     if (_.has(this.loggers, name)) {

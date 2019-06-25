@@ -1,28 +1,25 @@
-import * as _ from "lodash";
-import {EventBus} from "commons-eventbus";
-import {Schedule} from "../../libs/schedule/Schedule";
-import EventBusMeta from "commons-eventbus/bus/EventBusMeta";
-import {IScheduleFactory} from "../../libs/schedule/IScheduleFactory";
-import {IScheduleDef} from "../../libs/schedule/IScheduleDef";
-import {ITaskExec, TasksHelper} from "../../libs/tasks/TasksHelper";
+import * as _ from 'lodash';
+import {Schedule} from '../../libs/schedule/Schedule';
+import {IScheduleFactory} from '../../libs/schedule/IScheduleFactory';
+import {IScheduleDef} from '../../libs/schedule/IScheduleDef';
+import {TasksHelper} from '../../libs/tasks/TasksHelper';
+import {ITaskExec} from '../../libs/tasks/ITaskExec';
 
 export interface ITaskSchedule extends ITaskExec {
   name: string | string[];
 }
 
-
 export class TaskExecuteFactory implements IScheduleFactory {
-
 
   create(taskNames: string[], params: any = {}) {
     return async function () {
       return TasksHelper.exec(taskNames, params);
-    }
+    };
   }
 
 
   async attach(schedule: Schedule): Promise<boolean> {
-    let taskDef: ITaskSchedule = _.get(schedule.options, 'task', null);
+    const taskDef: ITaskSchedule = _.get(schedule.options, 'task', null);
     if (taskDef) {
       const names = _.isArray(taskDef.name) ? taskDef.name : [taskDef.name];
       const def = _.clone(taskDef);

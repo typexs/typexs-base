@@ -1,10 +1,13 @@
-import {ILoggerApi as _ILoggerApi} from "commons-base";
-import {ILoggerOptions} from "./ILoggerOptions";
+import {ILoggerApi as _ILoggerApi} from 'commons-base';
+import {ILoggerOptions} from './ILoggerOptions';
 
 
 export interface ILoggerApi extends _ILoggerApi {
 
-  name:string;
+  /**
+   * Name of the logger
+   */
+  name: string;
 
   getOptions(): ILoggerOptions;
 
@@ -15,4 +18,6 @@ export interface ILoggerApi extends _ILoggerApi {
   tail?(entries: number): any[];
 
   remove(): void;
+
+  // getSubLogger()
 }

@@ -86,9 +86,9 @@ export class Startup implements IBootstrap, IShutdown {
     const wait = Config.get('nodes.ready.wait', 500);
     if (wait > 0) {
       Log.debug('wait for node registration feedback ...');
-      await new Promise((resolve, reject) => {
+      await new Promise((resolve => {
         setTimeout(resolve, wait);
-      });
+      }));
     }
   }
 

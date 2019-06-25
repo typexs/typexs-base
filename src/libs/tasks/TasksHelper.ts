@@ -1,33 +1,26 @@
-import * as _ from "lodash";
-import {TaskRef} from "./TaskRef";
-import {TaskExchangeRef} from "./TaskExchangeRef";
-import {Console, K_CLS_TASKS, Log, RuntimeLoader, TaskRunner, Tasks} from "../..";
-import {ClassLoader, PlatformUtils} from "commons-base";
-import {Config} from "commons-config";
-import {ITaskRunnerOptions} from "./ITaskRunnerOptions";
-import {Container} from "typedi";
-import {TaskExecutionRequestFactory} from "./worker/TaskExecutionRequestFactory";
+import * as _ from 'lodash';
+import {TaskRef} from './TaskRef';
+import {TaskExchangeRef} from './TaskExchangeRef';
+import {K_CLS_TASKS, Log, RuntimeLoader, TaskRunner, Tasks} from '../..';
+import {ClassLoader, PlatformUtils} from 'commons-base';
+import {Config} from 'commons-config';
+import {ITaskRunnerOptions} from './ITaskRunnerOptions';
+import {Container} from 'typedi';
+import {TaskExecutionRequestFactory} from './worker/TaskExecutionRequestFactory';
+import {ITaskExec} from './ITaskExec';
 
-
-export interface ITaskExec {
-  targetId?: string;
-  isLocal?: boolean;
-  remote?: boolean;
-
-  [k: string]: any;
-}
 
 export class TasksHelper {
 
   static getRequiredIncomings(tasks: TaskRef[], withoutPassThrough: boolean = false): TaskExchangeRef[] {
-    let incoming: TaskExchangeRef[] = [];
+    const incoming: TaskExchangeRef[] = [];
     tasks.map(t => {
       t.getIncomings().map(x => {
         incoming.push(x);
       });
       if (!withoutPassThrough) {
         t.getOutgoings().map(x => {
-          _.remove(incoming, i => i.storingName == x.storingName)
+          _.remove(incoming, i => i.storingName === x.storingName);
         });
       }
     });
@@ -36,20 +29,24 @@ export class TasksHelper {
 
 
   static prepare(tasks: Tasks, loader: RuntimeLoader) {
-    let klasses = loader.getClasses(K_CLS_TASKS);
-    for (let klass of klasses) {
-      let task = Reflect.construct(klass, []);
-      if (!('name' in task) || !_.isFunction(task['exec'])) throw new Error('task ' + klass + ' has no name');
+    const klasses = loader.getClasses(K_CLS_TASKS);
+    for (const klass of klasses) {
+      const task = Reflect.construct(klass, []);
+      if (!('name' in task) || !_.isFunction(task['exec'])) {
+        throw new Error('task ' + klass + ' has no name');
+      }
       tasks.addTask(klass);
     }
   }
 
 
   static async addClasses(tasks: Tasks, dir: string) {
-    let klazzes = await ClassLoader.importClassesFromDirectoriesAsync([dir]);
-    for (let klass of klazzes) {
-      let task = Reflect.construct(klass, []);
-      if (!('name' in task) || !_.isFunction(task['exec'])) throw new Error('task ' + klass + ' has no name');
+    const klazzes = await ClassLoader.importClassesFromDirectoriesAsync([dir]);
+    for (const klass of klazzes) {
+      const task = Reflect.construct(klass, []);
+      if (!('name' in task) || !_.isFunction(task['exec'])) {
+        throw new Error('task ' + klass + ' has no name');
+      }
       tasks.addTask(klass);
     }
   }
@@ -57,10 +54,10 @@ export class TasksHelper {
 
   static runner(tasks: Tasks, name: string | string[], options: ITaskRunnerOptions) {
     if (_.isArray(name)) {
-      let names = [];
+      const names = [];
       for (let i = 0; i < name.length; i++) {
         if (!tasks.contains(name[i])) {
-          throw new Error('task ' + name[i] + ' not exists')
+          throw new Error('task ' + name[i] + ' not exists');
         }
         names.push(name[i]);
       }
@@ -70,7 +67,7 @@ export class TasksHelper {
         return new TaskRunner(tasks, [name], options);
       }
     }
-    throw new Error('task ' + name + ' not exists')
+    throw new Error('task ' + name + ' not exists');
   }
 
 
@@ -82,21 +79,21 @@ export class TasksHelper {
 
   static async exec(taskNames: string[], argv: ITaskExec) {
     // check nodes for tasks
-    let tasksReg: Tasks = Container.get(Tasks.NAME);
-    let tasks = tasksReg.getTasks(taskNames);
-    let targetId = _.get(argv, 'targetId', null);
+    const tasksReg: Tasks = Container.get(Tasks.NAME);
+    const tasks = tasksReg.getTasks(taskNames);
+    const targetId = _.get(argv, 'targetId', null);
     let isLocal = _.get(argv, 'isLocal', true);
-    let isRemote = _.get(argv, 'remote', false);
+    const isRemote = _.get(argv, 'remote', false);
 
-    if (targetId == null && !isRemote) {
+    if (targetId === null && !isRemote) {
       isLocal = true;
     } else {
       isLocal = false;
     }
 
-    let tasksForWorkers = tasks.filter(t => t.hasWorker() && (targetId == null || (targetId && t.hasTargetNodeId(targetId))));
-    let remotePossible = tasks.length == tasksForWorkers.length;
-    let localPossible = taskNames.length == tasks.length;
+    const tasksForWorkers = tasks.filter(t => t.hasWorker() && (targetId === null || (targetId && t.hasTargetNodeId(targetId))));
+    const remotePossible = tasks.length === tasksForWorkers.length;
+    const localPossible = taskNames.length === tasks.length;
 
     if (!isLocal) {
 
@@ -105,8 +102,8 @@ export class TasksHelper {
         // execute
 
         Log.debug('task command: before request fire');
-        let execReq = Container.get(TaskExecutionRequestFactory).createRequest();
-        let results = await execReq.run(taskNames, argv, targetId ? [targetId] : []);
+        const execReq = Container.get(TaskExecutionRequestFactory).createRequest();
+        const results = await execReq.run(taskNames, argv, targetId ? [targetId] : []);
         Log.debug('task command: event enqueue results', results);
         return results;
       } else {
@@ -116,13 +113,13 @@ export class TasksHelper {
     } else if (isLocal) {
 
       if (localPossible) {
-        let options: any = {
+        const options: any = {
           parallel: 5,
           dry_mode: _.get(argv, 'dry-mode', false)
         };
 
         // add parameters
-        let parameters: any = {};
+        const parameters: any = {};
         _.keys(argv).map(k => {
           if (!/^_/.test(k)) {
             parameters[_.snakeCase(k)] = argv[k];
@@ -130,12 +127,12 @@ export class TasksHelper {
         });
 
         // validate arguments
-        let props = TasksHelper.getRequiredIncomings(taskNames.map(t => tasksReg.get(t)));
+        const props = TasksHelper.getRequiredIncomings(taskNames.map(t => tasksReg.get(t)));
         if (props.length > 0) {
-          for (let p of props) {
+          for (const p of props) {
             if (!_.has(parameters, p.storingName) && !_.has(parameters, p.name)) {
               if (p.isOptional()) {
-                Log.warn('task command: optional parameter "' + p.name + '" for ' + taskNames.join(', ') + ' not found')
+                Log.warn('task command: optional parameter "' + p.name + '" for ' + taskNames.join(', ') + ' not found');
               } else {
                 throw new Error('The required value is not passed');
               }
@@ -143,12 +140,14 @@ export class TasksHelper {
           }
         }
 
-        let runner = TasksHelper.runner(tasksReg, taskNames, options);
-        for (let p in parameters) {
-          await runner.setIncoming(p, parameters[p]);
+        const runner = TasksHelper.runner(tasksReg, taskNames, options);
+        for (const p in parameters) {
+          if (parameters.hasOwnProperty(p)) {
+            await runner.setIncoming(p, parameters[p]);
+          }
         }
         try {
-          let results = await runner.run();
+          const results = await runner.run();
           return results;
         } catch (err) {
           Log.error(err);

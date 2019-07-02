@@ -1,16 +1,15 @@
 import * as _ from 'lodash';
 
-import {ColumnMetadataArgs} from "typeorm/browser/metadata-args/ColumnMetadataArgs";
-import {RelationMetadataArgs} from "typeorm/browser/metadata-args/RelationMetadataArgs";
-import {ColumnType} from "typeorm/browser";
+import {ColumnMetadataArgs} from 'typeorm/browser/metadata-args/ColumnMetadataArgs';
+import {RelationMetadataArgs} from 'typeorm/browser/metadata-args/RelationMetadataArgs';
 
-import {ClassUtils, NotYetImplementedError} from "commons-base/browser";
-import {AbstractRef, ClassRef, IPropertyRef, IPropertyRefMetadata, XS_TYPE_PROPERTY} from "commons-schema-api/browser";
-import {TypeOrmEntityRef} from "./TypeOrmEntityRef";
-import {TypeOrmUtils} from "../TypeOrmUtils";
-import {REGISTRY_TYPEORM} from "./TypeOrmConstants";
+import {ClassUtils, NotYetImplementedError} from 'commons-base/browser';
+import {AbstractRef, ClassRef, IPropertyRef, IPropertyRefMetadata, XS_TYPE_PROPERTY} from 'commons-schema-api/browser';
+import {TypeOrmEntityRef} from './TypeOrmEntityRef';
+import {TypeOrmUtils} from '../TypeOrmUtils';
+import {REGISTRY_TYPEORM} from './TypeOrmConstants';
 
-import {TreeUtils, WalkValues} from "../../../../../browser";
+import {TreeUtils, WalkValues} from '../../../../../browser';
 
 
 export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
@@ -25,13 +24,13 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
   constructor(c: ColumnMetadataArgs | RelationMetadataArgs, type: 'column' | 'relation') {
     super(XS_TYPE_PROPERTY, c.propertyName, c.target, REGISTRY_TYPEORM);
     this.setOptions(c);
-    if (type == 'column') {
+    if (type === 'column') {
       this.column = <ColumnMetadataArgs>c;
-      this.column.options.name ? this.setOption('name', this.column.options.name) : null;
-    } else if (type == 'relation') {
+      if (this.column.options.name) {
+        this.setOption('name', this.column.options.name);
+      }
+    } else if (type === 'relation') {
       this.relation = <RelationMetadataArgs>c;
-
-
       if ((_.isFunction(this.relation.type) && !_.isEmpty(this.relation.type.name)) || _.isString(this.relation.type)) {
         this.targetRef = ClassRef.get(this.relation.type, REGISTRY_TYPEORM);
       } else if (_.isFunction(this.relation.type)) {
@@ -71,7 +70,7 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
   }
 
   isCollection(): boolean {
-    return this.isReference() ? this.relation.relationType == 'one-to-many' || this.relation.relationType == 'many-to-many' : false;
+    return this.isReference() ? this.relation.relationType === 'one-to-many' || this.relation.relationType === 'many-to-many' : false;
   }
 
   isReference(): boolean {
@@ -80,24 +79,24 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
 
   private convertRegular(data: any) {
     const type = (<string>this.getType());
-    if(!type || !_.isString(type)){
+    if (!type || !_.isString(type)) {
       return data;
     }
     const jsType = type.toLowerCase();
 
     switch (jsType) {
-      case "datetime":
-      case "timestamp":
-      case "date":
+      case 'datetime':
+      case 'timestamp':
+      case 'date':
         return this.convertDate(data);
 
 
-      case "time":
-      case "text":
-      case "string":
+      case 'time':
+      case 'text':
+      case 'string':
         if (_.isString(data)) {
           return data;
-        } else if (_.isArray(data) && data.length == 1) {
+        } else if (_.isArray(data) && data.length === 1) {
           return data[0];
         } else if (data) {
           return JSON.stringify(data);
@@ -106,14 +105,14 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
         }
         break;
 
-      case "boolean":
+      case 'boolean':
 
         if (_.isBoolean(data)) {
           return data;
         } else if (_.isNumber(data)) {
           return data > 0;
         } else if (_.isString(data)) {
-          if (data.toLowerCase() === "true" || data.toLowerCase() === "1") {
+          if (data.toLowerCase() === 'true' || data.toLowerCase() === '1') {
             return true;
           }
           return false;
@@ -122,17 +121,17 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
 
       // ---
 
-      case "byte":
-      case "json":
+      case 'byte':
+      case 'json':
         return data;
 
-      case "double":
-      case "number":
+      case 'double':
+      case 'number':
         if (_.isString(data)) {
           if (/^\d+\.|\,\d+$/.test(data)) {
-            return parseFloat(data.replace(',', '.'))
+            return parseFloat(data.replace(',', '.'));
           } else if (/^\d+$/.test(data)) {
-            return parseInt(data);
+            return parseInt(data, 0);
           } else {
           }
         } else if (_.isNumber(data)) {
@@ -154,15 +153,15 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
 
   convert(data: any): any {
     switch (this.column.mode) {
-      case "regular":
+      case 'regular':
         return this.convertRegular(data);
-      case "createDate":
-      case "updateDate":
+      case 'createDate':
+      case 'updateDate':
         return this.convertDate(data);
     }
     // if mongo no column types are defined
     return data;
-    //throw new NotYetImplementedError('value ' + data + ' column type ' + this.column.options.type)
+    // throw new NotYetImplementedError('value ' + data + ' column type ' + this.column.options.type)
   }
 
   getEntityRef(): TypeOrmEntityRef {
@@ -175,11 +174,11 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
 
   getType() {
     if (!this.isReference()) {
-      let type = this.column.options.type;
+      const type = this.column.options.type;
       if (_.isFunction(type)) {
         return ClassUtils.getClassName(type);
       } else {
-        return <string>TypeOrmUtils.toJsonType(type)
+        return <string>TypeOrmUtils.toJsonType(type);
       }
     }
     return null;
@@ -191,7 +190,7 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
 
   label() {
     let label = null;
-    let options = this.getOptions();
+    const options = this.getOptions();
     if (options.label) {
       label = options.label;
     }
@@ -217,16 +216,16 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
 
 
   toJson(): IPropertyRefMetadata {
-    let o = super.toJson();
+    const o = super.toJson();
 
     TreeUtils.walk(o.options, (v: WalkValues) => {
       if (_.isString(v.key) && _.isFunction(v.value)) {
         v.parent[v.key] = ClassUtils.getClassName(v.value);
-        if (v.key == 'type' && _.isEmpty(v.parent[v.key])) {
+        if (v.key === 'type' && _.isEmpty(v.parent[v.key])) {
           v.parent[v.key] = ClassUtils.getClassName(v.value());
         }
       } else if (_.isString(v.key) && _.isUndefined(v.value)) {
-        delete v.parent[v.key]
+        delete v.parent[v.key];
       }
     });
 

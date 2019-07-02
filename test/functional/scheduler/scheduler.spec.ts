@@ -167,44 +167,44 @@ class SchedulerSpec {
     const scheduler = new Scheduler();
     await scheduler.prepare(factories);
 
-    let now = new Date();
     let schedule = await scheduler.register({
       name: 'test01',
       offset: '5s'
     });
 
     clearTimeout(schedule.timer);
+    let now = new Date();
 
     expect(schedule.name).to.eq('test01');
     expect(schedule.next).to.be.gt(now);
     expect(schedule.next).to.be.lte(moment(now).add(5, 's').toDate());
 
-    now = new Date();
     schedule = await scheduler.register({
       name: 'test02',
       offset: '5m'
     });
 
     clearTimeout(schedule.timer);
+    now = new Date();
 
     expect(schedule.name).to.eq('test02');
     expect(schedule.next).to.be.gt(now);
     expect(schedule.next).to.be.lte(moment(now).add(5, 'm').toDate());
 
 
-    now = new Date();
     schedule = await scheduler.register({
       name: 'test03',
       offset: '10m',
       start: '10:00'
     });
     clearTimeout(schedule.timer);
+    now = new Date();
+
     expect(schedule.name).to.eq('test03');
     expect(schedule.next).to.be.gt(now);
     expect(schedule.next).to.be.lte(moment(now).add(10, 'm').toDate());
 
 
-    now = new Date();
     const str = moment().add(1, 'd').subtract(1, 'hour').toISOString();
     schedule = await scheduler.register({
       name: 'test04',
@@ -212,6 +212,8 @@ class SchedulerSpec {
       start: str
     });
     clearTimeout(schedule.timer);
+    now = new Date();
+
     expect(schedule.name).to.eq('test04');
     expect(schedule.next).to.be.gte(moment(now).add(1, 'd').subtract(2, 'hour').toDate());
     expect(schedule.next).to.be.lte(moment(now).add(2, 'd').toDate());

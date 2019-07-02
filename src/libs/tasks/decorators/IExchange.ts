@@ -19,6 +19,6 @@ export interface IExchange {
 
   type?: JS_DATA_TYPES | Function;
 
-  caridnality?: number;
+  cardinality?: number;
 
 }

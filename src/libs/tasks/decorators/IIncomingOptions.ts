@@ -1,5 +1,5 @@
 import {IExchange} from './IExchange';
-import {ClassType} from 'commons-schema-api';
+import {ClassType} from 'commons-schema-api/browser';
 import {IValueProvider} from './IValueProvider';
 
 export interface IIncomingOptions extends IExchange {
@@ -7,7 +7,7 @@ export interface IIncomingOptions extends IExchange {
   valueProvider?: any | any[] | ClassType<IValueProvider<any>>;
 
   /**
-   * Validate values 
+   * Validate values
    *
    * @param value
    */

@@ -24,7 +24,7 @@ export class TaskExchangeRef extends AbstractRef implements IPropertyRef {
     return this.getOptions('optional');
   }
 
-  
+
   /**
    * Return the property specific customized value
    *
@@ -86,6 +86,14 @@ export class TaskExchangeRef extends AbstractRef implements IPropertyRef {
         v.parent[v.key] = ClassUtils.getClassName(v.value);
         if (v.key === 'type' && _.isEmpty(v.parent[v.key])) {
           v.parent[v.key] = ClassUtils.getClassName(v.value());
+        } else if (v.key === 'valueProvider') {
+          if (!_.isFunction(v.value)) {
+            // if value provider contains only of values, pass this
+            v.parent[v.key] = v.value;
+          } else {
+            // backend returned data, set classname
+
+          }
         }
       } else if (_.isString(v.key) && _.isUndefined(v.value)) {
         delete v.parent[v.key];

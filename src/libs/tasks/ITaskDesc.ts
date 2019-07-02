@@ -1,4 +1,4 @@
-import {IExchange} from "./decorators/IExchange";
+import {IExchange} from './decorators/IExchange';
 
 export interface ITaskDesc {
   type: 'incoming' | 'outgoing' | 'runtime';

@@ -1,10 +1,10 @@
-import {Log} from "../..";
-import {setTimeout} from "timers";
-import {Schedule} from "../../libs/schedule/Schedule";
-import * as _ from "lodash";
-import {IScheduleDef} from "../../libs/schedule/IScheduleDef";
-import {IScheduleFactory} from "../../libs/schedule/IScheduleFactory";
-import moment = require("moment");
+import {Log} from '../..';
+import {setTimeout} from 'timers';
+import {Schedule} from '../../libs/schedule/Schedule';
+import * as _ from 'lodash';
+import {IScheduleDef} from '../../libs/schedule/IScheduleDef';
+import {IScheduleFactory} from '../../libs/schedule/IScheduleFactory';
+import moment = require('moment');
 
 export class DefaultScheduleFactory implements IScheduleFactory {
 
@@ -16,7 +16,7 @@ export class DefaultScheduleFactory implements IScheduleFactory {
         this.unit = unit;
       }
 
-      let now = new Date();
+      const now = new Date();
       this.last = this.next ? this.next : date;
 
       let next = this.last;
@@ -24,25 +24,25 @@ export class DefaultScheduleFactory implements IScheduleFactory {
         next = moment(next).add(this.offset, this.unit).toDate();
       }
       this.next = next;
-      let offsetn = next.getTime() - (new Date()).getTime();
+      const offsetn = next.getTime() - (new Date()).getTime();
 
       Log.info('schedule [' + this.name + ']: next scheduled reload on ' + this.next);
       this.timer = setTimeout(this.runSchedule.bind(this), offsetn);
-    }
+    };
   }
 
 
   async attach(schedule: Schedule): Promise<boolean> {
-    let offset: string | number = _.get(schedule.options, 'offset', null);
-    let start: string | Date = _.get(schedule.options, 'start', new Date());
+    const offset: string | number = _.get(schedule.options, 'offset', null);
+    const start: string | Date = _.get(schedule.options, 'start', new Date());
     if (offset && start) {
 
       let startDate: Date = null;
       if (start instanceof Date) {
         startDate = start;
       } else if (/^\d+(:\d{2})+$/.test(start.trim())) {
-        let time = start.trim().split(':');
-        let m = moment();
+        const time = start.trim().split(':');
+        const m = moment();
         if (time.length == 2) {
           m.hour(parseInt(time.shift()));
           m.minute(parseInt(time.shift()));
@@ -58,7 +58,7 @@ export class DefaultScheduleFactory implements IScheduleFactory {
         }
       } else {
         try {
-          startDate = moment(start).toDate()
+          startDate = moment(start).toDate();
         } catch (err) {
           Log.error('cant parse date from ' + startDate);
         }

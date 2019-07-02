@@ -24,6 +24,7 @@ export class TaskExchangeRef extends AbstractRef implements IPropertyRef {
     return this.getOptions('optional');
   }
 
+  
   /**
    * Return the property specific customized value
    *

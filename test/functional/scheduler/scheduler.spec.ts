@@ -3,14 +3,13 @@ import {expect} from 'chai';
 import {Bootstrap} from '../../../src/Bootstrap';
 import {Config} from 'commons-config';
 import {Scheduler} from '../../../src/libs/schedule/Scheduler';
-import {subscribe} from 'commons-eventbus';
-import {EventBus} from 'commons-eventbus';
+import {EventBus, subscribe} from 'commons-eventbus';
 import {TestHelper} from '../TestHelper';
 import {Invoker, K_CLS_SCHEDULE_ADAPTER_FACTORIES, Log, RuntimeLoader, Tasks, TasksApi} from '../../../src';
-import moment = require('moment');
 import {IScheduleFactory} from '../../../src/libs/schedule/IScheduleFactory';
 import {Container} from 'typedi';
 import {SimpleTask} from '../tasks/tasks/SimpleTask';
+import moment = require('moment');
 
 let loader: RuntimeLoader = null;
 let factories: IScheduleFactory[] = [];
@@ -174,6 +173,8 @@ class SchedulerSpec {
       offset: '5s'
     });
 
+    clearTimeout(schedule.timer);
+
     expect(schedule.name).to.eq('test01');
     expect(schedule.next).to.be.gt(now);
     expect(schedule.next).to.be.lte(moment(now).add(5, 's').toDate());
@@ -184,6 +185,7 @@ class SchedulerSpec {
       offset: '5m'
     });
 
+    clearTimeout(schedule.timer);
 
     expect(schedule.name).to.eq('test02');
     expect(schedule.next).to.be.gt(now);
@@ -196,9 +198,11 @@ class SchedulerSpec {
       offset: '10m',
       start: '10:00'
     });
+    clearTimeout(schedule.timer);
     expect(schedule.name).to.eq('test03');
     expect(schedule.next).to.be.gt(now);
     expect(schedule.next).to.be.lte(moment(now).add(10, 'm').toDate());
+
 
     now = new Date();
     const str = moment().add(1, 'd').subtract(1, 'hour').toISOString();
@@ -207,7 +211,7 @@ class SchedulerSpec {
       offset: '10m',
       start: str
     });
-
+    clearTimeout(schedule.timer);
     expect(schedule.name).to.eq('test04');
     expect(schedule.next).to.be.gte(moment(now).add(1, 'd').subtract(2, 'hour').toDate());
     expect(schedule.next).to.be.lte(moment(now).add(2, 'd').toDate());

@@ -1,22 +1,26 @@
-import {suite, test} from "mocha-typescript";
-import {expect} from "chai";
-import {Bootstrap} from "../../../src/Bootstrap";
-import {Config} from "commons-config";
-import {Scheduler} from "../../../src/libs/schedule/Scheduler";
+import {suite, test} from 'mocha-typescript';
+import {expect} from 'chai';
+import {Bootstrap} from '../../../src/Bootstrap';
+import {Config} from 'commons-config';
+import {Scheduler} from '../../../src/libs/schedule/Scheduler';
 import {subscribe} from 'commons-eventbus';
-import {EventBus} from "commons-eventbus";
-import {TestHelper} from "../TestHelper";
-import {Invoker, K_CLS_SCHEDULE_ADAPTER_FACTORIES, Log, RuntimeLoader, Tasks, TasksApi} from "../../../src";
-import moment = require("moment");
-import {IScheduleFactory} from "../../../src/libs/schedule/IScheduleFactory";
-import {Container} from "typedi";
-import {SimpleTask} from "../tasks/tasks/SimpleTask";
+import {EventBus} from 'commons-eventbus';
+import {TestHelper} from '../TestHelper';
+import {Invoker, K_CLS_SCHEDULE_ADAPTER_FACTORIES, Log, RuntimeLoader, Tasks, TasksApi} from '../../../src';
+import moment = require('moment');
+import {IScheduleFactory} from '../../../src/libs/schedule/IScheduleFactory';
+import {Container} from 'typedi';
+import {SimpleTask} from '../tasks/tasks/SimpleTask';
 
 let loader: RuntimeLoader = null;
 let factories: IScheduleFactory[] = [];
 
 @suite('functional/scheduler')
 class SchedulerSpec {
+
+  static after() {
+    Container.reset();
+  }
 
 
   async before() {
@@ -28,27 +32,23 @@ class SchedulerSpec {
       libs: [{
         topic: K_CLS_SCHEDULE_ADAPTER_FACTORIES,
         refs: [
-          "src/adapters/scheduler/*Factory.*"
+          'src/adapters/scheduler/*Factory.*'
         ]
       }]
     });
-    await loader.prepare()
+    await loader.prepare();
     factories = loader.getClasses(K_CLS_SCHEDULE_ADAPTER_FACTORIES).map(x => Container.get(x));
 
 
-    let i = new Invoker();
+    const i = new Invoker();
     Container.set(Invoker.NAME, i);
     i.register(TasksApi, []);
-  }
-
-  static after() {
-    Container.reset();
   }
 
 
   @test
   async 'cron schedule'() {
-    let scheduler = new Scheduler();
+    const scheduler = new Scheduler();
     await scheduler.prepare(factories);
     let schedule = await scheduler.register({
       name: 'test01',
@@ -57,7 +57,7 @@ class SchedulerSpec {
 
     expect(schedule.name).to.eq('test01');
     expect(schedule.next).to.be.gt(new Date());
-    expect(schedule.next).to.be.lt(moment(new Date()).add(10, "minutes").toDate());
+    expect(schedule.next).to.be.lt(moment(new Date()).add(10, 'minutes').toDate());
 
     schedule = await scheduler.register({
       name: 'test02',
@@ -66,7 +66,7 @@ class SchedulerSpec {
 
     expect(schedule.name).to.eq('test02');
     expect(schedule.next).to.be.gt(new Date());
-    expect(schedule.next).to.be.lt(moment(new Date()).add(10, "seconds").toDate());
+    expect(schedule.next).to.be.lt(moment(new Date()).add(10, 'seconds').toDate());
 
     await scheduler.shutdown();
 
@@ -90,10 +90,10 @@ class SchedulerSpec {
       }
     }
 
-    let listenr = new ActionListener();
+    const listenr = new ActionListener();
     await EventBus.register(listenr);
 
-    let scheduler = new Scheduler();
+    const scheduler = new Scheduler();
     await scheduler.prepare(factories);
     let schedule = await scheduler.register({
       name: 'test01',
@@ -132,7 +132,7 @@ class SchedulerSpec {
       field: string;
     }
 
-    let events: any[] = [];
+    const events: any[] = [];
 
     class ActionListener2 {
       @subscribe(ActionEvent2)
@@ -142,12 +142,12 @@ class SchedulerSpec {
       }
     }
 
-    let listenr = new ActionListener2();
+    const listenr = new ActionListener2();
     await EventBus.register(listenr);
 
-    let scheduler = new Scheduler();
+    const scheduler = new Scheduler();
     await scheduler.prepare(factories);
-    let schedule = await scheduler.register({
+    const schedule = await scheduler.register({
       name: 'test01',
       event: {
         name: 'action_event_2'
@@ -165,63 +165,65 @@ class SchedulerSpec {
 
   @test
   async 'default schedule'() {
-    let scheduler = new Scheduler();
+    const scheduler = new Scheduler();
     await scheduler.prepare(factories);
 
+    let now = new Date();
     let schedule = await scheduler.register({
       name: 'test01',
       offset: '5s'
     });
-    let now = new Date();
+
     expect(schedule.name).to.eq('test01');
     expect(schedule.next).to.be.gt(now);
-    expect(schedule.next).to.be.lte(moment(now).add(5, "s").toDate());
+    expect(schedule.next).to.be.lte(moment(now).add(5, 's').toDate());
 
+    now = new Date();
     schedule = await scheduler.register({
       name: 'test02',
       offset: '5m'
     });
-    now = new Date();
+
 
     expect(schedule.name).to.eq('test02');
     expect(schedule.next).to.be.gt(now);
-    expect(schedule.next).to.be.lte(moment(now).add(5, "m").toDate());
+    expect(schedule.next).to.be.lte(moment(now).add(5, 'm').toDate());
 
 
+    now = new Date();
     schedule = await scheduler.register({
       name: 'test03',
       offset: '10m',
       start: '10:00'
     });
-    now = new Date();
     expect(schedule.name).to.eq('test03');
     expect(schedule.next).to.be.gt(now);
-    expect(schedule.next).to.be.lte(moment(now).add(10, "m").toDate());
+    expect(schedule.next).to.be.lte(moment(now).add(10, 'm').toDate());
 
-    let str = moment().add(1, 'd').subtract(1, "hour").toISOString();
+    now = new Date();
+    const str = moment().add(1, 'd').subtract(1, 'hour').toISOString();
     schedule = await scheduler.register({
       name: 'test04',
       offset: '10m',
       start: str
     });
-    now = new Date();
 
     expect(schedule.name).to.eq('test04');
-    expect(schedule.next).to.be.gte(moment(now).add(1, "d").subtract(2, "hour").toDate());
-    expect(schedule.next).to.be.lte(moment(now).add(2, "d").toDate());
+    expect(schedule.next).to.be.gte(moment(now).add(1, 'd').subtract(2, 'hour').toDate());
+    expect(schedule.next).to.be.lte(moment(now).add(2, 'd').toDate());
     await scheduler.shutdown();
 
   }
 
   @test
   async 'execute task'() {
-    let tasks = new Tasks('testnode');
-    let taskRef = tasks.addTask(SimpleTask);
+    const tasks = new Tasks('testnode');
+    const taskRef = tasks.addTask(SimpleTask);
     Container.set(Tasks.NAME, tasks);
 
-    let scheduler = new Scheduler();
+    const scheduler = new Scheduler();
     await scheduler.prepare(factories);
-    let schedule = await scheduler.register({
+    const schedule = await scheduler.register({
       name: 'test01',
       task: {
         name: 'simple_task',

@@ -2,25 +2,24 @@ import * as _ from 'lodash';
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 
-import {Bootstrap} from "../../../src/Bootstrap";
-import {Log} from "../../../src/libs/logging/Log";
-import {C_STORAGE_DEFAULT, ITypexsOptions, StorageRef, TaskLog, Tasks, Workers} from "../../../src";
-import {Container} from "typedi";
-import {Config} from "commons-config";
-import {TEST_STORAGE_OPTIONS} from "../config";
-import {EventBus, IEventBusConfiguration} from "commons-eventbus";
-import {TaskQueueWorker} from "../../../src/workers/TaskQueueWorker";
-import {SimpleWorkerTask} from "./tasks/SimpleWorkerTask";
-import {TaskEvent} from "../../../src/libs/tasks/worker/TaskEvent";
-import {subscribe} from 'commons-eventbus';
-import {TestHelper} from "../TestHelper";
-import {SpawnHandle} from "../SpawnHandle";
-import {TaskCommand} from "../../../src/commands/TaskCommand";
-import {SimpleTaskWithLog} from "./tasks/SimpleTaskWithLog";
-import {TaskExecutionRequestFactory} from "../../../src/libs/tasks/worker/TaskExecutionRequestFactory";
+import {Bootstrap} from '../../../src/Bootstrap';
+import {Log} from '../../../src/libs/logging/Log';
+import {C_STORAGE_DEFAULT, ITypexsOptions, StorageRef, TaskLog, Tasks, Workers} from '../../../src';
+import {Container} from 'typedi';
+import {Config} from 'commons-config';
+import {TEST_STORAGE_OPTIONS} from '../config';
+import {EventBus, IEventBusConfiguration, subscribe} from 'commons-eventbus';
+import {TaskQueueWorker} from '../../../src/workers/TaskQueueWorker';
+import {SimpleWorkerTask} from './tasks/SimpleWorkerTask';
+import {TaskEvent} from '../../../src/libs/tasks/worker/TaskEvent';
+import {TestHelper} from '../TestHelper';
+import {SpawnHandle} from '../SpawnHandle';
+import {TaskCommand} from '../../../src/commands/TaskCommand';
+import {SimpleTaskWithLog} from './tasks/SimpleTaskWithLog';
+import {TaskExecutionRequestFactory} from '../../../src/libs/tasks/worker/TaskExecutionRequestFactory';
 
 
-const LOG_EVENT = true;//TestHelper.logEnable(true);
+const LOG_EVENT = true; // TestHelper.logEnable(true);
 let bootstrap: Bootstrap = null;
 
 @suite('functional/tasks/tasks_worker')
@@ -36,7 +35,7 @@ class Tasks_workerSpec {
 
   async after() {
     if (bootstrap) {
-      await bootstrap.shutdown()
+      await bootstrap.shutdown();
     }
   }
 
@@ -58,28 +57,28 @@ class Tasks_workerSpec {
     bootstrap = await bootstrap.startup();
     // ---- startup done
 
-    let events: TaskEvent[] = [];
+    const events: TaskEvent[] = [];
 
     class T {
       @subscribe(TaskEvent) on(e: TaskEvent) {
-        let _e = _.cloneDeep(e);
+        const _e = _.cloneDeep(e);
         events.push(_e);
       }
     }
 
-    let tasks: Tasks = Container.get(Tasks.NAME);
-    let ref = tasks.addTask(SimpleWorkerTask);
+    const tasks: Tasks = Container.get(Tasks.NAME);
+    const ref = tasks.addTask(SimpleWorkerTask);
 
 
     const worker = <TaskQueueWorker>Container.get(TaskQueueWorker);
     await worker.prepare();
     await worker.queue.pause();
 
-    let t = new T();
+    const t = new T();
     await EventBus.register(t);
 
     // create event to fire
-    let taskEvent = new TaskEvent();
+    const taskEvent = new TaskEvent();
     taskEvent.nodeId = Bootstrap.getNodeId();
     taskEvent.name = ref.name;
 
@@ -88,14 +87,14 @@ class Tasks_workerSpec {
     expect(res).to.have.length(1);
     res = res.shift();
     expect(res).to.have.length(3);
-    let work = _.find(res, (x: any) => x && x.nodeId == 'worker');
+    const work = _.find(res, (x: any) => x && x.nodeId === 'worker');
     expect(work.nodeId).to.be.eq('worker');
     expect(work.respId).to.be.eq('worker');
     expect(work.state).to.be.eq('enqueue');
 
     worker.queue.resume();
     await TestHelper.waitFor(() => events.length >= 4);
-    //await worker.queue.await();
+    // await worker.queue.await();
 
     await EventBus.unregister(t);
 
@@ -105,7 +104,7 @@ class Tasks_workerSpec {
     //  console.log(inspect(events,false,10))
     expect(events).to.have.length(4);
     expect(events.map(e => {
-      return {state: e.state, result: e.data ? e.data.results[0].result : null}
+      return {state: e.state, result: e.data ? e.data.results[0].result : null};
     })).to.deep.eq([
       {state: 'enqueue', result: null},
       {state: 'enqueue', result: null},
@@ -113,7 +112,7 @@ class Tasks_workerSpec {
       {state: 'stopped', result: 'test'}
     ]);
 
-    Log.debug(events)
+    Log.debug(events);
   }
 
 
@@ -138,7 +137,7 @@ class Tasks_workerSpec {
 
 
     const workers: Workers = Container.get(Workers.NAME);
-    let workerInfos = workers.infos();
+    const workerInfos = workers.infos();
 
     expect(workerInfos).to.have.length(1);
     expect(workerInfos[0]).to.deep.include({
@@ -155,30 +154,30 @@ class Tasks_workerSpec {
     });
 
 
-    let events: TaskEvent[] = [];
+    const events: TaskEvent[] = [];
 
     class T02 {
       @subscribe(TaskEvent) on(e: TaskEvent) {
-        let _e = _.cloneDeep(e);
+        const _e = _.cloneDeep(e);
         events.push(_e);
       }
     }
 
-    let z = new T02();
+    const z = new T02();
     await EventBus.register(z);
 
 
-    let tasks: Tasks = Container.get(Tasks.NAME);
-    let ref = tasks.addTask(SimpleWorkerTask);
+    const tasks: Tasks = Container.get(Tasks.NAME);
+    const ref = tasks.addTask(SimpleWorkerTask);
 
     // const workers: Workers = Container.get(Workers.NAME);
     // const worker: TaskQueueWorker = <TaskQueueWorker>workers.workers.find(x => x instanceof TaskQueueWorker);
 
-    let execReq = Container.get(TaskExecutionRequestFactory).createRequest();
-    let results = await execReq.run([ref.name]);
-    Log.debug('got results')
+    const execReq = Container.get(TaskExecutionRequestFactory).createRequest();
+    const results = await execReq.run([ref.name]);
+    Log.debug('got results');
     await TestHelper.waitFor(() => events.length >= 4, 100);
-    //await worker.queue.await();
+    // await worker.queue.await();
 
     // ---- finished
     await EventBus.unregister(z);
@@ -186,17 +185,17 @@ class Tasks_workerSpec {
 
     expect(results).to.have.length(1);
     expect(results[0]).to.deep.include({
-      "state": "enqueue",
-      "topic": "data",
-      "nodeId": "worker",
-      "name": [
-        "simple_worker_task"
+      'state': 'enqueue',
+      'topic': 'data',
+      'nodeId': 'worker',
+      'name': [
+        'simple_worker_task'
       ],
-      "targetIds": [
-        "worker"
+      'targetIds': [
+        'worker'
       ],
-      "respId": "worker",
-      "errors": [],
+      'respId': 'worker',
+      'errors': [],
     });
   }
 
@@ -219,25 +218,25 @@ class Tasks_workerSpec {
     // ---- startup done
 
     // capture events from remote task processing
-    let events: TaskEvent[] = [];
+    const events: TaskEvent[] = [];
 
     class T2 {
       @subscribe(TaskEvent)
       on(e: TaskEvent) {
-        let _e = _.cloneDeep(e);
+        const _e = _.cloneDeep(e);
         events.push(_e);
       }
     }
 
-    let l = new T2()
+    const l = new T2();
     await EventBus.register(l);
 
-    let p = SpawnHandle.do(__dirname + '/fake_app/node_task_worker.ts').start(LOG_EVENT);
+    const p = SpawnHandle.do(__dirname + '/fake_app/node_task_worker.ts').start(LOG_EVENT);
 
     await p.started;
     await TestHelper.wait(50);
 
-    let taskEvent = new TaskEvent();
+    const taskEvent = new TaskEvent();
     taskEvent.nodeId = bootstrap.getNodeId();
     taskEvent.name = 'test';
     taskEvent.parameters = {
@@ -246,7 +245,7 @@ class Tasks_workerSpec {
 
     // the result are null cause of not
     // registered subscribers of remote nodes
-    let results = await EventBus.post(taskEvent);
+    const results = await EventBus.post(taskEvent);
 
     await TestHelper.waitFor(() => events.length > 5);
     p.shutdown();
@@ -258,18 +257,18 @@ class Tasks_workerSpec {
 
     expect(events).to.have.length(6);
     expect(events.map(x => {
-      return {state: x.state, respId: x.respId}
+      return {state: x.state, respId: x.respId};
     })).to.deep.eq([
       {state: 'proposed', respId: undefined},
-      {state: "enqueue", respId: "fakeapp01"},
+      {state: 'enqueue', respId: 'fakeapp01'},
       {state: 'started', respId: 'fakeapp01'},
       {state: 'stopped', respId: 'fakeapp01'},
       {state: 'stopped', respId: 'fakeapp01'},
       {state: 'stopped', respId: 'fakeapp01'}
     ]);
-    let x = events.map(x => {
-      return {result: x.data ? x.data.results[0].result : null}
-    })
+    const x = events.map(x => {
+      return {result: x.data ? x.data.results[0].result : null};
+    });
     expect(x).to.deep.eq([
       {result: null},
       {result: null},
@@ -300,31 +299,31 @@ class Tasks_workerSpec {
     // ---- startup done
 
     // capture events from remote task processing
-    let events: TaskEvent[] = [];
+    const events: TaskEvent[] = [];
 
     class T2 {
       @subscribe(TaskEvent)
       on(e: TaskEvent) {
-        let _e = _.cloneDeep(e);
+        const _e = _.cloneDeep(e);
         events.push(_e);
       }
     }
 
-    let l = new T2();
+    const l = new T2();
     await EventBus.register(l);
 
-    let p = SpawnHandle.do(__dirname + '/fake_app/node_task_worker.ts').start(LOG_EVENT);
+    const p = SpawnHandle.do(__dirname + '/fake_app/node_task_worker.ts').start(LOG_EVENT);
     await p.started;
     await TestHelper.wait(50);
 
-    let taskEvent = new TaskEvent();
+    const taskEvent = new TaskEvent();
     taskEvent.nodeId = bootstrap.getNodeId();
     taskEvent.name = 'test';
     taskEvent.parameters = {};
 
     // the result are null cause of not
     // registered subscribers of remote nodes
-    let results = await EventBus.post(taskEvent);
+    const results = await EventBus.post(taskEvent);
 
     await TestHelper.waitFor(() => events.length > 1);
     p.shutdown();
@@ -335,9 +334,9 @@ class Tasks_workerSpec {
 
     expect(events).to.have.length(2);
     expect(events.map(x => {
-      return {state: x.state}
+      return {state: x.state};
     })).to.deep.eq([{state: 'proposed'}, {state: 'request_error'}]);
-    let e = events.pop();
+    const e = events.pop();
     expect(e.state).to.eq('request_error');
     expect(e.respId).to.eq('fakeapp01');
     expect(e.errors).to.have.length(1);
@@ -367,12 +366,12 @@ class Tasks_workerSpec {
     bootstrap = await bootstrap.startup();
     // ---- startup done
     // capture events from remote task processing
-    let events: TaskEvent[] = [];
+    const events: TaskEvent[] = [];
 
     class T2 {
       @subscribe(TaskEvent)
       on(e: TaskEvent) {
-        let _e = _.cloneDeep(e);
+        const _e = _.cloneDeep(e);
         events.push(_e);
         /*
         if (events.length > 6) {
@@ -382,18 +381,18 @@ class Tasks_workerSpec {
       }
     }
 
-    let l = new T2();
+    const l = new T2();
     await EventBus.register(l);
 
-    let handle = SpawnHandle.do(__dirname + '/fake_app/node_task_worker.ts').start(LOG_EVENT);
+    const handle = SpawnHandle.do(__dirname + '/fake_app/node_task_worker.ts').start(LOG_EVENT);
     await handle.started;
     await TestHelper.wait(50);
 
-    let tasks: Tasks = Container.get(Tasks.NAME);
-    let infos = tasks.infos(true);
+    const tasks: Tasks = Container.get(Tasks.NAME);
+    const infos = tasks.infos(true);
     Log.debug(infos);
 
-    let taskEvent = new TaskEvent();
+    const taskEvent = new TaskEvent();
     taskEvent.nodeId = bootstrap.getNodeId();
     taskEvent.name = 'test';
     taskEvent.targetIds = ['fakeapp01'];
@@ -405,7 +404,7 @@ class Tasks_workerSpec {
     // registered subscribers of remote nodes
     await EventBus.post(taskEvent);
 
-    let taskEvent2 = new TaskEvent();
+    const taskEvent2 = new TaskEvent();
     taskEvent2.nodeId = bootstrap.getNodeId();
     taskEvent2.name = 'test';
     taskEvent2.targetIds = ['fakeapp02'];
@@ -427,16 +426,16 @@ class Tasks_workerSpec {
     // ---- finished
     await bootstrap.shutdown();
 
-    let events_01: TaskEvent[] = events.filter(x => x.targetIds.indexOf('fakeapp01') != -1);
-    let events_02: TaskEvent[] = events.filter(x => x.targetIds.indexOf('fakeapp02') != -1);
+    const events_01: TaskEvent[] = events.filter(x => x.targetIds.indexOf('fakeapp01') !== -1);
+    const events_02: TaskEvent[] = events.filter(x => x.targetIds.indexOf('fakeapp02') !== -1);
     expect(events_01).to.have.length(6);
     expect(events_02).to.have.length(1);
 
     expect(events_01.map(x => {
-      return {state: x.state, respId: x.respId}
+      return {state: x.state, respId: x.respId};
     })).to.deep.eq([
       {state: 'proposed', respId: undefined},
-      {state: "enqueue", respId: "fakeapp01"},
+      {state: 'enqueue', respId: 'fakeapp01'},
       {state: 'started', respId: 'fakeapp01'},
       {state: 'stopped', respId: 'fakeapp01'},
       {state: 'stopped', respId: 'fakeapp01'},
@@ -444,13 +443,13 @@ class Tasks_workerSpec {
     ]);
 
     expect(events_02.map(x => {
-      return {state: x.state, respId: x.respId}
+      return {state: x.state, respId: x.respId};
     })).to.deep.eq([
       {state: 'proposed', respId: undefined},
     ]);
 
     expect(events_01.map(x => {
-      return {result: x.data ? x.data.results[0].result : null}
+      return {result: x.data ? x.data.results[0].result : null};
     })).to.deep.eq([
       {result: null},
       {result: null},
@@ -466,7 +465,7 @@ class Tasks_workerSpec {
   async 'run job remote over task command'() {
     // typexs task test [--targetId abc] [--mode worker|local /* default is worker if on exists else startup local*/]
 
-    let handle = SpawnHandle.do(__dirname + '/fake_app/node_task_worker.ts').start(LOG_EVENT);
+    const handle = SpawnHandle.do(__dirname + '/fake_app/node_task_worker.ts').start(LOG_EVENT);
     await handle.started;
 
     bootstrap = Bootstrap
@@ -476,7 +475,7 @@ class Tasks_workerSpec {
         logging: {enable: LOG_EVENT, level: 'debug', loggers: [{name: '*', level: 'debug'}]},
         modules: {paths: [__dirname + '/../../..']},
         storage: {default: TEST_STORAGE_OPTIONS},
-        //cache: {bins: {default: 'redis1'}, adapter: {redis1: {type: 'redis', host: '127.0.0.1', port: 6379}}},
+        // cache: {bins: {default: 'redis1'}, adapter: {redis1: {type: 'redis', host: '127.0.0.1', port: 6379}}},
         eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}}
       });
     bootstrap.activateLogger();
@@ -486,26 +485,26 @@ class Tasks_workerSpec {
     bootstrap = await bootstrap.startup();
     await TestHelper.wait(50);
 
-    let command = Container.get(TaskCommand);;
-    //expect(commands.length).to.be.gt(0);
+    const command = Container.get(TaskCommand);
+    // expect(commands.length).to.be.gt(0);
 
-    //let command: TaskCommand = _.find(commands, e => e.command == 'task');
+    // let command: TaskCommand = _.find(commands, e => e.command == 'task');
     Config.set('argv.remote', true, 'system');
     Config.set('argv.someValue', 'value', 'system');
     process.argv = ['typexs', 'task', 'test'];
 
-    let events: TaskEvent[] = [];
+    const events: TaskEvent[] = [];
 
 
     class T2 {
       @subscribe(TaskEvent)
       on(e: TaskEvent) {
-        let _e = _.cloneDeep(e);
+        const _e = _.cloneDeep(e);
         events.push(_e);
       }
     }
 
-    let l = new T2();
+    const l = new T2();
     await EventBus.register(l);
 
     await command.handler({});
@@ -518,10 +517,10 @@ class Tasks_workerSpec {
     handle.shutdown();
     await handle.done;
     await bootstrap.shutdown();
-    //console.log(inspect(events,false,10))
+    // console.log(inspect(events,false,10))
     expect(events).to.have.length.gt(6);
-    expect(events.map(x => x.state)).to.contain.members(["proposed", "enqueue", "started", "stopped"]);
-    expect(events.map(x => x.topic)).to.contain.members(["data", "log"]);
+    expect(events.map(x => x.state)).to.contain.members(['proposed', 'enqueue', 'started', 'stopped']);
+    expect(events.map(x => x.topic)).to.contain.members(['data', 'log']);
   }
 
 
@@ -544,33 +543,29 @@ class Tasks_workerSpec {
     bootstrap = await bootstrap.startup();
     // ---- startup done
 
-    let events: TaskEvent[] = [];
+    const events: TaskEvent[] = [];
 
     class T2 {
       @subscribe(TaskEvent)
       on(e: TaskEvent) {
-        let _e = _.cloneDeep(e);
+        const _e = _.cloneDeep(e);
         events.push(_e);
       }
     }
 
-    let l = new T2();
+    const l = new T2();
     await EventBus.register(l);
 
 
-    let tasks: Tasks = Container.get(Tasks.NAME);
-    let ref = tasks.addTask(SimpleTaskWithLog);
+    const tasks: Tasks = Container.get(Tasks.NAME);
+    const ref = tasks.addTask(SimpleTaskWithLog);
 
-    //const workers: Workers = Container.get(Workers.NAME);
-    //const worker: TaskQueueWorker = <TaskQueueWorker>workers.workers.find(x => x instanceof TaskQueueWorker);
-    //const monitor: TaskMonitorWorker = <TaskMonitorWorker>workers.workers.find(x => x instanceof TaskMonitorWorker);
-
-    let execReq = Container.get(TaskExecutionRequestFactory).createRequest();
-    let results = await execReq.run([ref.name]);
+    const execReq = Container.get(TaskExecutionRequestFactory).createRequest();
+    const results = await execReq.run([ref.name]);
     await TestHelper.waitFor(() => events.length >= 9);
 
-    let storeRef: StorageRef = Container.get(C_STORAGE_DEFAULT);
-    let logs: any[] = await storeRef.getController().find(TaskLog);
+    const storeRef: StorageRef = Container.get(C_STORAGE_DEFAULT);
+    const logs: any[] = await storeRef.getController().find(TaskLog);
 
     await EventBus.unregister(l);
     // ---- finished
@@ -579,17 +574,17 @@ class Tasks_workerSpec {
 
     expect(results).to.have.length(1);
     expect(results[0]).to.deep.include({
-      "state": "enqueue",
-      "topic": "data",
-      "nodeId": "worker",
-      "name": [
-        "simple_task_with_log"
+      'state': 'enqueue',
+      'topic': 'data',
+      'nodeId': 'worker',
+      'name': [
+        'simple_task_with_log'
       ],
-      "targetIds": [
-        "worker"
+      'targetIds': [
+        'worker'
       ],
-      "respId": "worker",
-      "errors": [],
+      'respId': 'worker',
+      'errors': [],
     });
   }
 }

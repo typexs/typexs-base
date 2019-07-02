@@ -50,7 +50,7 @@ export class TaskExchangeRef extends AbstractRef implements IPropertyRef {
   }
 
   getType(): string {
-    throw new NotYetImplementedError();
+    return this.getOptions('type');
   }
 
   id(): string {
@@ -58,7 +58,8 @@ export class TaskExchangeRef extends AbstractRef implements IPropertyRef {
   }
 
   isCollection(): boolean {
-    throw new NotYetImplementedError();
+    const cardinality = this.getOptions('cardinality');
+    return _.isNumber(cardinality) && (cardinality === 0 || cardinality > 1);
   }
 
   isEntityReference(): boolean {

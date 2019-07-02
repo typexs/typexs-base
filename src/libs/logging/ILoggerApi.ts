@@ -19,5 +19,7 @@ export interface ILoggerApi extends _ILoggerApi {
 
   remove(): void;
 
-  // getSubLogger()
+  createChildLogger?(options: ILoggerOptions): ILoggerApi;
+
+  removeChildLogger?(name: string): void;
 }

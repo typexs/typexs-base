@@ -192,4 +192,6 @@ export class WinstonLoggerJar implements ILoggerApi {
     this.close();
     Log._().removeLogger(this.name);
   }
+
+
 }

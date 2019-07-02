@@ -10,20 +10,13 @@ import {
   XS_TYPE_ENTITY,
   XS_TYPE_PROPERTY
 } from 'commons-schema-api/browser';
-import {
-  C_TASKS,
-  K_CLS_TASK_DESCRIPTORS,
-  XS_TYPE_BINDING_TASK_DEPENDS_ON,
-  XS_TYPE_BINDING_TASK_GROUP
-} from './Constants';
-import {Minimatch} from 'minimatch';
+import {C_TASKS, K_CLS_TASK_DESCRIPTORS, XS_TYPE_BINDING_TASK_DEPENDS_ON, XS_TYPE_BINDING_TASK_GROUP} from './Constants';
 import {TaskExchangeRef} from './TaskExchangeRef';
 import {ITasksConfig} from './ITasksConfig';
 import {ITaskRefOptions} from './ITaskRefOptions';
 import {ITaskInfo} from './ITaskInfo';
-import {ITaskDesc} from '../..';
+import {ITaskDesc} from './ITaskDesc';
 import {NullTaskRef} from './NullTaskRef';
-import * as M from 'minimatch';
 import {MatchUtils} from '../utils/MatchUtils';
 
 

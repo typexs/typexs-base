@@ -1,4 +1,4 @@
-import * as _ from 'lodash'
+import * as _ from 'lodash';
 import {
   AbstractRef,
   Binding,
@@ -9,13 +9,13 @@ import {
   LookupRegistry,
   XS_TYPE_ENTITY,
   XS_TYPE_PROPERTY
-} from "commons-schema-api/browser";
-import {C_TASKS, XS_TYPE_BINDING_TASK_DEPENDS_ON, XS_TYPE_BINDING_TASK_GROUP} from "./Constants";
-import {ClassUtils, NotSupportedError, NotYetImplementedError} from "commons-base/browser";
-import {Container} from "typedi";
-import {TaskExchangeRef} from "./TaskExchangeRef";
-import {ITaskRefOptions} from "./ITaskRefOptions";
-import {ITaskInfo} from "./ITaskInfo";
+} from 'commons-schema-api/browser';
+import {C_TASKS, XS_TYPE_BINDING_TASK_DEPENDS_ON, XS_TYPE_BINDING_TASK_GROUP} from './Constants';
+import {ClassUtils, NotSupportedError, NotYetImplementedError} from 'commons-base/browser';
+import {Container} from 'typedi';
+import {TaskExchangeRef} from './TaskExchangeRef';
+import {ITaskRefOptions} from './ITaskRefOptions';
+import {ITaskInfo} from './ITaskInfo';
 
 
 export enum TaskRefType {
@@ -25,12 +25,12 @@ export enum TaskRefType {
 
 export class TaskRef extends AbstractRef implements IEntityRef {
 
+
   _type: TaskRefType;
 
   nodeIds: string[] = [];
 
-  _hasWorker: boolean = false;
-
+  _hasWorker = false;
 
   $source: any;
 
@@ -38,19 +38,109 @@ export class TaskRef extends AbstractRef implements IEntityRef {
 
   description: string = null;
 
-  $fn: Function | object = function (done: Function) {
-    done();
-  };
-
 
   constructor(name: string | object | Function, fn: object | Function = null, options: ITaskRefOptions = null) {
     super(XS_TYPE_ENTITY, TaskRef.getTaskName(name), TaskRef.getTaskObject(name, fn), C_TASKS);
     this.setOptions(options || {});
-    this.prepare(name, fn)
+    this.prepare(name, fn);
   }
 
+
+  static fromJson(json: IEntityRefMetadata & any): TaskRef {
+    let target = null;
+    if (json.target) {
+      target = ClassRef.get(json.target.className, C_TASKS).getClass(true);
+    }
+    const taskRef = new TaskRef(json.name, target);
+    taskRef._type = <any>TaskRefType[json.mode];
+    taskRef.description = json.description;
+    taskRef.permissions = json.permissions;
+    taskRef._hasWorker = json.hasWorker;
+    taskRef.nodeIds = _.get(json, 'nodeIds', []);
+    const groups = _.get(json, 'groups', []);
+    taskRef.setOptions(json.options);
+    groups.forEach((group: string) => {
+      taskRef.group(group);
+    });
+    return taskRef;
+  }
+
+
+  static getTaskName(x: string | Function | object) {
+    if (_.isString(x)) {
+      return x;
+    } else if (_.isFunction(x)) {
+      const i = Reflect.construct(x, []);
+      if (i.name) {
+        return i.name;
+      } else {
+        return _.snakeCase(ClassUtils.getClassName(x));
+      }
+    } else if (_.isPlainObject(x)) {
+      if (_.has(x, 'name')) {
+        return _.get(x, 'name');
+      }
+    } else if (_.isObject(x) && x['name']) {
+      return x['name'];
+    }
+    throw new NotSupportedError('can\'t find task name of ' + JSON.stringify(x));
+  }
+
+
+  static getTaskObject(name: string | Function | object, fn: Function | object): Function {
+    if (_.isString(name)) {
+      if (_.isNull(fn)) {
+        return null;
+      }
+      return _.isFunction(fn) ? fn : fn.constructor;
+    } else {
+      return _.isFunction(name) ? name : _.isFunction(name.constructor) ? name.constructor : _.isFunction(fn) ? fn : fn.constructor;
+    }
+  }
+
+
+  static dependsOn(src: string, dest: string) {
+    const registry = LookupRegistry.$(C_TASKS);
+    const f = registry.find(<any>XS_TYPE_BINDING_TASK_DEPENDS_ON, (a: Binding) => {
+      return (a.source === src && a.target === dest);
+    });
+
+    if (!f) {
+      const b = new Binding();
+      b.bindingType = <any>XS_TYPE_BINDING_TASK_DEPENDS_ON;
+      b.sourceType = XS_TYPE_ENTITY;
+      b.source = src;
+      b.targetType = XS_TYPE_ENTITY;
+      b.target = dest;
+      registry.add(<any>XS_TYPE_BINDING_TASK_DEPENDS_ON, b);
+    }
+  }
+
+
+  static group(src: string, dest: string) {
+    const registry = LookupRegistry.$(C_TASKS);
+    const f = registry.find(<any>XS_TYPE_BINDING_TASK_GROUP, (a: Binding) => {
+      return (a.source === src && a.target === dest);
+    });
+
+    if (!f) {
+      const b = new Binding();
+      b.bindingType = <any>XS_TYPE_BINDING_TASK_GROUP;
+      b.sourceType = XS_TYPE_ENTITY;
+      b.source = src;
+      b.targetType = XS_TYPE_ENTITY;
+      b.target = dest;
+      registry.add(<any>XS_TYPE_BINDING_TASK_GROUP, b);
+    }
+    return this;
+  }
+
+  $fn: Function | object = function (done: Function) {
+    done();
+  };
+
   prepare(name: string | object | Function, fn: object | Function = null) {
-    let options = this.getOptions();
+    const options = this.getOptions();
 
     if (!this.isRemote()) {
       this.$source = null;
@@ -62,7 +152,7 @@ export class TaskRef extends AbstractRef implements IEntityRef {
 
           if (!_.isEmpty(fn.name)) {
             this._type = TaskRefType.CLASS;
-            let x = Reflect.construct(fn, []);
+            const x = Reflect.construct(fn, []);
             this.process(x);
             this.$fn = fn;
           } else {
@@ -79,7 +169,7 @@ export class TaskRef extends AbstractRef implements IEntityRef {
 
       } else if (_.isFunction(name)) {
         this._type = TaskRefType.CLASS;
-        let x = Reflect.construct(name, []);
+        const x = Reflect.construct(name, []);
         this.process(x);
         this.$fn = name;
       } else if (_.isObject(name)) {
@@ -94,7 +184,7 @@ export class TaskRef extends AbstractRef implements IEntityRef {
         this._type = TaskRefType.GROUP;
       }
 
-      if (options && options['source'] != undefined) {
+      if (options && _.isUndefined(options['source'])) {
         this.$source = options['source'];
       }
     } else {
@@ -124,7 +214,7 @@ export class TaskRef extends AbstractRef implements IEntityRef {
     switch (this.getType()) {
 
       case TaskRefType.REMOTE:
-        let source = _.clone(this.$source);
+        const source = _.clone(this.$source);
         source.name = name;
 
         tr = new TaskRef(source);
@@ -168,7 +258,7 @@ export class TaskRef extends AbstractRef implements IEntityRef {
   }
 
   removeNodeId(nodeId: string) {
-    _.remove(this.nodeIds, x => x == nodeId);
+    _.remove(this.nodeIds, x => x === nodeId);
   }
 
   hasWorker() {
@@ -195,7 +285,7 @@ export class TaskRef extends AbstractRef implements IEntityRef {
 
   private processGroup(obj: any) {
     if (obj['groups']) {
-      for (let group of obj['groups']) {
+      for (const group of obj['groups']) {
         this.group(group);
       }
     }
@@ -220,11 +310,11 @@ export class TaskRef extends AbstractRef implements IEntityRef {
       groups: this.groups(),
       nodeIds: this.nodeIds,
       remote: this.isRemote()
-    }
+    };
   }
 
   toJson(withProperties: boolean = true): IEntityRefMetadata {
-    let data = super.toJson();
+    const data = super.toJson();
     data.mode = this._type.toString();
     data.hasWorker = this._hasWorker;
     data.permissions = this.permissions;
@@ -232,7 +322,7 @@ export class TaskRef extends AbstractRef implements IEntityRef {
     data.remote = this.isRemote();
     data.groups = this.groups();
     data.nodeIds = this.nodeIds;
-    let ref = this.getClassRef();
+    const ref = this.getClassRef();
     data.target = ref ? ref.toJson(false) : null;
     data.options = _.merge(data.options);
     if (withProperties) {
@@ -242,30 +332,10 @@ export class TaskRef extends AbstractRef implements IEntityRef {
   }
 
 
-  static fromJson(json: IEntityRefMetadata & any): TaskRef {
-    let target = null;
-    if (json.target) {
-      target = ClassRef.get(json.target.className, C_TASKS).getClass(true);
-    }
-    let taskRef = new TaskRef(json.name, target);
-    taskRef._type = <any>TaskRefType[json.mode];
-    taskRef.description = json.description;
-    taskRef.permissions = json.permissions;
-    taskRef._hasWorker = json.hasWorker;
-    taskRef.nodeIds = _.get(json, 'nodeIds', []);
-    let groups = _.get(json, 'groups', []);
-    taskRef.setOptions(json.options);
-    groups.forEach((group: string) => {
-      taskRef.group(group);
-    });
-    return taskRef;
-  }
-
-
   executable(incoming: { [k: string]: any } = {}): [Function | object, any] {
     switch (this.getType()) {
       case TaskRefType.CLASS:
-        let instance = Container.get(this.object.getClass());
+        const instance = Container.get(this.object.getClass());
         _.assign(instance, incoming);
         return [instance['exec'].bind(instance), instance];
 
@@ -287,54 +357,25 @@ export class TaskRef extends AbstractRef implements IEntityRef {
   }
 
 
-  static getTaskName(x: string | Function | object) {
-    if (_.isString(x)) {
-      return x;
-    } else if (_.isFunction(x)) {
-      let i = Reflect.construct(x, []);
-      if (i.name) {
-        return i.name;
-      } else {
-        return _.snakeCase(ClassUtils.getClassName(x));
-      }
-    } else if (_.isPlainObject(x)) {
-      if (_.has(x, 'name')) {
-        return _.get(x, 'name');
-      }
-    } else if (_.isObject(x) && x['name']) {
-      return x['name'];
-    }
-    throw new NotSupportedError('can\'t find task name of ' + JSON.stringify(x));
-  }
-
-
-  static getTaskObject(name: string | Function | object, fn: Function | object): Function {
-    if (_.isString(name)) {
-      if (_.isNull(fn)) {
-        return null;
-      }
-      return _.isFunction(fn) ? fn : fn.constructor;
-    } else {
-      return _.isFunction(name) ? name : _.isFunction(name.constructor) ? name.constructor : _.isFunction(fn) ? fn : fn.constructor;
-    }
-  }
-
-
   subtasks() {
-    return LookupRegistry.$(C_TASKS).filter(<any>XS_TYPE_BINDING_TASK_GROUP, (b: Binding) => b.source == this.name).map((b: Binding) => b.target);
+    return LookupRegistry.$(C_TASKS).filter(<any>XS_TYPE_BINDING_TASK_GROUP,
+      (b: Binding) => b.source === this.name).map((b: Binding) => b.target);
   }
 
 
   groups() {
-    return LookupRegistry.$(C_TASKS).filter(<any>XS_TYPE_BINDING_TASK_GROUP, (b: Binding) => b.target == this.name).map((b: Binding) => b.source);
+    return LookupRegistry.$(C_TASKS).filter(<any>XS_TYPE_BINDING_TASK_GROUP,
+      (b: Binding) => b.target === this.name).map((b: Binding) => b.source);
   }
 
   grouping() {
-    return LookupRegistry.$(C_TASKS).filter(<any>XS_TYPE_BINDING_TASK_GROUP, (b: Binding) => b.source == this.name).map((b: Binding) => b.target);
+    return LookupRegistry.$(C_TASKS).filter(<any>XS_TYPE_BINDING_TASK_GROUP,
+      (b: Binding) => b.source === this.name).map((b: Binding) => b.target);
   }
 
   dependencies(): string[] {
-    return LookupRegistry.$(C_TASKS).filter(<any>XS_TYPE_BINDING_TASK_DEPENDS_ON, (b: Binding) => b.target == this.name).map((b: Binding) => b.source);
+    return LookupRegistry.$(C_TASKS).filter(<any>XS_TYPE_BINDING_TASK_DEPENDS_ON,
+      (b: Binding) => b.target === this.name).map((b: Binding) => b.source);
   }
 
 
@@ -346,43 +387,6 @@ export class TaskRef extends AbstractRef implements IEntityRef {
 
   group(name: string) {
     TaskRef.group(name, this.name);
-    return this;
-  }
-
-
-  static dependsOn(src: string, dest: string) {
-    const registry = LookupRegistry.$(C_TASKS);
-    let f = registry.find(<any>XS_TYPE_BINDING_TASK_DEPENDS_ON, (a: Binding) => {
-      return (a.source == src && a.target == dest)
-    });
-
-    if (!f) {
-      let b = new Binding();
-      b.bindingType = <any>XS_TYPE_BINDING_TASK_DEPENDS_ON;
-      b.sourceType = XS_TYPE_ENTITY;
-      b.source = src;
-      b.targetType = XS_TYPE_ENTITY;
-      b.target = dest;
-      registry.add(<any>XS_TYPE_BINDING_TASK_DEPENDS_ON, b);
-    }
-  }
-
-
-  static group(src: string, dest: string) {
-    const registry = LookupRegistry.$(C_TASKS);
-    let f = registry.find(<any>XS_TYPE_BINDING_TASK_GROUP, (a: Binding) => {
-      return (a.source == src && a.target == dest)
-    });
-
-    if (!f) {
-      let b = new Binding();
-      b.bindingType = <any>XS_TYPE_BINDING_TASK_GROUP;
-      b.sourceType = XS_TYPE_ENTITY;
-      b.source = src;
-      b.targetType = XS_TYPE_ENTITY;
-      b.target = dest;
-      registry.add(<any>XS_TYPE_BINDING_TASK_GROUP, b);
-    }
     return this;
   }
 
@@ -403,7 +407,7 @@ export class TaskRef extends AbstractRef implements IEntityRef {
 
 
   getPropertyRef(name: string): TaskExchangeRef {
-    return this.getPropertyRefs().find(x => x.name == name);
+    return this.getPropertyRefs().find(x => x.name === name);
   }
 
 
@@ -413,17 +417,17 @@ export class TaskRef extends AbstractRef implements IEntityRef {
 
 
   getIncomings(): TaskExchangeRef[] {
-    return this.getPropertyRefs().filter((x: TaskExchangeRef) => x.descriptor.type == "incoming");
+    return this.getPropertyRefs().filter((x: TaskExchangeRef) => x.descriptor.type === 'incoming');
   }
 
 
   getOutgoings(): TaskExchangeRef[] {
-    return this.getPropertyRefs().filter((x: TaskExchangeRef) => x.descriptor.type == "outgoing");
+    return this.getPropertyRefs().filter((x: TaskExchangeRef) => x.descriptor.type === 'outgoing');
   }
 
 
   getRuntime(): TaskExchangeRef {
-    return this.getPropertyRefs().find((x: TaskExchangeRef) => x.descriptor.type == "runtime");
+    return this.getPropertyRefs().find((x: TaskExchangeRef) => x.descriptor.type === 'runtime');
   }
 
 

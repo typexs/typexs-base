@@ -1,10 +1,10 @@
-import {AbstractRef, IClassRef, IPropertyRef, XS_TYPE_PROPERTY} from "commons-schema-api/browser";
-import {TaskRef} from "./TaskRef";
-import {C_TASKS} from "./Constants";
-import {ClassUtils, NotYetImplementedError} from "commons-base/browser";
-import {ITaskDesc} from "./ITaskDesc";
-import {TreeUtils, WalkValues} from "../../libs/utils/TreeUtils";
-import * as _ from "lodash";
+import {AbstractRef, IClassRef, IPropertyRef, XS_TYPE_PROPERTY} from 'commons-schema-api/browser';
+import {TaskRef} from './TaskRef';
+import {C_TASKS} from './Constants';
+import {ClassUtils, NotYetImplementedError} from 'commons-base/browser';
+import {ITaskDesc} from './ITaskDesc';
+import {TreeUtils, WalkValues} from '../../libs/utils/TreeUtils';
+import * as _ from 'lodash';
 
 
 export class TaskExchangeRef extends AbstractRef implements IPropertyRef {
@@ -78,16 +78,16 @@ export class TaskExchangeRef extends AbstractRef implements IPropertyRef {
 
 
   toJson() {
-    let o = super.toJson();
+    const o = super.toJson();
     o.descriptor = _.cloneDeep(this.descriptor);
     TreeUtils.walk(o.descriptor, (v: WalkValues) => {
       if (_.isString(v.key) && _.isFunction(v.value)) {
         v.parent[v.key] = ClassUtils.getClassName(v.value);
-        if (v.key == 'type' && _.isEmpty(v.parent[v.key])) {
+        if (v.key === 'type' && _.isEmpty(v.parent[v.key])) {
           v.parent[v.key] = ClassUtils.getClassName(v.value());
         }
       } else if (_.isString(v.key) && _.isUndefined(v.value)) {
-        delete v.parent[v.key]
+        delete v.parent[v.key];
       }
     });
     return o;

@@ -1,7 +1,7 @@
-import * as _ from "lodash";
-import {Column, Entity, Index, PrimaryColumn} from "typeorm";
-import {INodeInfo} from "../libs/system/INodeInfo";
-import {IsNotEmpty} from "class-validator";
+import * as _ from 'lodash';
+import {Column, Entity, Index, PrimaryColumn} from 'typeorm';
+import {INodeInfo} from '../libs/system/INodeInfo';
+import {IsNotEmpty} from 'class-validator';
 
 
 @Entity()

@@ -1,4 +1,4 @@
-import * as _ from "lodash";
+import * as _ from 'lodash';
 import {
   AfterInsert,
   AfterUpdate,
@@ -6,9 +6,9 @@ import {
   BeforeUpdate,
   Column,
   Entity,
-  Index,AfterLoad,
+  Index, AfterLoad,
   PrimaryGeneratedColumn
-} from "typeorm";
+} from 'typeorm';
 
 
 @Entity()

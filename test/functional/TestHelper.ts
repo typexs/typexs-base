@@ -1,15 +1,15 @@
 import * as _ from 'lodash';
-import {PlatformTools} from "typeorm/platform/PlatformTools";
-import {getMetadataArgsStorage} from "typeorm";
-import {SystemNodeInfo} from "../../src/entities/SystemNodeInfo";
-import {TaskLog} from "../../src/entities/TaskLog";
+import {PlatformTools} from 'typeorm/platform/PlatformTools';
+import {getMetadataArgsStorage} from 'typeorm';
+import {SystemNodeInfo} from '../../src/entities/SystemNodeInfo';
+import {TaskLog} from '../../src/entities/TaskLog';
 
 export class TestHelper {
 
   static wait(ms: number) {
     return new Promise(resolve => {
       setTimeout(resolve, ms);
-    })
+    });
   }
 
   static logEnable(set?: boolean) {
@@ -27,29 +27,29 @@ export class TestHelper {
 
     const e: string[] = ['SystemNodeInfo', 'TaskLog'];
     _.keys(getMetadataArgsStorage()).forEach(x => {
-      _.remove(getMetadataArgsStorage()[x], y => y['target'] && e.indexOf(y['target'].name) == -1)
-    })
+      _.remove(getMetadataArgsStorage()[x], y => y['target'] && e.indexOf(y['target'].name) === -1);
+    });
   }
 
   static waitFor(fn: Function, ms: number = 50, rep: number = 30) {
     return new Promise((resolve, reject) => {
-      let c = 0;
-      let i = setInterval(() => {
+      const c = 0;
+      const i = setInterval(() => {
         if (c >= rep) {
           clearInterval(i);
-          reject(new Error('max repeats reached ' + rep))
+          reject(new Error('max repeats reached ' + rep));
         }
         try {
-          let r = fn();
+          const r = fn();
           if (r) {
             clearInterval(i);
-            resolve()
+            resolve();
           }
         } catch (err) {
           clearInterval(i);
-          reject(err)
+          reject(err);
         }
-      }, ms)
-    })
+      }, ms);
+    });
   }
 }

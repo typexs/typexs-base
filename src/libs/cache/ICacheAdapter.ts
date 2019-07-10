@@ -1,5 +1,5 @@
-import {ICacheSetOptions} from "./ICacheOptions";
-import {ICacheBinConfig} from "./ICacheBinConfig";
+import {ICacheSetOptions} from './ICacheOptions';
+import {ICacheBinConfig} from './ICacheBinConfig';
 
 export interface ICacheAdapter {
 
@@ -17,7 +17,7 @@ export interface ICacheAdapter {
 
   set(key: string, value: any, bin: string, options: ICacheSetOptions): any;
 
-  clearBin(name:string):void;
+  clearBin(name: string): void;
 
   shutdown(): void;
 

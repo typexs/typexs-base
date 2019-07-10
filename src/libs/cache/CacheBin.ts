@@ -1,5 +1,5 @@
-import {ICacheAdapter} from "./ICacheAdapter";
-import {ICacheGetOptions, ICacheSetOptions} from "./ICacheOptions";
+import {ICacheAdapter} from './ICacheAdapter';
+import {ICacheGetOptions, ICacheSetOptions} from './ICacheOptions';
 
 export class CacheBin {
   readonly name: string;

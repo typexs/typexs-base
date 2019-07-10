@@ -7,7 +7,7 @@ import {IShutdown} from './api/IShutdown';
 import {RuntimeLoader} from './base/RuntimeLoader';
 import {Cache} from './libs/cache/Cache';
 import {ICacheConfig} from './libs/cache/ICacheConfig';
-import {C_EVENTBUS, K_CLS_CACHE_ADAPTER, K_CLS_SCHEDULE_ADAPTER_FACTORIES} from './libs/Constants';
+import {APP_SYSTEM_DISTRIBUTED, C_EVENTBUS, K_CLS_CACHE_ADAPTER, K_CLS_SCHEDULE_ADAPTER_FACTORIES} from './libs/Constants';
 import {Log} from './libs/logging/Log';
 import {IScheduleDef} from './libs/schedule/IScheduleDef';
 import {Scheduler} from './libs/schedule/Scheduler';
@@ -38,6 +38,7 @@ export class Startup implements IBootstrap, IShutdown {
 
   @Inject(WatcherRegistry.NAME)
   watcherRegistry: WatcherRegistry;
+
 
   private async schedule() {
     const scheduler: Scheduler = Container.get(Scheduler.NAME);
@@ -82,13 +83,15 @@ export class Startup implements IBootstrap, IShutdown {
   async ready() {
     await (<TaskMonitor>Container.get(TaskMonitor.NAME)).prepare();
     await this.workers.startup();
-    await this.system.register();
-    const wait = Config.get('nodes.ready.wait', 500);
-    if (wait > 0) {
-      Log.debug('wait for node registration feedback ...');
-      await new Promise((resolve => {
-        setTimeout(resolve, wait);
-      }));
+    if (System.isDistributionEnabled()) {
+      await this.system.register();
+      const wait = Config.get('nodes.ready.wait', 500);
+      if (wait > 0) {
+        Log.debug('wait for node registration feedback ...');
+        await new Promise((resolve => {
+          setTimeout(resolve, wait);
+        }));
+      }
     }
   }
 
@@ -103,7 +106,9 @@ export class Startup implements IBootstrap, IShutdown {
    */
   async shutdown() {
     await this.cache.shutdown();
-    await this.system.unregister();
+    if (System.isDistributionEnabled()) {
+      await this.system.unregister();
+    }
     await EventBus.$().shutdown();
     await (<TaskMonitor>Container.get(TaskMonitor.NAME)).finish();
     this.tasks.reset();

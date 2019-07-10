@@ -1,7 +1,10 @@
-import {ILoggerApi} from "commons-base";
+import {ILoggerApi} from 'commons-base';
 
 export interface ITaskRuntimeContainer {
-  //id: number;
+
+  runnerId: string;
+
+  taskNr: number;
 
   name: string;
 

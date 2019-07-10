@@ -1,19 +1,18 @@
-import * as _ from 'lodash';
-import {TaskRun} from "./TaskRun";
-import {ITaskRuntimeContainer} from "./ITaskRuntimeContainer";
+import {TaskRun} from './TaskRun';
+import {ITaskRuntimeContainer} from './ITaskRuntimeContainer';
 
-import {TaskRuntimeLogger} from "./TaskRuntimeLogger";
-import {TaskRunner} from "./TaskRunner";
-import {ILoggerApi} from "../logging/ILoggerApi";
+import {TaskRuntimeLogger} from './TaskRuntimeLogger';
+import {TaskRunner} from './TaskRunner';
+import {ILoggerApi} from '../logging/ILoggerApi';
 
 
 export class TaskRuntimeContainer implements ITaskRuntimeContainer {
 
   private readonly $_run_: TaskRun;
 
-  private $progress: number = 0;
+  private $progress = 0;
 
-  private $total: number = 100;
+  private $total = 100;
 
   private _logger: ILoggerApi;
 
@@ -32,14 +31,14 @@ export class TaskRuntimeContainer implements ITaskRuntimeContainer {
 
 
   private getRunner(): TaskRunner {
-    return this.$_run_.getRunner()
+    return this.$_run_.getRunner();
   }
 
 
   progress(nr: number) {
     this.$progress = nr;
     this.$_run_.update();
-    //Log.debug(this.name + ': ' + Math.round((this.$progress / this.$total) * 100) +'%');
+    // Log.debug(this.name + ': ' + Math.round((this.$progress / this.$total) * 100) +'%');
   }
 
   /*
@@ -69,12 +68,22 @@ export class TaskRuntimeContainer implements ITaskRuntimeContainer {
   }
 
 
+  get taskNr() {
+    return this.$_run_.id;
+  }
+
+  get runnerId() {
+    return this.$_run_.getRunner().id;
+  }
+
+
   stats() {
     return {
       progress: this.$progress,
       total: this.$total
-    }
+    };
   }
+
 }
 
 

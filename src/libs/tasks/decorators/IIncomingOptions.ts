@@ -4,6 +4,9 @@ import {IValueProvider} from './IValueProvider';
 
 export interface IIncomingOptions extends IExchange {
 
+  /**
+   * Define an array or value provider which defines/provides the possible values
+   */
   valueProvider?: any | any[] | ClassType<IValueProvider<any>>;
 
   /**

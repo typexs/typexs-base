@@ -15,10 +15,24 @@ export interface IExchange {
    */
   optional?: boolean;
 
+  /**
+   * Define the default value for the property
+   */
+  default?: any;
+
+  /**
+   * Define the handle function which convert input to the expected
+   */
   handle?: (x: any) => any;
 
+  /**
+   * Define type if primative
+   */
   type?: JS_DATA_TYPES | Function;
 
+  /**
+   * Define if multiple values are allowed
+   */
   cardinality?: number;
 
 }

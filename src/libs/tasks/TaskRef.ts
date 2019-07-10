@@ -12,10 +12,10 @@ import {
 } from 'commons-schema-api/browser';
 import {C_TASKS, XS_TYPE_BINDING_TASK_DEPENDS_ON, XS_TYPE_BINDING_TASK_GROUP} from './Constants';
 import {ClassUtils, NotSupportedError, NotYetImplementedError} from 'commons-base/browser';
-import {Container} from 'typedi';
 import {TaskExchangeRef} from './TaskExchangeRef';
 import {ITaskRefOptions} from './ITaskRefOptions';
 import {ITaskInfo} from './ITaskInfo';
+import {Injector} from '../di/Injector';
 
 
 export enum TaskRefType {
@@ -335,7 +335,7 @@ export class TaskRef extends AbstractRef implements IEntityRef {
   executable(incoming: { [k: string]: any } = {}): [Function | object, any] {
     switch (this.getType()) {
       case TaskRefType.CLASS:
-        const instance = Container.get(this.object.getClass());
+        const instance = this.create();
         _.assign(instance, incoming);
         return [instance['exec'].bind(instance), instance];
 
@@ -402,7 +402,7 @@ export class TaskRef extends AbstractRef implements IEntityRef {
 
 
   create<T>(): T {
-    throw new NotYetImplementedError();
+    return Injector.create(this.object.getClass());
   }
 
 

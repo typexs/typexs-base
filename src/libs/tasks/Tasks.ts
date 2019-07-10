@@ -15,7 +15,7 @@ import {TaskExchangeRef} from './TaskExchangeRef';
 import {ITasksConfig} from './ITasksConfig';
 import {ITaskRefOptions} from './ITaskRefOptions';
 import {ITaskInfo} from './ITaskInfo';
-import {ITaskDesc} from './ITaskDesc';
+import {ITaskPropertyDesc} from './ITaskPropertyDesc';
 import {NullTaskRef} from './NullTaskRef';
 import {MatchUtils} from '../utils/MatchUtils';
 
@@ -145,7 +145,14 @@ export class Tasks implements ILookupRegistry {
         if (task.canHaveProperties()) {
           const ref = task.getClassRef().getClass(false);
           if (ref) {
-            MetaArgs.key(K_CLS_TASK_DESCRIPTORS).filter(x => x.target === ref).map(desc => {
+            const taskInstance = Reflect.construct(ref, []);
+            MetaArgs.key(K_CLS_TASK_DESCRIPTORS).filter(x => x.target === ref).map((desc: ITaskPropertyDesc) => {
+              // get default values
+              if (!_.has(desc.options, 'default')) {
+                if (!_.isUndefined(taskInstance[desc.propertyName])) {
+                  desc.options.default = _.clone(taskInstance[desc.propertyName]);
+                }
+              }
               const prop = new TaskExchangeRef(desc);
               this.registry.add(XS_TYPE_PROPERTY, prop);
             });
@@ -290,7 +297,7 @@ export class Tasks implements ILookupRegistry {
         let propRef: TaskExchangeRef = this.registry.find(XS_TYPE_PROPERTY,
           (x: TaskExchangeRef) => x.name === prop.name && x.getClassRef() === classRef);
         if (!propRef) {
-          const desc: ITaskDesc = (<any>prop).descriptor;
+          const desc: ITaskPropertyDesc = (<any>prop).descriptor;
           desc.target = classRef.getClass();
           propRef = new TaskExchangeRef(desc);
           this.register(propRef);

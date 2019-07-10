@@ -1,4 +1,4 @@
-import {TaskRef} from "./TaskRef";
+import {TaskRef} from './TaskRef';
 
 export class NullTaskRef extends TaskRef {
 
@@ -11,7 +11,7 @@ export class NullTaskRef extends TaskRef {
   }
 
   subtasks(): any[] {
-    return []
+    return [];
   }
 
   grouping(): any[] {

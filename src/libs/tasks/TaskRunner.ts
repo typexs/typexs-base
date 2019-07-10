@@ -175,7 +175,7 @@ export class TaskRunner extends EventEmitter {
 
 
   async setIncoming(key: string, value: any) {
-    const ref = this.getRequiredIncomings().find(i => i.storingName == _.snakeCase(key));
+    const ref = this.getRequiredIncomings().find(i => i.storingName === _.snakeCase(key));
     if (ref) {
       _.set(this.$incoming, ref.storingName, await ref.convert(value));
     } else {
@@ -200,8 +200,10 @@ export class TaskRunner extends EventEmitter {
   resolveDeps(task_names: string[]) {
     for (let i = 0; i < task_names.length; i++) {
       const name = task_names[i];
-      let taskRun = _.find(this.$tasks, x => x.taskRef().name == name);
-      if (taskRun) { continue; }
+      let taskRun = _.find(this.$tasks, x => x.taskRef().name === name);
+      if (taskRun) {
+        continue;
+      }
 
       const task = this.$registry.get(name);
       taskRun = new TaskRun(this, task);
@@ -224,7 +226,7 @@ export class TaskRunner extends EventEmitter {
     // console.log('check',tasks, 'done',this.$done)
     for (let i = 0; i < tasks.length; i++) {
       const tName = tasks[i];
-      if (this.$done.indexOf(tName) == -1) {
+      if (this.$done.indexOf(tName) === -1) {
         // not done
         return false;
       }
@@ -239,7 +241,7 @@ export class TaskRunner extends EventEmitter {
       return;
     }
 
-    if (this.$todo.length == 0 && this.$running.length == 0) {
+    if (this.$todo.length === 0 && this.$running.length === 0) {
       this.$finished = true;
       self.emit(TASKRUN_STATE_FINISHED);
       return;
@@ -247,7 +249,7 @@ export class TaskRunner extends EventEmitter {
 
     const nextTask = this.selectNextTask();
     this.state = 'running';
-    if (this.$running.length == 0 && !nextTask) {
+    if (this.$running.length === 0 && !nextTask) {
       throw new Error('Tasks are stucked!');
     }
 
@@ -269,14 +271,14 @@ export class TaskRunner extends EventEmitter {
     const name = taskRun.taskRef().name;
 
     const ridx = this.$running.indexOf(name);
-    if (ridx == -1) {
+    if (ridx === -1) {
       this.$running.push(name);
     } else {
       throw new Error('TaskRef already running!!!');
     }
 
     const idx = this.$todo.indexOf(name);
-    if (idx == -1) {
+    if (idx === -1) {
       throw new Error('TaskRef not in todo list!');
     }
     this.$todo.splice(idx, 1);
@@ -292,7 +294,11 @@ export class TaskRunner extends EventEmitter {
 
     const incoming: any = {};
     taskRun.taskRef().getIncomings().forEach(x => {
-      incoming[x.name] = this.$incoming[x.storingName] || this.$outgoing[x.storingName];
+      if (!_.isUndefined(this.$incoming[x.storingName]) || !_.isUndefined(this.$outgoing[x.storingName])) {
+        incoming[x.name] = this.$incoming[x.storingName] || this.$outgoing[x.storingName];
+      } else if (x.hasOption('default')) {
+        incoming[x.name] = x.getOptions('default', undefined);
+      }
     });
 
     await taskRun.start(doneCallback, incoming);
@@ -311,14 +317,14 @@ export class TaskRunner extends EventEmitter {
     const name = task.taskRef().name;
 
     const ridx = this.$done.indexOf(name);
-    if (ridx == -1) {
+    if (ridx === -1) {
       this.$done.push(name);
     } else {
       throw new Error('TaskRef already in done list!!!');
     }
 
     const idx = this.$running.indexOf(name);
-    if (idx == -1) {
+    if (idx === -1) {
       throw new Error('TaskRef not in running list!');
     }
     this.$running.splice(idx, 1);

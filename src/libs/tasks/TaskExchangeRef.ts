@@ -2,7 +2,7 @@ import {AbstractRef, IClassRef, IPropertyRef, XS_TYPE_PROPERTY} from 'commons-sc
 import {TaskRef} from './TaskRef';
 import {C_TASKS} from './Constants';
 import {ClassUtils, NotYetImplementedError} from 'commons-base/browser';
-import {ITaskDesc} from './ITaskDesc';
+import {ITaskPropertyDesc} from './ITaskPropertyDesc';
 import {TreeUtils, WalkValues} from '../../libs/utils/TreeUtils';
 import * as _ from 'lodash';
 
@@ -10,10 +10,10 @@ import * as _ from 'lodash';
 export class TaskExchangeRef extends AbstractRef implements IPropertyRef {
 
 
-  descriptor: ITaskDesc;
+  descriptor: ITaskPropertyDesc;
 
 
-  constructor(desc: ITaskDesc) {
+  constructor(desc: ITaskPropertyDesc) {
     super(XS_TYPE_PROPERTY, desc.propertyName, desc.target, C_TASKS);
     this.setOptions(desc.options);
     this.descriptor = desc;
@@ -24,6 +24,17 @@ export class TaskExchangeRef extends AbstractRef implements IPropertyRef {
     return this.getOptions('optional');
   }
 
+  /**
+   * Check if the option is set
+   *
+   * TODO move to commons-schema-api
+   *
+   * @param name
+   */
+  hasOption(name: string) {
+    const opts = this.getOptions();
+    return _.has(opts, name);
+  }
 
   /**
    * Return the property specific customized value

@@ -1,15 +1,15 @@
-import * as _ from "lodash";
-import {TaskRef} from "./TaskRef";
-import {TaskRuntimeContainer} from "./TaskRuntimeContainer";
-import {TaskRunner} from "./TaskRunner";
-import {TaskExchangeRef} from "./TaskExchangeRef";
-import {NotSupportedError} from "commons-base";
-import {ITaskRunResult} from "./ITaskRunResult";
-import {TaskState} from "./TaskState";
+import * as _ from 'lodash';
+import {TaskRef} from './TaskRef';
+import {TaskRuntimeContainer} from './TaskRuntimeContainer';
+import {TaskRunner} from './TaskRunner';
+import {TaskExchangeRef} from './TaskExchangeRef';
+import {NotSupportedError} from 'commons-base';
+import {ITaskRunResult} from './ITaskRunResult';
+import {TaskState} from './TaskState';
 
 export class TaskRun {
 
-  static taskId: number = 0;
+  static taskId = 0;
 
   id: number;
 
@@ -47,7 +47,7 @@ export class TaskRun {
 
 
   taskRef() {
-    return this.$taskRef
+    return this.$taskRef;
   }
 
 
@@ -56,11 +56,11 @@ export class TaskRun {
   }
 
   isRunning() {
-    return this.status.running
+    return this.status.running;
   }
 
   isDone() {
-    return this.status.done
+    return this.status.done;
   }
 
   ready() {
@@ -81,27 +81,27 @@ export class TaskRun {
 
     if (this.$runner.$dry_mode) {
       this.$wrapper.logger().debug('dry taskRef start: ' + this.taskRef().name);
-      let func = function (d: Function) {
+      const func = function (d: Function) {
         d();
       };
       func.call(this.$wrapper, done);
     } else {
       this.$wrapper.logger().debug('taskRef start: ' + this.taskRef().name);
-      let outgoings: TaskExchangeRef[] = this.taskRef().getOutgoings();
+      const outgoings: TaskExchangeRef[] = this.taskRef().getOutgoings();
 
       this.status.incoming = _.clone(incoming);
 
-      //let _incoming = this.$incoming;
-      let runtimeReference = this.taskRef().getRuntime();
+      // let _incoming = this.$incoming;
+      const runtimeReference = this.taskRef().getRuntime();
       if (runtimeReference) {
         incoming[runtimeReference.name] = this.$wrapper;
       }
 
       const [fn, instance] = this.taskRef().executable(incoming);
       if (_.isFunction(fn)) {
-        if (fn.length == 0) {
+        if (fn.length === 0) {
           try {
-            let res = await fn.call(this.$wrapper);
+            const res = await fn.call(this.$wrapper);
             outgoings.forEach(x => {
               this.status.outgoing[x.storingName] = instance[x.name];
             });
@@ -122,7 +122,7 @@ export class TaskRun {
           }
         }
       } else {
-        throw new NotSupportedError('no executable for ' + this.taskRef().name)
+        throw new NotSupportedError('no executable for ' + this.taskRef().name);
       }
     }
   }
@@ -166,7 +166,7 @@ export class TaskRun {
   }
 
   stats() {
-    let stats: ITaskRunResult = _.clone(this.status);
+    const stats: ITaskRunResult = _.clone(this.status);
     return _.merge(stats, this.$wrapper.stats());
   }
 

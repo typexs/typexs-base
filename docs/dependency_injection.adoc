@@ -1,0 +1,10 @@
+## Dependency injection
+
+
+NOTES:
+
+using typedi project
+
+inject singleton services
+
+but with Injector for unregistered creation of objects

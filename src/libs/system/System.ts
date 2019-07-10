@@ -18,6 +18,8 @@ export class System {
 
   static NAME = 'System';
 
+  static enabled = true;
+
   @Inject(Invoker.NAME)
   invoker: Invoker;
 
@@ -48,11 +50,16 @@ export class System {
   _registered = false;
 
   static isDistributionEnabled() {
-    return Config.get(APP_SYSTEM_DISTRIBUTED, TYPEXS_NAME, true);
+    const e = Config.get(APP_SYSTEM_DISTRIBUTED);
+    if (_.isBoolean(e)) {
+      return e;
+    }
+    return this.enabled;
   }
 
   static enableDistribution(b: boolean = true) {
-    return Config.set(APP_SYSTEM_DISTRIBUTED, b, TYPEXS_NAME);
+    this.enabled = b;
+    Config.set(APP_SYSTEM_DISTRIBUTED, b, TYPEXS_NAME);
   }
 
   async initialize(hostname: string, nodeId: string) {

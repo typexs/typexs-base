@@ -494,12 +494,10 @@ export class Bootstrap {
 
 
   private async createSystemInfo() {
-    if (System.isDistributionEnabled()) {
-      const system = Bootstrap.getContainer().get(System);
-      await system.initialize(os.hostname(), this.getNodeId());
-      Bootstrap.getContainer().set(System.NAME, system);
-      // todo ip + command
-    }
+    const system = Bootstrap.getContainer().get(System);
+    await system.initialize(os.hostname(), this.getNodeId());
+    Bootstrap.getContainer().set(System.NAME, system);
+    // todo ip + command
     return this;
   }
 

@@ -1,43 +1,47 @@
 import * as _ from 'lodash';
-import {CryptUtils} from "./libs/utils/CryptUtils";
-import {Log} from "./libs/logging/Log";
-import {IOptions} from "commons-config";
-import {RuntimeLoader} from "./base/RuntimeLoader";
-import {IRuntimeLoaderOptions} from "./base/IRuntimeLoaderOptions";
-import {IActivator} from "./api/IActivator";
-import {Config} from "commons-config/config/Config";
-import {IModule} from "./api/IModule";
+import {CryptUtils} from './libs/utils/CryptUtils';
+import {Log} from './libs/logging/Log';
+import {IOptions} from 'commons-config';
+import {RuntimeLoader} from './base/RuntimeLoader';
+import {IRuntimeLoaderOptions} from './base/IRuntimeLoaderOptions';
+import {IActivator} from './api/IActivator';
+import {Config} from 'commons-config/config/Config';
+import {IModule} from './api/IModule';
 
-import {IStorageOptions, K_STORAGE} from "./libs/storage/IStorageOptions";
-import {Storage} from "./libs/storage/Storage";
-import {Container} from "typedi";
-import * as os from "os";
+import {IStorageOptions, K_STORAGE} from './libs/storage/IStorageOptions';
+import {Storage} from './libs/storage/Storage';
+import {Container} from 'typedi';
+import * as os from 'os';
 
-import {getMetadataArgsStorage, useContainer} from "typeorm";
-import {BaseUtils} from "./libs/utils/BaseUtils";
-import {C_DEFAULT, MetaArgs, PlatformUtils} from "commons-base";
+import {getMetadataArgsStorage, useContainer} from 'typeorm';
+import {BaseUtils} from './libs/utils/BaseUtils';
+import {MetaArgs, PlatformUtils} from 'commons-base';
 import {
   CONFIG_NAMESPACE,
   K_CLS_ACTIVATOR,
   K_CLS_API,
   K_CLS_BOOTSTRAP,
-  K_CLS_CACHE_ADAPTER, K_CLS_COMMANDS, K_CLS_SCHEDULE_ADAPTER_FACTORIES,
+  K_CLS_CACHE_ADAPTER,
+  K_CLS_COMMANDS,
+  K_CLS_ENTITIES_DEFAULT,
+  K_CLS_GENERATORS,
+  K_CLS_SCHEDULE_ADAPTER_FACTORIES,
   K_CLS_STORAGE_SCHEMAHANDLER,
   K_CLS_USE_API
-} from "./libs/Constants";
-import {IConfigOptions} from "commons-config/config/IConfigOptions";
-import {IBootstrap} from "./api/IBootstrap";
-import {ClassesLoader} from "commons-moduls";
-import {ITypexsOptions} from "./libs/ITypexsOptions";
-import {Invoker} from "./base/Invoker";
+} from './libs/Constants';
+import {IConfigOptions} from 'commons-config/config/IConfigOptions';
+import {IBootstrap} from './api/IBootstrap';
+import {ClassesLoader} from 'commons-moduls';
+import {ITypexsOptions} from './libs/ITypexsOptions';
+import {Invoker} from './base/Invoker';
 
-import {IShutdown} from "./api/IShutdown";
-import {System} from "./libs/system/System";
-import {TableMetadataArgs} from "typeorm/metadata-args/TableMetadataArgs";
-import {K_CLS_WORKERS} from "./libs/worker/Constants";
-import {K_CLS_TASKS} from "./libs/tasks/Constants";
-import {SqliteConnectionOptions} from "typeorm/driver/sqlite/SqliteConnectionOptions";
-import {ICommand} from "./libs/commands/ICommand";
+import {IShutdown} from './api/IShutdown';
+import {System} from './libs/system/System';
+import {TableMetadataArgs} from 'typeorm/metadata-args/TableMetadataArgs';
+import {K_CLS_WORKERS} from './libs/worker/Constants';
+import {K_CLS_TASKS} from './libs/tasks/Constants';
+import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
+import {ICommand} from './libs/commands/ICommand';
 
 useContainer(Container);
 
@@ -131,32 +135,32 @@ export const DEFAULT_RUNTIME_OPTIONS: IRuntimeLoaderOptions = {
       refs: ['commands', 'src/commands']
     },
     {
-      topic: 'generators',
+      topic: K_CLS_GENERATORS,
       refs: ['generators', 'src/generators']
     },
     {
       topic: K_CLS_STORAGE_SCHEMAHANDLER,
       refs: [
-        "adapters/storage/*SchemaHandler.*",
-        "src/adapters/storage/*SchemaHandler.*"
+        'adapters/storage/*SchemaHandler.*',
+        'src/adapters/storage/*SchemaHandler.*'
       ]
     },
     {
       topic: K_CLS_CACHE_ADAPTER,
       refs: [
-        "adapters/cache/*CacheAdapter.*",
-        "src/adapters/cache/*CacheAdapter.*"
+        'adapters/cache/*CacheAdapter.*',
+        'src/adapters/cache/*CacheAdapter.*'
       ]
     },
     {
       topic: K_CLS_SCHEDULE_ADAPTER_FACTORIES,
       refs: [
-        "adapters/scheduler/*Factory.*",
-        "src/adapters/scheduler/*Factory.*"
+        'adapters/scheduler/*Factory.*',
+        'src/adapters/scheduler/*Factory.*'
       ]
     },
     {
-      topic: 'entity.default',
+      topic: K_CLS_ENTITIES_DEFAULT,
       refs: [
         'entities', 'src/entities',
         'shared/entities', 'src/shared/entities',
@@ -181,8 +185,8 @@ export const DEFAULT_RUNTIME_OPTIONS: IRuntimeLoaderOptions = {
 
 export const DEFAULT_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions & IStorageOptions>{
   name: 'default',
-  type: "sqlite",
-  database: ":memory:",
+  type: 'sqlite',
+  database: ':memory:',
   synchronize: true,
   connectOnStartup: false
 };
@@ -207,15 +211,23 @@ const DEFAULT_OPTIONS: ITypexsOptions = {
 
 export class Bootstrap {
 
-  private nodeId: string = CryptUtils.shorthash(CryptUtils.random(8));
+
+  private constructor(options: ITypexsOptions = {}) {
+    options = options || {};
+    this._options = _.defaults(options, _.cloneDeep(DEFAULT_OPTIONS));
+    const config_load_order = _.cloneDeep(DEFAULT_CONFIG_LOAD_ORDER);
+    this.setConfigSources(config_load_order);
+  }
 
   private static $self: Bootstrap = null;
 
-  private CONFIG_LOADED: boolean = false;
+  private nodeId: string = CryptUtils.shorthash(CryptUtils.random(8));
+
+  private CONFIG_LOADED = false;
 
   private cfgOptions: IOptions = {};
 
-  private VERBOSE_DONE: boolean = false;
+  private VERBOSE_DONE = false;
 
   private runtimeLoader: RuntimeLoader = null;
 
@@ -229,22 +241,14 @@ export class Bootstrap {
 
   private _options: ITypexsOptions;
 
-  private running: boolean = false;
-
-
-  private constructor(options: ITypexsOptions = {}) {
-    options = options || {};
-    this._options = _.defaults(options, _.cloneDeep(DEFAULT_OPTIONS));
-    let config_load_order = _.cloneDeep(DEFAULT_CONFIG_LOAD_ORDER);
-    this.setConfigSources(config_load_order);
-  }
+  private running = false;
 
 
   static _(options: ITypexsOptions = {}): Bootstrap {
     if (!this.$self) {
       this.$self = new Bootstrap(options);
     }
-    return this.$self
+    return this.$self;
   }
 
 
@@ -257,6 +261,60 @@ export class Bootstrap {
 
   static getNodeId() {
     return this._().nodeId;
+  }
+
+
+  static verbose(c: any) {
+    if (this._().VERBOSE_DONE) {
+      return;
+    }
+    this._().VERBOSE_DONE = true;
+    if (c === true) {
+      Log.options({
+        enable: true,
+        level: 'debug',
+        transports: [{
+          console: {
+            name: 'stderr',
+            defaultFormatter: true,
+            stderrLevels: ['info', 'debug', 'error', 'warn']
+          }
+        }]
+      }, true);
+    }
+  }
+
+
+  static addConfigOptions(options: IOptions) {
+    const opts = this._().cfgOptions;
+    this._().cfgOptions = BaseUtils.merge(opts, options);
+    return this._().cfgOptions;
+  }
+
+
+  static getContainer() {
+    return Container;
+  }
+
+
+  static configure(options: ITypexsOptions = {}): Bootstrap {
+    return this._(options).configure();
+  }
+
+
+  static setConfigSources(sources: IConfigOptions[]) {
+    return this._().setConfigSources(sources);
+  }
+
+
+  static prepareInvoker(i: Invoker, loader: RuntimeLoader) {
+    // lade klassen mit erweiterung, jedoch welche erweiterung implementieren diese
+    const apiClasses = loader.getClasses(K_CLS_API);
+    loader.getClasses(K_CLS_USE_API);
+    const apis = MetaArgs.key(K_CLS_USE_API);
+    apiClasses.forEach(api => {
+      i.register(api, apis.filter(x => x.api === api).map(x => x.target));
+    });
   }
 
 
@@ -290,23 +348,26 @@ export class Bootstrap {
     Bootstrap.getContainer().set(Storage.NAME, this.storage);
     Bootstrap.getContainer().set(K_STORAGE, this.storage);
 
-    let o_storage: { [name: string]: IStorageOptions } = Config.get(K_STORAGE, CONFIG_NAMESPACE, {});
+    const o_storage: { [name: string]: IStorageOptions } = Config.get(K_STORAGE, CONFIG_NAMESPACE, {});
 
-    for (let name in o_storage) {
-      let settings = o_storage[name];
+    for (const name in o_storage) {
+      if (!o_storage.hasOwnProperty(name)) {
+        continue;
+      }
+      const settings = o_storage[name];
       let entities: Function[] = [];
       if (this.runtimeLoader) {
-        let _entities: Function[] = this.runtimeLoader.getClasses(['entity', name].join('.'));
+        const _entities: Function[] = this.runtimeLoader.getClasses(['entity', name].join('.'));
         // Check if classes are realy for typeorm
         const tables: TableMetadataArgs[] = getMetadataArgsStorage().tables;
         entities = tables
-          .filter(t => _entities.indexOf(<Function>t.target) != -1)
+          .filter(t => _entities.indexOf(<Function>t.target) !== -1)
           .map(t => <Function>t.target);
       }
 
-      let _settings: IStorageOptions = _.merge(settings, {entities: entities}, {name: name});
+      const _settings: IStorageOptions = _.merge(settings, {entities: entities}, {name: name});
       Log.debug('storage register ' + name + ' with ' + entities.length + ' entities');
-      let storageRef = this.storage.register(name, _settings);
+      const storageRef = this.storage.register(name, _settings);
       if (storageRef.getOptions().connectOnStartup) {
         await storageRef.prepare();
       }
@@ -317,7 +378,7 @@ export class Bootstrap {
 
 
   async throwedUnhandledRejection(reason: any, err: Error) {
-    Log.error('unhandledRejection', reason, err)
+    Log.error('unhandledRejection', reason, err);
   }
 
 
@@ -327,50 +388,9 @@ export class Bootstrap {
   }
 
 
-  static verbose(c: any) {
-    if (this._().VERBOSE_DONE) return;
-    this._().VERBOSE_DONE = true;
-    if (c === true) {
-      Log.options({
-        enable: true,
-        level: 'debug',
-        transports: [{
-          console: {
-            name: 'stderr',
-            defaultFormatter: true,
-            stderrLevels: ['info', 'debug', 'error', 'warn']
-          }
-        }]
-      }, true)
-    }
-  }
-
-
-  static addConfigOptions(options: IOptions) {
-    let opts = this._().cfgOptions;
-    this._().cfgOptions = BaseUtils.merge(opts, options);
-    return this._().cfgOptions;
-  }
-
-
-  static getContainer() {
-    return Container;
-  }
-
-
-  static configure(options: ITypexsOptions = {}): Bootstrap {
-    return this._(options).configure()
-  }
-
-
   setConfigSources(sources: IConfigOptions[]) {
     this.cfgOptions.configs = sources;
     return this;
-  }
-
-
-  static setConfigSources(sources: IConfigOptions[]) {
-    return this._().setConfigSources(sources);
   }
 
 
@@ -424,16 +444,16 @@ export class Bootstrap {
       }
 
       this.cfgOptions.configs.forEach(_c => {
-        if (_c.state && _c.type != 'system') {
+        if (_c.state && _c.type !== 'system') {
           Log.debug('Loaded configuration from ' + (_.isString(_c.file) ? _c.file : _c.file.dirname + '/' + _c.file.filename));
         }
-      })
+      });
 
     } catch (err) {
       Log.error(err);
-      process.exit(1)
+      process.exit(1);
     }
-    let add = Config.jar(CONFIG_NAMESPACE).get('');
+    const add = Config.jar(CONFIG_NAMESPACE).get('');
     this._options = BaseUtils.merge(this._options, add);
     Config.jar(CONFIG_NAMESPACE).merge(this._options);
 
@@ -441,7 +461,7 @@ export class Bootstrap {
      * Override nodeId if given
      */
 
-    let appNodeId = Config.get('app.nodeId', Config.get('argv.nodeId', null));
+    const appNodeId = Config.get('app.nodeId', Config.get('argv.nodeId', null));
     this.nodeId = appNodeId ? appNodeId : this.nodeId;
     return this;
   }
@@ -454,7 +474,7 @@ export class Bootstrap {
     Bootstrap.getContainer().set(RuntimeLoader.NAME, this.runtimeLoader);
     await this.runtimeLoader.prepare();
 
-    let invoker = new Invoker();
+    const invoker = new Invoker();
     Bootstrap.getContainer().set(Invoker.NAME, invoker);
     Bootstrap.prepareInvoker(invoker, this.runtimeLoader);
 
@@ -464,7 +484,7 @@ export class Bootstrap {
       await this.shutdown(code);
     });
     process.on('SIGINT', async () => {
-      Log.info("Caught interrupt signal");
+      Log.info('Caught interrupt signal');
       await this.shutdown();
       process.exit();
     });
@@ -474,30 +494,21 @@ export class Bootstrap {
 
 
   private async createSystemInfo() {
-    let system = Bootstrap.getContainer().get(System);
-    await system.initialize(os.hostname(), this.getNodeId());
-    Bootstrap.getContainer().set(System.NAME, system);
-    // todo ip + command
+    if (System.isDistributionEnabled()) {
+      const system = Bootstrap.getContainer().get(System);
+      await system.initialize(os.hostname(), this.getNodeId());
+      Bootstrap.getContainer().set(System.NAME, system);
+      // todo ip + command
+    }
     return this;
   }
 
 
-  static prepareInvoker(i: Invoker, loader: RuntimeLoader) {
-    // lade klassen mit erweiterung, jedoch welche erweiterung implementieren diese
-    let apiClasses = loader.getClasses(K_CLS_API);
-    loader.getClasses(K_CLS_USE_API);
-    let apis = MetaArgs.key(K_CLS_USE_API);
-    apiClasses.forEach(api => {
-      i.register(api, apis.filter(x => x.api == api).map(x => x.target));
-    });
-  }
-
-
   private createActivatorInstances() {
-    let classes = this.runtimeLoader.getClasses(K_CLS_ACTIVATOR);
+    const classes = this.runtimeLoader.getClasses(K_CLS_ACTIVATOR);
     this.activators = [];
     // todo before create injector and pass as parameter
-    for (let clz of classes) {
+    for (const clz of classes) {
       this.activators.push(Bootstrap.getContainer().get(clz));
     }
     return this.activators;
@@ -505,11 +516,11 @@ export class Bootstrap {
 
 
   private createBootstrapInstances() {
-    let classes = this.runtimeLoader.getClasses(K_CLS_BOOTSTRAP);
+    const classes = this.runtimeLoader.getClasses(K_CLS_BOOTSTRAP);
     this.bootstraps = [];
     // todo before create injector and pass as parameter
-    for (let clz of classes) {
-      if (clz != Bootstrap) {
+    for (const clz of classes) {
+      if (clz !== Bootstrap) {
         this.bootstraps.push(Bootstrap.getContainer().get(clz));
       }
     }
@@ -524,11 +535,12 @@ export class Bootstrap {
       await command.beforeStartup();
     }
 
+
     await this.createSystemInfo();
 
     let activators = this.getActivators();
     activators = _.filter(activators, a => _.isFunction(a['startup']));
-    for (let activator of activators) {
+    for (const activator of activators) {
       Log.debug('activate ' + ClassesLoader.getModulName(activator.constructor));
       await activator.startup();
     }
@@ -536,7 +548,7 @@ export class Bootstrap {
     // TODO how to handle dependencies?
     let bootstraps = this.getModulBootstraps();
     bootstraps = _.filter(bootstraps, a => _.isFunction(a['bootstrap']));
-    for (let bootstrap of bootstraps) {
+    for (const bootstrap of bootstraps) {
       Log.debug('bootstrap ' + ClassesLoader.getModulName(bootstrap.constructor));
       await bootstrap.bootstrap();
     }
@@ -549,7 +561,7 @@ export class Bootstrap {
     this.running = true;
 
     // system ready
-    for (let bootstrap of bootstraps) {
+    for (const bootstrap of bootstraps) {
       if (bootstrap['ready']) {
         await bootstrap['ready']();
       }
@@ -560,18 +572,20 @@ export class Bootstrap {
   }
 
   async execCommand(clazz: Function, argv: any) {
-    let command: ICommand = Container.get(clazz);
+    const command: ICommand = Container.get(clazz);
     return await command.handler(argv);
   }
 
   async shutdown(exitCode: number = 0) {
-    if (!this.running) return;
+    if (!this.running) {
+      return;
+    }
     this.running = false;
     Log.debug('shutdown ... exitCode: ' + exitCode);
 
     let bootstraps = this.getModulBootstraps();
     bootstraps = _.filter(bootstraps, a => _.isFunction(a['shutdown']));
-    for (let bootstrap of bootstraps) {
+    for (const bootstrap of bootstraps) {
       Log.debug('shutdown of ' + ClassesLoader.getModulName(bootstrap.constructor));
       await (<IShutdown>bootstrap).shutdown();
     }
@@ -593,8 +607,8 @@ export class Bootstrap {
 
 
   getCommands(withInject: boolean = true): ICommand[] {
-    let commands = [];
-    for (let clz of this.runtimeLoader.getClasses(K_CLS_COMMANDS)) {
+    const commands = [];
+    for (const clz of this.runtimeLoader.getClasses(K_CLS_COMMANDS)) {
       if (withInject) {
         commands.push(Bootstrap.getContainer().get(clz));
       } else {
@@ -606,15 +620,15 @@ export class Bootstrap {
 
 
   getAppPath() {
-    return this._options.app.path
+    return this._options.app.path;
   }
 
 
   getModules(): IModule[] {
-    let regModules = this.getLoader().registry.modules();
-    let modules: IModule[] = [];
-    for (let _module of regModules) {
-      let moduleInfo: IModule = _module;
+    const regModules = this.getLoader().registry.modules();
+    const modules: IModule[] = [];
+    for (const _module of regModules) {
+      const moduleInfo: IModule = _module;
       moduleInfo.settings = this.runtimeLoader.getSettings(_module.name);
       moduleInfo.enabled = this.runtimeLoader.disabledModuleNames.indexOf(_module.name) === -1;
       modules.push(moduleInfo);

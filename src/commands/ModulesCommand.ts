@@ -1,28 +1,34 @@
-import {Config} from "commons-config";
-import {Bootstrap} from "../Bootstrap";
-import {ICommand} from "../libs/commands/ICommand";
-import {IModule} from "../api/IModule";
+import {Config} from 'commons-config';
+import {Bootstrap} from '../Bootstrap';
+import {ICommand} from '../libs/commands/ICommand';
+import {IModule} from '../api/IModule';
 
-import {inspect} from "util";
+import {inspect} from 'util';
+import {System} from '..';
 
 export class ModulesCommand implements ICommand {
 
-  command = "modules";
-  aliases = "m";
-  describe = "List modules";
+  command = 'modules';
+  aliases = 'm';
+  describe = 'List modules';
 
   builder(yargs: any) {
-    return yargs
+    return yargs;
+  }
+
+
+  beforeStartup(): void {
+    System.enableDistribution(false);
   }
 
   async handler(argv: any) {
 
-    let modules: IModule[] = Bootstrap._().getModules();
+    const modules: IModule[] = Bootstrap._().getModules();
 
     if (Config.get('argv.json', false)) {
       console.log(inspect(modules, false, 10));
     } else {
-      for (let modul of modules) {
+      for (const modul of modules) {
         console.log('- Modul: ' + modul.name + ' ' + modul.version + ' (internal: ' + modul.internal + ')');
       }
 

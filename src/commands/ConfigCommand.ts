@@ -1,19 +1,24 @@
-import {Config} from "commons-config";
-import {ICommand} from "../libs/commands/ICommand";
-import {Log} from "..";
+import {Config} from 'commons-config';
+import {ICommand} from '../libs/commands/ICommand';
+import {Log, System} from '..';
 
 export class ConfigCommand implements ICommand {
 
 
-  command = "config [key]";
+  command = 'config [key]';
 
-  aliases = "c";
+  aliases = 'c';
 
-  describe = "Show config or config element";
+  describe = 'Show config or config element';
 
 
   builder(yargs: any) {
-    return yargs
+    return yargs;
+  }
+
+
+  beforeStartup(): void {
+    System.enableDistribution(false);
   }
 
   beforeStorage(): void {

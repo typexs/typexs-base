@@ -1,12 +1,12 @@
-import {Config} from "commons-config";
-import {Inject} from "typedi";
-import {Invoker} from "../base/Invoker";
-import {Tasks} from "../libs/tasks/Tasks";
-import {Console} from '../libs/logging/Console'
-import {TasksApi} from "../api/Tasks.api";
-import {System} from "../libs/system/System";
-import {TasksHelper} from "../libs/tasks/TasksHelper";
-import {ICommand} from "..";
+import {Config} from 'commons-config';
+import {Inject} from 'typedi';
+import {Invoker} from '../base/Invoker';
+import {Tasks} from '../libs/tasks/Tasks';
+import {Console} from '../libs/logging/Console';
+import {TasksApi} from '../api/Tasks.api';
+import {System} from '../libs/system/System';
+import {TasksHelper} from '../libs/tasks/TasksHelper';
+import {ICommand} from '..';
 
 
 /**
@@ -27,11 +27,16 @@ export class TaskCommand implements ICommand {
   @Inject(System.NAME)
   system: System;
 
-  command: string = "task";
+  command = 'task';
 
-  aliases = "t";
+  aliases = 't';
 
-  describe = "Start task";
+  describe = 'Start task';
+
+
+  beforeStartup(): void {
+    System.enableDistribution(false);
+  }
 
 
   builder(yargs: any) {
@@ -40,11 +45,11 @@ export class TaskCommand implements ICommand {
 
   async handler(argv: any) {
 
-    let targetId = Config.get('argv.targetId', null);
-    let isLocal = true;// Config.get('argv.local', false);
-    let isRemote = Config.get('argv.remote', false);
+    const targetId = Config.get('argv.targetId', null);
+    let isLocal = true; // Config.get('argv.local', false);
+    const isRemote = Config.get('argv.remote', false);
 
-    if (targetId == null && !isRemote) {
+    if (targetId === null && !isRemote) {
       isLocal = true;
       // wait moment for
 
@@ -53,16 +58,18 @@ export class TaskCommand implements ICommand {
     }
 
     // filter task names from request
-    let taskNames: string[] = [];
+    const taskNames: string[] = [];
     let start = false;
     let notask = false;
 
     for (let i = 0; i < process.argv.length; i++) {
-      if (process.argv[i] == 'task') {
+      if (process.argv[i] === 'task') {
         start = true;
         continue;
       }
-      if (!start) continue;
+      if (!start) {
+        continue;
+      }
       if (process.argv[i].match(/^\-\-/)) {
         // parameter
         notask = true;
@@ -77,24 +84,24 @@ export class TaskCommand implements ICommand {
     await this.init();
 
     if (taskNames.length > 0) {
-      let args = Config.get('argv');
+      const args = Config.get('argv');
 
-      let results = await TasksHelper.exec(taskNames, {
+      const results = await TasksHelper.exec(taskNames, {
         isLocal: isLocal,
         remote: isRemote,
         targetId: targetId,
         ...args
       });
 
-      Console.log(JSON.stringify(results,null,2));
+      Console.log(JSON.stringify(results, null, 2));
       /*
             // check nodes for tasks
             let tasks = this.tasks.getTasks(taskNames);
 
             if (!isLocal) {
-              let tasksForWorkers = tasks.filter(t => t.hasWorker() && (targetId == null || (targetId && t.hasTargetNodeId(targetId))));
+              let tasksForWorkers = tasks.filter(t => t.hasWorker() && (targetId === null || (targetId && t.hasTargetNodeId(targetId))));
 
-              if (tasks.length == tasksForWorkers.length) {
+              if (tasks.length === tasksForWorkers.length) {
                 // all tasks can be send to workers
                 // execute
 
@@ -109,7 +116,7 @@ export class TaskCommand implements ICommand {
               }
             } else if (isLocal) {
 
-              if (taskNames.length == tasks.length) {
+              if (taskNames.length === tasks.length) {
                 let options: any = {
                   parallel: 5,
                   dry_mode: Config.get('argv.dry-mode', false)
@@ -153,7 +160,7 @@ export class TaskCommand implements ICommand {
             }
       */
     } else {
-      let res = this.tasks.names();
+      const res = this.tasks.names();
       Console.log('List of supported tasks:');
       Console.log('\t- ' + res.join('\n\t') + '\n');
     }

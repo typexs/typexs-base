@@ -1,7 +1,7 @@
-import {Inject} from "typedi";
-import {Workers} from "../libs/worker/Workers";
-import {Log} from "../libs/logging/Log";
-import {ICommand} from "../libs/commands/ICommand";
+import {Inject} from 'typedi';
+import {Workers} from '../libs/worker/Workers';
+import {Log} from '../libs/logging/Log';
+import {ICommand} from '../libs/commands/ICommand';
 
 
 export class WorkerCommand implements ICommand {
@@ -10,14 +10,14 @@ export class WorkerCommand implements ICommand {
   @Inject(Workers.NAME)
   workers: Workers;
 
-  command = "worker";
+  command = 'worker';
 
-  aliases = "w";
+  aliases = 'w';
 
-  describe = "Handle worker";
+  describe = 'Handle worker';
 
   builder(yargs: any) {
-    return yargs
+    return yargs;
   }
 
 
@@ -25,11 +25,11 @@ export class WorkerCommand implements ICommand {
     // worker are started in Startup if defined neewer
 
     if (this.workers.workers.length > 0) {
-      Log.info(this.workers.workers.length + ' workers are online.')
+      Log.info(this.workers.workers.length + ' workers are online.');
       await new Promise(resolve => {
       });
     } else {
-      console.log('No workers found.')
+      console.log('No workers found.');
     }
 
   }

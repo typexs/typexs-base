@@ -1,23 +1,29 @@
 import * as _ from 'lodash';
-import {Storage} from "../libs/storage/Storage";
+import {Storage} from '../libs/storage/Storage';
 import {Log} from '../libs/logging/Log';
-import {Inject} from "typedi";
-import {ICommand} from "../libs/commands/ICommand";
+import {Inject} from 'typedi';
+import {ICommand} from '../libs/commands/ICommand';
+import {System} from '..';
 
 export class StorageCommand implements ICommand {
 
-  command = "storage";
+  command = 'storage';
 
-  aliases = "st";
+  aliases = 'st';
 
-  describe = "Storages";
+  describe = 'Storages';
 
 
   @Inject(Storage.NAME)
   storage: Storage;
 
+
+  beforeStartup(): void {
+    System.enableDistribution(false);
+  }
+
   builder(yargs: any) {
-    return yargs
+    return yargs;
   }
 
   async handler(argv: any) {
@@ -37,7 +43,7 @@ export class StorageCommand implements ICommand {
       return Log.info('No subcommand method to execute found for ' + subcommand + '.');
     }
 
-    let storageName = parts.shift();
+    const storageName = parts.shift();
 
     return await this[subcommand](storageName, parts, argv);
   }
@@ -49,7 +55,7 @@ export class StorageCommand implements ICommand {
       return;
     }
 
-    let storageRef = this.storage.get(storageName);
+    const storageRef = this.storage.get(storageName);
     if (!storageRef) {
       Log.info('No storage ref for "' + storageName + '" defined.');
       return;
@@ -59,8 +65,8 @@ export class StorageCommand implements ICommand {
       parts = await storageRef.getSchemaHandler().getCollectionNames();
     }
 
-    let c = await storageRef.connect();
-    let data = await c.manager.connection.createQueryRunner().getTables(parts);
+    const c = await storageRef.connect();
+    const data = await c.manager.connection.createQueryRunner().getTables(parts);
     await c.close();
     console.log(JSON.stringify(data, null, 2));
   }
@@ -72,7 +78,7 @@ export class StorageCommand implements ICommand {
       return;
     }
 
-    let storageRef = this.storage.get(storageName);
+    const storageRef = this.storage.get(storageName);
     if (!storageRef) {
       Log.info('No storage ref for "' + storageName + '" defined.');
       return;

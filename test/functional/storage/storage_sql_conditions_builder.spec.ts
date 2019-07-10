@@ -1,27 +1,26 @@
-import * as path from "path";
-import {suite, test} from "mocha-typescript";
-import {expect} from "chai";
+import * as path from 'path';
+import {suite, test} from 'mocha-typescript';
+import {expect} from 'chai';
 
-import {Bootstrap} from "../../../src/Bootstrap";
-import {Config} from "commons-config";
-import {TypeOrmSqlConditionsBuilder} from "../../../src/libs/storage/framework/typeorm/TypeOrmSqlConditionsBuilder";
-import {PlatformTools} from "typeorm/platform/PlatformTools";
-import {TypeOrmEntityRegistry} from "../../../src/libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry";
-import {TestHelper} from "../TestHelper";
+import {Bootstrap} from '../../../src/Bootstrap';
+import {Config} from 'commons-config';
+import {TypeOrmSqlConditionsBuilder} from '../../../src/libs/storage/framework/typeorm/TypeOrmSqlConditionsBuilder';
+import {TypeOrmEntityRegistry} from '../../../src/libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry';
+import {TestHelper} from '../TestHelper';
 
 let bootstrap: Bootstrap;
-let Car:any = null;
-let Driver:any = null;
+let Car: any = null;
+let Driver: any = null;
 
 @suite('functional/storage/storage_sql_conditions_builder')
-class Storage_sql_conditions_builderSpec {
+class StorageSqlConditionsBuilderSpec {
 
 
   static async before() {
     TestHelper.typeOrmReset();
     Bootstrap.reset();
     Config.clear();
-    let appdir = path.join(__dirname, 'fake_app_conditions');
+    const appdir = path.join(__dirname, 'fake_app_conditions');
     bootstrap = await Bootstrap
       .configure({
         app: {
@@ -35,14 +34,14 @@ class Storage_sql_conditions_builderSpec {
 
     bootstrap = await bootstrap.activateStorage();
 
-    let storageManager = bootstrap.getStorage();
-    let storageRef = storageManager.get();
+    const storageManager = bootstrap.getStorage();
+    const storageRef = storageManager.get();
     Car = require('./fake_app_conditions/entities/Car').Car;
     Driver = require('./fake_app_conditions/entities/Driver').Driver;
 
     storageRef.addEntityType(Car);
     storageRef.addEntityType(Driver);
-    await storageRef.prepare()
+    await storageRef.prepare();
   }
 
   static after() {
@@ -54,10 +53,10 @@ class Storage_sql_conditions_builderSpec {
   @test
   async 'build join conditions for one-to-many typeorm relation'() {
 
-    let sql = new TypeOrmSqlConditionsBuilder(TypeOrmEntityRegistry.$().getEntityRefFor(Car), 'car');
-    let where = sql.build({'driver.id': 1});
+    const sql = new TypeOrmSqlConditionsBuilder(TypeOrmEntityRegistry.$().getEntityRefFor(Car), 'car');
+    const where = sql.build({'driver.id': 1});
 
-    expect(where).to.eq("driver_1.id = '1'");
+    expect(where).to.eq('driver_1.id = 1');
     expect(sql.getJoins()).to.deep.eq([{
       alias: 'driver_1',
       table: 'driver',
@@ -75,10 +74,10 @@ class Storage_sql_conditions_builderSpec {
   @test
   async 'build join conditions for many-to-one typeorm relation'() {
 
-    let sql = new TypeOrmSqlConditionsBuilder(TypeOrmEntityRegistry.$().getEntityRefFor(Driver), 'driver');
-    let where = sql.build({'car.id': 1});
+    const sql = new TypeOrmSqlConditionsBuilder(TypeOrmEntityRegistry.$().getEntityRefFor(Driver), 'driver');
+    const where = sql.build({'car.id': 1});
 
-    expect(where).to.eq("car_1.id = '1'");
+    expect(where).to.eq('car_1.id = 1');
     expect(sql.getJoins()).to.deep.eq([{
       alias: 'car_1',
       table: 'car',

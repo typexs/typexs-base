@@ -2,25 +2,26 @@ import * as _ from 'lodash';
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 
-import {Invoker, Log, TaskRunner, Tasks, TasksApi} from "../../../src";
-import {Container} from "typedi";
-import {SimpleTask} from "./tasks/SimpleTask";
-import {SimpleTaskPromise} from "./tasks/SimpleTaskPromise";
-import {SimpleTaskWithArgs} from "./tasks/SimpleTaskWithArgs";
-import {DependentTask} from "./tasks/DependentTask";
-import {DependingTask} from "./tasks/DependingTask";
-import {GroupedTask1} from "./tasks/GroupedTask1";
-import {GroupedTask2} from "./tasks/GroupedTask2";
-import {GroupedTask3} from "./tasks/GroupedTask3";
-import {GroupedTask4} from "./tasks/GroupedTask4";
-import {GroupingTask} from "./tasks/GroupingTask";
-import {SimpleTaskNoName} from "./tasks/SimpleTaskNoName";
-import {SimpleTaskInstance} from "./tasks/SimpleTaskInstance";
-import {SimpleTaskUngrouped01} from "./tasks/SimpleTaskUngrouped01";
-import {SimpleTaskUngrouped02} from "./tasks/SimpleTaskUngrouped02";
-import {SimpleTaskError} from "./tasks/SimpleTaskError";
-import {SimpleTaskWithRuntimeLog} from "./tasks/SimpleTaskWithRuntimeLog";
-import {TestHelper} from "../TestHelper";
+import {Invoker, Log, TaskRunner, Tasks, TasksApi} from '../../../src';
+import {Container} from 'typedi';
+import {SimpleTask} from './tasks/SimpleTask';
+import {SimpleTaskPromise} from './tasks/SimpleTaskPromise';
+import {SimpleTaskWithArgs} from './tasks/SimpleTaskWithArgs';
+import {DependentTask} from './tasks/DependentTask';
+import {DependingTask} from './tasks/DependingTask';
+import {GroupedTask1} from './tasks/GroupedTask1';
+import {GroupedTask2} from './tasks/GroupedTask2';
+import {GroupedTask3} from './tasks/GroupedTask3';
+import {GroupedTask4} from './tasks/GroupedTask4';
+import {GroupingTask} from './tasks/GroupingTask';
+import {SimpleTaskNoName} from './tasks/SimpleTaskNoName';
+import {SimpleTaskInstance} from './tasks/SimpleTaskInstance';
+import {SimpleTaskUngrouped01} from './tasks/SimpleTaskUngrouped01';
+import {SimpleTaskUngrouped02} from './tasks/SimpleTaskUngrouped02';
+import {SimpleTaskError} from './tasks/SimpleTaskError';
+import {SimpleTaskWithRuntimeLog} from './tasks/SimpleTaskWithRuntimeLog';
+import {TestHelper} from '../TestHelper';
+import {SimpleTaskWithDefaultArgs} from './tasks/SimpleTaskWithDefaultArgs';
 
 const stdMocks = require('std-mocks');
 
@@ -32,7 +33,7 @@ class TasksSpec {
 
   static before() {
     Log.reset();
-    let i = new Invoker();
+    const i = new Invoker();
     Container.set(Invoker.NAME, i);
     i.register(TasksApi, []);
 
@@ -45,13 +46,14 @@ class TasksSpec {
 
   @test
   async 'register simple tasks class and run'() {
-    let tasks = new Tasks('testnode');
-    let taskRef = tasks.addTask(SimpleTask);
+    const tasks = new Tasks('testnode');
+    const taskRef = tasks.addTask(SimpleTask);
     expect(taskRef.name).to.be.eq('simple_task');
-    let runner = new TaskRunner(tasks, ['simple_task']);
-    let data = await runner.run();
+    const runner = new TaskRunner(tasks, ['simple_task']);
+    const data = await runner.run();
     expect(data.results).to.have.length(1);
-    let x = data.results.find(x => x.name == taskRef.name);
+    // tslint:disable-next-line:no-shadowed-variable
+    const x = data.results.find(x => x.name === taskRef.name);
     expect(x.name).to.be.eq(taskRef.name);
     expect(x.result).to.be.eq('test');
   }
@@ -59,13 +61,14 @@ class TasksSpec {
 
   @test
   async 'register simple tasks class with promise and run'() {
-    let tasks = new Tasks('testnode');
-    let taskRef = tasks.addTask(SimpleTaskPromise);
+    const tasks = new Tasks('testnode');
+    const taskRef = tasks.addTask(SimpleTaskPromise);
     expect(taskRef.name).to.be.eq('simple_task_promise');
-    let runner = new TaskRunner(tasks, ['simple_task_promise']);
-    let data = await runner.run();
+    const runner = new TaskRunner(tasks, ['simple_task_promise']);
+    const data = await runner.run();
     expect(data.results).to.have.length(1);
-    let x = data.results.find(x => x.name == taskRef.name);
+    // tslint:disable-next-line:no-shadowed-variable
+    const x = data.results.find(x => x.name === taskRef.name);
     expect(x.name).to.be.eq(taskRef.name);
     expect(x.result).to.be.eq('test');
   }
@@ -73,13 +76,14 @@ class TasksSpec {
 
   @test
   async 'register simple tasks where name will be generated'() {
-    let tasks = new Tasks('testnode');
-    let taskRef = tasks.addTask(SimpleTaskNoName);
+    const tasks = new Tasks('testnode');
+    const taskRef = tasks.addTask(SimpleTaskNoName);
     expect(taskRef.name).to.be.eq('simple_task_no_name');
-    let runner = new TaskRunner(tasks, [taskRef.name]);
-    let data = await runner.run();
+    const runner = new TaskRunner(tasks, [taskRef.name]);
+    const data = await runner.run();
     expect(data.results).to.have.length(1);
-    let x = data.results.find(x => x.name == taskRef.name);
+    // tslint:disable-next-line:no-shadowed-variable
+    const x = data.results.find(x => x.name === taskRef.name);
     expect(x.name).to.be.eq(taskRef.name);
     expect(x.result).to.be.eq('test');
   }
@@ -87,14 +91,14 @@ class TasksSpec {
 
   @test
   async 'register simple tasks instance with exec method and run'() {
-    let tasks = new Tasks('testnode');
-    let nn = new SimpleTaskInstance();
-    let taskRef = tasks.addTask(nn);
+    const tasks = new Tasks('testnode');
+    const nn = new SimpleTaskInstance();
+    const taskRef = tasks.addTask(nn);
     expect(taskRef.name).to.be.eq('simple_task_instance');
-    let runner = new TaskRunner(tasks, [taskRef.name]);
-    let data = await runner.run();
+    const runner = new TaskRunner(tasks, [taskRef.name]);
+    const data = await runner.run();
     expect(data.results).to.have.length(1);
-    let x = data.results.find(x => x.name == taskRef.name);
+    const x = data.results.find(x => x.name === taskRef.name);
     expect(x.name).to.be.eq(taskRef.name);
     expect(x.result).to.be.eq('test');
   }
@@ -102,15 +106,15 @@ class TasksSpec {
 
   @test
   async 'register function callback and run'() {
-    let tasks = new Tasks('testnode');
-    let taskRef = tasks.addTask('callback_task', function (done: Function) {
-      done(null, 'test')
+    const tasks = new Tasks('testnode');
+    const taskRef = tasks.addTask('callback_task', function (done: Function) {
+      done(null, 'test');
     });
     expect(taskRef.name).to.be.eq('callback_task');
-    let runner = new TaskRunner(tasks, [taskRef.name]);
-    let data = await runner.run();
+    const runner = new TaskRunner(tasks, [taskRef.name]);
+    const data = await runner.run();
     expect(data.results).to.have.length(1);
-    let x = data.results.find(x => x.name == taskRef.name);
+    const x = data.results.find(x => x.name === taskRef.name);
     expect(x.name).to.be.eq(taskRef.name);
     expect(x.result).to.be.eq('test');
   }
@@ -118,15 +122,15 @@ class TasksSpec {
 
   @test
   async 'register function callback and run as promise'() {
-    let tasks = new Tasks('testnode');
-    let taskRef = tasks.addTask('callback_task_async', async function () {
+    const tasks = new Tasks('testnode');
+    const taskRef = tasks.addTask('callback_task_async', async function () {
       return 'test';
     });
     expect(taskRef.name).to.be.eq('callback_task_async');
-    let runner = new TaskRunner(tasks, [taskRef.name]);
-    let data = await runner.run();
+    const runner = new TaskRunner(tasks, [taskRef.name]);
+    const data = await runner.run();
     expect(data.results).to.have.length(1);
-    let x = data.results.find(x => x.name == taskRef.name);
+    const x = data.results.find(x => x.name === taskRef.name);
     expect(x.name).to.be.eq(taskRef.name);
     expect(x.result).to.be.eq('test');
   }
@@ -134,22 +138,22 @@ class TasksSpec {
 
   @test
   async 'register simple tasks class with arguments and run'() {
-    let tasks = new Tasks('testnode');
-    let taskRef = tasks.addTask(SimpleTaskWithArgs);
+    const tasks = new Tasks('testnode');
+    const taskRef = tasks.addTask(SimpleTaskWithArgs);
     expect(taskRef.name).to.be.eq('simple_task_with_args');
     expect(taskRef.getIncomings().map(x => x.name)).to.be.deep.eq(['incoming', 'list']);
     expect(taskRef.getIncomings().map(x => x.storingName)).to.be.deep.eq(['incoming', 'param_list']);
 
-    let runner = new TaskRunner(tasks, ['simple_task_with_args']);
-    let req = runner.getRequiredIncomings();
+    const runner = new TaskRunner(tasks, ['simple_task_with_args']);
+    const req = runner.getRequiredIncomings();
     expect(req.map(x => x.storingName)).to.be.deep.eq(['incoming', 'param_list']);
 
     await runner.setIncoming('incoming', 'is_incomed;)');
     await runner.setIncoming('param_list', ['one', 'two']);
 
-    let data = await runner.run();
+    const data = await runner.run();
     expect(data.results).to.have.length(1);
-    let res = data.results.shift();
+    const res = data.results.shift();
     expect(res.incoming.incoming).to.be.eq('is_incomed;)');
     expect(res.incoming.list).to.be.deep.eq(['one', 'two']);
     expect(res.outgoing.outgoing).to.be.eq('is_incomed;)-test one;two');
@@ -158,48 +162,67 @@ class TasksSpec {
     expect(res.error).to.be.null;
   }
 
+  @test
+  async 'register simple tasks class with arguments and default values and run'() {
+    const tasks = new Tasks('testnode');
+    const taskRef = tasks.addTask(SimpleTaskWithDefaultArgs);
+    expect(taskRef.name).to.be.eq('simple_task_with_default_args');
+    expect(taskRef.getIncomings().map(x => x.name)).to.be.deep.eq(['value', 'list']);
+    expect(taskRef.getIncomings().map(x => x.getOptions('default'))).to.be.deep.eq(['SomeValue', ['asd', 'bfr']]);
+
+    const runner = new TaskRunner(tasks, ['simple_task_with_default_args']);
+    const req = runner.getRequiredIncomings();
+    expect(req.map(x => x.storingName)).to.be.deep.eq(['value', 'list']);
+
+    const data = await runner.run();
+    expect(data.results).to.have.length(1);
+
+    const res = data.results.shift();
+    expect(res.incoming).to.be.deep.eq({value: 'SomeValue', list: ['asd', 'bfr']});
+  }
+
 
   @test
   async 'grouped tasks without grouping task'() {
-    let tasks = new Tasks('testnode');
-    let group1 = tasks.addTask(GroupedTask1);
-    let group2 = tasks.addTask(GroupedTask2);
+    const tasks = new Tasks('testnode');
+    const group1 = tasks.addTask(GroupedTask1);
+    const group2 = tasks.addTask(GroupedTask2);
 
-    let runner = new TaskRunner(tasks, ['grouped']);
-    let data = await runner.run();
+    const runner = new TaskRunner(tasks, ['grouped']);
+    const data = await runner.run();
     expect(data.results).to.have.length(3);
-    let res = data.results.map(r => r.result).filter(f => f);
+    const res = data.results.map(r => r.result).filter(f => f);
     expect(res).to.be.deep.eq(['grouped_1', 'grouped_2']);
   }
 
 
   @test
   async 'grouped tasks with a grouping task'() {
-    let tasks = new Tasks('testnode');
-    let grouping = tasks.addTask(GroupingTask);
-    let group3 = tasks.addTask(GroupedTask3);
-    let group4 = tasks.addTask(GroupedTask4);
+    const tasks = new Tasks('testnode');
+    const grouping = tasks.addTask(GroupingTask);
+    const group3 = tasks.addTask(GroupedTask3);
+    const group4 = tasks.addTask(GroupedTask4);
 
-    let runner = new TaskRunner(tasks, ['grouping']);
-    let data = await runner.run();
+    const runner = new TaskRunner(tasks, ['grouping']);
+    const data = await runner.run();
     expect(data.results).to.have.length(3);
-    let res = data.results.map(r => r.result).filter(f => f);
+    const res = data.results.map(r => r.result).filter(f => f);
     expect(res).to.be.deep.eq(['grouping', 'grouped_3', 'grouped_4']);
   }
 
 
   @test
   async 'dependencies tasks'() {
-    let tasks = new Tasks('testnode');
-    let dependent = tasks.addTask(DependentTask);
-    let depending = tasks.addTask(DependingTask);
+    const tasks = new Tasks('testnode');
+    const dependent = tasks.addTask(DependentTask);
+    const depending = tasks.addTask(DependingTask);
     depending.dependsOn(dependent.name);
     expect(depending.dependencies()).to.be.deep.eq(['dependent']);
 
-    let runner = new TaskRunner(tasks, [depending.name]);
-    let data = await runner.run();
+    const runner = new TaskRunner(tasks, [depending.name]);
+    const data = await runner.run();
     expect(data.results).to.have.length(2);
-    let res = data.results.find(r => r.name == depending.name);
+    const res = data.results.find(r => r.name === depending.name);
     expect(res.result).to.deep.eq({new: 'data', test: 'true'});
   }
 
@@ -209,19 +232,19 @@ class TasksSpec {
     const oldName = 'simple_task';
     const newName = 'copy_simple_task';
 
-    let tasks = new Tasks('testnode');
-    let taskRef = tasks.addTask(SimpleTask);
+    const tasks = new Tasks('testnode');
+    const taskRef = tasks.addTask(SimpleTask);
     expect(taskRef.name).to.be.eq(oldName);
 
-    let copyTaskRef = tasks.taskMap(newName, oldName);
+    const copyTaskRef = tasks.taskMap(newName, oldName);
     expect(copyTaskRef.name).to.eq(newName);
 
-    let c1 = taskRef.getClassRef();
-    let c2 = copyTaskRef.getClassRef();
+    const c1 = taskRef.getClassRef();
+    const c2 = copyTaskRef.getClassRef();
     expect(c1).to.eq(c2);
 
-    let runner = new TaskRunner(tasks, [newName]);
-    let data = await runner.run();
+    const runner = new TaskRunner(tasks, [newName]);
+    const data = await runner.run();
     expect(data.results).to.have.length(1);
   }
 
@@ -230,21 +253,21 @@ class TasksSpec {
   async 'map task to new one (instance-registered task)'() {
     const oldName = 'simple_task_instance';
     const newName = 'copy_simple_task_instance';
-    let tasks = new Tasks('testnode');
-    let nn = new SimpleTaskInstance();
-    let taskRef = tasks.addTask(nn);
+    const tasks = new Tasks('testnode');
+    const nn = new SimpleTaskInstance();
+    const taskRef = tasks.addTask(nn);
     expect(taskRef.name).to.be.eq(oldName);
 
-    let copyTaskRef = tasks.taskMap(newName, oldName);
+    const copyTaskRef = tasks.taskMap(newName, oldName);
     expect(copyTaskRef.name).to.eq(newName);
 
-    let c1 = taskRef.getClassRef();
-    let c2 = copyTaskRef.getClassRef();
+    const c1 = taskRef.getClassRef();
+    const c2 = copyTaskRef.getClassRef();
     // if instance is cloned then the classref is the same
     expect(c1).to.eq(c2);
 
-    let runner = new TaskRunner(tasks, [newName]);
-    let data = await runner.run();
+    const runner = new TaskRunner(tasks, [newName]);
+    const data = await runner.run();
     expect(data.results).to.have.length(1);
 
   }
@@ -254,38 +277,38 @@ class TasksSpec {
   async 'map task to new one (callback-registered task)'() {
     const oldName = 'callback_test';
     const newName = 'copy_callback_test';
-    let tasks = new Tasks('testnode');
-    let taskRef = tasks.addTask(oldName, function (done: Function) {
-      done(null, 'test')
+    const tasks = new Tasks('testnode');
+    const taskRef = tasks.addTask(oldName, function (done: Function) {
+      done(null, 'test');
     });
     expect(taskRef.name).to.be.eq(oldName);
 
-    let copyTaskRef = tasks.taskMap(newName, oldName);
+    const copyTaskRef = tasks.taskMap(newName, oldName);
     expect(copyTaskRef.name).to.eq(newName);
 
-    let c1 = taskRef.getClassRef();
-    let c2 = copyTaskRef.getClassRef();
+    const c1 = taskRef.getClassRef();
+    const c2 = copyTaskRef.getClassRef();
     expect(c1).to.eq(c2);
 
-    let runner = new TaskRunner(tasks, [newName]);
-    let data = await runner.run();
+    const runner = new TaskRunner(tasks, [newName]);
+    const data = await runner.run();
     expect(data.results).to.have.length(1);
   }
 
 
   @test
   async 'map task group to new one'() {
-    let tasks = new Tasks('testnode');
-    let t1 = tasks.addTask(SimpleTaskUngrouped01);
-    let t2 = tasks.addTask(SimpleTaskUngrouped02);
+    const tasks = new Tasks('testnode');
+    const t1 = tasks.addTask(SimpleTaskUngrouped01);
+    const t2 = tasks.addTask(SimpleTaskUngrouped02);
 
     t1.group('simple_group');
     t2.group('simple_group');
 
-    let ref = tasks.taskMap('copy_simple_group', 'simple_group');
+    const ref = tasks.taskMap('copy_simple_group', 'simple_group');
     expect(ref.name).to.eq('copy_simple_group');
 
-    let groups = ref.grouping();
+    const groups = ref.grouping();
     expect(groups).to.deep.eq(['simple_task_ungrouped_01', 'simple_task_ungrouped_02']);
 
     let runner = new TaskRunner(tasks, ['simple_group']);
@@ -300,7 +323,7 @@ class TasksSpec {
 
   @test
   async 'toJson and fromJson'() {
-    let tasks = new Tasks('testnode');
+    const tasks = new Tasks('testnode');
     tasks.reset();
 
     tasks.addTask(SimpleTaskUngrouped01);
@@ -308,39 +331,39 @@ class TasksSpec {
     tasks.addTask(SimpleTaskWithArgs);
     tasks.addTask(SimpleTaskWithRuntimeLog);
 
-    let out = tasks.toJson();
+    const out = tasks.toJson();
 //    console.log(inspect(out,false,10));
     expect(out).to.have.length(4);
 
     tasks.reset();
-    let out01 = out.shift();
-    let task01 = tasks.fromJson(out01);
+    const out01 = out.shift();
+    const task01 = tasks.fromJson(out01);
     expect(task01.name).to.be.eq('simple_task_ungrouped_01');
 
-    let out02 = out.shift();
-    let task02 = tasks.fromJson(out02);
+    const out02 = out.shift();
+    const task02 = tasks.fromJson(out02);
     expect(task02.name).to.be.eq('simple_task_ungrouped_02');
 
-    let out03 = out.shift();
-    let task03 = tasks.fromJson(out03);
-    let props03 = task03.getPropertyRefs();
+    const out03 = out.shift();
+    const task03 = tasks.fromJson(out03);
+    const props03 = task03.getPropertyRefs();
     expect(task03.name).to.be.eq('simple_task_with_args');
     expect(props03).to.have.length(4);
 
-    let out04 = out.shift();
-    let task04 = tasks.fromJson(out04);
-    let props04 = task04.getPropertyRefs();
+    const out04 = out.shift();
+    const task04 = tasks.fromJson(out04);
+    const props04 = task04.getPropertyRefs();
     expect(task04.name).to.be.eq('simple_task_with_runtime_log');
     expect(props04).to.have.length(1);
   }
 
   @test
   async 'runtime error in (class-registered task)'() {
-    let tasks = new Tasks('testnode');
-    let taskRef = tasks.addTask(SimpleTaskError);
+    const tasks = new Tasks('testnode');
+    const taskRef = tasks.addTask(SimpleTaskError);
 
-    let runner = new TaskRunner(tasks, [taskRef.name]);
-    let data = await runner.run();
+    const runner = new TaskRunner(tasks, [taskRef.name]);
+    const data = await runner.run();
     expect(data.results).to.have.length(1);
     expect(_.find(data.results, x => x.has_error)).exist;
   }
@@ -348,17 +371,17 @@ class TasksSpec {
 
   @test
   async 'own task logger'() {
-    //Log.options({enable:true})
-    let tasks = new Tasks('testnode');
+    // Log.options({enable:true})
+    const tasks = new Tasks('testnode');
     tasks.reset();
-    let taskRef = tasks.addTask(SimpleTaskWithRuntimeLog);
+    const taskRef = tasks.addTask(SimpleTaskWithRuntimeLog);
     stdMocks.use();
-    let runner = new TaskRunner(tasks, [taskRef.name]);
+    const runner = new TaskRunner(tasks, [taskRef.name]);
     runner.getLogger().info('extern use ;)');
     await TestHelper.wait(50);
 
     let x: any[] = [];
-    let reader = runner.getReadStream();
+    const reader = runner.getReadStream();
     reader.on('data', (data: any) => {
       x = _.concat(x,
         data.toString()
@@ -367,16 +390,16 @@ class TasksSpec {
       );
     });
 
-    let data = await runner.run();
+    const data = await runner.run();
 
     await TestHelper.wait(100);
     stdMocks.restore();
-    let content = stdMocks.flush();
+    const content = stdMocks.flush();
     expect(content.stdout).to.have.length(5);
 
-    //let cNewLogger = content.stdout.shift();
-    //expect(cNewLogger).to.contain('[DEBUG]   create new logger task-runner-');
-    let cLogExec = content.stdout.shift();
+    // let cNewLogger = content.stdout.shift();
+    // expect(cNewLogger).to.contain('[DEBUG]   create new logger task-runner-');
+    const cLogExec = content.stdout.shift();
     expect(cLogExec).to.contain('[INFO]   Execute tasks: simple_task_with_runtime_log');
     let cLogExtern = content.stdout.shift();
     expect(cLogExtern).to.contain('[INFO]   extern use ;)\n');

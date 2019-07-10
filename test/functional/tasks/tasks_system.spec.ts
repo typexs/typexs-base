@@ -1,22 +1,22 @@
 import * as _ from 'lodash';
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
-import {Bootstrap} from "../../../src/Bootstrap";
-import {ITypexsOptions, Tasks} from "../../../src";
-import {Config} from "commons-config";
-import {TEST_STORAGE_OPTIONS} from "../config";
-import {IEventBusConfiguration} from "commons-eventbus";
-import {Container} from "typedi";
-import {System} from "../../../src/libs/system/System";
-import {C_TASKS} from "../../../src/libs/tasks/Constants";
-import {TestHelper} from "../TestHelper";
-import {SpawnHandle} from "../SpawnHandle";
+import {Bootstrap} from '../../../src/Bootstrap';
+import {ITypexsOptions, Tasks} from '../../../src';
+import {Config} from 'commons-config';
+import {TEST_STORAGE_OPTIONS} from '../config';
+import {IEventBusConfiguration} from 'commons-eventbus';
+import {Container} from 'typedi';
+import {System} from '../../../src/libs/system/System';
+import {C_TASKS} from '../../../src/libs/tasks/Constants';
+import {TestHelper} from '../TestHelper';
+import {SpawnHandle} from '../SpawnHandle';
 
 const LOG_EVENT = TestHelper.logEnable(true);
 
 
 @suite('functional/tasks/tasks_system')
-class Tasks_systemSpec {
+class TasksSystemSpec {
 
 
   async before() {
@@ -44,8 +44,8 @@ class Tasks_systemSpec {
     bootstrap = await bootstrap.activateStorage();
     bootstrap = await bootstrap.startup();
 
-    let system: System = Container.get(System.NAME);
-    let n = _.cloneDeep(system.node);
+    const system: System = Container.get(System.NAME);
+    const n = _.cloneDeep(system.node);
 
     await bootstrap.shutdown();
 
@@ -81,8 +81,8 @@ class Tasks_systemSpec {
     bootstrap = await bootstrap.activateStorage();
     bootstrap = await bootstrap.startup();
 
-    let system: System = Container.get(System.NAME);
-    let tasks: Tasks = Container.get(Tasks.NAME);
+    const system: System = Container.get(System.NAME);
+    const tasks: Tasks = Container.get(Tasks.NAME);
 
     let taskInfos = tasks.infos(true);
 
@@ -97,7 +97,7 @@ class Tasks_systemSpec {
       remote: null
     });
 
-    let p = SpawnHandle.do(__dirname + '/fake_app/node.ts').start(LOG_EVENT);
+    const p = SpawnHandle.do(__dirname + '/fake_app/node.ts').start(LOG_EVENT);
     await p.started;
     await TestHelper.wait(100);
 
@@ -151,15 +151,15 @@ class Tasks_systemSpec {
     bootstrap = await bootstrap.activateStorage();
     bootstrap = await bootstrap.startup();
 
-    let system: System = Container.get(System.NAME);
-    let tasks: Tasks = Container.get(Tasks.NAME);
+    const system: System = Container.get(System.NAME);
+    const tasks: Tasks = Container.get(Tasks.NAME);
     let taskInfos = tasks.infos(true);
 
     expect(system.nodes).to.have.length(0);
     expect(taskInfos).to.have.length(0);
 
 
-    let p = SpawnHandle.do(__dirname + '/fake_app/node.ts').start(LOG_EVENT);
+    const p = SpawnHandle.do(__dirname + '/fake_app/node.ts').start(LOG_EVENT);
     await p.started;
     await TestHelper.wait(50);
 

@@ -1,16 +1,16 @@
 import * as _ from 'lodash';
-import {suite, test} from "mocha-typescript";
-import {expect} from "chai";
+import {suite, test} from 'mocha-typescript';
+import {expect} from 'chai';
 
-import {Bootstrap} from "../../../src/Bootstrap";
-import {Config} from "commons-config";
-import {TEST_STORAGE_OPTIONS} from "../config";
-import {Container} from "typedi";
-import {XS_DEFAULT} from "commons-schema-api";
-import {Cache} from "../../../src/libs/cache/Cache";
-import {RedisCacheAdapter} from "../../../src/adapters/cache/RedisCacheAdapter";
+import {Bootstrap} from '../../../src/Bootstrap';
+import {Config} from 'commons-config';
+import {TEST_STORAGE_OPTIONS} from '../config';
+import {Container} from 'typedi';
+import {XS_DEFAULT} from 'commons-schema-api';
+import {Cache} from '../../../src/libs/cache/Cache';
+import {RedisCacheAdapter} from '../../../src/adapters/cache/RedisCacheAdapter';
 
-let bootstrap:Bootstrap = null;
+let bootstrap: Bootstrap = null;
 @suite('functional/cache/cache_redis')
 class Cache_redisSpec {
 
@@ -20,7 +20,7 @@ class Cache_redisSpec {
     Config.clear();
   }
 
-  async after(){
+  async after() {
     bootstrap ? await bootstrap.shutdown() : null;
   }
 
@@ -41,9 +41,9 @@ class Cache_redisSpec {
     bootstrap = await bootstrap.activateStorage();
     bootstrap = await bootstrap.startup();
 
-    let cache: Cache = Container.get(Cache.NAME);
+    const cache: Cache = Container.get(Cache.NAME);
 
-    let options = cache.getOptions();
+    const options = cache.getOptions();
 
     expect(options).to.deep.eq({
         bins: {default: 'redis1'},
@@ -54,20 +54,20 @@ class Cache_redisSpec {
       }
     );
 
-    let adapterClasses = cache.getAdapterClasses();
+    const adapterClasses = cache.getAdapterClasses();
     expect(adapterClasses).to.have.length(2);
     expect(_.map(adapterClasses, c => c.type)).to.deep.eq(['memory', 'redis']);
 
-    let adapters = cache.getAdapters();
-    let instances = _.keys(adapters);
+    const adapters = cache.getAdapters();
+    const instances = _.keys(adapters);
     expect(instances).to.be.deep.eq(['redis1', 'default']);
 
     expect(adapters[XS_DEFAULT]).to.be.eq(adapters['redis1']);
     expect(adapters['redis1']).to.be.instanceOf(RedisCacheAdapter);
 
 
-    let bins = cache.getBins();
-    let binKeys = _.keys(bins);
+    const bins = cache.getBins();
+    const binKeys = _.keys(bins);
 
     expect(binKeys).to.be.deep.eq([XS_DEFAULT]);
     expect(bins[XS_DEFAULT].store.name).to.be.eq('redis1');
@@ -93,10 +93,10 @@ class Cache_redisSpec {
     testValue = await cache.get('test', testBin);
     expect(testValue).to.be.deep.eq({k: 'asd'});
 
-    await cache.set('test2', "asdasdasd", testBin);
+    await cache.set('test2', 'asdasdasd', testBin);
 
     testValue = await cache.get('test2', testBin);
-    expect(testValue).to.be.deep.eq("asdasdasd");
+    expect(testValue).to.be.deep.eq('asdasdasd');
 
     await bootstrap.shutdown();
   }

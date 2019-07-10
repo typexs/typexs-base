@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import {EventBus, subscribe} from 'commons-eventbus';
 import {Log} from '../logging/Log';
-import {C_KEY_SEPARATOR, C_STORAGE_DEFAULT, Invoker, SystemInfoEvent} from '../..';
+import {APP_SYSTEM_DISTRIBUTED, C_KEY_SEPARATOR, C_STORAGE_DEFAULT, Invoker, SystemInfoEvent, TYPEXS_NAME} from '../..';
 import {StorageRef} from '../storage/StorageRef';
 import {Inject} from 'typedi';
 import {SystemApi} from '../../api/System.api';
@@ -12,7 +12,7 @@ import * as os from 'os';
 import {SystemInfoRequestEvent} from './SystemInfoRequestEvent';
 import {SystemInfoRequest} from './SystemInfoRequest';
 import * as machineId from 'node-machine-id';
-
+import {Config} from 'commons-config';
 
 export class System {
 
@@ -47,6 +47,13 @@ export class System {
    */
   _registered = false;
 
+  static isDistributionEnabled() {
+    return Config.get(APP_SYSTEM_DISTRIBUTED, TYPEXS_NAME, true);
+  }
+
+  static enableDistribution(b: boolean = true) {
+    return Config.set(APP_SYSTEM_DISTRIBUTED, b, TYPEXS_NAME);
+  }
 
   async initialize(hostname: string, nodeId: string) {
     const key = [hostname, nodeId].join(C_KEY_SEPARATOR);

@@ -28,6 +28,8 @@ export * from './libs/cache/ICacheOptions';
 
 export * from './libs/commands/ICommand';
 
+export * from './libs/di/Injector';
+
 export * from './libs/events/AbstractEvent';
 export * from './libs/system/SystemInfoEvent';
 
@@ -57,7 +59,10 @@ export * from './libs/tasks/TaskRef';
 export * from './libs/tasks/ITasksConfig';
 export * from './libs/tasks/ITaskInfo';
 export * from './libs/tasks/ITaskRefOptions';
-export * from './libs/tasks/ITaskDesc';
+export * from './libs/tasks/ITaskPropertyDesc';
+export * from './libs/tasks/decorators/IValueProvider';
+export * from './libs/tasks/decorators/IIncomingOptions';
+export * from './libs/tasks/decorators/IOutgoingOptions';
 
 export * from './libs/utils/CryptUtils';
 export * from './libs/utils/TreeUtils';

@@ -1,3 +1,4 @@
+import * as _ from 'lodash';
 import {EventBus, IEventDef} from 'commons-eventbus';
 import EventBusMeta from 'commons-eventbus/bus/EventBusMeta';
 import {FSWatcher} from 'fs';
@@ -78,7 +79,7 @@ export abstract class AbstractWatcher {
    * @param params
    */
   protected async emitEvent(params: any) {
-    if (typeof this.eventDef === 'undefined') {
+    if (_.isUndefined(this.eventDef)) {
       return;
     }
 
@@ -94,10 +95,12 @@ export abstract class AbstractWatcher {
    * Execute tasks
    */
   protected async executeTasks(params: any) {
-    await TasksHelper.exec(this.taskNames, {
-      ...this.taskParams,
-      $watcher: params,
-      skipTargetCheck: false
-    });
+    if (!_.isUndefined(this.taskNames)) {
+      await TasksHelper.exec(this.taskNames, {
+        ...this.taskParams,
+        $watcher: params,
+        skipTargetCheck: false
+      });
+    }
   }
 }

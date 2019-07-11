@@ -1,9 +1,9 @@
 import {TaskRun} from './TaskRun';
 import {ITaskRuntimeContainer} from './ITaskRuntimeContainer';
-
 import {TaskRuntimeLogger} from './TaskRuntimeLogger';
 import {TaskRunner} from './TaskRunner';
 import {ILoggerApi} from '../logging/ILoggerApi';
+import {TaskState} from './TaskState';
 
 
 export class TaskRuntimeContainer implements ITaskRuntimeContainer {
@@ -22,9 +22,14 @@ export class TaskRuntimeContainer implements ITaskRuntimeContainer {
     this.$total = 100;
   }
 
+
   logger() {
     if (!this._logger) {
-      this._logger = new TaskRuntimeLogger(this.getRunner().id, this.$_run_.taskRef().name, this.$_run_.id, this.getRunner().getLogger());
+      this._logger = new TaskRuntimeLogger(
+        this.getRunner().id,
+        this.$_run_.taskRef().name,
+        this.$_run_.nr,
+        this.getRunner().getLogger());
     }
     return this._logger;
   }
@@ -35,17 +40,17 @@ export class TaskRuntimeContainer implements ITaskRuntimeContainer {
   }
 
 
+  addTask(name: string, incomings?: any): Promise<TaskState> {
+    const taskRun = this.$_run_.getRunner().createTaskRun(name, incomings);
+    this.$_run_.getRunner().enqueue(taskRun);
+    return taskRun.asPromise();
+  }
+
+
   progress(nr: number) {
     this.$progress = nr;
     this.$_run_.update();
-    // Log.debug(this.name + ': ' + Math.round((this.$progress / this.$total) * 100) +'%');
   }
-
-  /*
-  info(...args: any[]) {
-    this.getRunner().getLogger()
-  }
-  */
 
 
   total(nr: number) {
@@ -64,12 +69,12 @@ export class TaskRuntimeContainer implements ITaskRuntimeContainer {
 
 
   get id() {
-    return this.$_run_.id;
+    return this.$_run_.nr;
   }
 
 
   get taskNr() {
-    return this.$_run_.id;
+    return this.$_run_.nr;
   }
 
   get runnerId() {

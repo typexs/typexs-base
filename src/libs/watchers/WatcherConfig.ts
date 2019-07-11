@@ -1,5 +1,6 @@
 import {AbstractWatcherConfig} from './AbstractWatcherConfig';
 import {FileWatcherConfig, isFileWatcherConfig} from './FileWatcherConfig';
+import {Log} from '../..';
 
 /**
  * Union type of possible watcher configs
@@ -114,7 +115,7 @@ export function isWatcherBaseConfig(something: unknown): something is AbstractWa
   }
 
   if (!hasEvent(something) && !hasTask(something)) {
-    console.info(`Config needs at least one event or task.`);
+    Log.warn(`Config needs at least one event or task.`);
     return false;
   }
 

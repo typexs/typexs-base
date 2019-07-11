@@ -1,4 +1,5 @@
 import {ILoggerApi} from 'commons-base';
+import {TaskState} from './TaskState';
 
 export interface ITaskRuntimeContainer {
 
@@ -13,4 +14,7 @@ export interface ITaskRuntimeContainer {
   progress?(progress: number): void;
 
   total?(total: number): void;
+
+  addTask(name: string, incomings?: any): Promise<TaskState>;
+
 }

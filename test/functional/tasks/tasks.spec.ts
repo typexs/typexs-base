@@ -22,10 +22,11 @@ import {SimpleTaskError} from './tasks/SimpleTaskError';
 import {SimpleTaskWithRuntimeLog} from './tasks/SimpleTaskWithRuntimeLog';
 import {TestHelper} from '../TestHelper';
 import {SimpleTaskWithDefaultArgs} from './tasks/SimpleTaskWithDefaultArgs';
+import {SimpleOtherTask, SimpleTaskStartingOtherTask} from './tasks/SimpleTaskStartingOtherTask';
 
 const stdMocks = require('std-mocks');
 
-const LOG_EVENT = TestHelper.logEnable(true);
+const LOG_EVENT = TestHelper.logEnable(false);
 
 
 @suite('functional/tasks/tasks')
@@ -421,6 +422,20 @@ class TasksSpec {
     cLogTaskError = x.shift();
     expect(cLogTaskError).to.contain('doing something wrong\\nnewline');
 
+  }
+
+
+  @test
+  async 'run task which starts and subtask in same runner'() {
+    const tasks = new Tasks('testnode');
+    const taskRef1 = tasks.addTask(SimpleTaskStartingOtherTask);
+    const taskRef2 = tasks.addTask(SimpleOtherTask);
+
+    const runner = new TaskRunner(tasks, [taskRef1.name]);
+    const data = await runner.run();
+
+    expect(data.results).to.have.length(2);
+    expect(data.results.map(d => d.name)).to.be.deep.eq(['simple_task_starting_other_task', 'simple_other_task']);
   }
 
 

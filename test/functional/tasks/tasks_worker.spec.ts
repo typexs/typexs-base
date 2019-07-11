@@ -19,11 +19,11 @@ import {SimpleTaskWithLog} from './tasks/SimpleTaskWithLog';
 import {TaskExecutionRequestFactory} from '../../../src/libs/tasks/worker/TaskExecutionRequestFactory';
 
 
-const LOG_EVENT = true; // TestHelper.logEnable(true);
+const LOG_EVENT =  TestHelper.logEnable(false);
 let bootstrap: Bootstrap = null;
 
 @suite('functional/tasks/tasks_worker')
-class Tasks_workerSpec {
+class TasksWorkerSpec {
 
 
   before() {

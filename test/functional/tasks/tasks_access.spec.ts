@@ -2,14 +2,16 @@ import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 import {Log} from '../../../src/libs/logging/Log';
 import {Tasks} from '../../../src';
+import {TestHelper} from '../TestHelper';
 
+const LOG_EVENT = TestHelper.logEnable(false);
 
 @suite('functional/tasks/access')
 class TasksAccessSpec {
 
 
   static before() {
-    Log.options({level: 'debug', enable: true});
+    Log.options({level: 'debug', enable: LOG_EVENT});
   }
 
 

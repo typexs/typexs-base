@@ -1,9 +1,9 @@
-import {ITask} from "../../../../src";
+import {ITask} from '../../../../src';
 
 export class SimpleTaskError implements ITask {
-  name: string = 'simple_task_error';
+  name = 'simple_task_error';
 
-  content: string = 'test';
+  content = 'test';
 
   exec( done: (err: Error, res: any) => void) {
 

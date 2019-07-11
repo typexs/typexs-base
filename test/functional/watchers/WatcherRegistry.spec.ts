@@ -16,9 +16,8 @@ class WatcherRegistrySpec {
   static sandbox: Sandbox;
 
   static before() {
-    Container.reset();
     Bootstrap.reset();
-    Config.clear();
+
 
     use(chaiSpies);
     WatcherRegistrySpec.sandbox = chai.spy.sandbox();
@@ -54,12 +53,14 @@ class WatcherRegistrySpec {
         }],
       });
 
+
     WatcherRegistrySpec.bootstrap.activateLogger();
     WatcherRegistrySpec.bootstrap.activateErrorHandling();
     await WatcherRegistrySpec.bootstrap.prepareRuntime();
     await WatcherRegistrySpec.bootstrap.activateStorage();
 
     await WatcherRegistrySpec.bootstrap.startup();
+
 
     const watcherRegistry = Container.get(WatcherRegistry.NAME);
     const stopAllSpy = WatcherRegistrySpec.sandbox.on(watcherRegistry, 'stopAll');

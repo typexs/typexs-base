@@ -12,7 +12,7 @@ import {C_TASKS} from '../../../src/libs/tasks/Constants';
 import {TestHelper} from '../TestHelper';
 import {SpawnHandle} from '../SpawnHandle';
 
-const LOG_EVENT = TestHelper.logEnable(true);
+const LOG_EVENT = TestHelper.logEnable(false);
 
 
 @suite('functional/tasks/tasks_system')

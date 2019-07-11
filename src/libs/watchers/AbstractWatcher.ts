@@ -97,6 +97,7 @@ export abstract class AbstractWatcher {
     await TasksHelper.exec(this.taskNames, {
       ...this.taskParams,
       $watcher: params,
-    })
+      skipTargetCheck: false
+    });
   }
 }

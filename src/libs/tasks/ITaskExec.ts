@@ -2,6 +2,10 @@
  * Base data necessary for task execution
  */
 export interface ITaskExec {
+  /**
+   * skip checking if target exists in network
+   */
+  skipTargetCheck: boolean;
 
   /**
    * targetId mean the nodeId were the task must be executed

@@ -11,7 +11,7 @@ export interface ITaskSchedule extends ITaskExec {
 
 export class TaskExecuteFactory implements IScheduleFactory {
 
-  create(taskNames: string[], params: any = {}) {
+  create(taskNames: string[], params: ITaskExec = {skipTargetCheck: false}) {
     return async function () {
       return TasksHelper.exec(taskNames, params);
     };

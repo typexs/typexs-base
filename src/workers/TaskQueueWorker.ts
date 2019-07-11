@@ -1,28 +1,28 @@
-import {AsyncWorkerQueue, IAsyncQueueOptions, ILoggerApi, IQueueProcessor, TaskRunner, Tasks} from "..";
-import {Bootstrap} from "../Bootstrap";
-import {Inject} from "typedi";
+import {AsyncWorkerQueue, IAsyncQueueOptions, ILoggerApi, IQueueProcessor, TaskRunner, Tasks} from '..';
+import {Bootstrap} from '../Bootstrap';
+import {Inject} from 'typedi';
 import {subscribe} from 'commons-eventbus';
-import {TaskEvent} from "./../libs/tasks/worker/TaskEvent";
-import {EventBus} from "commons-eventbus";
-import {Log} from "../libs/logging/Log";
-import {ITaskWorkload} from "./../libs/tasks/worker/ITaskWorkload";
+import {TaskEvent} from './../libs/tasks/worker/TaskEvent';
+import {EventBus} from 'commons-eventbus';
+import {Log} from '../libs/logging/Log';
+import {ITaskWorkload} from './../libs/tasks/worker/ITaskWorkload';
 import * as _ from 'lodash';
-import {ITaskRunnerResult} from "../libs/tasks/ITaskRunnerResult";
-import {TasksHelper} from "../libs/tasks/TasksHelper";
-import {IError} from "../libs/exceptions/IError";
-import {ClassUtils} from "commons-base";
-import {TASKRUN_STATE_UPDATE} from "../libs/tasks/Constants";
-import {IWorker} from "../libs/worker/IWorker";
-import {IWorkerStatisitic} from "../libs/worker/IWorkerStatisitic";
+import {ITaskRunnerResult} from '../libs/tasks/ITaskRunnerResult';
+import {TasksHelper} from '../libs/tasks/TasksHelper';
+import {IError} from '../libs/exceptions/IError';
+import {ClassUtils} from 'commons-base';
+import {TASKRUN_STATE_UPDATE} from '../libs/tasks/Constants';
+import {IWorker} from '../libs/worker/IWorker';
+import {IWorkerStatisitic} from '../libs/worker/IWorkerStatisitic';
 
 
 export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker {
 
-  static NAME: string = 'TaskQueueWorker';
+  static NAME = 'TaskQueueWorker';
 
-  name: string = 'task_queue_worker';
+  name = 'task_queue_worker';
 
-  inc: number = 0;
+  inc = 0;
 
   nodeId: string;
 
@@ -44,15 +44,15 @@ export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker 
 
   @subscribe(TaskEvent)
   onTaskEvent(event: TaskEvent) {
-    if (event.state != 'proposed') return null;
+    if (event.state !== 'proposed') { return null; }
 
-    if (event.targetIds && event.targetIds.indexOf(this.nodeId) == -1) {
+    if (event.targetIds && event.targetIds.indexOf(this.nodeId) === -1) {
       // not a task for me
       return null;
     }
 
     event.respId = this.nodeId;
-    event.topic = "data";
+    event.topic = 'data';
 
     let parameters: any = null;
     let taskNames = _.isArray(event.name) ? event.name : [event.name];
@@ -62,13 +62,13 @@ export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker 
     if (!_.isEmpty(taskNames)) {
 
       // validate arguments
-      let props = TasksHelper.getRequiredIncomings(taskNames.map(t => this.tasks.get(t)));
+      const props = TasksHelper.getRequiredIncomings(taskNames.map(t => this.tasks.get(t)));
       if (props.length > 0) {
         parameters = event.parameters;
-        for (let p of props) {
+        for (const p of props) {
           if (!_.has(parameters, p.storingName) && !_.has(parameters, p.name)) {
             if (p.isOptional()) {
-              this.logger.warn('task worker: optional parameter "' + p.name + '" for ' + taskNames.join(', ') + ' not found')
+              this.logger.warn('task worker: optional parameter "' + p.name + '" for ' + taskNames.join(', ') + ' not found');
             } else {
               event.state = 'request_error';
               event.errors.push(<IError>{
@@ -78,13 +78,13 @@ export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker 
                 },
                 message: 'The required value is not passed.'
               });
-              this.logger.error('task worker: necessery parameter "' + p.name + '" for ' + taskNames.join(', ') + ' not found')
+              this.logger.error('task worker: necessery parameter "' + p.name + '" for ' + taskNames.join(', ') + ' not found');
             }
           }
         }
       }
 
-      if (event.state == 'proposed') {
+      if (event.state === 'proposed') {
         event.state = 'enqueue';
       }
 
@@ -96,7 +96,7 @@ export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker 
       });
     }
 
-    if (event.state == 'enqueue') {
+    if (event.state === 'enqueue') {
       setTimeout(() =>
         this.queue.push({
           names: taskNames,
@@ -111,10 +111,10 @@ export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker 
 
 
   async do(workLoad: ITaskWorkload, queue?: AsyncWorkerQueue<any>): Promise<any> {
-    let e = workLoad.event;
+    const e = workLoad.event;
     let results: ITaskRunnerResult = null;
 
-    let runner = new TaskRunner(this.tasks, workLoad.names, {
+    const runner = new TaskRunner(this.tasks, workLoad.names, {
       id: e.id,
       nodeId: e.nodeId,
       targetIds: e.targetIds
@@ -127,32 +127,32 @@ export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker 
     });
 
     runner.on(TASKRUN_STATE_UPDATE, () => {
-      e.topic = "data";
+      e.topic = 'data';
 
       e.data = runner.collectStats();
       this.fireState(e);
     });
 
     e.state = 'started';
-    e.topic = "data";
+    e.topic = 'data';
     e.data = runner.collectStats();
     this.fireState(e);
 
     try {
       if (workLoad.parameters) {
-        for (let p in workLoad.parameters) {
+        for (const p in workLoad.parameters) {
           await runner.setIncoming(p, workLoad.parameters[p]);
         }
       }
       e.state = 'running';
       results = await runner.run();
       e.state = 'stopped';
-      e.topic = "data";
+      e.topic = 'data';
       e.data = runner.collectStats();
       this.fireState(e);
     } catch (err) {
       e.state = 'errored';
-      e.topic = "data";
+      e.topic = 'data';
       e.errors.push({
         message: err.message,
         context: ClassUtils.getClassName(err)
@@ -167,8 +167,8 @@ export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker 
 
 
   fireState(e: TaskEvent): TaskEvent {
-    let _e = _.cloneDeep(e);
-    _e.topic == 'log' ? _e.data = null : _e.log = null;
+    const _e = _.cloneDeep(e);
+    _e.topic === 'log' ? _e.data = null : _e.log = null;
     EventBus.postAndForget(_e);
     return _e;
   }
@@ -181,7 +181,7 @@ export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker 
 
 
   statistic(): IWorkerStatisitic {
-    let stats: IWorkerStatisitic = {
+    const stats: IWorkerStatisitic = {
       stats: this.queue.status(),
       paused: this.queue.isPaused(),
       idle: this.queue.isIdle(),

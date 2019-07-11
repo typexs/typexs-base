@@ -84,6 +84,7 @@ export class TasksHelper {
     const targetId = _.get(argv, 'targetId', null);
     let isLocal = _.get(argv, 'isLocal', true);
     const isRemote = _.get(argv, 'remote', false);
+    const skipTargetCheck = _.get(argv, 'skipTargetCheck', false);
 
     if (targetId === null && !isRemote) {
       isLocal = true;
@@ -91,25 +92,25 @@ export class TasksHelper {
       isLocal = false;
     }
 
-    const tasksForWorkers = tasks.filter(t => t.hasWorker() && (targetId === null || (targetId && t.hasTargetNodeId(targetId))));
-    const remotePossible = tasks.length === tasksForWorkers.length;
+    // const tasksForWorkers = tasks.filter(t => t.hasWorker() && (targetId === null || (targetId && t.hasTargetNodeId(targetId))));
+    // const remotePossible = tasks.length === tasksForWorkers.length;
     const localPossible = taskNames.length === tasks.length;
 
     if (!isLocal) {
 
-      if (remotePossible) {
-        // all tasks can be send to workers
-        // execute
+      // if (remotePossible) {
+      //   // all tasks can be send to workers
+      //   // execute
 
-        Log.debug('task command: before request fire');
-        const execReq = Container.get(TaskExecutionRequestFactory).createRequest();
-        const results = await execReq.run(taskNames, argv, targetId ? [targetId] : []);
-        Log.debug('task command: event enqueue results', results);
-        return results;
-      } else {
-        // there are no worker running!
-        Log.error('There are no worker running for tasks: ' + taskNames.join(', '));
-      }
+      Log.debug('task command: before request fire');
+      const execReq = Container.get(TaskExecutionRequestFactory).createRequest();
+      const results = await execReq.run(taskNames, argv, {targetIds: targetId ? [targetId] : [], skipTargetCheck: skipTargetCheck});
+      Log.debug('task command: event enqueue results', results);
+      return results;
+      // } else {
+      //   // there are no worker running!
+      //   Log.error('There are no worker running for tasks: ' + taskNames.join(', '));
+      // }
     } else if (isLocal) {
 
       if (localPossible) {

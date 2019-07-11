@@ -1,19 +1,19 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
-import * as _ from "lodash";
-import {Bootstrap} from "../../../src/Bootstrap";
-import {ITypexsOptions, Log, XS_P_$COUNT} from "../../../src";
-import {Config} from "commons-config";
-import {TEST_STORAGE_OPTIONS} from "../config";
-import {EventBus, IEventBusConfiguration} from "commons-eventbus";
-import {Container} from "typedi";
-import {TestHelper} from "../TestHelper";
-import {SpawnHandle} from "../SpawnHandle";
-import {SystemNodeInfo} from "../../../src/entities/SystemNodeInfo";
+import * as _ from 'lodash';
+import {Bootstrap} from '../../../src/Bootstrap';
+import {ITypexsOptions, Log, XS_P_$COUNT} from '../../../src';
+import {Config} from 'commons-config';
+import {TEST_STORAGE_OPTIONS} from '../config';
+import {EventBus, IEventBusConfiguration} from 'commons-eventbus';
+import {Container} from 'typedi';
+import {TestHelper} from '../TestHelper';
+import {SpawnHandle} from '../SpawnHandle';
+import {SystemNodeInfo} from '../../../src/entities/SystemNodeInfo';
 
-import {DistributedStorageEntityController} from "../../../src/libs/distributed/DistributedStorageEntityController";
-import {DistributedQueryWorker} from "../../../src/workers/DistributedQueryWorker";
-import {Workers} from "../../../src/libs/worker/Workers";
+import {DistributedStorageEntityController} from '../../../src/libs/distributed/DistributedStorageEntityController';
+import {DistributedQueryWorker} from '../../../src/workers/DistributedQueryWorker';
+import {Workers} from '../../../src/libs/worker/Workers';
 
 
 const LOG_EVENT = TestHelper.logEnable(false);
@@ -46,11 +46,11 @@ class Distributed_querySpec {
     bootstrap = await bootstrap.activateStorage();
     bootstrap = await bootstrap.startup();
 
-    let worker = Container.get(DistributedQueryWorker);
+    const worker = Container.get(DistributedQueryWorker);
     await worker.prepare();
 
-    let controller = Container.get(DistributedStorageEntityController);
-    let results = await controller.find(SystemNodeInfo);
+    const controller = Container.get(DistributedStorageEntityController);
+    const results = await controller.find(SystemNodeInfo);
     expect(results).to.have.length(1);
     await bootstrap.shutdown();
   }
@@ -74,13 +74,13 @@ class Distributed_querySpec {
     bootstrap = await bootstrap.activateStorage();
     bootstrap = await bootstrap.startup();
 
-    let workers: Workers = Container.get(Workers.NAME);
-    let active = workers.activeWorkerCount();
+    const workers: Workers = Container.get(Workers.NAME);
+    const active = workers.activeWorkerCount();
 
     expect(active).to.be.eq(1);
 
-    let controller = Container.get(DistributedStorageEntityController);
-    let results = await controller.find(SystemNodeInfo);
+    const controller = Container.get(DistributedStorageEntityController);
+    const results = await controller.find(SystemNodeInfo);
 
     expect(results).to.have.length(1);
 
@@ -108,11 +108,11 @@ class Distributed_querySpec {
     bootstrap = await bootstrap.startup();
 
 
-    let p = SpawnHandle.do(__dirname + '/fake_app/node.ts').start(LOG_EVENT);
+    const p = SpawnHandle.do(__dirname + '/fake_app/node.ts').start(LOG_EVENT);
     await p.started;
 
-    let controller = Container.get(DistributedStorageEntityController);
-    let results = await controller.find(SystemNodeInfo);
+    const controller = Container.get(DistributedStorageEntityController);
+    const results = await controller.find(SystemNodeInfo);
 
     p.shutdown();
     await p.done;
@@ -144,13 +144,13 @@ class Distributed_querySpec {
     bootstrap = await bootstrap.startup();
 
 
-    let p = SpawnHandle.do(__dirname + '/fake_app/node.ts').start(LOG_EVENT);
+    const p = SpawnHandle.do(__dirname + '/fake_app/node.ts').start(LOG_EVENT);
     await p.started;
     // wait for registration event
     await TestHelper.wait(100);
 
-    let controller = Container.get(DistributedStorageEntityController);
-    let results = await controller.find(SystemNodeInfo,{nodeId:'system'});
+    const controller = Container.get(DistributedStorageEntityController);
+    const results = await controller.find(SystemNodeInfo, {nodeId: 'system'});
 
     p.shutdown();
     await p.done;
@@ -159,7 +159,7 @@ class Distributed_querySpec {
 
     expect(results).to.have.length(2);
     expect(results[XS_P_$COUNT]).to.be.eq(2);
-    expect(_.uniq(results.map((x:any) => x.nodeId))).to.be.deep.eq(['system']);
+    expect(_.uniq(results.map((x: any) => x.nodeId))).to.be.deep.eq(['system']);
     expect(results[0]).to.be.instanceOf(SystemNodeInfo);
 
   }
@@ -185,20 +185,20 @@ class Distributed_querySpec {
     bootstrap = await bootstrap.startup();
 
 
-    let p = SpawnHandle.do(__dirname + '/fake_app/node.ts').start(LOG_EVENT);
+    const p = SpawnHandle.do(__dirname + '/fake_app/node.ts').start(LOG_EVENT);
     await p.started;
 
     // wait for registration event
     await TestHelper.wait(100);
 
-    let controller = Container.get(DistributedStorageEntityController);
-    let results1 = await controller.find(SystemNodeInfo,{nodeId:'system'});
+    const controller = Container.get(DistributedStorageEntityController);
+    const results1 = await controller.find(SystemNodeInfo, {nodeId: 'system'});
     expect(results1).to.have.length(2);
-    expect(_.map(results1,(x:any) => x.nodeId)).to.contain.members(['system']);
+    expect(_.map(results1, (x: any) => x.nodeId)).to.contain.members(['system']);
 
-    let results2 = await controller.find(SystemNodeInfo,{nodeId:'fakeapp01'});
+    const results2 = await controller.find(SystemNodeInfo, {nodeId: 'fakeapp01'});
     expect(results2).to.have.length(2);
-    expect(_.map(results2,(x:any) => x.nodeId)).to.contain.members(['fakeapp01']);
+    expect(_.map(results2, (x: any) => x.nodeId)).to.contain.members(['fakeapp01']);
 
     p.shutdown();
     await p.done;

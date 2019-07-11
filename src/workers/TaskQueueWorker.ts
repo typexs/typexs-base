@@ -1,9 +1,8 @@
 import {AsyncWorkerQueue, IAsyncQueueOptions, ILoggerApi, IQueueProcessor, TaskRunner, Tasks} from '..';
 import {Bootstrap} from '../Bootstrap';
 import {Inject} from 'typedi';
-import {subscribe} from 'commons-eventbus';
+import {EventBus, subscribe} from 'commons-eventbus';
 import {TaskEvent} from './../libs/tasks/worker/TaskEvent';
-import {EventBus} from 'commons-eventbus';
 import {Log} from '../libs/logging/Log';
 import {ITaskWorkload} from './../libs/tasks/worker/ITaskWorkload';
 import * as _ from 'lodash';
@@ -44,9 +43,13 @@ export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker 
 
   @subscribe(TaskEvent)
   onTaskEvent(event: TaskEvent) {
-    if (event.state !== 'proposed') { return null; }
+    if (event.state !== 'proposed') {
+      return null;
+    }
 
-    if (event.targetIds && event.targetIds.indexOf(this.nodeId) === -1) {
+    if (event.targetIds &&
+      event.targetIds.length > 0 &&
+      event.targetIds.indexOf(this.nodeId) === -1) {
       // not a task for me
       return null;
     }

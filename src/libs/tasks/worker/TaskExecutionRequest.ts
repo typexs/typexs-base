@@ -64,12 +64,13 @@ export class TaskExecutionRequest extends EventEmitter {
       } else {
         this.targetIds = _.intersection(options.targetIds, ...possibleTargetIds);
       }
+
+      if (this.targetIds.length === 0) {
+        throw new Error('not target intersection found for tasks: ' + taskNames.join(', '));
+      }
+
     } else {
       this.targetIds = options.targetIds;
-    }
-
-    if (this.targetIds.length === 0) {
-      throw new Error('not target intersection found for tasks: ' + taskNames.join(', '));
     }
 
     this.event = new TaskEvent();

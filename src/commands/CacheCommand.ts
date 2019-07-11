@@ -3,7 +3,7 @@ import {ICommand} from '../libs/commands/ICommand';
 import {Log} from '../libs/logging/Log';
 import {Inject} from 'typedi';
 import {Cache} from '../libs/cache/Cache';
-import {System} from '..';
+import {System} from '../libs/system/System';
 
 export class CacheCommand implements ICommand {
 

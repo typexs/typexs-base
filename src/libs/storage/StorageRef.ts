@@ -1,24 +1,24 @@
-import {Log} from "../logging/Log";
-import {TableMetadataArgs} from "typeorm/metadata-args/TableMetadataArgs";
-import {Connection, ConnectionOptions, EntityOptions, getConnectionManager, getMetadataArgsStorage} from "typeorm";
-import {ConnectionWrapper} from "./ConnectionWrapper";
-import {Config} from "commons-config";
+import {Log} from '../logging/Log';
+import {TableMetadataArgs} from 'typeorm/metadata-args/TableMetadataArgs';
+import {Connection, ConnectionOptions, EntityOptions, getConnectionManager, getMetadataArgsStorage} from 'typeorm';
+import {ConnectionWrapper} from './ConnectionWrapper';
+import {Config} from 'commons-config';
 
-import {EntitySchema} from "typeorm/entity-schema/EntitySchema";
-import {K_WORKDIR} from "../Constants";
-import {IStorageOptions} from "./IStorageOptions";
-import {SqliteConnectionOptions} from "typeorm/driver/sqlite/SqliteConnectionOptions";
-import {Runtime} from "../Runtime";
-import * as path from "path";
-import * as _ from "lodash";
-import {ClassUtils, PlatformUtils, TodoException} from "commons-base";
+import {EntitySchema} from 'typeorm/entity-schema/EntitySchema';
+import {K_WORKDIR} from '../Constants';
+import {IStorageOptions} from './IStorageOptions';
+import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
+import {Runtime} from '../Runtime';
+import * as path from 'path';
+import * as _ from 'lodash';
+import {ClassUtils, PlatformUtils, TodoException} from 'commons-base';
 
-import {AbstractSchemaHandler} from "./AbstractSchemaHandler";
-import {BaseUtils} from "../utils/BaseUtils";
-import {StorageEntityController} from "./StorageEntityController";
-import {ClassRef, IClassRef, IEntityRef} from "commons-schema-api";
-import {REGISTRY_TYPEORM} from "./framework/typeorm/schema/TypeOrmConstants";
-import {TypeOrmEntityRegistry} from "./framework/typeorm/schema/TypeOrmEntityRegistry";
+import {AbstractSchemaHandler} from './AbstractSchemaHandler';
+import {BaseUtils} from '../utils/BaseUtils';
+import {StorageEntityController} from './StorageEntityController';
+import {ClassRef, IClassRef, IEntityRef} from 'commons-schema-api';
+import {REGISTRY_TYPEORM} from './framework/typeorm/schema/TypeOrmConstants';
+import {TypeOrmEntityRegistry} from './framework/typeorm/schema/TypeOrmEntityRegistry';
 
 
 export const DEFAULT_STORAGEREF_OPTIONS: IStorageOptions = <SqliteConnectionOptions & IStorageOptions>{
@@ -28,58 +28,36 @@ export const DEFAULT_STORAGEREF_OPTIONS: IStorageOptions = <SqliteConnectionOpti
 
 export class StorageRef {
 
-
-  // if memory then on connection must be permanent
-  private singleConnection: boolean = false;
-
-  private isMemoryOnly: boolean = false;
-
-  private isInternalPooled: boolean = false;
-
-  private connections: ConnectionWrapper[] = [];
-
-  private options: IStorageOptions = null;
-
-  //private entitySchemas: EntitySchema[] = [];
-
-  private schemaHandler: AbstractSchemaHandler;
-
-  private controller: StorageEntityController;
-
-  private _forceReload: boolean = false;
-
-  private _prepared: boolean = false;
-
-  //private static $$: Storage = null;
+  // private static $$: Storage = null;
 
   constructor(options: IStorageOptions/* = DEFAULT_STORAGE_OPTIONS, FIX_STORAGE_OPTIONS: any = {}*/) {
     // Apply some unchangeable and fixed options
     // options = Utils.merge(options, FIX_STORAGE_OPTIONS);
 
     if (options.type == 'sqlite') {
-      let opts = <SqliteConnectionOptions & IStorageOptions>options;
+      const opts = <SqliteConnectionOptions & IStorageOptions>options;
 
       if (opts.database != ':memory:' &&
         !_.isEmpty(opts.database) &&
         !path.isAbsolute(opts.database)) {
         // TODO check if file exists
 
-        let possibleFiles = [];
+        const possibleFiles = [];
         possibleFiles.push(PlatformUtils.pathResolveAndNormalize(opts.database));
 
-        let _path = Config.get(K_WORKDIR, process.cwd()) + '/' + opts.database;
+        const _path = Config.get(K_WORKDIR, process.cwd()) + '/' + opts.database;
         possibleFiles.push(PlatformUtils.pathResolveAndNormalize(_path));
 
         let found = false;
-        for (let test of possibleFiles) {
+        for (const test of possibleFiles) {
           if (PlatformUtils.fileExist(test) || PlatformUtils.fileExist(PlatformUtils.directory(test))) {
             options = BaseUtils.merge(options, {type: 'sqlite', database: test});
-            found = true
+            found = true;
           }
         }
 
         if (!found) {
-          throw new TodoException('File ' + opts.database + ' for database can\'t be found.')
+          throw new TodoException('File ' + opts.database + ' for database can\'t be found.');
         }
       }
     }
@@ -93,14 +71,14 @@ export class StorageRef {
       }
     }
 
-    let out = "";
-    for (let x in this.options) {
+    let out = '';
+    for (const x in this.options) {
       // todo define per config?
       if (['type', 'logging', 'database', 'dialect', 'synchronize', 'name'].indexOf(x) == -1) {
         continue;
       }
       if (_.isString(this.options[x])) {
-        out += "\t" + x + " = " + this.options[x] + "\n"
+        out += '\t' + x + ' = ' + this.options[x] + '\n';
       }
     }
     Log.debug(`storage: use ${this.options.type} for storage with options:\n${out} `);
@@ -109,26 +87,56 @@ export class StorageRef {
   }
 
   get name() {
-    return this.options.name
+    return this.options.name;
   }
 
   get dbType(): string {
-    return this.options.type
+    return this.options.type;
+  }
+
+
+  // if memory then on connection must be permanent
+  private singleConnection = false;
+
+  private isMemoryOnly = false;
+
+  private isInternalPooled = false;
+
+  private connections: ConnectionWrapper[] = [];
+
+  private options: IStorageOptions = null;
+
+  // private entitySchemas: EntitySchema[] = [];
+
+  private schemaHandler: AbstractSchemaHandler;
+
+  private controller: StorageEntityController;
+
+  private _forceReload = false;
+
+  private _prepared = false;
+
+  private static getClassName(x: string | EntitySchema | Function) {
+    return ClassUtils.getClassName(x instanceof EntitySchema ? x.options.target : x);
+  }
+
+  private static machineName(x: string | EntitySchema | Function) {
+    return _.snakeCase(this.getClassName(x));
   }
 
   isSingleConnection(): boolean {
-    return this.singleConnection || this.isInternalPooled
+    return this.singleConnection || this.isInternalPooled;
   }
 
   isOnlyMemory(): boolean {
-    return this.isMemoryOnly
+    return this.isMemoryOnly;
   }
 
   addEntityClass(type: Function, name: string, options: EntityOptions = {}) {
     const args: TableMetadataArgs = {
       target: type,
       name: name.toLowerCase(),
-      type: "regular",
+      type: 'regular',
       orderBy: options && options.orderBy ? options.orderBy : undefined,
       engine: options && options.engine ? options.engine : undefined,
       database: options && options.database ? options.database : undefined,
@@ -140,7 +148,7 @@ export class StorageRef {
   }
 
   addEntityType(type: EntitySchema | Function): void {
-    let opts: any = {
+    const opts: any = {
       entities: []
     };
 
@@ -148,11 +156,11 @@ export class StorageRef {
       opts.entities = this.options.entities;
     }
 
-    let exists = opts.entities.indexOf(type);
+    const exists = opts.entities.indexOf(type);
 
     if (exists < 0) {
       opts.entities.push(type);
-      this.options = _.assign(this.options, opts)
+      this.options = _.assign(this.options, opts);
     }
     if (this._prepared) {
       this._forceReload = true;
@@ -161,7 +169,7 @@ export class StorageRef {
 
 
   getEntityRef(name: string | Function): IEntityRef {
-    let clazz = this.getEntityClass(name);
+    const clazz = this.getEntityClass(name);
     if (clazz) {
       return TypeOrmEntityRegistry.$().getEntityRefFor(clazz);
     }
@@ -169,19 +177,11 @@ export class StorageRef {
   }
 
   getClassRef(name: string | Function): IClassRef {
-    let clazz = this.getEntityClass(name);
+    const clazz = this.getEntityClass(name);
     if (clazz) {
       return ClassRef.get(clazz instanceof EntitySchema ? clazz.options.target : clazz, REGISTRY_TYPEORM);
     }
     return null;
-  }
-
-  private static getClassName(x: string | EntitySchema | Function) {
-    return ClassUtils.getClassName(x instanceof EntitySchema ? x.options.target : x)
-  }
-
-  private static machineName(x: string | EntitySchema | Function) {
-    return _.snakeCase(this.getClassName(x))
   }
 
 
@@ -192,12 +192,12 @@ export class StorageRef {
   getEntityClass(ref: IClassRef | string | Function) {
     if (_.isString(ref)) {
       const _ref = _.snakeCase(ref);
-      return this.options.entities.find(x => _ref === StorageRef.machineName(x))
+      return this.options.entities.find(x => _ref === StorageRef.machineName(x));
     } else if (_.isFunction(ref)) {
-      let _ref = ClassRef.get(ref, REGISTRY_TYPEORM);
-      return this.options.entities.find(x => _ref.machineName === StorageRef.machineName(x))
+      const _ref = ClassRef.get(ref, REGISTRY_TYPEORM);
+      return this.options.entities.find(x => _ref.machineName === StorageRef.machineName(x));
     } else {
-      return this.options.entities.find(x => (<IClassRef>ref).machineName === StorageRef.machineName(x))
+      return this.options.entities.find(x => (<IClassRef>ref).machineName === StorageRef.machineName(x));
     }
   }
 
@@ -214,7 +214,7 @@ export class StorageRef {
     this._prepared = false;
     if (getConnectionManager().has(this.name)) {
       // let name = this.name
-      await this.shutdown(full)
+      await this.shutdown(full);
     }
     // return this.prepare()
   }
@@ -222,7 +222,7 @@ export class StorageRef {
 
   async reload(full: boolean = true): Promise<any> {
     await this.reset(full);
-    return this.prepare()
+    return this.prepare();
   }
 
   async prepare(): Promise<void> {
@@ -233,7 +233,7 @@ export class StorageRef {
       c = await c.connect();
       await (await this.wrap(c)).close();
     } else {
-      await (await this.wrap()).close()
+      await (await this.wrap()).close();
     }
     this._prepared = true;
     // return Promise.resolve()
@@ -244,20 +244,20 @@ export class StorageRef {
     let wrapper: ConnectionWrapper = null;
     if ((this.isSingleConnection() && this.connections.length == 0) || !this.isSingleConnection()) {
       if (conn) {
-        wrapper = new ConnectionWrapper(this, conn)
+        wrapper = new ConnectionWrapper(this, conn);
       } else {
-        wrapper = new ConnectionWrapper(this)
+        wrapper = new ConnectionWrapper(this);
       }
-      this.connections.push(wrapper)
+      this.connections.push(wrapper);
     } else if (this.isSingleConnection() && this.connections.length == 1) {
-      wrapper = this.connections[0]
+      wrapper = this.connections[0];
     }
-    return Promise.resolve(wrapper)
+    return Promise.resolve(wrapper);
   }
 
 
   size() {
-    return this.connections.length
+    return this.connections.length;
   }
 
   async remove(wrapper: ConnectionWrapper) {
@@ -266,7 +266,7 @@ export class StorageRef {
 
       if (getConnectionManager().has(this.name) && getConnectionManager().get(this.name).isConnected) {
         try {
-          await getConnectionManager().get(this.name).close()
+          await getConnectionManager().get(this.name).close();
         } catch (err) {
           Log.error(err);
         }
@@ -288,23 +288,23 @@ export class StorageRef {
       this._forceReload = false;
       await this.reload();
     } else if (!this._prepared) {
-      await this.prepare()
+      await this.prepare();
     }
-    return (await this.wrap()).connect()
+    return (await this.wrap()).connect();
   }
 
 
   private async closeConnections(): Promise<any> {
-    let ps: Promise<any> [] = [];
+    const ps: Promise<any> [] = [];
     while (this.connections.length > 0) {
       ps.push(this.connections.shift().close());
     }
-    return Promise.all(ps)
+    return Promise.all(ps);
   }
 
 
   private removeFromConnectionManager() {
-    let name = this.name;
+    const name = this.name;
     _.remove(getConnectionManager()['connections'], (connection) => {
       return connection.name === name;
     });

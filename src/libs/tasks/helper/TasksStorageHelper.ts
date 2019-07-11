@@ -1,7 +1,9 @@
-import {ITaskRunnerResult} from "../ITaskRunnerResult";
-import {StorageRef, TaskLog, Cache} from "../../..";
-import * as _ from "lodash";
-import {ITaskRunResult} from "../ITaskRunResult";
+import {ITaskRunnerResult} from '../ITaskRunnerResult';
+import * as _ from 'lodash';
+import {ITaskRunResult} from '../ITaskRunResult';
+import {StorageRef} from '../../storage/StorageRef';
+import {TaskLog} from '../../../entities/TaskLog';
+import {Cache} from '../../cache/Cache';
 
 
 export class TasksStorageHelper {
@@ -10,16 +12,16 @@ export class TasksStorageHelper {
                     storageRef: StorageRef,
                     cache: Cache = null) {
 
-    let logs: TaskLog[] = await storageRef
+    const logs: TaskLog[] = await storageRef
       .getController()
       .find(TaskLog, {tasksId: taskRunnerResults.id});
 
     let toremove: TaskLog[] = [];
     const taskNames = _.isArray(taskRunnerResults.tasks) ? taskRunnerResults.tasks : [taskRunnerResults.tasks];
-    const results = _.get(taskRunnerResults, "results", null);
-    for (let targetId of taskRunnerResults.targetIds) {
-      for (let taskName of taskNames) {
-        let existsAll = _.remove(logs, l => l.taskName === taskName && l.respId == targetId);
+    const results = _.get(taskRunnerResults, 'results', null);
+    for (const targetId of taskRunnerResults.targetIds) {
+      for (const taskName of taskNames) {
+        const existsAll = _.remove(logs, l => l.taskName === taskName && l.respId === targetId);
         let exists = existsAll.shift();
         if (existsAll.length > 0) {
           toremove = _.concat(toremove, existsAll);
@@ -35,10 +37,10 @@ export class TasksStorageHelper {
         exists.state = taskRunnerResults.state;
 
         if (results) {
-          const result: ITaskRunResult = _.find(results, r => r.name == taskName);
+          const result: ITaskRunResult = _.find(results, r => r.name === taskName);
           exists.taskNr = result.nr;
           exists.hasError = result.has_error;
-          //exists.errors = JSON.stringify(result.error);
+          // exists.errors = JSON.stringify(result.error);
           exists.started = result.start;
           exists.stopped = result.stop;
           exists.created = result.created;
@@ -58,7 +60,7 @@ export class TasksStorageHelper {
         }
 
         if (exists.tasksId && exists.respId && cache) {
-          const cacheKey = ['tasklog',exists.tasksId, targetId].join(':');
+          const cacheKey = ['tasklog', exists.tasksId, targetId].join(':');
           cache.set(cacheKey, exists);
         }
       }

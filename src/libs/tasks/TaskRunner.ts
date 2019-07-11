@@ -13,7 +13,6 @@ import {
   TASKRUN_STATE_UPDATE
 } from './Constants';
 import {ITaskRunnerResult} from './ITaskRunnerResult';
-import {CryptUtils, TasksApi} from '../..';
 import {Bootstrap} from '../../Bootstrap';
 import {Invoker} from '../../base/Invoker';
 import {TasksHelper} from './TasksHelper';
@@ -27,6 +26,8 @@ import {DefaultJsonFormat} from '../logging/DefaultJsonFormat';
 
 import {Stream} from 'stream';
 import {ITaskRunnerOptions} from './ITaskRunnerOptions';
+import {CryptUtils} from '../utils/CryptUtils';
+import {TasksApi} from '../../api/Tasks.api';
 
 
 export class TaskRunner extends EventEmitter {

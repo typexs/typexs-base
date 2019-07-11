@@ -1,6 +1,7 @@
 import {Config} from 'commons-config';
 import {ICommand} from '../libs/commands/ICommand';
-import {Log, System} from '..';
+import {System} from '../libs/system/System';
+import {Log} from '../libs/logging/Log';
 
 export class ConfigCommand implements ICommand {
 

@@ -1,10 +1,7 @@
-import {AsyncWorkerQueue, C_STORAGE_DEFAULT, Cache, IAsyncQueueOptions, ILoggerApi, IQueueProcessor, Log, StorageRef, Tasks} from '../..';
 import {Bootstrap} from '../../Bootstrap';
 import {Inject} from 'typedi';
 import {EventBus, subscribe} from 'commons-eventbus';
 import {TaskEvent} from './worker/TaskEvent';
-
-
 import {Config} from 'commons-config';
 import * as fs from 'fs';
 import {PlatformUtils} from 'commons-base';
@@ -12,6 +9,15 @@ import {ITaskRunnerResult} from './ITaskRunnerResult';
 import {TasksStorageHelper} from './helper/TasksStorageHelper';
 import {TasksHelper} from './TasksHelper';
 import {IWorkerStatisitic} from '../worker/IWorkerStatisitic';
+import {IQueueProcessor} from '../queue/IQueueProcessor';
+import {AsyncWorkerQueue} from '../queue/AsyncWorkerQueue';
+import {Cache} from '../cache/Cache';
+import {Tasks} from './Tasks';
+import {C_STORAGE_DEFAULT} from '../Constants';
+import {StorageRef} from '../storage/StorageRef';
+import {ILoggerApi} from '../logging/ILoggerApi';
+import {Log} from '../logging/Log';
+import {IAsyncQueueOptions} from '../queue/IAsyncQueueOptions';
 
 export class TaskMonitor implements IQueueProcessor<TaskEvent> {
 

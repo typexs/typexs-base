@@ -1,4 +1,3 @@
-import {AsyncWorkerQueue, IAsyncQueueOptions, ILoggerApi, IQueueProcessor, TaskRunner, Tasks} from '..';
 import {Bootstrap} from '../Bootstrap';
 import {Inject} from 'typedi';
 import {EventBus, subscribe} from 'commons-eventbus';
@@ -13,6 +12,12 @@ import {ClassUtils} from 'commons-base';
 import {TASKRUN_STATE_UPDATE} from '../libs/tasks/Constants';
 import {IWorker} from '../libs/worker/IWorker';
 import {IWorkerStatisitic} from '../libs/worker/IWorkerStatisitic';
+import {IQueueProcessor} from '../libs/queue/IQueueProcessor';
+import {AsyncWorkerQueue} from '../libs/queue/AsyncWorkerQueue';
+import {IAsyncQueueOptions} from '../libs/queue/IAsyncQueueOptions';
+import {ILoggerApi} from '../libs/logging/ILoggerApi';
+import {Tasks} from '../libs/tasks/Tasks';
+import {TaskRunner} from '../libs/tasks/TaskRunner';
 
 
 export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker {
@@ -144,7 +149,9 @@ export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker 
     try {
       if (workLoad.parameters) {
         for (const p in workLoad.parameters) {
-          await runner.setIncoming(p, workLoad.parameters[p]);
+          if (workLoad.parameters.hasOwnProperty(p)) {
+            await runner.setIncoming(p, workLoad.parameters[p]);
+          }
         }
       }
       e.state = 'running';

@@ -3,7 +3,7 @@ import {Storage} from '../libs/storage/Storage';
 import {Log} from '../libs/logging/Log';
 import {Inject} from 'typedi';
 import {ICommand} from '../libs/commands/ICommand';
-import {System} from '..';
+import {System} from '../libs/system/System';
 
 export class StorageCommand implements ICommand {
 

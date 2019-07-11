@@ -1,13 +1,17 @@
 import * as _ from 'lodash';
 import {TaskRef} from './TaskRef';
 import {TaskExchangeRef} from './TaskExchangeRef';
-import {K_CLS_TASKS, Log, RuntimeLoader, TaskRunner, Tasks} from '../..';
 import {ClassLoader, PlatformUtils} from 'commons-base';
 import {Config} from 'commons-config';
 import {ITaskRunnerOptions} from './ITaskRunnerOptions';
 import {Container} from 'typedi';
 import {TaskExecutionRequestFactory} from './worker/TaskExecutionRequestFactory';
 import {ITaskExec} from './ITaskExec';
+import {K_CLS_TASKS} from './Constants';
+import {RuntimeLoader} from '../../base/RuntimeLoader';
+import {Tasks} from './Tasks';
+import {Log} from '../logging/Log';
+import {TaskRunner} from './TaskRunner';
 
 
 export class TasksHelper {

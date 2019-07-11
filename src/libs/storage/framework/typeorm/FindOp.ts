@@ -9,7 +9,7 @@ import {XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '../../../Constants';
 
 import {TypeOrmSqlConditionsBuilder} from './TypeOrmSqlConditionsBuilder';
 import {TypeOrmEntityRegistry} from './schema/TypeOrmEntityRegistry';
-import {TreeUtils} from '../../../..';
+import {TreeUtils} from './../../../utils/TreeUtils';
 
 
 export class FindOp<T> implements IFindOp<T> {

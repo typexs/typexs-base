@@ -1,6 +1,6 @@
 import {AbstractWatcherConfig} from './AbstractWatcherConfig';
 import {FileWatcherConfig, isFileWatcherConfig} from './FileWatcherConfig';
-import {Log} from '../..';
+import {Log} from '../logging/Log';
 
 /**
  * Union type of possible watcher configs

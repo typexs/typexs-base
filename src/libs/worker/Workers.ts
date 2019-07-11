@@ -1,6 +1,5 @@
 import {ILookupRegistry, IPropertyRef, LookupRegistry, XS_TYPE_ENTITY} from 'commons-schema-api';
 import {C_WORKERS, K_CLS_WORKERS} from './Constants';
-import {RuntimeLoader} from '../..';
 import {ClassUtils, NotYetImplementedError} from 'commons-base';
 import {WorkerRef} from './WorkerRef';
 import {IWorkerConfig} from './IWorkerConfig';
@@ -9,6 +8,7 @@ import {Container} from 'typedi';
 import {IWorker} from './IWorker';
 import {IWorkerInfo} from './IWorkerInfo';
 import {MatchUtils} from '../utils/MatchUtils';
+import {RuntimeLoader} from '../../base/RuntimeLoader';
 
 
 const DEFAULT_OPTIONS: IWorkerConfig = {access: [{access: 'deny', name: '*'}]};

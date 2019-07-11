@@ -1,10 +1,10 @@
-import {Log} from '../..';
 import {setTimeout} from 'timers';
 import {Schedule} from '../../libs/schedule/Schedule';
 import * as _ from 'lodash';
 import {IScheduleDef} from '../../libs/schedule/IScheduleDef';
 import {IScheduleFactory} from '../../libs/schedule/IScheduleFactory';
 import moment = require('moment');
+import {Log} from '../../libs/logging/Log';
 
 export class DefaultScheduleFactory implements IScheduleFactory {
 

@@ -1,6 +1,10 @@
-import {ITasksApi, Log, TaskRun, TaskRunner, TasksApi, UseAPI} from "..";
-import {Inject} from "typedi";
-import {TaskMonitor} from "../libs/tasks/TaskMonitor";
+import {Inject} from 'typedi';
+import {TaskMonitor} from '../libs/tasks/TaskMonitor';
+import {UseAPI} from '../decorators/UseAPI';
+import {TasksApi} from '../api/Tasks.api';
+import {ITasksApi} from '../api/ITasksApi';
+import {TaskRunner} from '../libs/tasks/TaskRunner';
+import {TaskRun} from '../libs/tasks/TaskRun';
 
 
 @UseAPI(TasksApi)

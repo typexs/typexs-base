@@ -4,7 +4,7 @@ import {ICommand} from '../libs/commands/ICommand';
 import {IModule} from '../api/IModule';
 
 import {inspect} from 'util';
-import {System} from '..';
+import {System} from '../libs/system/System';
 
 export class ModulesCommand implements ICommand {
 

@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import {EventBus, subscribe} from 'commons-eventbus';
 import {Log} from '../logging/Log';
-import {APP_SYSTEM_DISTRIBUTED, C_KEY_SEPARATOR, C_STORAGE_DEFAULT, Invoker, SystemInfoEvent, TYPEXS_NAME} from '../..';
+import {APP_SYSTEM_DISTRIBUTED, C_KEY_SEPARATOR, C_STORAGE_DEFAULT, TYPEXS_NAME} from '../Constants';
 import {StorageRef} from '../storage/StorageRef';
 import {Inject} from 'typedi';
 import {SystemApi} from '../../api/System.api';
@@ -13,6 +13,8 @@ import {SystemInfoRequestEvent} from './SystemInfoRequestEvent';
 import {SystemInfoRequest} from './SystemInfoRequest';
 import * as machineId from 'node-machine-id';
 import {Config} from 'commons-config';
+import {Invoker} from '../../base/Invoker';
+import {SystemInfoEvent} from './SystemInfoEvent';
 
 export class System {
 
@@ -133,6 +135,16 @@ export class System {
     }
 
     return this.node;
+  }
+
+
+  getNodesWith(context: string) {
+    return this.getNodes().filter(v => !!v.contexts.find(c => c.context === context));
+  }
+
+
+  getNodes(): SystemNodeInfo[] {
+    return [this.node, ...this.nodes];
   }
 
 

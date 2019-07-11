@@ -1,19 +1,20 @@
-import {Log, SystemInfoEvent} from "../..";
-import {System} from "../system/System";
-import {SystemInfoRequestEvent} from "./SystemInfoRequestEvent";
-import {EventEmitter} from "events";
+import {System} from '../system/System';
+import {SystemInfoRequestEvent} from './SystemInfoRequestEvent';
+import {EventEmitter} from 'events';
 
-import * as _ from "lodash";
+import * as _ from 'lodash';
 
 import {subscribe} from 'commons-eventbus';
-import {EventBus} from "commons-eventbus";
-import {SystemInfo} from "./SystemInfo";
+import {EventBus} from 'commons-eventbus';
+import {SystemInfo} from './SystemInfo';
+import {SystemInfoEvent} from './SystemInfoEvent';
+import {Log} from '../logging/Log';
 
 export class SystemInfoRequest extends EventEmitter {
 
   private system: System;
 
-  private timeout: number = 5000;
+  private timeout = 5000;
 
   private event: SystemInfoRequestEvent;
 
@@ -23,7 +24,7 @@ export class SystemInfoRequest extends EventEmitter {
 
   private results: any[] = [];
 
-  private active: boolean = true;
+  private active = true;
 
   constructor(system: System) {
     super();
@@ -34,8 +35,8 @@ export class SystemInfoRequest extends EventEmitter {
 
   async run(nodeIds: string[] = []): Promise<SystemInfo[]> {
 
-    if (nodeIds.length == 0) {
-      this.targetIds = this.system.nodes.map(n => n.nodeId)
+    if (nodeIds.length === 0) {
+      this.targetIds = this.system.nodes.map(n => n.nodeId);
     }
 
     this.event = new SystemInfoRequestEvent();
@@ -56,24 +57,24 @@ export class SystemInfoRequest extends EventEmitter {
 
   @subscribe(SystemInfoEvent)
   onResults(event: SystemInfoEvent) {
-    if (!this.active) return;
+    if (!this.active) { return; }
 
     // has query event
-    if (!this.event) return;
+    if (!this.event) { return; }
 
     // results for me?
-    if (event.targetIds.indexOf(this.system.node.nodeId) == -1) return;
+    if (event.targetIds.indexOf(this.system.node.nodeId) === -1) { return; }
 
     // waiting for the results?
-    if (this.targetIds.indexOf(event.nodeId) == -1) return;
-    _.remove(this.targetIds, x => x == event.nodeId);
+    if (this.targetIds.indexOf(event.nodeId) === -1) { return; }
+    _.remove(this.targetIds, x => x === event.nodeId);
 
     event.info['__nodeId__'] = event.nodeId;
     this.responses.push(event);
 
-    if (this.targetIds.length == 0) {
+    if (this.targetIds.length === 0) {
       this.active = false;
-      this.emit('postprocess')
+      this.emit('postprocess');
     }
 
   }
@@ -100,7 +101,7 @@ export class SystemInfoRequest extends EventEmitter {
         }
       });
 
-    })
+    });
   }
 
 

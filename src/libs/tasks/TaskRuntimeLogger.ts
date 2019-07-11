@@ -1,11 +1,11 @@
-import {ILogLevel} from "commons-base";
-import {ILoggerApi} from "../logging/ILoggerApi";
-import {ILoggerOptions} from "../logging/ILoggerOptions";
-import {Log, LogEvent} from "../..";
+import {ILogLevel} from 'commons-base';
+import {ILoggerApi} from '../logging/ILoggerApi';
+import {ILoggerOptions} from '../logging/ILoggerOptions';
+import {LogEvent} from '../logging/LogEvent';
 
 export class TaskRuntimeLogger implements ILoggerApi {
 
-  name:string;
+  name: string;
   private taskId: string;
   private taskName: string;
   private taskNr: number;
@@ -16,12 +16,12 @@ export class TaskRuntimeLogger implements ILoggerApi {
     this.taskName = taskName;
     this.taskNr = taskNr;
     this.baseLogger = baseLogger;
-    this.name = [this.taskId,this.taskNr,this.taskName].join(':')
+    this.name = [this.taskId, this.taskNr, this.taskName].join(':');
   }
 
 
   log(level: string, ...msg: any[]): void {
-    let l = new LogEvent({args: msg, level: level, prefix: [this.taskId, this.taskName, this.taskNr].join(':')});
+    const l = new LogEvent({args: msg, level: level, prefix: [this.taskId, this.taskName, this.taskNr].join(':')});
     this.baseLogger.log(level, l);
   }
 
@@ -61,11 +61,11 @@ export class TaskRuntimeLogger implements ILoggerApi {
   }
 
   clear(): void {
-    //return this.baseLogger.clear();
+    // return this.baseLogger.clear();
   }
 
   close(): void {
-    //return this.baseLogger.clear();
+    // return this.baseLogger.clear();
   }
 
   getOptions(): ILoggerOptions {
@@ -73,7 +73,7 @@ export class TaskRuntimeLogger implements ILoggerApi {
   }
 
 
-  remove(){
+  remove() {
 
   }
 

@@ -1,14 +1,14 @@
 import * as _ from 'lodash';
-
-import {Log, TaskRef, Tasks} from '../../..';
 import {System} from '../../system/System';
 import {EventEmitter} from 'events';
-
 import {EventBus, subscribe} from 'commons-eventbus';
 import {TaskEvent} from './TaskEvent';
 import {TaskQueueWorker} from '../../../workers/TaskQueueWorker';
 import {IWorkerInfo} from '../../worker/IWorkerInfo';
 import {ITaskExecutionRequestOptions} from './ITaskExecutionRequestOptions';
+import {Tasks} from '../Tasks';
+import {TaskRef} from '../TaskRef';
+import {Log} from '../../logging/Log';
 
 
 export class TaskExecutionRequest extends EventEmitter {

@@ -1,27 +1,27 @@
-import {AbstractSchemaHandler} from "../../libs/storage/AbstractSchemaHandler";
-import * as _ from "lodash";
-import {MongoQueryRunner} from "typeorm/driver/mongodb/MongoQueryRunner"
-import {ICollection} from "../../libs/storage/ICollection";
-import {ICollectionProperty} from "../../libs/storage/ICollectionProperty";
-import {ConnectionWrapper} from "../..";
+import {AbstractSchemaHandler} from '../../libs/storage/AbstractSchemaHandler';
+import * as _ from 'lodash';
+import {MongoQueryRunner} from 'typeorm/driver/mongodb/MongoQueryRunner';
+import {ICollection} from '../../libs/storage/ICollection';
+import {ICollectionProperty} from '../../libs/storage/ICollectionProperty';
+import {ConnectionWrapper} from '../../libs/storage/ConnectionWrapper';
 
 
 export class MongoDbSchemaHandler extends AbstractSchemaHandler {
 
-  type: string = 'mongodb';
+  type = 'mongodb';
 
   private getDB(c: ConnectionWrapper) {
-    let runner = <MongoQueryRunner>c.manager.connection.createQueryRunner();
-    let database = c.manager.connection.driver.database;
+    const runner = <MongoQueryRunner>c.manager.connection.createQueryRunner();
+    const database = c.manager.connection.driver.database;
     return runner.databaseConnection.db(database);
 
   }
 
   async getCollectionNames(): Promise<string[]> {
-    let c = await this.storageRef.connect();
-    let cursor = this.getDB(c).listCollections(null);
+    const c = await this.storageRef.connect();
+    const cursor = this.getDB(c).listCollections(null);
     let v;
-    let names: string[] = [];
+    const names: string[] = [];
     while (v = await cursor.next()) {
       names.push(v.name);
     }
@@ -31,23 +31,23 @@ export class MongoDbSchemaHandler extends AbstractSchemaHandler {
 
 
   async getCollection(name: string): Promise<any> {
-    let c = await this.storageRef.connect();
-    let collection = this.getDB(c).listCollections({name: name});
-    let res = await collection.next();
+    const c = await this.storageRef.connect();
+    const collection = this.getDB(c).listCollections({name: name});
+    const res = await collection.next();
     await c.close();
     return res;
   }
 
   async getCollections(names: string[]): Promise<ICollection[]> {
-    let c = await this.storageRef.connect();
-    let collections = this.getDB(c).listCollections({name: {$in: names}});
+    const c = await this.storageRef.connect();
+    const collections = this.getDB(c).listCollections({name: {$in: names}});
 
-    let colls: ICollection[] = [];
+    const colls: ICollection[] = [];
     let cursor: any;
     while (cursor = await collections.next()) {
-      let props: ICollectionProperty[] = [];
+      const props: ICollectionProperty[] = [];
 
-      let _c: ICollection = {
+      const _c: ICollection = {
         name: cursor.name,
         framework: 'typeorm',
         properties: props

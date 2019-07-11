@@ -6,7 +6,7 @@ import {Console} from '../libs/logging/Console';
 import {TasksApi} from '../api/Tasks.api';
 import {System} from '../libs/system/System';
 import {TasksHelper} from '../libs/tasks/TasksHelper';
-import {ICommand} from '..';
+import {ICommand} from '../libs/commands/ICommand';
 
 
 /**

@@ -1,6 +1,5 @@
-import {TaskState} from "../libs/tasks/TaskState";
-import {TaskRunner} from "../libs/tasks/TaskRunner";
-import {TaskRun} from "..";
+import {TaskRunner} from '../libs/tasks/TaskRunner';
+import {TaskRun} from '../libs/tasks/TaskRun';
 
 
 export interface ITasksApi {

@@ -1,9 +1,9 @@
 import {existsSync, PathLike, watch} from 'fs';
 import {resolve} from 'path';
-import {Log} from '../..';
 import {AbstractWatcher} from './AbstractWatcher';
 import {FileWatcherConfig, isFileWatcherConfig} from './FileWatcherConfig';
 import {InvalidWatcherConfig, WatcherStarted, WatcherStopped} from './WatcherErrors';
+import {Log} from '../logging/Log';
 
 /**
  * A file watcher

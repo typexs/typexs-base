@@ -1,14 +1,14 @@
 import * as _ from 'lodash';
-import {ISystemApi} from "../api/ISystemApi";
-import {UseAPI} from "../decorators/UseAPI";
-import {SystemApi} from "../api/System.api";
-import {INodeInfo} from "../libs/system/INodeInfo";
-import {Inject} from "typedi";
-import {Tasks} from "..";
-import {C_TASKS} from "../libs/tasks/Constants";
+import {ISystemApi} from '../api/ISystemApi';
+import {UseAPI} from '../decorators/UseAPI';
+import {SystemApi} from '../api/System.api';
+import {INodeInfo} from '../libs/system/INodeInfo';
+import {Inject} from 'typedi';
+import {C_TASKS} from '../libs/tasks/Constants';
 
-import {ITaskInfo} from "../libs/tasks/ITaskInfo";
-import {SystemNodeInfo} from "../entities/SystemNodeInfo";
+import {ITaskInfo} from '../libs/tasks/ITaskInfo';
+import {SystemNodeInfo} from '../entities/SystemNodeInfo';
+import {Tasks} from '../libs/tasks/Tasks';
 
 @UseAPI(SystemApi)
 export class TasksSystemExtension implements ISystemApi {
@@ -18,8 +18,8 @@ export class TasksSystemExtension implements ISystemApi {
 
 
   getNodeInfos(): INodeInfo | INodeInfo[] {
-    let infos = this.tasks.infos();
-    let nodeTaskContext: INodeInfo = {context: C_TASKS};
+    const infos = this.tasks.infos();
+    const nodeTaskContext: INodeInfo = {context: C_TASKS};
     nodeTaskContext.tasks = infos;
     return nodeTaskContext;
   }
@@ -27,7 +27,7 @@ export class TasksSystemExtension implements ISystemApi {
 
   onNodeRegister(x: SystemNodeInfo): void {
     if (x && _.has(x, 'contexts')) {
-      let found = x.contexts.find(x => x.context == C_TASKS);
+      const found = x.contexts.find(x => x.context === C_TASKS);
       if (found) {
         found.tasks.map((info: ITaskInfo) => {
           if (this.tasks.contains(info.name)) {
@@ -37,7 +37,7 @@ export class TasksSystemExtension implements ISystemApi {
               this.tasks.addRemoteTask(x.nodeId, info);
             }
           }
-        })
+        });
       }
     }
   }
@@ -45,11 +45,11 @@ export class TasksSystemExtension implements ISystemApi {
 
   onNodeUnregister(x: SystemNodeInfo): void {
     if (x && _.has(x, 'contexts')) {
-      let found = x.contexts.find(x => x.context == C_TASKS);
+      const found = x.contexts.find(x => x.context === C_TASKS);
       if (found) {
         found.tasks.map((info: ITaskInfo) => {
           if (this.tasks.contains(info.name)) {
-            let task = this.tasks.get(info.name);
+            const task = this.tasks.get(info.name);
             task.removeNodeId(x.nodeId);
             if (!task.hasNodeIds()) {
               this.tasks.removeTask(task);

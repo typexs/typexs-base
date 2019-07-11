@@ -1,13 +1,13 @@
-import {IStorageOptions} from "./IStorageOptions";
-import {SqliteConnectionOptions} from "typeorm/driver/sqlite/SqliteConnectionOptions";
-import {StorageRef} from "./StorageRef";
-import * as _ from "lodash";
+import {IStorageOptions} from './IStorageOptions';
+import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
+import {StorageRef} from './StorageRef';
+import * as _ from 'lodash';
 
-import {AbstractSchemaHandler} from "./AbstractSchemaHandler";
-import {RuntimeLoader} from "../../base/RuntimeLoader";
-import {K_CLS_STORAGE_SCHEMAHANDLER} from "../Constants";
-import {DefaultSchemaHandler} from "../../adapters/storage/DefaultSchemaHandler";
-import {IClassRef} from "commons-schema-api";
+import {AbstractSchemaHandler} from './AbstractSchemaHandler';
+import {RuntimeLoader} from '../../base/RuntimeLoader';
+import {K_CLS_STORAGE_SCHEMAHANDLER} from '../Constants';
+import {DefaultSchemaHandler} from '../../adapters/storage/DefaultSchemaHandler';
+import {IClassRef} from 'commons-schema-api';
 
 
 
@@ -15,7 +15,7 @@ import {IClassRef} from "commons-schema-api";
 
 export class Storage {
 
-  static NAME: string = 'Storage';
+  static NAME = 'Storage';
 
   nodeId: string;
 
@@ -30,7 +30,7 @@ export class Storage {
 
   register(name: string, options: IStorageOptions) {
     // Todo load other handling class from baseClass if necassary options.baseClass
-    let ref = new StorageRef(options);
+    const ref = new StorageRef(options);
     let type = '__default__';
     if (_.has(this.schemaHandler, options.type)) {
       type = options.type;
@@ -42,9 +42,9 @@ export class Storage {
 
 
   async prepare(loader: RuntimeLoader) {
-    let classes = await loader.getClasses(K_CLS_STORAGE_SCHEMAHANDLER);
-    for (let cls of classes) {
-      let obj = <AbstractSchemaHandler>Reflect.construct(cls, []);
+    const classes = await loader.getClasses(K_CLS_STORAGE_SCHEMAHANDLER);
+    for (const cls of classes) {
+      const obj = <AbstractSchemaHandler>Reflect.construct(cls, []);
       if (obj) {
         this.schemaHandler[obj.type] = cls;
       }
@@ -57,9 +57,9 @@ export class Storage {
    * @param classRef
    */
   forClass(classRef: IClassRef | string) {
-    for (let k in this.refs) {
+    for (const k in this.refs) {
       if (this.refs[k].hasEntityClass(classRef)) {
-        return this.refs[k]
+        return this.refs[k];
       }
     }
     return null;
@@ -77,7 +77,7 @@ export class Storage {
 
 
   getAllOptions() {
-    return _.values(this.refs).map(ref => ref.getOptions())
+    return _.values(this.refs).map(ref => ref.getOptions());
   }
 
 }

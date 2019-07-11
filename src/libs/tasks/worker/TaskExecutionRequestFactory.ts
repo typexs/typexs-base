@@ -1,7 +1,7 @@
-import {Tasks} from '../../..';
 import {System} from '../../system/System';
 import {Inject} from 'typedi';
 import {TaskExecutionRequest} from './TaskExecutionRequest';
+import {Tasks} from '../Tasks';
 
 
 export class TaskExecutionRequestFactory {

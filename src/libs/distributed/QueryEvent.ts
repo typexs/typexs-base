@@ -1,5 +1,6 @@
-import {AbstractEvent} from "../events/AbstractEvent";
-import {CryptUtils, IFindOptions} from "../..";
+import {AbstractEvent} from '../events/AbstractEvent';
+import {CryptUtils} from '../utils/CryptUtils';
+import {IFindOptions} from '../storage/framework/IFindOptions';
 
 export class QueryEvent extends AbstractEvent {
 

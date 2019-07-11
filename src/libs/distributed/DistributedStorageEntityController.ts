@@ -1,5 +1,5 @@
 import {Inject} from 'typedi';
-import {IFindOptions} from '../..';
+import {IFindOptions} from '../storage/framework/IFindOptions';
 import {DistributedOperationFactory} from './DistributedOperationFactory';
 
 

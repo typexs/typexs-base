@@ -3,12 +3,17 @@ import {DistributedStorageEntityController} from './DistributedStorageEntityCont
 import {EventBus, subscribe} from 'commons-eventbus';
 import {QueryResultsEvent} from './QueryResultsEvent';
 import {IFindOp} from '../storage/framework/IFindOp';
-import {IFindOptions, Log, XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '../..';
 import {TypeOrmEntityRegistry} from '../storage/framework/typeorm/schema/TypeOrmEntityRegistry';
 import {QueryEvent} from './QueryEvent';
 import {EventEmitter} from 'events';
 import {System} from '../system/System';
 import {IEntityRef} from 'commons-schema-api';
+import {IWorkerInfo} from '../worker/IWorkerInfo';
+import {DistributedQueryWorker} from '../../workers/DistributedQueryWorker';
+import {IFindOptions} from '../storage/framework/IFindOptions';
+import {Log} from '../logging/Log';
+import {C_WORKERS} from '../worker/Constants';
+import {XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '../Constants';
 
 
 export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
@@ -104,12 +109,22 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
 
 
     // also fire self
-    this.targetIds = [this.system.node.nodeId];
-    this.system.nodes.forEach(x => {
-      if (!x.isBackend) {
-        this.targetIds.push(x.nodeId);
-      }
-    });
+    this.targetIds = this.system.getNodesWith(C_WORKERS)
+      .filter(n => n.contexts
+        .find(c => c.context === C_WORKERS).workers
+        .find((w: IWorkerInfo) => w.className === DistributedQueryWorker.name))
+      .map(n => n.nodeId);
+
+    if (this.targetIds.length === 0) {
+      throw new Error('no distributed worker found to execute the query.');
+    }
+
+    // this.targetIds = [this.system.node.nodeId];
+    // this.system.nodes.forEach(x => {
+    //   if (!x.isBackend) {
+    //     this.targetIds.push(x.nodeId);
+    //   }
+    // });
 
     this.queryEvent.targetIds = this.targetIds;
     if (this.targetIds.length === 0) {

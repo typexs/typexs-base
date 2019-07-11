@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 
-import {Invoker, Log, TaskRunner, Tasks, TasksApi} from '../../../src';
+
 import {Container} from 'typedi';
 import {SimpleTask} from './tasks/SimpleTask';
 import {SimpleTaskPromise} from './tasks/SimpleTaskPromise';
@@ -23,6 +23,11 @@ import {SimpleTaskWithRuntimeLog} from './tasks/SimpleTaskWithRuntimeLog';
 import {TestHelper} from '../TestHelper';
 import {SimpleTaskWithDefaultArgs} from './tasks/SimpleTaskWithDefaultArgs';
 import {SimpleOtherTask, SimpleTaskStartingOtherTask} from './tasks/SimpleTaskStartingOtherTask';
+import {Log} from '../../../src/libs/logging/Log';
+import {Invoker} from '../../../src/base/Invoker';
+import {TasksApi} from '../../../src/api/Tasks.api';
+import {TaskRunner} from '../../../src/libs/tasks/TaskRunner';
+import {Tasks} from '../../../src/libs/tasks/Tasks';
 
 const stdMocks = require('std-mocks');
 

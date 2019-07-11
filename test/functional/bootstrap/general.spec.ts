@@ -1,13 +1,13 @@
 import * as path from 'path';
 import * as _ from 'lodash';
-import {suite, test} from "mocha-typescript";
-import {expect} from "chai";
+import {suite, test} from 'mocha-typescript';
+import {expect} from 'chai';
 
-import {Bootstrap} from "../../../src/Bootstrap";
-import {Config} from "commons-config";
-import {RuntimeLoader} from "../../../src/base/RuntimeLoader";
-import {K_CLS_API, K_CLS_BOOTSTRAP, K_CLS_STORAGE_SCHEMAHANDLER, K_CLS_TASKS, K_CLS_USE_API} from "../../../src";
-import {K_CLS_WORKERS} from "../../../src/libs/worker/Constants";
+import {Bootstrap} from '../../../src/Bootstrap';
+import {Config} from 'commons-config';
+import {RuntimeLoader} from '../../../src/base/RuntimeLoader';
+import {K_CLS_API, K_CLS_BOOTSTRAP, K_CLS_STORAGE_SCHEMAHANDLER, K_CLS_TASKS, K_CLS_USE_API} from '../../../src';
+import {K_CLS_WORKERS} from '../../../src/libs/worker/Constants';
 
 
 @suite('functional/bootstrap/general')
@@ -23,7 +23,7 @@ class BootstrapGeneralSpec {
   @test
   async 'add additional config options'() {
     Bootstrap._({app: {path: __dirname}});
-    let cfg = Bootstrap.addConfigOptions(
+    const cfg = Bootstrap.addConfigOptions(
       {configs: [{type: 'file', file: './config/super.json'}]}
     );
 
@@ -32,7 +32,7 @@ class BootstrapGeneralSpec {
       file: './config/super.json'
     });
 
-    let settings = Bootstrap.configure();
+    const settings = Bootstrap.configure();
 
     let data = Config.get('', 'typexs');
     expect(data).to.deep.include(
@@ -57,26 +57,26 @@ class BootstrapGeneralSpec {
   @test
   async 'load typexs modules'() {
 
-    let p = path.join(__dirname, 'fake_app');
+    const p = path.join(__dirname, 'fake_app');
     let loader = new RuntimeLoader({
       appdir: p
     });
 
     await loader.rebuild();
-    let modules = loader.registry.modules();
+    const modules = loader.registry.modules();
     expect(modules).to.have.length(3);
     expect(_.find(modules, {name: 'module1'})).to.exist;
     expect(_.find(modules, {name: 'module2'})).to.not.exist;
 
-    let activators = loader.classesLoader.getClasses('activator.js');
+    const activators = loader.classesLoader.getClasses('activator.js');
     expect(activators).to.have.length(2);
     expect(activators.shift().prototype.constructor.name).to.eq('Activator');
 
-    let commands = loader.classesLoader.getClasses('commands');
+    const commands = loader.classesLoader.getClasses('commands');
     expect(commands).to.have.length(1);
     expect(commands.shift().prototype.constructor.name).to.eq('Xyz');
 
-    let builders = loader.classesLoader.getClasses('builder');
+    const builders = loader.classesLoader.getClasses('builder');
     expect(builders).to.have.length(1);
     expect(builders.shift().prototype.constructor.name).to.eq('UnitBuilder');
 
@@ -86,7 +86,7 @@ class BootstrapGeneralSpec {
 
   @test
   async 'bootstrap app with modules'() {
-    let appdir = path.join(__dirname, 'fake_app');
+    const appdir = path.join(__dirname, 'fake_app');
 
     let bootstrap = Bootstrap.configure({
       app: {name: 'test', path: appdir}
@@ -101,14 +101,14 @@ class BootstrapGeneralSpec {
       modules: {
         appdir: appdir,
         included: {
-          "fake_app": {
-            "enabled": true
+          'fake_app': {
+            'enabled': true
           },
-          "module1": {
-            "enabled": true
+          'module1': {
+            'enabled': true
           },
-          "module3": {
-            "enabled": true
+          'module3': {
+            'enabled': true
           }
         }
         ,
@@ -118,17 +118,17 @@ class BootstrapGeneralSpec {
             {topic: K_CLS_API, refs: ['api/*.api.*', 'src/api/*.api.*']},
             {topic: K_CLS_BOOTSTRAP, refs: ['Bootstrap', 'src/Bootstrap', 'Startup', 'src/Startup']},
             {
-              "topic": "builder",
-              "refs": [
-                "builder"
+              'topic': 'builder',
+              'refs': [
+                'builder'
               ]
             },
             {
-              "refs": [
-                "adapters/cache/*CacheAdapter.*",
-                "src/adapters/cache/*CacheAdapter.*"
+              'refs': [
+                'adapters/cache/*CacheAdapter.*',
+                'src/adapters/cache/*CacheAdapter.*'
               ],
-              "topic": "cache.adapters"
+              'topic': 'cache.adapters'
             },
 
             {topic: 'commands', refs: ['commands', 'src/commands']},
@@ -137,33 +137,33 @@ class BootstrapGeneralSpec {
               refs: [
                 'entities', 'src/entities',
                 'shared/entities', 'src/shared/entities',
-                'modules/*/entities', 'src/modules/*/entities', "src/entitytest"
+                'modules/*/entities', 'src/modules/*/entities', 'src/entitytest'
               ]
             },
             {topic: 'flow', refs: ['flow']},
             {topic: 'generators', refs: ['generators', 'src/generators']},
             {
-              "refs": [
-                "adapters/scheduler/*Factory.*",
-                "src/adapters/scheduler/*Factory.*"
+              'refs': [
+                'adapters/scheduler/*Factory.*',
+                'src/adapters/scheduler/*Factory.*'
               ],
-              "topic": "scheduler-factories"
+              'topic': 'scheduler-factories'
             },
 
             {
               topic: K_CLS_STORAGE_SCHEMAHANDLER,
               refs: [
-                "adapters/storage/*SchemaHandler.*",
-                "src/adapters/storage/*SchemaHandler.*"
+                'adapters/storage/*SchemaHandler.*',
+                'src/adapters/storage/*SchemaHandler.*'
               ]
             },
             {
               topic: K_CLS_TASKS,
               refs: [
-                "tasks",
-                "tasks/*/*",
-                "src/tasks",
-                "src/tasks/*/*"
+                'tasks',
+                'tasks/*/*',
+                'src/tasks',
+                'src/tasks/*/*'
               ]
             },
             {
@@ -172,25 +172,25 @@ class BootstrapGeneralSpec {
             },
             {
               topic: K_CLS_WORKERS,
-              refs: ["workers",
-                "workers/*/*",
-                "src/workers",
-                "src/workers/*/*"]
+              refs: ['workers',
+                'workers/*/*',
+                'src/workers',
+                'src/workers/*/*']
             }
 
 
           ],
-        "packageKeys": [
-          "typexs"
+        'packageKeys': [
+          'typexs'
         ]
         ,
         paths: [
           appdir
         ],
-        "subModulPattern": [
-          "node_modules",
-          "packages",
-          "src/packages"
+        'subModulPattern': [
+          'node_modules',
+          'packages',
+          'src/packages'
         ]
       }
     });
@@ -200,7 +200,7 @@ class BootstrapGeneralSpec {
 
   @test
   async 'activator startups'() {
-    let appdir = path.join(__dirname, 'fake_app_startup');
+    const appdir = path.join(__dirname, 'fake_app_startup');
     let bootstrap = Bootstrap.configure({
       app: {name: 'test', path: appdir},
       logging: {enable: false, level: 'debug'},
@@ -213,11 +213,11 @@ class BootstrapGeneralSpec {
     // console.log(inspect(Config.get('modules'),false,10));
     await bootstrap.activateStorage();
     await bootstrap.startup();
-    let activators = bootstrap.getActivators();
+    const activators = bootstrap.getActivators();
 
     await bootstrap.shutdown();
     expect(activators).to.have.length(2);
-    //expect(activators[0]['done']).to.be.true;
+    // expect(activators[0]['done']).to.be.true;
     expect(activators[1]['done']).to.be.true;
 
   }
@@ -225,7 +225,7 @@ class BootstrapGeneralSpec {
 
   @test
   async 'additional package keys'() {
-    let appdir = path.join(__dirname, 'fake_app');
+    const appdir = path.join(__dirname, 'fake_app');
     let bootstrap = Bootstrap.configure({
       app: {
         name: 'test', path: appdir
@@ -235,7 +235,7 @@ class BootstrapGeneralSpec {
       }
     });
     bootstrap = await bootstrap.prepareRuntime();
-    let modules = bootstrap.getModules();
+    const modules = bootstrap.getModules();
 
     expect(modules).to.have.length(4);
 

@@ -1,6 +1,6 @@
-import {ITask} from "../../../../src";
-import {TaskRuntime} from "../../../../src/libs/tasks/decorators/TaskRuntime";
-import {ITaskRuntimeContainer} from "../../../../src/libs/tasks/ITaskRuntimeContainer";
+import {TaskRuntime} from '../../../../src/libs/tasks/decorators/TaskRuntime';
+import {ITaskRuntimeContainer} from '../../../../src/libs/tasks/ITaskRuntimeContainer';
+import {ITask} from '../../../../src/libs/tasks/ITask';
 
 export class SimpleTaskWithRuntimeLog implements ITask {
 

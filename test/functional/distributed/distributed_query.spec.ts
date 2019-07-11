@@ -20,7 +20,7 @@ const LOG_EVENT = TestHelper.logEnable(false);
 
 
 @suite('functional/distributed/query')
-class Distributed_querySpec {
+class DistributedQuerySpec {
 
 
   async before() {

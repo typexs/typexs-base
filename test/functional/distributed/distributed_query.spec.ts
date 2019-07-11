@@ -2,10 +2,10 @@ import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 import * as _ from 'lodash';
 import {Bootstrap} from '../../../src/Bootstrap';
-import {ITypexsOptions, Log, XS_P_$COUNT} from '../../../src';
+import {C_WORKERS, ITypexsOptions, System, XS_P_$COUNT} from '../../../src';
 import {Config} from 'commons-config';
 import {TEST_STORAGE_OPTIONS} from '../config';
-import {EventBus, IEventBusConfiguration} from 'commons-eventbus';
+import {IEventBusConfiguration} from 'commons-eventbus';
 import {Container} from 'typedi';
 import {TestHelper} from '../TestHelper';
 import {SpawnHandle} from '../SpawnHandle';
@@ -14,6 +14,7 @@ import {SystemNodeInfo} from '../../../src/entities/SystemNodeInfo';
 import {DistributedStorageEntityController} from '../../../src/libs/distributed/DistributedStorageEntityController';
 import {DistributedQueryWorker} from '../../../src/workers/DistributedQueryWorker';
 import {Workers} from '../../../src/libs/worker/Workers';
+import {IWorkerInfo} from '../../../src/libs/worker/IWorkerInfo';
 
 
 const LOG_EVENT = TestHelper.logEnable(false);
@@ -45,6 +46,9 @@ class DistributedQuerySpec {
     await bootstrap.prepareRuntime();
     bootstrap = await bootstrap.activateStorage();
     bootstrap = await bootstrap.startup();
+
+    const system: System = Container.get(System.NAME);
+    system.node.contexts.find(c => c.context === C_WORKERS).workers.push(<IWorkerInfo>{className: DistributedQueryWorker.name});
 
     const worker = Container.get(DistributedQueryWorker);
     await worker.prepare();
@@ -88,7 +92,6 @@ class DistributedQuerySpec {
   }
 
 
-
   @test
   async 'run query on two nodes'() {
     let bootstrap = Bootstrap
@@ -122,7 +125,6 @@ class DistributedQuerySpec {
     expect(results[0]).to.be.instanceOf(SystemNodeInfo);
 
   }
-
 
 
   @test
@@ -165,7 +167,6 @@ class DistributedQuerySpec {
   }
 
 
-
   @test
   async 'multiple queries after an other'() {
     let bootstrap = Bootstrap
@@ -203,7 +204,6 @@ class DistributedQuerySpec {
     p.shutdown();
     await p.done;
     await bootstrap.shutdown();
-
 
 
   }

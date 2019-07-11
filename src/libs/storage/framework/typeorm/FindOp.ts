@@ -1,15 +1,15 @@
-import * as _ from 'lodash'
-import {IFindOp} from "../IFindOp";
-import {IFindOptions} from "../IFindOptions";
-import {StorageEntityController} from "../../StorageEntityController";
-import {ConnectionWrapper} from "../../ConnectionWrapper";
+import * as _ from 'lodash';
+import {IFindOp} from '../IFindOp';
+import {IFindOptions} from '../IFindOptions';
+import {StorageEntityController} from '../../StorageEntityController';
+import {ConnectionWrapper} from '../../ConnectionWrapper';
 
 
-import {XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from "../../../Constants";
+import {XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '../../../Constants';
 
-import {TypeOrmSqlConditionsBuilder} from "./TypeOrmSqlConditionsBuilder";
-import {TypeOrmEntityRegistry} from "./schema/TypeOrmEntityRegistry";
-import {TreeUtils} from "../../../..";
+import {TypeOrmSqlConditionsBuilder} from './TypeOrmSqlConditionsBuilder';
+import {TypeOrmEntityRegistry} from './schema/TypeOrmEntityRegistry';
+import {TreeUtils} from '../../../..';
 
 
 export class FindOp<T> implements IFindOp<T> {
@@ -42,11 +42,11 @@ export class FindOp<T> implements IFindOp<T> {
   }
 
   private async find(entityType: Function | string, findConditions?: any): Promise<T[]> {
-    let repo = this.connection.manager.getRepository(entityType);
-    let qb = repo.createQueryBuilder();
-    let entityDef = TypeOrmEntityRegistry.$().getEntityRefFor(entityType);
+    const repo = this.connection.manager.getRepository(entityType);
+    const qb = repo.createQueryBuilder();
+    const entityDef = TypeOrmEntityRegistry.$().getEntityRefFor(entityType);
     if (findConditions) {
-      let builder = new TypeOrmSqlConditionsBuilder(entityDef, qb.alias);
+      const builder = new TypeOrmSqlConditionsBuilder(entityDef, qb.alias);
       const where = builder.build(findConditions);
       builder.getJoins().forEach(join => {
         qb.leftJoin(join.table, join.alias, join.condition);
@@ -54,7 +54,7 @@ export class FindOp<T> implements IFindOp<T> {
       qb.where(where);
     }
 
-    let recordCount = await qb.getCount();
+    const recordCount = await qb.getCount();
 
     if (!_.isNull(this.options.limit) && _.isNumber(this.options.limit)) {
       qb.limit(this.options.limit);
@@ -70,12 +70,12 @@ export class FindOp<T> implements IFindOp<T> {
       });
     } else {
       _.keys(this.options.sort).forEach(sortKey => {
-        let v: string = this.options.sort[sortKey];
-        qb.addOrderBy(qb.alias + '.' + sortKey, <"ASC" | 'DESC'>v.toUpperCase());
-      })
+        const v: string = this.options.sort[sortKey];
+        qb.addOrderBy(qb.alias + '.' + sortKey, <'ASC' | 'DESC'>v.toUpperCase());
+      });
     }
 
-    let results = this.options.raw ? await qb.getRawMany() : await qb.getMany();
+    const results = this.options.raw ? await qb.getRawMany() : await qb.getMany();
     results[XS_P_$COUNT] = recordCount;
     results[XS_P_$OFFSET] = this.options.offset;
     results[XS_P_$LIMIT] = this.options.limit;
@@ -85,7 +85,7 @@ export class FindOp<T> implements IFindOp<T> {
 
 
   private async findMongo(entityType: Function | string, findConditions?: any): Promise<T[]> {
-    let repo = this.connection.manager.getMongoRepository(entityType);
+    const repo = this.connection.manager.getMongoRepository(entityType);
 
     if (findConditions) {
       TreeUtils.walk(findConditions, x => {
@@ -97,7 +97,7 @@ export class FindOp<T> implements IFindOp<T> {
       });
     }
 
-    let qb = this.options.raw ? repo.createCursor(findConditions) : repo.createEntityCursor(findConditions);
+    const qb = this.options.raw ? repo.createCursor(findConditions) : repo.createEntityCursor(findConditions);
 
 
     if (!_.isNull(this.options.limit) && _.isNumber(this.options.limit)) {
@@ -109,17 +109,17 @@ export class FindOp<T> implements IFindOp<T> {
     }
 
     if (!_.isNull(this.options.sort)) {
-      let s: any[] = [];
+      const s: any[] = [];
       _.keys(this.options.sort).forEach(sortKey => {
-        let v: string = this.options.sort[sortKey];
+        const v: string = this.options.sort[sortKey];
         s.push([sortKey, v === 'asc' ? 1 : -1]);
       });
       qb.sort(s);
     }
 
-    let recordCount = await qb.count(false);
+    const recordCount = await qb.count(false);
 
-    let results: T[] = [];
+    const results: T[] = [];
 
     while (await qb.hasNext()) {
       results.push(await qb.next());

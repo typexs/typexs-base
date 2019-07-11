@@ -121,9 +121,6 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
 
       // ---
 
-      case 'byte':
-      case 'json':
-        return data;
 
       case 'double':
       case 'number':
@@ -141,6 +138,12 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
           return null;
         }
         break;
+
+
+      case 'byte':
+      case 'json':
+      case 'array':
+        return data;
 
     }
 

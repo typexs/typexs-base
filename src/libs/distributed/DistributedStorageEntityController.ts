@@ -1,6 +1,6 @@
-import {Inject} from "typedi";
-import {IFindOptions} from "../..";
-import {DistributedOperationFactory} from "./DistributedOperationFactory";
+import {Inject} from 'typedi';
+import {IFindOptions} from '../..';
+import {DistributedOperationFactory} from './DistributedOperationFactory';
 
 
 export class DistributedStorageEntityController {

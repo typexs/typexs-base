@@ -1,26 +1,25 @@
-import * as _ from 'lodash'
-import {DistributedStorageEntityController} from "./DistributedStorageEntityController";
-import {subscribe} from 'commons-eventbus';
-import {QueryResultsEvent} from "./QueryResultsEvent";
-import {EventBus} from "commons-eventbus";
-import {IFindOp} from "../storage/framework/IFindOp";
-import {IFindOptions, Log, XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from "../..";
+import * as _ from 'lodash';
+import {DistributedStorageEntityController} from './DistributedStorageEntityController';
+import {EventBus, subscribe} from 'commons-eventbus';
+import {QueryResultsEvent} from './QueryResultsEvent';
+import {IFindOp} from '../storage/framework/IFindOp';
+import {IFindOptions, Log, XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '../..';
 import {TypeOrmEntityRegistry} from '../storage/framework/typeorm/schema/TypeOrmEntityRegistry';
-import {QueryEvent} from "./QueryEvent";
-import {EventEmitter} from "events";
-import {System} from "../system/System";
-import {IEntityRef} from "commons-schema-api";
+import {QueryEvent} from './QueryEvent';
+import {EventEmitter} from 'events';
+import {System} from '../system/System';
+import {IEntityRef} from 'commons-schema-api';
 
 
 export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
 
   private system: System;
 
-  //private controller: DistributedStorageEntityController;
+  // private controller: DistributedStorageEntityController;
 
   private options: IFindOptions;
 
-  private timeout: number = 5000;
+  private timeout = 5000;
 
   private targetIds: string[] = [];
 
@@ -32,7 +31,7 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
 
   private results: any[] = [];
 
-  private active: boolean = true;
+  private active = true;
 
 
   constructor(system: System) {
@@ -42,7 +41,7 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
   }
 
   prepare(controller: DistributedStorageEntityController) {
-    //this.controller = controller;
+    // this.controller = controller;
 
     return this;
   }
@@ -50,28 +49,38 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
 
   @subscribe(QueryResultsEvent)
   onResults(event: QueryResultsEvent) {
-    if (!this.active) return;
+    if (!this.active) {
+      return;
+    }
 
     // has query event
-    if (!this.queryEvent) return;
+    if (!this.queryEvent) {
+      return;
+    }
 
     Log.debug('receive distributed find results: ', event);
     // check if response is mine
-    if (this.queryEvent.queryId != event.queryId) return;
+    if (this.queryEvent.queryId !== event.queryId) {
+      return;
+    }
 
     // results for me?
-    if (event.targetIds.indexOf(this.system.node.nodeId) == -1) return;
+    if (event.targetIds.indexOf(this.system.node.nodeId) === -1) {
+      return;
+    }
 
     // waiting for the results?
-    if (this.targetIds.indexOf(event.nodeId) == -1) return;
-    _.remove(this.targetIds, x => x == event.nodeId);
+    if (this.targetIds.indexOf(event.nodeId) === -1) {
+      return;
+    }
+    _.remove(this.targetIds, x => x === event.nodeId);
 
     event.results.map(r => r.__nodeId__ = event.nodeId);
     this.queryResults.push(event);
 
-    if (this.targetIds.length == 0) {
+    if (this.targetIds.length === 0) {
       this.active = false;
-      this.emit('postprocess')
+      this.emit('postprocess');
     }
 
   }
@@ -103,7 +112,7 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
     });
 
     this.queryEvent.targetIds = this.targetIds;
-    if (this.targetIds.length == 0) {
+    if (this.targetIds.length === 0) {
       return this.results;
     }
 
@@ -130,18 +139,27 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
     this.queryResults.map(x => {
       count += x.count;
     });
-    this.results = _.concat([], ...this.queryResults.map(x => x.results))
-      .map(r => this.entityRef.build(r, {
-        afterBuild: (c: any, f: any, t: any) => _.keys(f)
-          .filter(k => k.startsWith('__'))
-          .map(k => t[k] = f[k])
-      }));
+
+    if (_.get(this.options, 'raw', false)) {
+      this.results = _.concat([], ...this.queryResults.map(x => x.results)).map(x => {
+        const e = this.entityRef.create();
+        _.assign(e, x);
+        return e;
+      });
+    } else {
+      this.results = _.concat([], ...this.queryResults.map(x => x.results))
+        .map(r => this.entityRef.build(r, {
+          afterBuild: (c: any, f: any, t: any) => _.keys(f)
+            .filter(k => k.startsWith('__'))
+            .map(k => t[k] = f[k])
+        }));
+    }
 
     if (_.get(this.queryEvent.options, 'sort', false)) {
-      let arr: string[][] = [];
+      const arr: string[][] = [];
       // order after concat
       _.keys(this.queryEvent.options.sort).forEach(k => {
-        arr.push([k, this.queryEvent.options.sort[k].toUpperCase() == 'ASC' ? 'asc' : 'desc']);
+        arr.push([k, this.queryEvent.options.sort[k].toUpperCase() === 'ASC' ? 'asc' : 'desc']);
       });
       _.orderBy(this.results, ...arr);
     }
@@ -175,7 +193,7 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
         }
       });
 
-    })
+    });
   }
 
 }

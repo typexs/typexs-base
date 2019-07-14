@@ -121,7 +121,7 @@ export class TasksHelper {
 
     // const tasksForWorkers = tasks.filter(t => t.hasWorker() && (targetId === null || (targetId && t.hasTargetNodeId(targetId))));
     // const remotePossible = tasks.length === tasksForWorkers.length;
-    const localPossible = taskNames.length === tasks.length;
+    const localPossible = _.uniq(taskNames).length === tasks.length;
 
     if (!isLocal) {
 

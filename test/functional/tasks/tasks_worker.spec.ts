@@ -19,7 +19,7 @@ import {SimpleTaskWithLog} from './tasks/SimpleTaskWithLog';
 import {TaskExecutionRequestFactory} from '../../../src/libs/tasks/worker/TaskExecutionRequestFactory';
 
 
-const LOG_EVENT =  TestHelper.logEnable(false);
+const LOG_EVENT = TestHelper.logEnable(false);
 let bootstrap: Bootstrap = null;
 
 @suite('functional/tasks/tasks_worker')
@@ -39,6 +39,7 @@ class TasksWorkerSpec {
     }
   }
 
+
   @test
   async 'run local job'() {
     bootstrap = Bootstrap
@@ -57,7 +58,7 @@ class TasksWorkerSpec {
     bootstrap = await bootstrap.startup();
     // ---- startup done
 
-    const events: TaskEvent[] = [];
+    let events: TaskEvent[] = [];
 
     class T {
       @subscribe(TaskEvent) on(e: TaskEvent) {
@@ -80,13 +81,13 @@ class TasksWorkerSpec {
     // create event to fire
     const taskEvent = new TaskEvent();
     taskEvent.nodeId = Bootstrap.getNodeId();
-    taskEvent.name = ref.name;
-
+    taskEvent.taskSpec = ref.name;
     let res = await EventBus.post(taskEvent);
 
     expect(res).to.have.length(1);
     res = res.shift();
     expect(res).to.have.length(3);
+
     const work = _.find(res, (x: any) => x && x.nodeId === 'worker');
     expect(work.nodeId).to.be.eq('worker');
     expect(work.respId).to.be.eq('worker');
@@ -94,14 +95,8 @@ class TasksWorkerSpec {
 
     worker.queue.resume();
     await TestHelper.waitFor(() => events.length >= 4);
+    await worker.queue.pause();
     // await worker.queue.await();
-
-    await EventBus.unregister(t);
-
-    // ---- finished
-    await bootstrap.shutdown();
-
-    //  console.log(inspect(events,false,10))
     expect(events).to.have.length(4);
     expect(events.map(e => {
       return {state: e.state, result: e.data ? e.data.results[0].result : null};
@@ -112,7 +107,37 @@ class TasksWorkerSpec {
       {state: 'stopped', result: 'test'}
     ]);
 
-    Log.debug(events);
+    events = [];
+
+    const taskEvent2 = new TaskEvent();
+    taskEvent2.nodeId = Bootstrap.getNodeId();
+    taskEvent2.taskSpec = {name: ref.name, incomings: {data: 'pass test'}};
+    const res2 = await EventBus.post(taskEvent2);
+    const work2 = _.find(res2[0], (x: any) => x && x.nodeId === 'worker');
+    expect(work2.nodeId).to.be.eq('worker');
+    expect(work2.respId).to.be.eq('worker');
+    expect(work2.state).to.be.eq('enqueue');
+
+    worker.queue.resume();
+    await TestHelper.waitFor(() => events.length >= 4);
+    expect(events).to.have.length(4);
+    expect(events.map(e => {
+      return {state: e.state, result: e.data ? e.data.results[0].result : null};
+    })).to.deep.eq([
+      {state: 'enqueue', result: null},
+      {state: 'enqueue', result: null},
+      {state: 'started', result: null},
+      {state: 'stopped', result: 'test'}
+    ]);
+
+
+    await EventBus.unregister(t);
+
+    // ---- finished
+    await bootstrap.shutdown();
+
+    //  console.log(inspect(events,false,10))
+
   }
 
 
@@ -188,7 +213,7 @@ class TasksWorkerSpec {
       'state': 'enqueue',
       'topic': 'data',
       'nodeId': 'worker',
-      'name': [
+      'taskSpec': [
         'simple_worker_task'
       ],
       'targetIds': [
@@ -198,6 +223,7 @@ class TasksWorkerSpec {
       'errors': [],
     });
   }
+
 
   @test
   async 'run job on remote worker'() {
@@ -238,7 +264,7 @@ class TasksWorkerSpec {
 
     const taskEvent = new TaskEvent();
     taskEvent.nodeId = bootstrap.getNodeId();
-    taskEvent.name = 'test';
+    taskEvent.taskSpec = 'test';
     taskEvent.parameters = {
       someValue: 'someValueEntry'
     };
@@ -318,7 +344,7 @@ class TasksWorkerSpec {
 
     const taskEvent = new TaskEvent();
     taskEvent.nodeId = bootstrap.getNodeId();
-    taskEvent.name = 'test';
+    taskEvent.taskSpec = 'test';
     taskEvent.parameters = {};
 
     // the result are null cause of not
@@ -394,7 +420,7 @@ class TasksWorkerSpec {
 
     const taskEvent = new TaskEvent();
     taskEvent.nodeId = bootstrap.getNodeId();
-    taskEvent.name = 'test';
+    taskEvent.taskSpec = 'test';
     taskEvent.targetIds = ['fakeapp01'];
     taskEvent.parameters = {
       someValue: 'valueSome'
@@ -406,7 +432,7 @@ class TasksWorkerSpec {
 
     const taskEvent2 = new TaskEvent();
     taskEvent2.nodeId = bootstrap.getNodeId();
-    taskEvent2.name = 'test';
+    taskEvent2.taskSpec = 'test';
     taskEvent2.targetIds = ['fakeapp02'];
     taskEvent2.parameters = {
       someValue: 'valueSome'
@@ -577,7 +603,7 @@ class TasksWorkerSpec {
       'state': 'enqueue',
       'topic': 'data',
       'nodeId': 'worker',
-      'name': [
+      'taskSpec': [
         'simple_task_with_log'
       ],
       'targetIds': [

@@ -1,15 +1,17 @@
-import {ITask} from "../../../../src";
-import {Outgoing} from "../../../../src/libs/tasks/decorators/Outgoing";
+import {Incoming, ITask} from '../../../../src';
 
 export class SimpleWorkerTask implements ITask {
-  name: string = 'simple_worker_task';
+  name = 'simple_worker_task';
+
+  @Incoming({optional: true})
+  data: string;
 
 
   async exec() {
     await new Promise((resolve, reject) => {
       setTimeout(() => {
         resolve();
-      }, 100)
+      }, 100);
     });
     return 'test';
   }

@@ -1,4 +1,4 @@
-import * as _ from "lodash";
+import * as _ from 'lodash';
 /**
  *
  * Define and control schedules
@@ -33,9 +33,9 @@ import * as _ from "lodash";
  *        ...
  *
  */
-import {Schedule} from "./Schedule";
-import {IScheduleFactory} from "./IScheduleFactory";
-import {IScheduleDef} from "./IScheduleDef";
+import {Schedule} from './Schedule';
+import {IScheduleFactory} from './IScheduleFactory';
+import {IScheduleDef} from './IScheduleDef';
 
 
 export class Scheduler {
@@ -49,7 +49,7 @@ export class Scheduler {
 
 
   async prepare(factories: IScheduleFactory[]) {
-    for (let f of factories) {
+    for (const f of factories) {
       if (await f.isAvailable()) {
         this.factories.push(f);
       }
@@ -58,14 +58,14 @@ export class Scheduler {
 
 
   async register(schedule: IScheduleDef) {
-    const exists = _.find(this.schedules, s => s.name == schedule.name);
+    const exists = _.find(this.schedules, s => s.name === schedule.name);
     if (exists) {
-      throw new Error('schedule with name ' + schedule.name + ' already exists')
+      throw new Error('schedule with name ' + schedule.name + ' already exists');
     }
 
-    let s = new Schedule(schedule);
+    const s = new Schedule(schedule);
     this.schedules.push(s);
-    for (let f of this.factories) {
+    for (const f of this.factories) {
       if (await f.detect(schedule)) {
         await f.attach(s);
       }
@@ -84,6 +84,6 @@ export class Scheduler {
 
 
   async shutdown() {
-    await Promise.all(this.schedules.map(async x => x.shutdown()))
+    await Promise.all(this.schedules.map(async x => x.shutdown()));
   }
 }

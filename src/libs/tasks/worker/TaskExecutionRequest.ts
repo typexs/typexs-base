@@ -9,6 +9,8 @@ import {ITaskExecutionRequestOptions} from './ITaskExecutionRequestOptions';
 import {Tasks} from '../Tasks';
 import {TaskRef} from '../TaskRef';
 import {Log} from '../../logging/Log';
+import {TASK_RUNNER_SPEC} from '../Constants';
+import {TasksHelper} from '../TasksHelper';
 
 
 export class TaskExecutionRequest extends EventEmitter {
@@ -39,7 +41,7 @@ export class TaskExecutionRequest extends EventEmitter {
   }
 
 
-  async run(taskNames: string[],
+  async run(taskSpec: TASK_RUNNER_SPEC[],
             parameters: any = {},
             options: ITaskExecutionRequestOptions = {targetIds: [], skipTargetCheck: false}): Promise<TaskEvent[]> {
 
@@ -53,7 +55,7 @@ export class TaskExecutionRequest extends EventEmitter {
 
 
       const possibleTargetIds: string[][] = [workerIds];
-      const tasks: TaskRef[] = this.tasks.getTasks(taskNames);
+      const tasks: TaskRef[] = this.tasks.getTasks(TasksHelper.getTaskNames(taskSpec));
       for (const taskRef of tasks) {
         possibleTargetIds.push(taskRef.nodeIds);
       }
@@ -66,7 +68,7 @@ export class TaskExecutionRequest extends EventEmitter {
       }
 
       if (this.targetIds.length === 0) {
-        throw new Error('not target intersection found for tasks: ' + taskNames.join(', '));
+        throw new Error('not target intersection found for tasks: ' + taskSpec.join(', '));
       }
 
     } else {
@@ -75,7 +77,7 @@ export class TaskExecutionRequest extends EventEmitter {
 
     this.event = new TaskEvent();
     this.event.nodeId = this.system.node.nodeId;
-    this.event.name = taskNames;
+    this.event.taskSpec = taskSpec;
     this.event.targetIds = this.targetIds;
     for (const k of _.keys(parameters)) {
       if (!/^_/.test(k)) {

@@ -7,7 +7,7 @@ import {ITaskRunnerOptions} from './ITaskRunnerOptions';
 import {Container} from 'typedi';
 import {TaskExecutionRequestFactory} from './worker/TaskExecutionRequestFactory';
 import {ITaskExec} from './ITaskExec';
-import {K_CLS_TASKS} from './Constants';
+import {K_CLS_TASKS, TASK_RUNNER_SPEC} from './Constants';
 import {RuntimeLoader} from '../../base/RuntimeLoader';
 import {Tasks} from './Tasks';
 import {Log} from '../logging/Log';
@@ -56,18 +56,36 @@ export class TasksHelper {
   }
 
 
-  static runner(tasks: Tasks, name: string | string[], options: ITaskRunnerOptions) {
+  static runner(tasks: Tasks, name: TASK_RUNNER_SPEC | TASK_RUNNER_SPEC[], options: ITaskRunnerOptions) {
     if (_.isArray(name)) {
       const names = [];
       for (let i = 0; i < name.length; i++) {
-        if (!tasks.contains(name[i])) {
-          throw new Error('task ' + name[i] + ' not exists');
+        const def = name[i];
+        let taskName = null;
+        if (_.isString(def)) {
+          taskName = def;
+        } else if (def.name) {
+          taskName = def.name;
+        } else {
+          throw new Error('unknown def');
         }
-        names.push(name[i]);
+        if (!tasks.contains(taskName)) {
+          throw new Error('task ' + taskName + ' not exists');
+        }
+        names.push(def);
       }
       return new TaskRunner(tasks, names, options);
     } else {
-      if (tasks.contains(name)) {
+      let taskName = null;
+      if (_.isString(name)) {
+        taskName = name;
+      } else if (name.name) {
+        taskName = name.name;
+      } else {
+        throw new Error('unknown def');
+      }
+
+      if (tasks.contains(taskName)) {
         return new TaskRunner(tasks, [name], options);
       }
     }
@@ -80,9 +98,14 @@ export class TasksHelper {
     return PlatformUtils.join(logdir, 'taskmonitor-' + runnerId + '-' + nodeId + '.log');
   }
 
+  static getTaskNames(taskSpec: TASK_RUNNER_SPEC[]) {
+    return taskSpec.map(x => _.isString(x) ? x : x.name);
+  }
 
-  static async exec(taskNames: string[], argv: ITaskExec) {
+
+  static async exec(taskSpec: TASK_RUNNER_SPEC[], argv: ITaskExec) {
     // check nodes for tasks
+    const taskNames = this.getTaskNames(taskSpec);
     const tasksReg: Tasks = Container.get(Tasks.NAME);
     const tasks = tasksReg.getTasks(taskNames);
     const targetId = _.get(argv, 'targetId', null);
@@ -108,7 +131,7 @@ export class TasksHelper {
 
       Log.debug('task command: before request fire');
       const execReq = Container.get(TaskExecutionRequestFactory).createRequest();
-      const results = await execReq.run(taskNames, argv, {targetIds: targetId ? [targetId] : [], skipTargetCheck: skipTargetCheck});
+      const results = await execReq.run(taskSpec, argv, {targetIds: targetId ? [targetId] : [], skipTargetCheck: skipTargetCheck});
       Log.debug('task command: event enqueue results', results);
       return results;
       // } else {
@@ -132,12 +155,12 @@ export class TasksHelper {
         });
 
         // validate arguments
-        const props = TasksHelper.getRequiredIncomings(taskNames.map(t => tasksReg.get(t)));
+        const props = TasksHelper.getRequiredIncomings(taskSpec.map(x => _.isString(x) ? x : x.name).map(t => tasksReg.get(t)));
         if (props.length > 0) {
           for (const p of props) {
             if (!_.has(parameters, p.storingName) && !_.has(parameters, p.name)) {
               if (p.isOptional()) {
-                Log.warn('task command: optional parameter "' + p.name + '" for ' + taskNames.join(', ') + ' not found');
+                Log.warn('task command: optional parameter "' + p.name + '" for ' + taskSpec.join(', ') + ' not found');
               } else {
                 throw new Error('The required value is not passed');
               }
@@ -145,7 +168,7 @@ export class TasksHelper {
           }
         }
 
-        const runner = TasksHelper.runner(tasksReg, taskNames, options);
+        const runner = TasksHelper.runner(tasksReg, taskSpec, options);
         for (const p in parameters) {
           if (parameters.hasOwnProperty(p)) {
             await runner.setIncoming(p, parameters[p]);
@@ -158,7 +181,7 @@ export class TasksHelper {
           Log.error(err);
         }
       } else {
-        Log.error('There are no tasks: ' + taskNames.join(', '));
+        Log.error('There are no tasks: ' + taskSpec.join(', '));
       }
     }
     return null;

@@ -1,5 +1,6 @@
 import {TaskEvent} from './TaskEvent';
 import {IQueueWorkload} from '../../queue/IQueueWorkload';
+import {TASK_RUNNER_SPEC} from '../Constants';
 
 export interface ITaskWorkload extends IQueueWorkload {
 
@@ -11,7 +12,7 @@ export interface ITaskWorkload extends IQueueWorkload {
   /**
    * Names of the taskRef's to run
    */
-  names: string[];
+  names: TASK_RUNNER_SPEC[];
 
   /**
    * Arguments for task execution

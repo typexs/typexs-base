@@ -4,6 +4,7 @@ import {Tasks} from './Tasks';
 import {TaskRun} from './TaskRun';
 import {Log} from '../logging/Log';
 import {
+  TASK_RUNNER_SPEC,
   TASK_STATES,
   TASKRUN_STATE_DONE,
   TASKRUN_STATE_FINISH_PROMISE,
@@ -85,7 +86,7 @@ export class TaskRunner extends EventEmitter {
   readStream: NodeJS.ReadableStream;
 
 
-  constructor(registry: Tasks, names: string[], options: ITaskRunnerOptions = null) {
+  constructor(registry: Tasks, names: TASK_RUNNER_SPEC[], options: ITaskRunnerOptions = null) {
     super();
 
     this.$options = options || <any>{};
@@ -205,10 +206,10 @@ export class TaskRunner extends EventEmitter {
   }
 
 
-  resolveDeps(task_names: string[], parent?: TaskRun, variant?: 'subs' | 'deps') {
+  resolveDeps(task_names: TASK_RUNNER_SPEC[], parent?: TaskRun, variant?: 'subs' | 'deps') {
     for (let i = 0; i < task_names.length; i++) {
       const name = task_names[i];
-      const taskRun = this.createTaskRun(name);
+      const taskRun = _.isString(name) ? this.createTaskRun(name) : this.createTaskRun(name.name, name.incomings);
 
       if (parent) {
         if (variant === 'deps') {

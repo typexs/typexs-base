@@ -63,14 +63,14 @@ export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker 
     event.topic = 'data';
 
     let parameters: any = null;
-    let taskNames = _.isArray(event.name) ? event.name : [event.name];
+    let taskNames = _.isArray(event.taskSpec) ? event.taskSpec : [event.taskSpec];
 
     // filter not allowed tasks
-    taskNames = taskNames.filter(t => _.isString(t) && this.tasks.access(t));
+    taskNames = taskNames.filter(t => (_.isString(t) && this.tasks.access(t)) || (!_.isString(t) && this.tasks.access(t.name)));
     if (!_.isEmpty(taskNames)) {
 
       // validate arguments
-      const props = TasksHelper.getRequiredIncomings(taskNames.map(t => this.tasks.get(t)));
+      const props = TasksHelper.getRequiredIncomings(TasksHelper.getTaskNames(taskNames).map(t => this.tasks.get(t)));
       if (props.length > 0) {
         parameters = event.parameters;
         for (const p of props) {
@@ -122,11 +122,14 @@ export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker 
     const e = workLoad.event;
     let results: ITaskRunnerResult = null;
 
-    const runner = new TaskRunner(this.tasks, workLoad.names, {
-      id: e.id,
-      nodeId: e.nodeId,
-      targetIds: e.targetIds
-    });
+    const runner = new TaskRunner(
+      this.tasks,
+      workLoad.names,
+      {
+        id: e.id,
+        nodeId: e.nodeId,
+        targetIds: e.targetIds
+      });
 
     runner.getReadStream().on('data', (x: any) => {
       e.topic = 'log';

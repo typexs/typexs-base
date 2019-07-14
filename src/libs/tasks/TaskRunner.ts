@@ -298,7 +298,7 @@ export class TaskRunner extends EventEmitter {
   }
 
 
-  async taskRun(taskRun: TaskRun) {
+  taskRun(taskRun: TaskRun) {
     const self = this;
     const nr = taskRun.nr; // taskRef().name;
 
@@ -333,7 +333,7 @@ export class TaskRunner extends EventEmitter {
       }
     });
 
-    await taskRun.start(doneCallback, incoming);
+    taskRun.start(doneCallback, incoming);
     self.emit(TASKRUN_STATE_NEXT);
   }
 

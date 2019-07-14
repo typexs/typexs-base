@@ -3,6 +3,11 @@
  */
 export interface ITaskExec {
   /**
+   * skip throw error when required parameter found
+   */
+  skipRequiredThrow?: boolean;
+
+  /**
    * skip checking if target exists in network
    */
   skipTargetCheck: boolean;

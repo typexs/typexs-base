@@ -162,7 +162,12 @@ export class TasksHelper {
               if (p.isOptional()) {
                 Log.warn('task command: optional parameter "' + p.name + '" for ' + taskSpec.join(', ') + ' not found');
               } else {
-                throw new Error('The required value is not passed');
+                // TODO parameter maybe passed by incomings?
+                if (_.has(argv, 'skipRequiredThrow') && argv.skipRequiredThrow) {
+                  Log.warn('task command: required parameter "' + p.name + '" for ' + taskSpec.join(', ') + ' not found.');
+                } else {
+                  throw new Error('The required value is not passed');
+                }
               }
             }
           }

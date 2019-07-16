@@ -130,8 +130,11 @@ export class TaskMonitor implements IQueueProcessor<TaskEvent> {
   }
 
 
-  async finish() {
+  async finish(_await: boolean = true) {
     await EventBus.unregister(this);
+    if (_await) {
+      await this.queue.await();
+    }
     this.logger.remove();
     this.queue.removeAllListeners();
   }

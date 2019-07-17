@@ -2,16 +2,14 @@ version: '3'
 services:
 
 
-  mongodb:
-    container_name: typexs_base_dev_mongo
+  typexs_base_dev_mongo:
     image: mongo
     ports:
     - 127.0.0.1:27017:27017
     volumes:
     - ./local/mongodb:/data/db
 
-  redis:
-    container_name: typexs_base_dev_redis
+  typexs_base_dev_redis:
     image: redis
     ports:
       - 127.0.0.1:6379:6379

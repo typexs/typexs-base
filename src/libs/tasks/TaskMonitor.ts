@@ -125,7 +125,6 @@ export class TaskMonitor implements IQueueProcessor<TaskEvent> {
       occupied: this.queue.isOccupied(),
       running: this.queue.isPaused(),
     };
-
     return stats;
   }
 

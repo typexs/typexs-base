@@ -63,7 +63,6 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
       return;
     }
 
-    Log.debug('receive distributed find results: ', event);
     // check if response is mine
     if (this.queryEvent.queryId !== event.queryId) {
       return;

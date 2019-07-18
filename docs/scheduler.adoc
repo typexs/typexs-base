@@ -1,0 +1,90 @@
+## Scheduler
+
+
+### Configuration
+
+#### Default scheduler
+
+```yaml
+
+schedules:
+  - name: example_schedule_cron_01:
+    offset: '10m',
+    start: '10:00'
+    ...: {doSomething}
+
+```
+
+#### Cron scheduler
+
+```yaml
+
+schedules:
+  - name: example_schedule_cron_01:
+    cron: '*/1 * * * * *'
+    ...: {doSomething}
+
+```
+
+
+
+#### Task scheduling
+
+```yaml
+
+schedules:
+  - name: example_task_schedule_cron_01:
+    ...: {doSchedule}
+    task:
+      name: simple_task
+
+  - name: example_task_schedule_cron_02:
+    ...: {doSchedule}
+    task:
+      name:
+        - simple_task
+        - simple_task2
+      param1: test
+
+  - name: example_task_schedule_cron_02:
+    ...: {doSchedule}
+    task:
+      name:
+        - name: simple_task3
+          incomings:
+            taskParam: taskSpecificData
+      someParam: test
+
+```
+
+#### Event scheduling
+
+```yaml
+
+schedules:
+  - name: example_event_schedule:
+    ...: {doSchedule}
+    event:
+      name: some_event_to_fire
+
+
+```
+
+
+### API
+
+```typescript
+
+const scheduler = Container.get(Scheduler.NAME)
+scheduler.register({
+  name: 'schedule',
+  cron: '*/30 * * * *',
+  event: {
+    name: 'fire_me',
+    params: {
+      myParam: 'to do now',
+    }
+  }
+})
+
+```

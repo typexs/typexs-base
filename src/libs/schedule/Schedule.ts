@@ -1,5 +1,5 @@
-import {clearTimeout} from "timers";
-import {IScheduleDef} from "./IScheduleDef";
+import {clearTimeout} from 'timers';
+import {IScheduleDef} from './IScheduleDef';
 import Timer = NodeJS.Timer;
 
 
@@ -15,13 +15,13 @@ export class Schedule {
 
   next: Date = null;
 
-  enable: boolean = false;
+  enable = false;
 
   reschedule: Function;
 
   execute: Function;
 
-  lastResults:any;
+  lastResults: any;
 
   constructor(o: IScheduleDef) {
     this.options = o;
@@ -30,13 +30,13 @@ export class Schedule {
 
   doReschedule() {
     if (this.reschedule) {
-      this.reschedule.bind(this)()
+      this.reschedule.bind(this)();
     }
   }
 
   async runSchedule() {
     if (this.execute) {
-      this.lastResults = await this.execute.bind(this)()
+      this.lastResults = await this.execute.bind(this)();
     }
     clearTimeout(this.timer);
     this.doReschedule();

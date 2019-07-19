@@ -382,9 +382,12 @@ export class Bootstrap {
   }
 
 
-  async throwedUncaughtException(err: Error) {
+  throwedUncaughtException(err: Error) {
     Log.error('uncaughtException', err);
-    await this.shutdown();
+    if (Config.get('app.enableShutdownOnUncaughtException', false)) {
+      return this.shutdown();
+    }
+    return Promise.resolve();
   }
 
 

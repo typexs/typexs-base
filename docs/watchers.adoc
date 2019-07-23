@@ -1,0 +1,22 @@
+## Watchers
+
+
+### Configuration
+
+#### Default watchers
+
+```yaml
+
+watchers:
+  - name: example_watcher_01
+    type: file
+    path: /tmp/mypath
+    event: event_name
+    task:
+      names:
+      - task_name
+      params:
+        foo: bar
+        lorem: ipsum
+
+```

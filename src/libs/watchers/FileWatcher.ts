@@ -53,15 +53,21 @@ export class FileWatcher extends AbstractWatcher {
       persistent: true,
       recursive: this.recursive,
     }, async (type, filename) => {
-      await this.emitEvent({
-        type,
-        filename,
-      });
+      await Promise.all([
+        this.emitEvent({
+          path: this.path,
+          name: this.name,
+          type,
+          filename,
+        }),
 
-      await this.executeTasks({
-        type,
-        filename,
-      });
+        this.executeTasks({
+          path: this.path,
+          name: this.name,
+          type,
+          filename,
+        }),
+      ]);
     });
   }
 

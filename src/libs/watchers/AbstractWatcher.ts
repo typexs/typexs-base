@@ -95,7 +95,7 @@ export abstract class AbstractWatcher {
    * Execute tasks
    */
   protected async executeTasks(params: any) {
-    if (!_.isUndefined(this.taskNames)) {
+    if (_.isArray(this.taskNames) && !_.isEmpty(this.taskNames)) {
       await TasksHelper.exec(this.taskNames, {
         ...this.taskParams,
         $watcher: params,

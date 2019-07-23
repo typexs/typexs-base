@@ -105,6 +105,10 @@ export class TasksHelper {
 
   static async exec(taskSpec: TASK_RUNNER_SPEC[], argv: ITaskExec) {
     // check nodes for tasks
+    if (!_.isArray(taskSpec) || _.isEmpty(taskSpec)) {
+      throw new Error('no task definition found');
+    }
+
     const taskNames = this.getTaskNames(taskSpec);
     const tasksReg: Tasks = Container.get(Tasks.NAME);
     const tasks = tasksReg.getTasks(taskNames);

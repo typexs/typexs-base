@@ -83,12 +83,12 @@ export abstract class AbstractWatcher {
       return;
     }
 
-    await EventBus.post({
-      ...Reflect.construct(this.eventDef.clazz, []),
-      ...{
-        $watcher: params,
-      },
+    const instance = Reflect.construct(this.eventDef.clazz, []);
+    _.assign(instance, {
+      $watcher: params,
     });
+
+    return EventBus.postAndForget(instance);
   }
 
   /**

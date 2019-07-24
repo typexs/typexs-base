@@ -3,8 +3,8 @@ import {Schedule} from '../../libs/schedule/Schedule';
 import * as _ from 'lodash';
 import {IScheduleDef} from '../../libs/schedule/IScheduleDef';
 import {IScheduleFactory} from '../../libs/schedule/IScheduleFactory';
-import moment = require('moment');
 import {Log} from '../../libs/logging/Log';
+import moment = require('moment');
 
 export class DefaultScheduleFactory implements IScheduleFactory {
 
@@ -43,16 +43,16 @@ export class DefaultScheduleFactory implements IScheduleFactory {
       } else if (/^\d+(:\d{2})+$/.test(start.trim())) {
         const time = start.trim().split(':');
         const m = moment();
-        if (time.length == 2) {
-          m.hour(parseInt(time.shift()));
-          m.minute(parseInt(time.shift()));
+        if (time.length === 2) {
+          m.hour(parseInt(time.shift(), 0));
+          m.minute(parseInt(time.shift(), 0));
           m.seconds(0);
           m.milliseconds(0);
           startDate = m.toDate();
-        } else if (time.length == 3) {
-          m.hours(parseInt(time.shift()));
-          m.minutes(parseInt(time.shift()));
-          m.seconds(parseInt(time.shift()));
+        } else if (time.length === 3) {
+          m.hours(parseInt(time.shift(), 0));
+          m.minutes(parseInt(time.shift(), 0));
+          m.seconds(parseInt(time.shift(), 0));
           m.milliseconds(0);
           startDate = m.toDate();
         }
@@ -69,7 +69,7 @@ export class DefaultScheduleFactory implements IScheduleFactory {
       if (_.isNumber(offset)) {
         offsetN = offset;
       } else if (/^\d+\w+$/.test(offset)) {
-        offsetN = parseInt(offset.substr(0, offset.length - 1));
+        offsetN = parseInt(offset.substr(0, offset.length - 1), 0);
         unit = offset.replace(offsetN + '', '');
       }
 

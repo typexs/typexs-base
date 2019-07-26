@@ -1,7 +1,10 @@
 /**
  * https://gist.github.com/Gericop/e33be1f201cf242197d9c4d0a1fa7335
  */
-export class Semaphore {
+import {EventEmitter} from 'events';
+
+export class Semaphore extends EventEmitter {
+
 
   /**
    * Count resource usage
@@ -16,6 +19,7 @@ export class Semaphore {
   private readonly max: number;
 
   constructor(max: number) {
+    super();
     this.max = max;
   }
 
@@ -52,6 +56,9 @@ export class Semaphore {
   release() {
     this.counter--;
     this.take();
+    if (this.counter === 0) {
+      this.emit('empty');
+    }
   }
 
   /**
@@ -64,6 +71,7 @@ export class Semaphore {
     }
     this.counter = 0;
     this.waiting = [];
+    this.removeAllListeners();
     return unresolved;
   }
 
@@ -74,4 +82,17 @@ export class Semaphore {
     return this.counter > 0;
   }
 
+
+  /**
+   * Wait till semaphore is fully released
+   */
+  await() {
+    if (this.counter === 0) {
+      return Promise.resolve();
+    } else {
+      return new Promise(resolve => {
+        this.once('empty', resolve);
+      });
+    }
+  }
 }

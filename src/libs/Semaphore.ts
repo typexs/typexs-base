@@ -46,6 +46,7 @@ export class Semaphore {
     }
   }
 
+
   /**
    * Release semaphore and free resource
    */
@@ -70,5 +71,8 @@ export class Semaphore {
     return unresolved;
   }
 
+  hasWaiting() {
+    return this.counter > 0;
+  }
 
 }

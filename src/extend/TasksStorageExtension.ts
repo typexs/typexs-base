@@ -1,11 +1,12 @@
-import {Inject} from 'typedi';
+import {Container, Inject} from 'typedi';
+import * as _ from 'lodash';
 import {UseAPI} from '../decorators/UseAPI';
 import {TasksApi} from '../api/Tasks.api';
 import {ITasksApi} from '../api/ITasksApi';
 import {TaskRunner} from '../libs/tasks/TaskRunner';
 import {TaskRun} from '../libs/tasks/TaskRun';
-import {TasksStorageHelper} from '../libs/tasks/helper/TasksStorageHelper';
 import {C_STORAGE_DEFAULT, Cache, StorageRef} from '..';
+import {TaskMonitorWorker} from '../workers/TaskMonitorWorker';
 
 
 @UseAPI(TasksApi)
@@ -17,6 +18,9 @@ export class TasksStorageExtension implements ITasksApi {
 
   @Inject(C_STORAGE_DEFAULT)
   storageRef: StorageRef;
+
+  private worker: TaskMonitorWorker;
+
 
   async onBefore(runner: TaskRunner) {
     await this._onTaskRun(runner);
@@ -44,18 +48,38 @@ export class TasksStorageExtension implements ITasksApi {
   }
 
 
+  getWorker(): TaskMonitorWorker {
+    if (this.worker) {
+      if (_.isString(this.worker)) {
+        return null;
+      }
+      return this.worker;
+    }
+
+    try {
+      this.worker = Container.get(TaskMonitorWorker);
+    } catch (e) {
+      this.worker = e.message;
+    }
+    return this.getWorker();
+  }
+
+
   async _onTaskRun(runner: TaskRun | TaskRunner) {
     if (this.storageRef) {
-      let _runner: TaskRunner;
-      if (runner instanceof TaskRun) {
-        _runner = runner.getRunner();
-      } else {
-        _runner = runner;
-      }
-      if (_runner.getOption('local', false)) {
-        // only local tasks must be saved
-        const results = _runner.collectStats();
-        await TasksStorageHelper.save(results, this.storageRef, this.cache);
+      const worker = this.getWorker();
+      if (worker) {
+        let _runner: TaskRunner;
+        if (runner instanceof TaskRun) {
+          _runner = runner.getRunner();
+        } else {
+          _runner = runner;
+        }
+        if (_runner.getOption('local', false)) {
+          // only local tasks must be saved
+          const results = _runner.collectStats();
+          worker.onTaskResults(results);
+        }
       }
     }
   }

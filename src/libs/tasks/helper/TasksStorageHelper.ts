@@ -4,13 +4,25 @@ import {ITaskRunResult} from '../ITaskRunResult';
 import {StorageRef} from '../../storage/StorageRef';
 import {TaskLog} from '../../../entities/TaskLog';
 import {Cache} from '../../cache/Cache';
+import {Semaphore} from '../../Semaphore';
+import {EventEmitter} from 'events';
 
 
 export class TasksStorageHelper {
 
+  // static emitter: EventEmitter = new EventEmitter();
+
+  static semaphores: { [k: string]: Semaphore } = {};
+
   static async save(taskRunnerResults: ITaskRunnerResult,
                     storageRef: StorageRef,
                     cache: Cache = null) {
+
+    if (!this.semaphores[taskRunnerResults.id]) {
+      this.semaphores[taskRunnerResults.id] = new Semaphore(1);
+    }
+    this.semaphores[taskRunnerResults.id].acquire();
+
 
     const logs: TaskLog[] = await storageRef
       .getController()
@@ -73,7 +85,24 @@ export class TasksStorageHelper {
       await storageRef.getController().remove(toremove);
     }
 
+    this.semaphores[taskRunnerResults.id].release();
+
+    if (!this.semaphores[taskRunnerResults.id].hasWaiting()) {
+      // cleanup
+      this.semaphores[taskRunnerResults.id].purge();
+      delete this.semaphores[taskRunnerResults.id];
+      // if (_.keys(this.semaphores).length === 0) {
+      //   this.emitter.emit('done');
+      // }
+
+    }
   }
+  //
+  // static await() {
+  //   return new Promise(resolve => {
+  //     this.emitter.once('done', resolve);
+  //   });
+  // }
 
 
 }

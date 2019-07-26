@@ -1,14 +1,14 @@
-import {suite, test, timeout} from "mocha-typescript";
-import {expect} from "chai";
-import * as _ from "lodash";
-import {SpawnHandle} from "../SpawnHandle";
-import {TestHelper} from "../TestHelper";
-import {TEST_STORAGE_OPTIONS} from "../config";
-import {IEventBusConfiguration} from "commons-eventbus";
-import { DistributedStorageEntityController, SystemNodeInfo, XS_P_$COUNT} from "../../../src";
-import {Bootstrap} from "../../../src/Bootstrap";
-import {Container} from "typedi";
-import {Config} from "commons-config";
+import {suite, test, timeout} from 'mocha-typescript';
+import {expect} from 'chai';
+import * as _ from 'lodash';
+import {SpawnHandle} from '../SpawnHandle';
+import {TestHelper} from '../TestHelper';
+import {TEST_STORAGE_OPTIONS} from '../config';
+import {IEventBusConfiguration} from 'commons-eventbus';
+import { DistributedStorageEntityController, SystemNodeInfo, XS_P_$COUNT} from '../../../src';
+import {Bootstrap} from '../../../src/Bootstrap';
+import {Container} from 'typedi';
+import {Config} from 'commons-config';
 
 const LOG_EVENT = TestHelper.logEnable(false);
 
@@ -38,7 +38,7 @@ class Distributed_storage_controllerSpec {
 
 
   static async before() {
-    let settings = _.clone(settingsTemplate);
+    const settings = _.clone(settingsTemplate);
     Bootstrap.reset();
     Container.reset();
     Config.clear();
@@ -67,13 +67,13 @@ class Distributed_storage_controllerSpec {
   @test
   async 'query all'() {
 
-    let p = SpawnHandle.do(__dirname + '/fake_app/node.ts').start(LOG_EVENT);
+    const p = SpawnHandle.do(__dirname + '/fake_app/node.ts').start(LOG_EVENT);
     await p.started;
     await TestHelper.wait(50);
 
 
-    let controller = Container.get(DistributedStorageEntityController);
-    let res = await controller.find(SystemNodeInfo);
+    const controller = Container.get(DistributedStorageEntityController);
+    const res = await controller.find(SystemNodeInfo);
 
     p.shutdown();
 
@@ -88,12 +88,12 @@ class Distributed_storage_controllerSpec {
 
   @test
   async 'query with conditions'() {
-    let p = SpawnHandle.do(__dirname + '/fake_app/node.ts').start(LOG_EVENT);
+    const p = SpawnHandle.do(__dirname + '/fake_app/node.ts').start(LOG_EVENT);
     await p.started;
     await TestHelper.wait(50);
 
-    let controller = Container.get(DistributedStorageEntityController);
-    let res = await controller.find(SystemNodeInfo,{nodeId:'server'});
+    const controller = Container.get(DistributedStorageEntityController);
+    const res = await controller.find(SystemNodeInfo, {nodeId: 'server'});
 
     p.shutdown();
     await p.done;

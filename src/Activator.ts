@@ -39,9 +39,6 @@ export class Activator implements IActivator {
     const scheduler = Container.get(Scheduler);
     Container.set(Scheduler.NAME, scheduler);
 
-    const lockFactory = new LockFactory();
-    Container.set(LockFactory.NAME, lockFactory);
-
 
     const workers = new Workers();
     cfg = Config.get(C_WORKERS, null);

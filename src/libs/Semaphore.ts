@@ -86,12 +86,20 @@ export class Semaphore extends EventEmitter {
   /**
    * Wait till semaphore is fully released
    */
-  await() {
+  await(timeout = 10000) {
     if (this.counter === 0) {
       return Promise.resolve();
     } else {
-      return new Promise(resolve => {
-        this.once('empty', resolve);
+      return new Promise((resolve, reject) => {
+        const fn = () => {
+          clearTimeout(timer);
+          resolve();
+        };
+        this.once('empty', fn);
+        const timer = setTimeout(() => {
+          this.removeListener('empty', fn);
+          reject(new Error('timeout waiting for free semaphore'));
+        }, timeout);
       });
     }
   }

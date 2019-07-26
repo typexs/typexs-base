@@ -36,10 +36,6 @@ export class Startup implements IBootstrap, IShutdown {
   @Inject(Workers.NAME)
   workers: Workers;
 
-  @Inject(LockFactory.NAME)
-  lockFactory: LockFactory;
-
-
   @Inject(WatcherRegistry.NAME)
   watcherRegistry: WatcherRegistry;
 
@@ -116,7 +112,7 @@ export class Startup implements IBootstrap, IShutdown {
     this.tasks.reset();
     await this.workers.shutdown();
     await this.watcherRegistry.stopAll();
-    this.lockFactory.shutdown();
+    LockFactory.$().shutdown(10000);
   }
 
 }

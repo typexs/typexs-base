@@ -15,13 +15,9 @@ export class TasksStorageHelper {
 
   static semaphores: { [k: string]: Semaphore } = {};
 
-  static lockFactory: LockFactory;
 
   static getLockFactory() {
-    if (!this.lockFactory) {
-      this.lockFactory = Container.get(LockFactory.NAME);
-    }
-    return this.lockFactory;
+    return LockFactory.$();
   }
 
 

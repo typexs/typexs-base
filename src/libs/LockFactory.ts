@@ -7,7 +7,16 @@ export class LockFactory extends EventEmitter {
 
   static NAME: string = LockFactory.name;
 
+  static __self__: LockFactory;
+
   private semaphores: Semaphore[] = [];
+
+  static $() {
+    if (!this.__self__) {
+      this.__self__ = new LockFactory();
+    }
+    return this.__self__;
+  }
 
   constructor() {
     super();
@@ -28,17 +37,20 @@ export class LockFactory extends EventEmitter {
   }
 
 
-  await() {
+  await(): Promise<any> {
     if (_.isEmpty(this.semaphores)) {
       return Promise.resolve();
     } else {
       return new Promise(resolve => {
-        this.once('empty', resolve);
+        this.once('empty', () => {
+          resolve();
+        });
       });
     }
   }
 
-  shutdown() {
+  async shutdown(timeout = 10000) {
+    await Promise.all(this.semaphores.map(x => <Promise<any>>x.await(timeout)));
     for (const s of this.semaphores.reverse()) {
       try {
         s.purge();

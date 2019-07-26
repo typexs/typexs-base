@@ -128,7 +128,8 @@ export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker 
       {
         id: e.id,
         nodeId: e.nodeId,
-        targetIds: e.targetIds
+        targetIds: e.targetIds,
+        local: false
       });
 
     runner.getReadStream().on('data', (x: any) => {

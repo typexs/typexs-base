@@ -158,6 +158,14 @@ export class TaskRunner extends EventEmitter {
     this.state = 'started';
   }
 
+  getOption(key: string, defaultValue?: any) {
+    return _.get(this.$options, key, defaultValue);
+  }
+
+  getOptions() {
+    return this.$options;
+  }
+
 
   taskInc() {
     return this.taskNrs++;

@@ -113,11 +113,10 @@ export class Startup implements IBootstrap, IShutdown {
       await this.system.unregister();
     }
     await EventBus.$().shutdown();
-    this.lockFactory.shutdown();
-    // await (<TaskMonitor>Container.get(TaskMonitor.NAME)).finish();
     this.tasks.reset();
     await this.workers.shutdown();
     await this.watcherRegistry.stopAll();
+    this.lockFactory.shutdown();
   }
 
 }

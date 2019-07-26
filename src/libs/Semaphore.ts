@@ -46,7 +46,6 @@ export class Semaphore {
     }
   }
 
-
   /**
    * Release semaphore and free resource
    */
@@ -60,18 +59,18 @@ export class Semaphore {
    */
   purge() {
     const unresolved = this.waiting.length;
-
     for (let i = 0; i < unresolved; i++) {
       this.waiting[i].err('Task has been purged.');
     }
-
     this.counter = 0;
     this.waiting = [];
-
     return unresolved;
   }
 
-  hasWaiting() {
+  /**
+   * Has waiting entries
+   */
+  isReserved() {
     return this.counter > 0;
   }
 

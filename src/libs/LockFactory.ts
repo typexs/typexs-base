@@ -40,7 +40,10 @@ export class LockFactory extends EventEmitter {
 
   shutdown() {
     for (const s of this.semaphores.reverse()) {
-      s.purge();
+      try {
+        s.purge();
+      } catch (e) {
+      }
       this.remove(s);
     }
   }

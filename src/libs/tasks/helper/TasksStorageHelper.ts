@@ -101,7 +101,7 @@ export class TasksStorageHelper {
 
     semaphore.release();
 
-    if (!semaphore.hasWaiting()) {
+    if (!semaphore.isReserved()) {
       // cleanup
       semaphore.purge();
       this.getLockFactory().remove(semaphore);

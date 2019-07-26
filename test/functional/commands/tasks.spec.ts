@@ -9,7 +9,7 @@ import {TaskCommand} from '../../../src/commands/TaskCommand';
 import {TEST_STORAGE_OPTIONS} from '../config';
 import {Container} from 'typedi';
 import {C_STORAGE_DEFAULT, StorageRef, TaskLog} from '../../../src';
-import {TaskMonitorWorker} from '../../../src/workers/TaskMonitorWorker';
+import {LockFactory} from '../../../src/libs/LockFactory';
 
 
 const stdMocks = require('std-mocks');
@@ -27,15 +27,15 @@ class TasksSpec {
 
     const appdir = path.join(__dirname, 'fake_app');
     bootstrap = await Bootstrap.setConfigSources([{type: 'system'}]).configure({
-      // logging:{
-      //   level:'debug',enable:false,
-      //   transports:[{console:{}}],
-      //   loggers:[{name:'*',level:'debug'}]
+      // logging: {
+      //   level: 'debug', enable: true,
+      //   transports: [{console: {}}],
+      //   loggers: [{name: '*', level: 'debug'}]
       // },
       app: {path: appdir},
       storage: {default: TEST_STORAGE_OPTIONS},
       modules: {paths: [__dirname + '/../../..']},
-      workers: {access: [{name: 'TaskMonitorWorker', access: 'allow'}]}
+      // workers: {access: [{name: 'TaskMonitorWorker', access: 'allow'}]}
     });
     bootstrap.activateLogger();
     bootstrap.activateErrorHandling();
@@ -86,11 +86,13 @@ class TasksSpec {
     const results = stdMocks.flush();
     expect(results.stdout).to.have.length.gt(0);
     expect(_.find(results.stdout, x => /("|')name("|'):\s*("|')test("|')/.test(x) && /("|')progress("|'):\s*100/.test(x))).to.exist;
-
-    await (Container.get(TaskMonitorWorker) as TaskMonitorWorker).queue.await();
+    const lockFactory = (Container.get(LockFactory.NAME) as LockFactory);
+    await lockFactory.await();
     const ref: StorageRef = Container.get(C_STORAGE_DEFAULT);
     const res = await ref.getController().find(TaskLog);
     expect(res).to.have.length(1);
+    expect((<any>res[0]).state).to.eq('stopped');
+
   }
 
 }

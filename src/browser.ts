@@ -14,6 +14,7 @@ export * from './decorators/UseAPI';
 export * from './base/Invoker';
 
 export * from './libs/Constants';
+export * from './libs/Semaphore';
 export * from './libs/ITypexsOptions';
 
 export * from './libs/logging/ILoggerOptions';

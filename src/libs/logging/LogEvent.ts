@@ -1,15 +1,15 @@
-import * as _ from 'lodash'
+import * as _ from 'lodash';
 
-import * as moment from "moment";
-import {Log} from "./Log";
+import * as moment from 'moment';
+import {Log} from './Log';
 
 export class LogEvent {
 
   private level: 'INFO';
 
-  private _message: string = '';
+  private _message = '';
 
-  private prefix: string = '';
+  private prefix = '';
 
   private args: any[] = [];
 
@@ -18,21 +18,21 @@ export class LogEvent {
 
   constructor(opts: { level?: string, message?: string, args?: any[], time?: Date, [k: string]: any }) {
     if (opts.time) {
-      opts.time = new Date()
+      opts.time = new Date();
     }
     this.prefix = [Log.prefix, _.get(opts, 'prefix', '')]
       .filter(x => !_.isEmpty(x)).join('__');
     this._message = opts.message;
 
-    _.assign(this, opts)
+    _.assign(this, opts);
   }
 
 
   message(): string {
-    let _msgs: any[] = [];
+    const _msgs: any[] = [];
 
     if (!_.isEmpty(this._message)) {
-      _msgs.push(this._message)
+      _msgs.push(this._message);
     } else {
       // _msgs.push('')
     }
@@ -51,13 +51,13 @@ export class LogEvent {
       });
     }
 
-    return _msgs.join('\n')
+    return _msgs.join('\n');
   }
 
 
   fullOut(): string {
-    let msg = this.message();
-    return '[' + moment(this.time).format('YYYY.MM.DD HH:mm:ss.SSS') + '] ' + this.prefix + '' + this.level + ' ' + msg
+    const msg = this.message();
+    return '[' + moment(this.time).format('YYYY.MM.DD HH:mm:ss.SSS') + '] ' + this.prefix + '' + this.level + ' ' + msg;
   }
 
 }

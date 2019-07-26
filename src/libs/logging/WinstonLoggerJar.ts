@@ -75,6 +75,8 @@ export class WinstonLoggerJar implements ILoggerApi {
       this.options = options;
     }
 
+    this.enabled = _.get(options, 'enable', true);
+
     if (options.prefix) {
       this.prefix = options.prefix;
     }
@@ -135,6 +137,9 @@ export class WinstonLoggerJar implements ILoggerApi {
 
 
   log(level: string, ...msg: any[]): void {
+    if (!this.isEnabled()) {
+      return;
+    }
     if (msg[0] instanceof LogEvent) {
       this._logger.log(level, msg[0].message(), {event: msg[0]});
     } else {

@@ -1,7 +1,7 @@
-import {EventEmitter} from 'events'
+import {EventEmitter} from 'events';
 
 
-import {clearTimeout, setTimeout} from "timers";
+import {clearTimeout, setTimeout} from 'timers';
 import Timer = NodeJS.Timer;
 
 
@@ -9,12 +9,13 @@ export class Progress extends EventEmitter {
 
   options: any = {};
 
-  progressing: boolean = false;
-  active: number = 0;
+  progressing = false;
+  active = 0;
 
   timer: Timer = null;
-  done: number = 0;
-  enqueued: number = 0;
+  done = 0;
+
+  // enqueued = 0;
 
   constructor(options: any = {}) {
     super();
@@ -23,42 +24,43 @@ export class Progress extends EventEmitter {
   }
 
   waitTillDone() {
-    let self = this;
+    const self = this;
+    if (!self.progressing) {
+      return Promise.resolve(self.progressing);
+    }
     return new Promise((resolve, reject) => {
       if (!self.progressing) {
-        resolve(self.progressing)
+        resolve(self.progressing);
       } else {
         self.once('empty', function () {
-          resolve(self.progressing)
-        })
+          resolve(self.progressing);
+        });
       }
-    })
+    });
   }
 
   check(): Promise<any> {
     return new Promise((resolve, reject) => {
-      let timer = setTimeout(reject, 10000);
+      const timer = setTimeout(reject, 1000);
       this.once('empty', function () {
         clearTimeout(timer);
-        resolve()
-      })
-    })
+        resolve();
+      });
+    });
   }
 
   async startWhenReady(): Promise<boolean> {
-    let my = this.active;
+    const my = this.active;
     this.active++;
 
-    let self = this;
-    let siwtched = false;
-
+    const self = this;
     if (!self.progressing) {
-      self.progressing = siwtched = true;
+      self.progressing = true;
     }
 
     while (this.done < my) {
       try {
-        await this.check()
+        await this.check();
       } catch (err) {
         break;
       }
@@ -73,7 +75,7 @@ export class Progress extends EventEmitter {
     if (this.options.timeout > 0) {
       this.timer = setTimeout(() => {
         this.emit('empty');
-      }, this.options.timeout)
+      }, this.options.timeout);
 
     } else {
       this.emit('empty');

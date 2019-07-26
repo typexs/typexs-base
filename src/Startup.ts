@@ -16,6 +16,7 @@ import {Tasks} from './libs/tasks/Tasks';
 import {TasksHelper} from './libs/tasks/TasksHelper';
 import {WatcherRegistry} from './libs/watchers/WatcherRegistry';
 import {Workers} from './libs/worker/Workers';
+import {LockFactory} from './libs/LockFactory';
 
 
 export class Startup implements IBootstrap, IShutdown {
@@ -34,6 +35,10 @@ export class Startup implements IBootstrap, IShutdown {
 
   @Inject(Workers.NAME)
   workers: Workers;
+
+  @Inject(LockFactory.NAME)
+  lockFactory: LockFactory;
+
 
   @Inject(WatcherRegistry.NAME)
   watcherRegistry: WatcherRegistry;
@@ -108,6 +113,7 @@ export class Startup implements IBootstrap, IShutdown {
       await this.system.unregister();
     }
     await EventBus.$().shutdown();
+    this.lockFactory.shutdown();
     // await (<TaskMonitor>Container.get(TaskMonitor.NAME)).finish();
     this.tasks.reset();
     await this.workers.shutdown();

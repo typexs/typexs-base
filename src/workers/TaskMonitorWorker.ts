@@ -47,7 +47,7 @@ export class TaskMonitorWorker implements IQueueProcessor<TaskEvent>, IWorker {
   logger: ILoggerApi = Log.getLoggerFor(TaskMonitorWorker);
 
 
-  async prepare(options: IAsyncQueueOptions = {name: 'taskmonitorqueue', concurrent: 1}) {
+  async prepare(options: IAsyncQueueOptions = {name: 'taskmonitorqueue', concurrent: 40}) {
     if (this.queue) {
       // already prepared
       return;
@@ -68,17 +68,17 @@ export class TaskMonitorWorker implements IQueueProcessor<TaskEvent>, IWorker {
   onTaskEvent(event: TaskEvent) {
     this.queue.push(event);
   }
-
-  onTaskResults(results: ITaskRunnerResult) {
-    if (results) {
-      const event = new TaskEvent();
-      event.topic = 'data';
-      event.data = results;
-      this.queue.push(event);
-    } else {
-      this.logger.warn('taskmonitor: results are empty?');
-    }
-  }
+  //
+  // onTaskResults(results: ITaskRunnerResult) {
+  //   if (results) {
+  //     const event = new TaskEvent();
+  //     event.topic = 'data';
+  //     event.data = results;
+  //     this.queue.push(event);
+  //   } else {
+  //     this.logger.warn('taskmonitor: results are empty?');
+  //   }
+  // }
 
 
   async do(event: TaskEvent, queue?: AsyncWorkerQueue<any>): Promise<any> {

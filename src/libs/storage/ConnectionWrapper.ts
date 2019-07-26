@@ -39,11 +39,11 @@ export class ConnectionWrapper {
    *
    * @deprecated
    */
-  async persist<Entity>(o: Entity): Promise<any> {
+  persist<Entity>(o: Entity): Promise<any> {
     return this.manager.save(o);
   }
 
-  async save<Entity>(o: Entity): Promise<any> {
+  save<Entity>(o: Entity): Promise<any> {
     try {
       return this.manager.save(o);
     } catch (err) {

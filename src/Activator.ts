@@ -10,6 +10,7 @@ import {Tasks} from './libs/tasks/Tasks';
 import {WatcherRegistry} from './libs/watchers/WatcherRegistry';
 import {C_WORKERS} from './libs/worker/Constants';
 import {Workers} from './libs/worker/Workers';
+import {LockFactory} from './libs/LockFactory';
 
 export class Activator implements IActivator {
 
@@ -38,6 +39,8 @@ export class Activator implements IActivator {
     const scheduler = Container.get(Scheduler);
     Container.set(Scheduler.NAME, scheduler);
 
+    const lockFactory = new LockFactory();
+    Container.set(LockFactory.NAME, lockFactory);
 
 
     const workers = new Workers();

@@ -5,8 +5,9 @@ import {StorageRef} from '../../storage/StorageRef';
 import {TaskLog} from '../../../entities/TaskLog';
 import {Cache} from '../../cache/Cache';
 import {Semaphore} from '../../Semaphore';
-import {EventEmitter} from 'events';
-
+import {LockFactory} from '../../LockFactory';
+import {Container} from 'typedi';
+import {Log} from '../../..';
 
 export class TasksStorageHelper {
 
@@ -14,15 +15,28 @@ export class TasksStorageHelper {
 
   static semaphores: { [k: string]: Semaphore } = {};
 
+  static lockFactory: LockFactory;
+
+  static getLockFactory() {
+    if (!this.lockFactory) {
+      this.lockFactory = Container.get(LockFactory.NAME);
+    }
+    return this.lockFactory;
+  }
+
+
   static async save(taskRunnerResults: ITaskRunnerResult,
                     storageRef: StorageRef,
                     cache: Cache = null) {
 
+    let semaphore = null;
     if (!this.semaphores[taskRunnerResults.id]) {
-      this.semaphores[taskRunnerResults.id] = new Semaphore(1);
+      this.semaphores[taskRunnerResults.id] = this.getLockFactory().semaphore(1);
+      semaphore = this.semaphores[taskRunnerResults.id];
+    } else {
+      semaphore = this.semaphores[taskRunnerResults.id];
     }
-    this.semaphores[taskRunnerResults.id].acquire();
-
+    await semaphore.acquire();
 
     const logs: TaskLog[] = await storageRef
       .getController()
@@ -85,18 +99,16 @@ export class TasksStorageHelper {
       await storageRef.getController().remove(toremove);
     }
 
-    this.semaphores[taskRunnerResults.id].release();
+    semaphore.release();
 
-    if (!this.semaphores[taskRunnerResults.id].hasWaiting()) {
+    if (!semaphore.hasWaiting()) {
       // cleanup
-      this.semaphores[taskRunnerResults.id].purge();
+      semaphore.purge();
+      this.getLockFactory().remove(semaphore);
       delete this.semaphores[taskRunnerResults.id];
-      // if (_.keys(this.semaphores).length === 0) {
-      //   this.emitter.emit('done');
-      // }
-
     }
   }
+
   //
   // static await() {
   //   return new Promise(resolve => {

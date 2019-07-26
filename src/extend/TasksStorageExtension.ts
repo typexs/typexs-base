@@ -1,12 +1,11 @@
-import {Container, Inject} from 'typedi';
-import * as _ from 'lodash';
+import {Inject} from 'typedi';
 import {UseAPI} from '../decorators/UseAPI';
 import {TasksApi} from '../api/Tasks.api';
 import {ITasksApi} from '../api/ITasksApi';
 import {TaskRunner} from '../libs/tasks/TaskRunner';
 import {TaskRun} from '../libs/tasks/TaskRun';
-import {C_STORAGE_DEFAULT, Cache, StorageRef} from '..';
-import {TaskMonitorWorker} from '../workers/TaskMonitorWorker';
+import {C_STORAGE_DEFAULT, Cache, Log, StorageRef} from '..';
+import {TasksStorageHelper} from '../libs/tasks/helper/TasksStorageHelper';
 
 
 @UseAPI(TasksApi)
@@ -19,69 +18,48 @@ export class TasksStorageExtension implements ITasksApi {
   @Inject(C_STORAGE_DEFAULT)
   storageRef: StorageRef;
 
-  private worker: TaskMonitorWorker;
 
-
-  async onBefore(runner: TaskRunner) {
-    await this._onTaskRun(runner);
+  onBefore(runner: TaskRunner) {
+    this._onTaskRun(runner);
   }
 
-  async onStart(run: TaskRun) {
-    await this._onTaskRun(run);
+  onStart(run: TaskRun) {
+    this._onTaskRun(run);
   }
 
-  async onProgress(run: TaskRun) {
-    await this._onTaskRun(run);
+  onProgress(run: TaskRun) {
+    this._onTaskRun(run);
   }
 
-  async onStop(run: TaskRun) {
-    await this._onTaskRun(run);
-  }
-
-
-  async onAfter(runner: TaskRunner) {
-    await this._onTaskRun(runner);
-  }
-
-  async onError(runner: TaskRun | TaskRunner) {
-    await this._onTaskRun(runner);
+  onStop(run: TaskRun) {
+    this._onTaskRun(run);
   }
 
 
-  getWorker(): TaskMonitorWorker {
-    if (this.worker) {
-      if (_.isString(this.worker)) {
-        return null;
-      }
-      return this.worker;
-    }
+  onAfter(runner: TaskRunner) {
+    this._onTaskRun(runner);
+  }
 
-    try {
-      this.worker = Container.get(TaskMonitorWorker);
-    } catch (e) {
-      this.worker = e.message;
-    }
-    return this.getWorker();
+  onError(runner: TaskRun | TaskRunner) {
+    this._onTaskRun(runner);
   }
 
 
-  async _onTaskRun(runner: TaskRun | TaskRunner) {
+  _onTaskRun(runner: TaskRun | TaskRunner) {
     if (this.storageRef) {
-      const worker = this.getWorker();
-      if (worker) {
-        let _runner: TaskRunner;
-        if (runner instanceof TaskRun) {
-          _runner = runner.getRunner();
-        } else {
-          _runner = runner;
-        }
-        if (_runner.getOption('local', false)) {
-          // only local tasks must be saved
-          const results = _runner.collectStats();
-          worker.onTaskResults(results);
-        }
+      let _runner: TaskRunner;
+      if (runner instanceof TaskRun) {
+        _runner = runner.getRunner();
+      } else {
+        _runner = runner;
+      }
+      if (_runner.getOption('local', false)) {
+        // only local tasks must be saved
+        const results = _runner.collectStats();
+        return TasksStorageHelper.save(results, this.storageRef, this.cache);
       }
     }
+    return null;
   }
 
 }

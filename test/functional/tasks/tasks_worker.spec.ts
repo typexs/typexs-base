@@ -17,6 +17,7 @@ import {SpawnHandle} from '../SpawnHandle';
 import {TaskCommand} from '../../../src/commands/TaskCommand';
 import {SimpleTaskWithLog} from './tasks/SimpleTaskWithLog';
 import {TaskExecutionRequestFactory} from '../../../src/libs/tasks/worker/TaskExecutionRequestFactory';
+import {TaskMonitorWorker} from '../../../src/workers/TaskMonitorWorker';
 
 
 const LOG_EVENT = TestHelper.logEnable(false);
@@ -49,7 +50,8 @@ class TasksWorkerSpec {
         logging: {enable: LOG_EVENT, level: 'debug'},
         modules: {paths: [__dirname + '/../../..']},
         storage: {default: TEST_STORAGE_OPTIONS},
-        eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}}
+        eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}},
+        workers: {access: [{name: 'TaskMonitorWorker', access: 'allow'}]}
       });
     bootstrap.activateLogger();
     bootstrap.activateErrorHandling();
@@ -590,12 +592,15 @@ class TasksWorkerSpec {
     const results = await execReq.run([ref.name]);
     await TestHelper.waitFor(() => events.length >= 9);
 
+    await (Container.get(TaskMonitorWorker) as TaskMonitorWorker).queue.await();
     const storeRef: StorageRef = Container.get(C_STORAGE_DEFAULT);
     const logs: any[] = await storeRef.getController().find(TaskLog);
+
 
     await EventBus.unregister(l);
     // ---- finished
     await bootstrap.shutdown();
+
     expect(logs).to.have.length(1);
 
     expect(results).to.have.length(1);

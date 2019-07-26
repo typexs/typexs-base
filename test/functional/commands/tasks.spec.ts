@@ -9,6 +9,7 @@ import {TaskCommand} from '../../../src/commands/TaskCommand';
 import {TEST_STORAGE_OPTIONS} from '../config';
 import {Container} from 'typedi';
 import {C_STORAGE_DEFAULT, StorageRef, TaskLog} from '../../../src';
+import {TaskMonitorWorker} from '../../../src/workers/TaskMonitorWorker';
 
 
 const stdMocks = require('std-mocks');
@@ -34,7 +35,7 @@ class TasksSpec {
       app: {path: appdir},
       storage: {default: TEST_STORAGE_OPTIONS},
       modules: {paths: [__dirname + '/../../..']},
-     // workers: [{name: 'TaskMonitorWorker', access: 'allow'}]
+      workers: {access: [{name: 'TaskMonitorWorker', access: 'allow'}]}
     });
     bootstrap.activateLogger();
     bootstrap.activateErrorHandling();
@@ -86,6 +87,7 @@ class TasksSpec {
     expect(results.stdout).to.have.length.gt(0);
     expect(_.find(results.stdout, x => /("|')name("|'):\s*("|')test("|')/.test(x) && /("|')progress("|'):\s*100/.test(x))).to.exist;
 
+    await (Container.get(TaskMonitorWorker) as TaskMonitorWorker).queue.await();
     const ref: StorageRef = Container.get(C_STORAGE_DEFAULT);
     const res = await ref.getController().find(TaskLog);
     expect(res).to.have.length(1);

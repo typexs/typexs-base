@@ -4,7 +4,7 @@ import {IScheduleFactory} from '../../libs/schedule/IScheduleFactory';
 import {IScheduleDef} from '../../libs/schedule/IScheduleDef';
 import {TasksHelper} from '../../libs/tasks/TasksHelper';
 import {ITaskExec} from '../../libs/tasks/ITaskExec';
-import {TASK_RUNNER_SPEC} from '../..';
+import {TASK_RUNNER_SPEC} from '../../libs/tasks/Constants';
 
 export interface ITaskSchedule extends ITaskExec {
   name: string | string[];

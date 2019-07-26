@@ -12,7 +12,6 @@ import {Log} from './libs/logging/Log';
 import {IScheduleDef} from './libs/schedule/IScheduleDef';
 import {Scheduler} from './libs/schedule/Scheduler';
 import {System} from './libs/system/System';
-import {TaskMonitor} from './libs/tasks/TaskMonitor';
 import {Tasks} from './libs/tasks/Tasks';
 import {TasksHelper} from './libs/tasks/TasksHelper';
 import {WatcherRegistry} from './libs/watchers/WatcherRegistry';
@@ -81,7 +80,6 @@ export class Startup implements IBootstrap, IShutdown {
 
 
   async ready() {
-    await (<TaskMonitor>Container.get(TaskMonitor.NAME)).prepare();
     await this.workers.startup();
     if (System.isDistributionEnabled()) {
       await this.system.register();
@@ -110,7 +108,7 @@ export class Startup implements IBootstrap, IShutdown {
       await this.system.unregister();
     }
     await EventBus.$().shutdown();
-    await (<TaskMonitor>Container.get(TaskMonitor.NAME)).finish();
+    // await (<TaskMonitor>Container.get(TaskMonitor.NAME)).finish();
     this.tasks.reset();
     await this.workers.shutdown();
     await this.watcherRegistry.stopAll();

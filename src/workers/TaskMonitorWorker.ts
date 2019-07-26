@@ -1,28 +1,31 @@
-import {Bootstrap} from '../../Bootstrap';
 import {Inject} from 'typedi';
 import {EventBus, subscribe} from 'commons-eventbus';
-import {TaskEvent} from './worker/TaskEvent';
 import {Config} from 'commons-config';
 import * as fs from 'fs';
 import {PlatformUtils} from 'commons-base';
-import {ITaskRunnerResult} from './ITaskRunnerResult';
-import {TasksStorageHelper} from './helper/TasksStorageHelper';
-import {TasksHelper} from './TasksHelper';
-import {IWorkerStatisitic} from '../worker/IWorkerStatisitic';
-import {IQueueProcessor} from '../queue/IQueueProcessor';
-import {AsyncWorkerQueue} from '../queue/AsyncWorkerQueue';
-import {Cache} from '../cache/Cache';
-import {Tasks} from './Tasks';
-import {C_STORAGE_DEFAULT} from '../Constants';
-import {StorageRef} from '../storage/StorageRef';
-import {ILoggerApi} from '../logging/ILoggerApi';
-import {Log} from '../logging/Log';
-import {IAsyncQueueOptions} from '../queue/IAsyncQueueOptions';
 
-export class TaskMonitor implements IQueueProcessor<TaskEvent> {
+import {IQueueProcessor} from '../libs/queue/IQueueProcessor';
+import {Cache} from '../libs/cache/Cache';
+import {Tasks} from '../libs/tasks/Tasks';
+import {AsyncWorkerQueue} from '../libs/queue/AsyncWorkerQueue';
+import {ITaskRunnerResult} from '../libs/tasks/ITaskRunnerResult';
+import {TasksStorageHelper} from '../libs/tasks/helper/TasksStorageHelper';
+import {TasksHelper} from '../libs/tasks/TasksHelper';
+import {IWorkerStatisitic} from '../libs/worker/IWorkerStatisitic';
+import {TaskEvent} from '../libs/tasks/worker/TaskEvent';
+import {IWorker} from '../libs/worker/IWorker';
+import {C_STORAGE_DEFAULT} from '../libs/Constants';
+import {StorageRef} from '../libs/storage/StorageRef';
+import {ILoggerApi} from '../libs/logging/ILoggerApi';
+import {Log} from '../libs/logging/Log';
+import {IAsyncQueueOptions} from '../libs/queue/IAsyncQueueOptions';
+import {Bootstrap} from '../Bootstrap';
 
-  static NAME: string = TaskMonitor.name;
+export class TaskMonitorWorker implements IQueueProcessor<TaskEvent>, IWorker {
 
+  static NAME: string = TaskMonitorWorker.name;
+
+  name = TaskMonitorWorker.name;
 
   inc = 0;
 
@@ -41,7 +44,7 @@ export class TaskMonitor implements IQueueProcessor<TaskEvent> {
 
   logdir: string;
 
-  logger: ILoggerApi = Log.getLoggerFor(TaskMonitor);
+  logger: ILoggerApi = Log.getLoggerFor(TaskMonitorWorker);
 
 
   async prepare(options: IAsyncQueueOptions = {name: 'taskmonitorqueue', concurrent: 1}) {
@@ -137,4 +140,5 @@ export class TaskMonitor implements IQueueProcessor<TaskEvent> {
     this.logger.remove();
     this.queue.removeAllListeners();
   }
+
 }

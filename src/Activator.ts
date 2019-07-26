@@ -6,7 +6,6 @@ import {Bootstrap} from './Bootstrap';
 import {Cache} from './libs/cache/Cache';
 import {Scheduler} from './libs/schedule/Scheduler';
 import {C_TASKS} from './libs/tasks/Constants';
-import {TaskMonitor} from './libs/tasks/TaskMonitor';
 import {Tasks} from './libs/tasks/Tasks';
 import {WatcherRegistry} from './libs/watchers/WatcherRegistry';
 import {C_WORKERS} from './libs/worker/Constants';
@@ -40,8 +39,6 @@ export class Activator implements IActivator {
     Container.set(Scheduler.NAME, scheduler);
 
 
-    const taskMonitor = Container.get(TaskMonitor);
-    Container.set(TaskMonitor.NAME, taskMonitor);
 
     const workers = new Workers();
     cfg = Config.get(C_WORKERS, null);

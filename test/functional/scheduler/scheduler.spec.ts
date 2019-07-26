@@ -177,7 +177,7 @@ class SchedulerSpec {
 
     expect(schedule.name).to.eq('test01');
     expect(schedule.next).to.be.gt(now);
-    expect(schedule.next).to.be.lte(moment(now).add(5, 's').toDate());
+    expect(schedule.next).to.be.lte(moment(now).add(1, 'm').toDate());
 
     schedule = await scheduler.register({
       name: 'test02',

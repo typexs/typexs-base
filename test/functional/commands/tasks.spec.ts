@@ -86,8 +86,7 @@ class TasksSpec {
     const results = stdMocks.flush();
     expect(results.stdout).to.have.length.gt(0);
     expect(_.find(results.stdout, x => /("|')name("|'):\s*("|')test("|')/.test(x) && /("|')progress("|'):\s*100/.test(x))).to.exist;
-    const lockFactory = (Container.get(LockFactory.NAME) as LockFactory);
-    await lockFactory.await();
+    await LockFactory.$().await();
     const ref: StorageRef = Container.get(C_STORAGE_DEFAULT);
     const res = await ref.getController().find(TaskLog);
     expect(res).to.have.length(1);

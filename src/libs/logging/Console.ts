@@ -1,16 +1,16 @@
-import {Log} from "./Log";
+import {Log} from './Log';
 
 export class Console {
 
 
   static println(type: 'error' | 'log', ...msg: any[]) {
-    if(type === 'error'){
+    if (type === 'error') {
       console.error(...msg);
-    }else{
+    } else {
       console.log(...msg);
     }
 
-    //Log.info(msg);
+    // Log.info(msg);
   }
 
 

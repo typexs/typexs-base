@@ -6,6 +6,7 @@ import {BaseUtils} from '../../libs/utils/BaseUtils';
 import {InterpolationSupport} from 'commons-config';
 import {ILoggerApi} from './ILoggerApi';
 import {MatchUtils} from '../utils/MatchUtils';
+import {ConsoleTransportOptions} from 'winston/lib/winston/transports';
 
 
 const DEFAULT_OPTIONS: ILoggerOptions = {
@@ -15,8 +16,9 @@ const DEFAULT_OPTIONS: ILoggerOptions = {
 
   transports: [
     {
-      console: {
+      console: <ConsoleTransportOptions>{
         name: 'console',
+        // stderrLevels: [],
         timestamp: true,
         json: false
       }

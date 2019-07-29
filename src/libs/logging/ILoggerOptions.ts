@@ -1,4 +1,4 @@
-export const K_LOGGING = "logging";
+export const K_LOGGING = 'logging';
 
 
 export interface ILoggerTransport {
@@ -7,12 +7,12 @@ export interface ILoggerTransport {
 
 export interface ILoggerOptions {
 
-  enable: boolean
+  enable: boolean;
 
   /**
    * Log info prefix
    */
-  prefix?:string;
+  prefix?: string;
 
   /**
    * name for the logger or minimatch pattern for logger group
@@ -29,13 +29,13 @@ export interface ILoggerOptions {
    * define if necessary log extension are needed
    * like adding extra transport. It should be enough to add definitions to Activator.
    */
-  //requires?: string[];
+  // requires?: string[];
 
-  level?: string
+  level?: string;
 
   format?: any;
 
-  transports?: { [k: string]: ILoggerTransport }[]
+  transports?: { [k: string]: ILoggerTransport }[];
 
   loggers?: ILoggerOptions[];
 }

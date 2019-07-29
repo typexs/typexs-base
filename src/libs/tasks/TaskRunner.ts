@@ -97,13 +97,16 @@ export class TaskRunner extends EventEmitter {
     this.invoker = Container.get(Invoker.NAME);
 
     // id can be overwriten
-    this.id = _.get(options, 'id', CryptUtils.shorthash(names.join(';') + ';' + this.nr + Date.now()));
+    this.$start = new Date();
+
+    const dateStr = moment(this.$start).format('YYYYMMDD-HHmmssSSS');
+    this.id = _.get(options, 'id', dateStr + '-' + CryptUtils.shorthash(names.join(';') + Math.random()).substr(1));
 
     this.$registry = registry;
     this.$parallel = this.$options['parallel'] || 5;
     // this.$inital = names;
     this.$dry_mode = this.$options['dry_mode'] || false;
-    this.$start = new Date();
+
 
     this.todoNrs = [];
     this.runningNrs = [];
@@ -124,7 +127,7 @@ export class TaskRunner extends EventEmitter {
       taskId: this.id,
       taskNames: this.todoNrs.join('--')
     });
-    this.taskLogger.info('Execute tasks: ' + this.$tasks.map(t => t.taskRef().name).join(', '));
+    this.taskLogger.info('execute tasks: ' + this.$tasks.map(t => t.taskRef().name).join(', '));
 
     const sefl = this;
     this.readStream = new Stream.Readable({
@@ -256,7 +259,7 @@ export class TaskRunner extends EventEmitter {
 
 
   enqueue(taskRun: TaskRun) {
-    this.taskLogger.info('Enqueue task at runtime ' + taskRun.taskRef().name);
+    this.taskLogger.debug('enqueue task at runtime ' + taskRun.taskRef().name);
     this.todoNrs.push(taskRun.nr);
     this.next();
   }

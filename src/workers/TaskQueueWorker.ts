@@ -14,10 +14,10 @@ import {IWorker} from '../libs/worker/IWorker';
 import {IWorkerStatisitic} from '../libs/worker/IWorkerStatisitic';
 import {IQueueProcessor} from '../libs/queue/IQueueProcessor';
 import {AsyncWorkerQueue} from '../libs/queue/AsyncWorkerQueue';
-import {IAsyncQueueOptions} from '../libs/queue/IAsyncQueueOptions';
 import {ILoggerApi} from '../libs/logging/ILoggerApi';
 import {Tasks} from '../libs/tasks/Tasks';
 import {TaskRunner} from '../libs/tasks/TaskRunner';
+import {ITaskQueueWorkerOptions} from '../libs/tasks/worker/ITaskQueueWorkerOptions';
 
 
 export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker {
@@ -38,9 +38,14 @@ export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker 
   logger: ILoggerApi = Log.getLoggerFor(TaskQueueWorker);
 
 
-  async prepare(options: IAsyncQueueOptions = {name: 'taskworkerqueue'}) {
+  async prepare(options: ITaskQueueWorkerOptions = {name: 'taskworkerqueue'}) {
+    if (this.queue) {
+      // already prepared
+      return;
+    }
+
     this.nodeId = Bootstrap.getNodeId();
-    this.queue = new AsyncWorkerQueue<ITaskWorkload>(this, options);
+    this.queue = new AsyncWorkerQueue<ITaskWorkload>(this, {...options, logger: this.logger});
     await EventBus.register(this);
     this.logger.debug('Task worker: waiting for tasks ...');
   }

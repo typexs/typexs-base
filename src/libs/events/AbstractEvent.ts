@@ -13,7 +13,7 @@ export abstract class AbstractEvent {
   /**
    * Id of event itself
    */
-  id: string = CryptUtils.shorthash('event-' + (new Date()).getTime() + '' + (AbstractEvent.inc++));
+  id: string;
 
 
   /**
@@ -34,5 +34,10 @@ export abstract class AbstractEvent {
    * Id of responding system node
    */
   respId: string;
+
+
+  constructor() {
+    this.id = CryptUtils.shorthash('event-' + (new Date()).getTime() + '' + (AbstractEvent.inc++));
+  }
 
 }

@@ -4,6 +4,7 @@ import * as _ from 'lodash';
 import {AbstractEvent} from '../../events/AbstractEvent';
 import {IQueueWorkload} from '../../../libs/queue/IQueueWorkload';
 import {TASK_RUNNER_SPEC, TASK_STATES} from '../Constants';
+import * as moment from 'moment';
 
 /**
  * Id is the runner id
@@ -43,6 +44,12 @@ export class TaskEvent extends AbstractEvent implements IQueueWorkload {
 
   data: ITaskRunnerResult;
 
+
+  constructor() {
+    super();
+    const dateStr = moment(new Date()).format('YYYYMMDD-HHmmssSSS');
+    this.id = dateStr + '-' + this.id;
+  }
 
   addParameter(key: string, value: any) {
     if (!this.parameters) {

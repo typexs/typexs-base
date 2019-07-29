@@ -406,15 +406,15 @@ class TasksSpec {
     // let cNewLogger = content.stdout.shift();
     // expect(cNewLogger).to.contain('[DEBUG]   create new logger task-runner-');
     const cLogExec = content.stdout.shift();
-    expect(cLogExec).to.contain('[INFO]   Execute tasks: simple_task_with_runtime_log');
+    expect(cLogExec).to.contain('execute tasks: simple_task_with_runtime_log');
     let cLogExtern = content.stdout.shift();
-    expect(cLogExtern).to.contain('[INFO]   extern use ;)\n');
+    expect(cLogExtern).to.contain('extern use ;)\n');
     let cLogTaskInfo = content.stdout.shift();
-    expect(cLogTaskInfo).to.match(/:simple_task_with_runtime_log:\d+ \[INFO\]   doing something/);
+    expect(cLogTaskInfo).to.match(/\[INFO\].+:simple_task_with_runtime_log:\d+.+doing something/);
     let cLogTaskWarn = content.stdout.shift();
-    expect(cLogTaskWarn).to.match(/:simple_task_with_runtime_log:\d+ \[WARN\]   doing something wrong/);
+    expect(cLogTaskWarn).to.match(/\[WARN\].+:simple_task_with_runtime_log:\d+.+doing something wrong/);
     let cLogTaskError = content.stdout.shift();
-    expect(cLogTaskError).to.match(/:simple_task_with_runtime_log:\d+ \[ERROR\]  doing something wrong\nnewline/);
+    expect(cLogTaskError).to.match(/\[ERROR\].+:simple_task_with_runtime_log:\d+.+doing something wrong\nnewline/);
 
 
     expect(x).to.have.length(4);

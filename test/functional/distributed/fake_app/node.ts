@@ -1,10 +1,11 @@
-import {Bootstrap, ITypexsOptions} from "../../../../src";
-import {TEST_STORAGE_OPTIONS} from "../../config";
-import {IEventBusConfiguration} from "commons-eventbus";
-import {Config} from "commons-config";
+import {TEST_STORAGE_OPTIONS} from '../../config';
+import {IEventBusConfiguration} from 'commons-eventbus';
+import {Config} from 'commons-config';
+import {ITypexsOptions} from '../../../../src/libs/ITypexsOptions';
+import {Bootstrap} from '../../../../src/Bootstrap';
 
 (async function () {
-  const LOG_EVENT = true;//
+  const LOG_EVENT = true; //
   let bootstrap = Bootstrap
     .setConfigSources([{type: 'system'}])
     .configure(<ITypexsOptions & any>{
@@ -12,7 +13,7 @@ import {Config} from "commons-config";
       logging: {enable: LOG_EVENT, level: 'debug'},
       modules: {paths: [__dirname + '/../../../..']},
       storage: {default: TEST_STORAGE_OPTIONS},
-      //cache: {bins: {default: 'redis1'}, adapter: {redis1: {type: 'redis', host: '127.0.0.1', port: 6379}}},
+      // cache: {bins: {default: 'redis1'}, adapter: {redis1: {type: 'redis', host: '127.0.0.1', port: 6379}}},
       eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}},
       workers: {access: [{name: 'DistributedQueryWorker', access: 'allow'}]}
     });
@@ -23,7 +24,7 @@ import {Config} from "commons-config";
   bootstrap = await bootstrap.startup();
 
 
-  let timeout = parseInt(Config.get('argv.timeout', 20000));
+  const timeout = parseInt(Config.get('argv.timeout', 20000), 0);
   /*
   let commands = bootstrap.getCommands();
   expect(commands.length).to.be.gt(0);
@@ -31,7 +32,7 @@ import {Config} from "commons-config";
   command.handler({});
   */
 
-  let t = setTimeout(async () => {
+  const t = setTimeout(async () => {
     await bootstrap.shutdown();
   }, timeout);
 
@@ -42,7 +43,7 @@ import {Config} from "commons-config";
       running = false;
       clearTimeout(t);
       await bootstrap.shutdown();
-      process.exit(0)
+      process.exit(0);
     }
   });
   process.on('exit', async () => {

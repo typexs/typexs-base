@@ -5,10 +5,12 @@ import {SpawnHandle} from '../SpawnHandle';
 import {TestHelper} from '../TestHelper';
 import {TEST_STORAGE_OPTIONS} from '../config';
 import {IEventBusConfiguration} from 'commons-eventbus';
-import { DistributedStorageEntityController, SystemNodeInfo, XS_P_$COUNT} from '../../../src';
 import {Bootstrap} from '../../../src/Bootstrap';
 import {Container} from 'typedi';
 import {Config} from 'commons-config';
+import {SystemNodeInfo} from '../../../src/entities/SystemNodeInfo';
+import {DistributedStorageEntityController} from '../../../src/libs/distributed/DistributedStorageEntityController';
+import {XS_P_$COUNT} from '../../../src/libs/Constants';
 
 const LOG_EVENT = TestHelper.logEnable(false);
 
@@ -34,7 +36,7 @@ let bootstrap: Bootstrap = null;
 
 
 @suite('functional/distributed/query_spawning') @timeout(300000)
-class Distributed_storage_controllerSpec {
+class DistributedStorageControllerSpec {
 
 
   static async before() {

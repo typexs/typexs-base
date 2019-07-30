@@ -1,10 +1,8 @@
 import * as _ from 'lodash';
 import {DistributedStorageEntityController} from './DistributedStorageEntityController';
 import {EventBus, subscribe} from 'commons-eventbus';
-import {QueryResultsEvent} from './QueryResultsEvent';
 import {IFindOp} from '../storage/framework/IFindOp';
 import {TypeOrmEntityRegistry} from '../storage/framework/typeorm/schema/TypeOrmEntityRegistry';
-import {QueryEvent} from './QueryEvent';
 import {EventEmitter} from 'events';
 import {System} from '../system/System';
 import {IEntityRef} from 'commons-schema-api';
@@ -14,6 +12,8 @@ import {IFindOptions} from '../storage/framework/IFindOptions';
 import {Log} from '../logging/Log';
 import {C_WORKERS} from '../worker/Constants';
 import {XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '../Constants';
+import {DistributedQueryResultsEvent} from './DistributedQueryResultsEvent';
+import {DistributedQueryEvent} from './DistributedQueryEvent';
 
 
 export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
@@ -28,9 +28,9 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
 
   private targetIds: string[] = [];
 
-  private queryEvent: QueryEvent = new QueryEvent();
+  private queryEvent: DistributedQueryEvent = new DistributedQueryEvent();
 
-  private queryResults: QueryResultsEvent[] = [];
+  private queryResults: DistributedQueryResultsEvent[] = [];
 
   private entityRef: IEntityRef;
 
@@ -52,8 +52,8 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
   }
 
 
-  @subscribe(QueryResultsEvent)
-  onResults(event: QueryResultsEvent) {
+  @subscribe(DistributedQueryResultsEvent)
+  onResults(event: DistributedQueryResultsEvent) {
     if (!this.active) {
       return;
     }
@@ -79,8 +79,10 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
     }
     _.remove(this.targetIds, x => x === event.nodeId);
 
-    event.results.map(r => r.__nodeId__ = event.nodeId);
-    this.queryResults.push(event);
+    if (!event.forbidden) {
+      event.results.map(r => r.__nodeId__ = event.nodeId);
+      this.queryResults.push(event);
+    }
 
     if (this.targetIds.length === 0) {
       this.active = false;

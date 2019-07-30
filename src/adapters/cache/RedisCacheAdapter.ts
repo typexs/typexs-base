@@ -1,10 +1,10 @@
-import {ICacheAdapter} from "../../libs/cache/ICacheAdapter";
-import {PlatformUtils} from "commons-base";
-import {ICacheBinConfig} from "../../libs/cache/ICacheBinConfig";
-import {ICacheSetOptions} from "../../libs/cache/ICacheOptions";
-import {IRedisCacheClient} from "./redis/IRedisCacheClient";
-import {CryptUtils} from "../../libs/utils/CryptUtils";
-import {Log} from "../../libs/logging/Log";
+import {ICacheAdapter} from '../../libs/cache/ICacheAdapter';
+import {PlatformUtils} from 'commons-base';
+import {ICacheBinConfig} from '../../libs/cache/ICacheBinConfig';
+import {ICacheSetOptions} from '../../libs/cache/ICacheOptions';
+import {IRedisCacheClient} from './redis/IRedisCacheClient';
+import {CryptUtils} from '../../libs/utils/CryptUtils';
+import {Log} from '../../libs/logging/Log';
 
 export class RedisCacheAdapter implements ICacheAdapter {
 
@@ -14,7 +14,7 @@ export class RedisCacheAdapter implements ICacheAdapter {
 
   client: IRedisCacheClient;
 
-  nodeId: string = 'global';
+  nodeId = 'global';
 
   name: string;
 
@@ -41,15 +41,15 @@ export class RedisCacheAdapter implements ICacheAdapter {
 
 
   cacheKey(bin: string, key: string) {
-    let hash = CryptUtils.shorthash(key);
-    return [this.nodeId,'bin:'+bin, key, hash].join('--').replace(/[^\w\d\-:]/, '');
+    const hash = CryptUtils.shorthash(key);
+    return [this.nodeId, 'bin:' + bin, key, hash].join('--').replace(/[^\w\d\-:]/, '');
   }
 
 
   async get(key: string, bin: string, options: ICacheSetOptions): Promise<any> {
     await this.client.connect();
     const _key = this.cacheKey(bin, key);
-    let res = await this.client.get(_key, options);
+    const res = await this.client.get(_key, options);
     return res;
   }
 
@@ -62,9 +62,9 @@ export class RedisCacheAdapter implements ICacheAdapter {
   }
 
 
-  async clearBin(name:string){
+  async clearBin(name: string) {
     await this.client.connect();
-    await this.client.removeKeysByPattern(this.nodeId+'--bin:'+name+'--*');
+    await this.client.removeKeysByPattern(this.nodeId + '--bin:' + name + '--*');
   }
 
 

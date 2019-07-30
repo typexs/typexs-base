@@ -103,6 +103,10 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
   @subscribe(DistributedQueryEvent)
   onQueryEvent(event: DistributedQueryEvent) {
     try {
+      // check if its for me
+      if (event.targetIds && event.targetIds.indexOf(this.system.node.nodeId) === -1) {
+        return;
+      }
 
       if (!this.isAllowed(event.nodeId, event.entityType)) {
         const resultsEvent = this.createQueryResultEvent(event);
@@ -111,12 +115,6 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
         EventBus.postAndForget(resultsEvent);
         return;
       }
-
-      // check if its for me
-      if (event.targetIds && event.targetIds.indexOf(this.system.node.nodeId) === -1) {
-        return;
-      }
-
 
       const entityRef = TypeOrmEntityRegistry.$().getEntityRefFor(event.entityType);
       if (!entityRef) {

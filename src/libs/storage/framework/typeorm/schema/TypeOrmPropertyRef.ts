@@ -141,13 +141,14 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
 
 
       case 'byte':
+      case 'object':
       case 'json':
       case 'array':
         return data;
 
     }
 
-    throw new NotYetImplementedError('value ' + data + ':' + (typeof data) + ' column type ' + jsType);
+    throw new NotYetImplementedError('value "' + data + '" of type ' + (typeof data) + ' column type=' + jsType);
   }
 
   private convertDate(data: any) {

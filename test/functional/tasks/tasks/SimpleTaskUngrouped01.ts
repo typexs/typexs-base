@@ -1,4 +1,4 @@
-import {ITask} from "../../../../src";
+import {ITask} from '../../../../src/libs/tasks/ITask';
 
 export class SimpleTaskUngrouped01 implements ITask {
   name: string = 'simple_task_ungrouped_01';

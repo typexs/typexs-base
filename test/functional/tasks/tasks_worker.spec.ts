@@ -4,7 +4,6 @@ import {expect} from 'chai';
 
 import {Bootstrap} from '../../../src/Bootstrap';
 import {Log} from '../../../src/libs/logging/Log';
-import {C_STORAGE_DEFAULT, ITypexsOptions, StorageRef, TaskLog, Tasks, Workers} from '../../../src';
 import {Container} from 'typedi';
 import {Config} from 'commons-config';
 import {TEST_STORAGE_OPTIONS} from '../config';
@@ -18,6 +17,12 @@ import {TaskCommand} from '../../../src/commands/TaskCommand';
 import {SimpleTaskWithLog} from './tasks/SimpleTaskWithLog';
 import {TaskExecutionRequestFactory} from '../../../src/libs/tasks/worker/TaskExecutionRequestFactory';
 import {TaskMonitorWorker} from '../../../src/workers/TaskMonitorWorker';
+import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
+import {Tasks} from '../../../src/libs/tasks/Tasks';
+import {Workers} from '../../../src/libs/worker/Workers';
+import {C_STORAGE_DEFAULT} from '../../../src/libs/Constants';
+import {TaskLog} from '../../../src/entities/TaskLog';
+import {StorageRef} from '../../../src/libs/storage/StorageRef';
 
 
 const LOG_EVENT = TestHelper.logEnable(false);

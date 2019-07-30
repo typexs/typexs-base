@@ -1,14 +1,13 @@
-import {ITask} from "../../../../src";
-import {ITaskRuntimeContainer} from "../../../../src/libs/tasks/ITaskRuntimeContainer";
+import {ITask} from '../../../../src/libs/tasks/ITask';
 
 export class SimpleTaskPromise implements ITask {
-  name: string = 'simple_task_promise';
+  name = 'simple_task_promise';
 
-  content: string = 'test';
+  content = 'test';
 
   async exec() {
     return new Promise((resolve, reject) => {
-      setTimeout(() => {resolve(this.content)},100);
+      setTimeout(() => {resolve(this.content); }, 100);
     });
   }
 

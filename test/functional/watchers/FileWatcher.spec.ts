@@ -4,10 +4,10 @@ import * as chaiAsPromised from 'chai-as-promised';
 import * as chaiSpies from 'chai-spies';
 import {unlinkSync, writeFileSync} from 'fs';
 import {slow, suite, test, timeout} from 'mocha-typescript';
-import {Bootstrap, Log} from '../../../src';
 import {FileWatcher} from '../../../src/libs/watchers/FileWatcher';
 import {Config} from 'commons-config';
 import Sandbox = ChaiSpies.Sandbox;
+import {Log} from '../../../src/libs/logging/Log';
 
 async function sleep(duration: number): Promise<void> {
   return new Promise((resolve) => {

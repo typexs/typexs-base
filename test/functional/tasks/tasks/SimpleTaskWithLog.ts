@@ -1,4 +1,4 @@
-import {ITask} from "../../../../src";
+import {ITask} from '../../../../src/libs/tasks/ITask';
 import {TaskRuntime} from "../../../../src/libs/tasks/decorators/TaskRuntime";
 import {ITaskRuntimeContainer} from "../../../../src/libs/tasks/ITaskRuntimeContainer";
 

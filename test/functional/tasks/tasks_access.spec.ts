@@ -1,8 +1,9 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 import {Log} from '../../../src/libs/logging/Log';
-import {Tasks} from '../../../src';
+
 import {TestHelper} from '../TestHelper';
+import {Tasks} from '../../../src/libs/tasks/Tasks';
 
 const LOG_EVENT = TestHelper.logEnable(false);
 

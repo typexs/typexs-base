@@ -1,4 +1,4 @@
-import {ITask} from "../../../../src";
+import {ITask} from '../../../../src/libs/tasks/ITask';
 import {Outgoing} from "../../../../src/libs/tasks/decorators/Outgoing";
 
 export class GroupedTask4 implements ITask {

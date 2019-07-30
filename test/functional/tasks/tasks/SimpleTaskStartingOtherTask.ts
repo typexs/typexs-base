@@ -1,6 +1,7 @@
-import {Incoming, ITask} from '../../../../src';
+import {ITask} from '../../../../src/libs/tasks/ITask';
 import {TaskRuntime} from '../../../../src/libs/tasks/decorators/TaskRuntime';
 import {ITaskRuntimeContainer} from '../../../../src/libs/tasks/ITaskRuntimeContainer';
+import {Incoming} from '../../../../src/libs/tasks/decorators/Incoming';
 
 export class SimpleTaskStartingOtherTask implements ITask {
 

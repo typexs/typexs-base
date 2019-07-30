@@ -2,7 +2,6 @@ import * as _ from 'lodash';
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 import {Bootstrap} from '../../../src/Bootstrap';
-import {ITypexsOptions, Tasks} from '../../../src';
 import {Config} from 'commons-config';
 import {TEST_STORAGE_OPTIONS} from '../config';
 import {IEventBusConfiguration} from 'commons-eventbus';
@@ -11,6 +10,8 @@ import {System} from '../../../src/libs/system/System';
 import {C_TASKS} from '../../../src/libs/tasks/Constants';
 import {TestHelper} from '../TestHelper';
 import {SpawnHandle} from '../SpawnHandle';
+import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
+import {Tasks} from '../../../src/libs/tasks/Tasks';
 
 const LOG_EVENT = TestHelper.logEnable(false);
 

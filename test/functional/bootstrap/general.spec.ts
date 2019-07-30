@@ -6,8 +6,9 @@ import {expect} from 'chai';
 import {Bootstrap} from '../../../src/Bootstrap';
 import {Config} from 'commons-config';
 import {RuntimeLoader} from '../../../src/base/RuntimeLoader';
-import {K_CLS_API, K_CLS_BOOTSTRAP, K_CLS_STORAGE_SCHEMAHANDLER, K_CLS_TASKS, K_CLS_USE_API} from '../../../src';
 import {K_CLS_WORKERS} from '../../../src/libs/worker/Constants';
+import {K_CLS_API, K_CLS_BOOTSTRAP, K_CLS_STORAGE_SCHEMAHANDLER, K_CLS_USE_API} from '../../../src/libs/Constants';
+import {K_CLS_TASKS} from '../../../src/libs/tasks/Constants';
 
 
 @suite('functional/bootstrap/general')

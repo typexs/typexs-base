@@ -1,4 +1,4 @@
-import {ITask} from '../../../../src';
+import {ITask} from '../../../../src/libs/tasks/ITask';
 
 export class SimpleTaskError implements ITask {
   name = 'simple_task_error';

@@ -4,11 +4,11 @@ import * as chaiSpies from 'chai-spies';
 import {Config} from 'commons-config';
 import {slow, suite, test, timeout} from 'mocha-typescript';
 import {Container} from 'typedi';
-import {ITypexsOptions} from '../../../src';
 import {Bootstrap} from '../../../src/Bootstrap';
 import {WatcherRegistry} from '../../../src/libs/watchers/WatcherRegistry';
 import {TEST_STORAGE_OPTIONS} from '../config';
 import Sandbox = ChaiSpies.Sandbox;
+import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
 
 @suite('functional/watchers/WatcherRegistry', slow(5000), timeout(10000))
 class WatcherRegistrySpec {

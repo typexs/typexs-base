@@ -1,8 +1,8 @@
-import {ITask} from "../../../../src";
-import {Outgoing} from "../../../../src/libs/tasks/decorators/Outgoing";
+import {ITask} from '../../../../src/libs/tasks/ITask';
+import {Outgoing} from '../../../../src/libs/tasks/decorators/Outgoing';
 
 export class DependentTask implements ITask {
-  name: string = 'dependent';
+  name = 'dependent';
 
 
   @Outgoing()

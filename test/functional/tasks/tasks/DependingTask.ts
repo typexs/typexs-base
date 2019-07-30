@@ -1,11 +1,11 @@
-import {ITask} from "../../../../src";
-import {Incoming} from "../../../../src/libs/tasks/decorators/Incoming";
+import {ITask} from '../../../../src/libs/tasks/ITask';
+import {Incoming} from '../../../../src/libs/tasks/decorators/Incoming';
 
 export class DependingTask implements ITask {
-  name: string = 'depending';
+  name = 'depending';
 
 
-  @Incoming({name:'data'})
+  @Incoming({name: 'data'})
   fromDependent: any;
 
 

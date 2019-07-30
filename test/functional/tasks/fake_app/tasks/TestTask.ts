@@ -1,11 +1,11 @@
-import {ITask} from "../../../../../src";
-import {Incoming} from "../../../../../src/libs/tasks/decorators/Incoming";
+import {Incoming} from '../../../../../src/libs/tasks/decorators/Incoming';
+import {ITask} from '../../../../../src/libs/tasks/ITask';
 
 export class TestTask implements ITask {
 
-  name: string = 'test';
+  name = 'test';
 
-  description: string = 'Hallo welt';
+  description = 'Hallo welt';
 
   @Incoming()
   someValue: string;

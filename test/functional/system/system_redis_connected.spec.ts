@@ -1,25 +1,26 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
-import {Bootstrap} from "../../../src/Bootstrap";
-import {Invoker, ITypexsOptions} from "../../../src";
-import {Config} from "commons-config";
-import {TEST_STORAGE_OPTIONS} from "../config";
-import {IEventBusConfiguration} from "commons-eventbus";
-import {Container} from "typedi";
-import {System} from "../../../src/libs/system/System";
-import {SystemApi} from "../../../src/api/System.api";
-import {ISystemApi} from "../../../src/api/ISystemApi";
-import {INodeInfo} from "../../../src/libs/system/INodeInfo";
-import {TestHelper} from "../TestHelper";
-import {SpawnHandle} from "../SpawnHandle";
-import {SystemNodeInfo} from "../../../src/entities/SystemNodeInfo";
+import {Bootstrap} from '../../../src/Bootstrap';
+import {Config} from 'commons-config';
+import {TEST_STORAGE_OPTIONS} from '../config';
+import {IEventBusConfiguration} from 'commons-eventbus';
+import {Container} from 'typedi';
+import {System} from '../../../src/libs/system/System';
+import {SystemApi} from '../../../src/api/System.api';
+import {ISystemApi} from '../../../src/api/ISystemApi';
+import {INodeInfo} from '../../../src/libs/system/INodeInfo';
+import {TestHelper} from '../TestHelper';
+import {SpawnHandle} from '../SpawnHandle';
+import {SystemNodeInfo} from '../../../src/entities/SystemNodeInfo';
+import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
+import {Invoker} from '../../../src/base/Invoker';
 
 
 const LOG_EVENT = TestHelper.logEnable(false);
 
 
 @suite('functional/system/system_redis_connected')
-class Tasks_systemSpec {
+class TasksSystemSpec {
 
 
   before() {
@@ -43,13 +44,13 @@ class Tasks_systemSpec {
     bootstrap.activateLogger();
     bootstrap.activateErrorHandling();
 
-    //let d = getMetadataArgsStorage();
+    // let d = getMetadataArgsStorage();
 
     await bootstrap.prepareRuntime();
     bootstrap = await bootstrap.activateStorage();
     bootstrap = await bootstrap.startup();
 
-    let system: System = Container.get(System.NAME);
+    const system: System = Container.get(System.NAME);
     expect(system.node.state).to.eq('idle');
 
     await bootstrap.shutdown();
@@ -91,12 +92,12 @@ class Tasks_systemSpec {
       }
     }
 
-    let invoker: Invoker = Container.get(Invoker.NAME);
+    const invoker: Invoker = Container.get(Invoker.NAME);
     invoker.register(SystemApi, OnSystem);
 
-    let system: System = Container.get(System.NAME);
+    const system: System = Container.get(System.NAME);
 
-    let p = SpawnHandle.do(__dirname + '/fake_app/node.ts').start(LOG_EVENT);
+    const p = SpawnHandle.do(__dirname + '/fake_app/node.ts').start(LOG_EVENT);
     await p.started;
     await TestHelper.wait(200);
 
@@ -112,10 +113,10 @@ class Tasks_systemSpec {
     expect(system.nodes).to.have.length(0);
     expect(system.nodes).to.have.length(0);
 
-    let nodeInfos = await bootstrap.getStorage().get().getController().find(SystemNodeInfo);
+    const nodeInfos = await bootstrap.getStorage().get().getController().find(SystemNodeInfo);
     expect(nodeInfos).to.have.length(2);
     expect(nodeInfos.map((x: any) => {
-      return {isBackend: x.isBackend, nodeId: x.nodeId}
+      return {isBackend: x.isBackend, nodeId: x.nodeId};
     })).to.deep.eq(
       [{
         isBackend: null, nodeId: 'fakeapp01'
@@ -125,7 +126,7 @@ class Tasks_systemSpec {
     );
 
     await bootstrap.shutdown();
-    expect(system.nodes).to.have.length(0)
+    expect(system.nodes).to.have.length(0);
 
   }
 
@@ -147,18 +148,18 @@ class Tasks_systemSpec {
     bootstrap = await bootstrap.activateStorage();
     bootstrap = await bootstrap.startup();
 
-    let system: System = Container.get(System.NAME);
+    const system: System = Container.get(System.NAME);
 
     expect(system.info).to.not.be.null;
     expect(system.info.networks).to.not.be.null;
     expect(system.info.cpus).to.not.be.null;
     expect(system.info.uptime).to.be.gt(0);
 
-    let p = SpawnHandle.do(__dirname + '/fake_app/node.ts').start(LOG_EVENT);
+    const p = SpawnHandle.do(__dirname + '/fake_app/node.ts').start(LOG_EVENT);
     await p.started;
     await TestHelper.wait(100);
 
-    let results = await system.getNodeInfos();
+    const results = await system.getNodeInfos();
     expect(results).to.have.length(1);
     expect(results[0].machineId).to.be.eq(system.info.machineId);
 

@@ -5,11 +5,16 @@ import {Config} from 'commons-config';
 import {Scheduler} from '../../../src/libs/schedule/Scheduler';
 import {EventBus, subscribe} from 'commons-eventbus';
 import {TestHelper} from '../TestHelper';
-import {Invoker, K_CLS_SCHEDULE_ADAPTER_FACTORIES, Log, RuntimeLoader, Tasks, TasksApi} from '../../../src';
 import {IScheduleFactory} from '../../../src/libs/schedule/IScheduleFactory';
 import {Container} from 'typedi';
 import {SimpleTask} from '../tasks/tasks/SimpleTask';
 import moment = require('moment');
+import {RuntimeLoader} from '../../../src/base/RuntimeLoader';
+import {Log} from '../../../src/libs/logging/Log';
+import {K_CLS_SCHEDULE_ADAPTER_FACTORIES} from '../../../src/libs/Constants';
+import {Invoker} from '../../../src/base/Invoker';
+import {TasksApi} from '../../../src/api/Tasks.api';
+import {Tasks} from '../../../src/libs/tasks/Tasks';
 
 let loader: RuntimeLoader = null;
 let factories: IScheduleFactory[] = [];

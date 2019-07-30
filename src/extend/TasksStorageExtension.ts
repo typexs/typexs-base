@@ -4,8 +4,10 @@ import {TasksApi} from '../api/Tasks.api';
 import {ITasksApi} from '../api/ITasksApi';
 import {TaskRunner} from '../libs/tasks/TaskRunner';
 import {TaskRun} from '../libs/tasks/TaskRun';
-import {C_STORAGE_DEFAULT, Cache, Log, StorageRef} from '..';
 import {TasksStorageHelper} from '../libs/tasks/helper/TasksStorageHelper';
+import {C_STORAGE_DEFAULT} from '../libs/Constants';
+import {StorageRef} from '../libs/storage/StorageRef';
+import {Cache} from '../libs/cache/Cache';
 
 
 @UseAPI(TasksApi)

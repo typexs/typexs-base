@@ -6,12 +6,9 @@ import {TaskLog} from '../../../entities/TaskLog';
 import {Cache} from '../../cache/Cache';
 import {Semaphore} from '../../Semaphore';
 import {LockFactory} from '../../LockFactory';
-import {Container} from 'typedi';
-import {Log} from '../../..';
 
 export class TasksStorageHelper {
 
-  // static emitter: EventEmitter = new EventEmitter();
 
   static semaphores: { [k: string]: Semaphore } = {};
 

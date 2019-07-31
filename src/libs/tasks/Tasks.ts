@@ -137,7 +137,7 @@ export class Tasks implements ILookupRegistry {
 
 
   addTaskRef(task: TaskRef, nodeId: string) {
-    if (this.access(task.name)) {
+    if (this.access(task.name) || task.isRemote()) {
       const exists = <TaskRef>this.registry.find(XS_TYPE_ENTITY, (x: TaskRef) => x.name === task.name);
       if (!exists) {
         task.addNodeId(nodeId);

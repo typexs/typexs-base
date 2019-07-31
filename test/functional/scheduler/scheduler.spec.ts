@@ -8,13 +8,13 @@ import {TestHelper} from '../TestHelper';
 import {IScheduleFactory} from '../../../src/libs/schedule/IScheduleFactory';
 import {Container} from 'typedi';
 import {SimpleTask} from '../tasks/tasks/SimpleTask';
-import moment = require('moment');
 import {RuntimeLoader} from '../../../src/base/RuntimeLoader';
 import {Log} from '../../../src/libs/logging/Log';
 import {K_CLS_SCHEDULE_ADAPTER_FACTORIES} from '../../../src/libs/Constants';
 import {Invoker} from '../../../src/base/Invoker';
 import {TasksApi} from '../../../src/api/Tasks.api';
 import {Tasks} from '../../../src/libs/tasks/Tasks';
+import moment = require('moment');
 
 let loader: RuntimeLoader = null;
 let factories: IScheduleFactory[] = [];
@@ -182,7 +182,7 @@ class SchedulerSpec {
 
     expect(schedule.name).to.eq('test01');
     expect(schedule.next).to.be.gt(now);
-    expect(schedule.next).to.be.lte(moment(now).add(1, 'm').toDate());
+    expect(schedule.next).to.be.lte(moment(now).utc().add(5, 'm').toDate());
 
     schedule = await scheduler.register({
       name: 'test02',

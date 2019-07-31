@@ -36,7 +36,6 @@ export * from './base/RuntimeLoader';
 export * from './libs/IHttpHeaders';
 export * from './libs/IKeyValuePair';
 export * from './libs/IUrlBase';
-export * from './libs/Runtime';
 export * from './libs/Progress';
 
 

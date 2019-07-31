@@ -8,7 +8,6 @@ import {EntitySchema} from 'typeorm/entity-schema/EntitySchema';
 import {K_WORKDIR} from '../Constants';
 import {IStorageOptions} from './IStorageOptions';
 import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
-import {Runtime} from '../Runtime';
 import * as path from 'path';
 import * as _ from 'lodash';
 import {ClassUtils, PlatformUtils, TodoException} from 'commons-base';
@@ -82,7 +81,6 @@ export class StorageRef {
       }
     }
     Log.debug(`storage: use ${this.options.type} for storage with options:\n${out} `);
-    Runtime.$().setConfig('storage', this.options);
     this.controller = new StorageEntityController(this);
   }
 

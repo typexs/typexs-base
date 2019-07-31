@@ -1,5 +1,5 @@
-import {INodeInfo} from "../libs/system/INodeInfo";
-import {SystemNodeInfo} from "../entities/SystemNodeInfo";
+import {INodeInfo} from '../libs/system/INodeInfo';
+import {SystemNodeInfo} from '../entities/SystemNodeInfo';
 
 
 export interface ISystemApi {
@@ -8,7 +8,7 @@ export interface ISystemApi {
    * get additional informations for other nodes
    * @param x
    */
-  getNodeInfos(): INodeInfo | INodeInfo[];
+  getNodeInfos?(): INodeInfo | INodeInfo[];
 
   /**
    * fired when a node is added to the network

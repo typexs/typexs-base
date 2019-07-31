@@ -193,7 +193,7 @@ export class System {
   @subscribe(SystemInfoRequestEvent)
   onInfoRequest(event: SystemInfoRequestEvent) {
     if (this.node.nodeId === event.nodeId) {
-      return;
+      return Promise.resolve();
     }
     if (event.targetIds && event.targetIds.indexOf(this.node.nodeId) !== -1) {
       const response = new SystemInfoEvent();
@@ -201,8 +201,9 @@ export class System {
       response.targetIds = [event.nodeId];
       response.respId = this.node.nodeId;
       response.info = _.cloneDeep(this.info);
-      EventBus.postAndForget(response);
+      return EventBus.postAndForget(response);
     }
+    return Promise.resolve();
   }
 
 

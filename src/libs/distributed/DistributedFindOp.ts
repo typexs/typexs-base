@@ -14,6 +14,7 @@ import {C_WORKERS} from '../worker/Constants';
 import {XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '../Constants';
 import {DistributedQueryResultsEvent} from './DistributedQueryResultsEvent';
 import {DistributedQueryEvent} from './DistributedQueryEvent';
+import {IDistributedFindOptions} from './IDistributedFindOptions';
 
 
 export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
@@ -22,7 +23,7 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
 
   // private controller: DistributedStorageEntityController;
 
-  private options: IFindOptions;
+  private options: IDistributedFindOptions;
 
   private timeout = 5000;
 
@@ -92,7 +93,7 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
   }
 
 
-  async run(entityType: Function | string, findConditions?: any, options?: IFindOptions): Promise<T[]> {
+  async run(entityType: Function | string, findConditions?: any, options?: IDistributedFindOptions): Promise<T[]> {
     _.defaults(options, {
       limit: 50,
       offset: null,
@@ -115,6 +116,10 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
         .find(c => c.context === C_WORKERS).workers
         .find((w: IWorkerInfo) => w.className === DistributedQueryWorker.name))
       .map(n => n.nodeId);
+
+    if (this.options.targetIds) {
+      this.targetIds = _.intersection(this.targetIds, this.options.targetIds);
+    }
 
     if (this.targetIds.length === 0) {
       throw new Error('no distributed worker found to execute the query.');

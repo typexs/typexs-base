@@ -9,12 +9,12 @@ import {DistributedQueryWorker} from '../../workers/DistributedQueryWorker';
 import {Log} from '../logging/Log';
 import {C_WORKERS} from '../worker/Constants';
 import {ISaveOp} from '../storage/framework/ISaveOp';
-import {ISaveOptions} from '../storage/framework/ISaveOptions';
 import {DistributedSaveEvent} from './DistributedSaveEvent';
 import {DistributedSaveResultsEvent} from './DistributedSaveResultsEvent';
 import {TypeOrmUtils} from '../storage/framework/typeorm/TypeOrmUtils';
 import {TypeOrmEntityRegistry} from '../storage/framework/typeorm/schema/TypeOrmEntityRegistry';
 import {__DISTRIBUTED_ID__, __REMOTE_IDS__, XS_P_$ERRORED, XS_P_$SAVED} from './Constants';
+import {IDistributedSaveOptions} from './IDistributedSaveOptions';
 
 
 export class DistributedSaveOp<T> extends EventEmitter implements ISaveOp<T> {
@@ -22,7 +22,7 @@ export class DistributedSaveOp<T> extends EventEmitter implements ISaveOp<T> {
 
   private system: System;
 
-  private options: ISaveOptions;
+  private options: IDistributedSaveOptions;
 
   private timeout = 5000;
 
@@ -91,7 +91,7 @@ export class DistributedSaveOp<T> extends EventEmitter implements ISaveOp<T> {
   }
 
 
-  async run(objects: T | T[], options?: ISaveOptions): Promise<T[]> {
+  async run(objects: T | T[], options?: IDistributedSaveOptions): Promise<T[]> {
     this.options = options;
 
     let inc = 0;
@@ -121,6 +121,10 @@ export class DistributedSaveOp<T> extends EventEmitter implements ISaveOp<T> {
         .find(c => c.context === C_WORKERS).workers
         .find((w: IWorkerInfo) => w.className === DistributedQueryWorker.name))
       .map(n => n.nodeId);
+
+    if (this.options.targetIds) {
+      this.targetIds = _.intersection(this.targetIds, this.options.targetIds);
+    }
 
     if (this.targetIds.length === 0) {
       throw new Error('no distributed worker found to execute the query.');

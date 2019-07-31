@@ -194,7 +194,7 @@ class SchedulerSpec {
 
     expect(schedule.name).to.eq('test02');
     expect(schedule.next).to.be.gt(now);
-    expect(schedule.next).to.be.lte(moment(now).add(5, 'm').toDate());
+    expect(schedule.next).to.be.lte(moment(now).utc().add(5, 'm').toDate());
 
 
     schedule = await scheduler.register({
@@ -207,7 +207,7 @@ class SchedulerSpec {
 
     expect(schedule.name).to.eq('test03');
     expect(schedule.next).to.be.gt(now);
-    expect(schedule.next).to.be.lte(moment(now).add(10, 'm').toDate());
+    expect(schedule.next).to.be.lte(moment(now).utc().add(23, 'h').toDate());
 
 
     const str = moment().add(1, 'd').subtract(1, 'hour').toISOString();

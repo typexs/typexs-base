@@ -1,6 +1,6 @@
-import {ISystemApi} from "./ISystemApi";
-import {INodeInfo} from "../libs/system/INodeInfo";
-import {SystemNodeInfo} from "../entities/SystemNodeInfo";
+import {ISystemApi} from './ISystemApi';
+import {INodeInfo} from '../libs/system/INodeInfo';
+import {SystemNodeInfo} from '../entities/SystemNodeInfo';
 
 
 export class SystemApi implements ISystemApi {

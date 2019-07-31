@@ -35,6 +35,7 @@ export class DefaultScheduleFactory implements IScheduleFactory {
   async attach(schedule: Schedule): Promise<boolean> {
     const offset: string | number = _.get(schedule.options, 'offset', null);
     const start: string | Date = _.get(schedule.options, 'start', new Date());
+
     if (offset && start) {
 
       let startDate: Date = null;
@@ -74,6 +75,10 @@ export class DefaultScheduleFactory implements IScheduleFactory {
       }
 
       if (startDate && offsetN && unit) {
+        const startup = _.get(schedule.options, 'startup', false);
+        if (startup) {
+          startDate = moment().add(1, 'm').toDate();
+        }
         schedule.reschedule = this.create(startDate, offsetN, unit);
         return true;
       }

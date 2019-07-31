@@ -8,7 +8,6 @@ import {System} from '../system/System';
 import {IEntityRef} from 'commons-schema-api';
 import {IWorkerInfo} from '../worker/IWorkerInfo';
 import {DistributedQueryWorker} from '../../workers/DistributedQueryWorker';
-import {IFindOptions} from '../storage/framework/IFindOptions';
 import {Log} from '../logging/Log';
 import {C_WORKERS} from '../worker/Constants';
 import {XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '../Constants';
@@ -25,7 +24,7 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
 
   private options: IDistributedFindOptions;
 
-  private timeout = 5000;
+  private timeout = 10000;
 
   private targetIds: string[] = [];
 
@@ -39,6 +38,9 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
 
   private active = true;
 
+  private start: Date;
+
+  private stop: Date;
 
   constructor(system: System) {
     super();
@@ -97,9 +99,12 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
     _.defaults(options, {
       limit: 50,
       offset: null,
-      sort: null
+      sort: null,
+      timeout: 10000
     });
     this.options = options;
+    this.timeout = this.options.timeout;
+
 
     this.entityRef = TypeOrmEntityRegistry.$().getEntityRefFor(entityType);
 
@@ -140,10 +145,11 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
 
     // register as bus
     await EventBus.register(this);
-    Log.debug('fire query event with id: ' + this.queryEvent.queryId);
+    Log.debug('fire query event with id: ' + this.queryEvent.queryId + ' to targets ' + this.targetIds.join(', '));
     try {
+      this.start = new Date();
       const ready = this.ready();
-      EventBus.postAndForget(this.queryEvent);
+      await EventBus.postAndForget(this.queryEvent);
       await ready;
     } catch (err) {
       Log.error(err);
@@ -156,6 +162,7 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
 
 
   postProcess(err: Error) {
+    this.stop = new Date();
     let count = 0;
     this.queryResults.map(x => {
       count += x.count;
@@ -196,11 +203,15 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
   ready() {
     return new Promise((resolve, reject) => {
       const t = setTimeout(() => {
-        this.emit('postprocess', new Error('timeout error'));
+        this.emit('postprocess', new Error('timeout error [' + this.timeout +
+          '] after duration of ' + (Date.now() - this.start.getTime()) + 'ms'));
         clearTimeout(t);
       }, this.timeout);
 
       this.once('finished', (err: Error, data: any) => {
+        Log.debug('finished query event with id: ' + this.queryEvent.queryId +
+          ' duration=' + (this.stop.getTime() - this.start.getTime()) + 'ms');
+
         clearTimeout(t);
         if (err) {
           Log.error(err);

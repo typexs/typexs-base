@@ -24,7 +24,7 @@ export class DistributedSaveOp<T> extends EventEmitter implements ISaveOp<T> {
 
   private options: IDistributedSaveOptions;
 
-  private timeout = 5000;
+  private timeout = 10000;
 
   private targetIds: string[] = [];
 
@@ -41,6 +41,11 @@ export class DistributedSaveOp<T> extends EventEmitter implements ISaveOp<T> {
   private active = true;
 
   private isArray: boolean;
+
+
+  private start: Date;
+
+  private stop: Date;
 
   constructor(system: System) {
     super();
@@ -92,7 +97,8 @@ export class DistributedSaveOp<T> extends EventEmitter implements ISaveOp<T> {
 
 
   async run(objects: T | T[], options?: IDistributedSaveOptions): Promise<T[]> {
-    this.options = options;
+    this.options = _.defaults(options, {timeout: 10000});
+    this.timeout = this.options.timeout;
 
     let inc = 0;
     this.isArray = _.isArray(objects);
@@ -145,10 +151,12 @@ export class DistributedSaveOp<T> extends EventEmitter implements ISaveOp<T> {
 
     // register as bus
     await EventBus.register(this);
-    Log.debug('fire query event with id: ' + this.saveEvent.queryId);
+    Log.debug('fire query event with id: ' + this.saveEvent.queryId + ' to targets ' + this.targetIds.join(', '));
+
     try {
+      this.start = new Date();
       const ready = this.ready();
-      EventBus.postAndForget(this.saveEvent);
+      await EventBus.postAndForget(this.saveEvent);
       await ready;
     } catch (err) {
       Log.error(err);
@@ -161,6 +169,7 @@ export class DistributedSaveOp<T> extends EventEmitter implements ISaveOp<T> {
 
 
   postProcess(err: Error) {
+    this.stop = new Date();
     const errors = [];
     let saved = 0;
     let errored = 0;
@@ -198,12 +207,15 @@ export class DistributedSaveOp<T> extends EventEmitter implements ISaveOp<T> {
   ready() {
     return new Promise((resolve, reject) => {
       const t = setTimeout(() => {
-        this.emit('postprocess', new Error('timeout error'));
+        this.emit('postprocess', new Error('timeout error [' + this.timeout +
+          '] after duration of ' + (Date.now() - this.start.getTime()) + 'ms'));
         clearTimeout(t);
       }, this.timeout);
 
       this.once('finished', (err: Error | Error[], data: any) => {
         clearTimeout(t);
+        Log.debug('finished query event with id: ' + this.saveEvent.queryId +
+          ' duration=' + (this.stop.getTime() - this.start.getTime()) + 'ms');
 
 
         if (!_.isEmpty(err)) {

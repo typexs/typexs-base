@@ -483,16 +483,25 @@ export class Bootstrap {
 
     // update config
     Config.jar(CONFIG_NAMESPACE).set('modules', this.runtimeLoader._options);
+    this.addShutdownEvents();
+    return this;
+  }
+
+
+  private addShutdownEvents() {
     process.on('exit', async (code) => {
+      Log.info('Caught interrupt signal [exit]');
       await this.shutdown(code);
     });
     process.on('SIGINT', async () => {
-      Log.info('Caught interrupt signal');
+      Log.info('Caught interrupt signal [SIGINT]');
       await this.shutdown();
       process.exit();
     });
-
-    return this;
+    process.on('SIGTERM', async () => {
+      Log.info('Caught interrupt signal [SIGTERM]');
+      await this.shutdown();
+    });
   }
 
 

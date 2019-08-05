@@ -15,6 +15,7 @@ import * as machineId from 'node-machine-id';
 import {Config} from 'commons-config';
 import {Invoker} from '../../base/Invoker';
 import {SystemInfoEvent} from './SystemInfoEvent';
+import {ILoggerApi} from '../logging/ILoggerApi';
 
 export class System {
 
@@ -51,6 +52,11 @@ export class System {
    */
   _registered = false;
 
+  /**
+   * Logger instance for this class
+   */
+  logger: ILoggerApi;
+
   static isDistributionEnabled() {
     const e = Config.get(APP_SYSTEM_DISTRIBUTED);
     if (_.isBoolean(e)) {
@@ -63,6 +69,10 @@ export class System {
   static enableDistribution(b: boolean = true) {
     this.enabled = b;
     Config.set(APP_SYSTEM_DISTRIBUTED, b, TYPEXS_NAME);
+  }
+
+  constructor() {
+    this.logger = Log.getLoggerFor(System);
   }
 
 
@@ -107,38 +117,43 @@ export class System {
       nodeInfo.restore();
     }
 
+    this.logger.debug('system node: ' + nodeInfo.hostname + ':' + nodeInfo.nodeId +
+      ' state=' + nodeInfo.state + ' [' + this.node.nodeId + ']');
     // clear local info
     delete nodeInfo.isBackend;
-    let doSave = false;
-    const node = _.find(this.nodes, n => n.nodeId === nodeInfo.nodeId);
-    if ((nodeInfo.state === 'register')) {
-      if (node) {
-        _.remove(this.nodes, node);
-      }
-      this.nodes.push(nodeInfo);
 
-      Log.debug('add remote node ' + nodeInfo.hostname + ':' + nodeInfo.nodeId);
-      doSave = true;
+    const node = _.find(this.nodes, n => n.nodeId === nodeInfo.nodeId);
+    if ((nodeInfo.state === 'register' || (nodeInfo.state === 'idle' && !node))) {
+      if (!node) {
+        this.nodes.push(nodeInfo);
+      }
+
+      this.logger.debug('add remote node ' + nodeInfo.hostname + ':' + nodeInfo.nodeId);
+
       await EventBus.postAndForget(this.node);
       try {
         await this.invoker.use(SystemApi).onNodeRegister(nodeInfo);
       } catch (e) {
-        Log.error(e);
+        this.logger.error(e);
       }
-    } else if (nodeInfo.state === 'unregister') {
-      _.remove(this.nodes, n => n.nodeId === nodeInfo.nodeId);
-      doSave = true;
-      Log.debug('remove remote node ' + nodeInfo.hostname + ':' + nodeInfo.nodeId);
-      await this.invoker.use(SystemApi).onNodeUnregister(nodeInfo);
-    }
-
-    if (doSave) {
       try {
         await this.storageRef.getController().save(nodeInfo);
       } catch (e) {
-        Log.error(e);
+        this.logger.error(e);
+      }
+    } else if (nodeInfo.state === 'unregister') {
+      const nodes = _.remove(this.nodes, n => n.nodeId === nodeInfo.nodeId);
+
+      this.logger.debug('remove remote node ' + nodeInfo.hostname + ':' + nodeInfo.nodeId);
+      await this.invoker.use(SystemApi).onNodeUnregister(nodeInfo);
+      try {
+        nodes.map(x => x.state === 'offline');
+        await this.storageRef.getController().save(nodes);
+      } catch (e) {
+        this.logger.error(e);
       }
     }
+
     return this.node;
   }
 
@@ -227,18 +242,18 @@ export class System {
 
 
     this.updateTimer = setInterval(this.updateInfo.bind(this), 5000);
-    const ret = await EventBus.post(this.node);
-    const nodeHandle = [];
-    for (const x of ret) {
-      for (let y of x) {
-        if (!y) {
-          continue;
-        }
-        y = _.assign(new SystemNodeInfo(), y);
-        nodeHandle.push(this.handleNode(y));
-      }
-    }
-    await Promise.all(nodeHandle);
+    await EventBus.postAndForget(this.node);
+    // const nodeHandle = [];
+    // for (const x of ret) {
+    //   for (let y of x) {
+    //     if (!y) {
+    //       continue;
+    //     }
+    //     y = _.assign(new SystemNodeInfo(), y);
+    //     nodeHandle.push(this.handleNode(y));
+    //   }
+    // }
+    // await Promise.all(nodeHandle);
     this.node.state = 'idle';
 
     if (this.storageRef) {

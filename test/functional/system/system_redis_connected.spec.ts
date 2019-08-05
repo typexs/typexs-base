@@ -36,7 +36,7 @@ class TasksSystemSpec {
       .setConfigSources([{type: 'system'}])
       .configure(<ITypexsOptions & any>{
         app: {name: 'test', nodeId: 'system', path: __dirname + '/fake_app'},
-        logging: {enable: LOG_EVENT, level: 'debug'},
+        logging: {enable: LOG_EVENT, level: 'debug', loggers: [{name: '*', level: 'debug', enable: true}]},
         modules: {paths: [__dirname + '/../../..']},
         storage: {default: TEST_STORAGE_OPTIONS},
         eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}}
@@ -65,7 +65,7 @@ class TasksSystemSpec {
       .setConfigSources([{type: 'system'}])
       .configure(<ITypexsOptions & any>{
         app: {name: 'test', nodeId: 'system', path: __dirname + '/fake_app'},
-        logging: {enable: LOG_EVENT, level: 'debug'},
+        logging: {enable: LOG_EVENT, level: 'debug', loggers: [{name: '*', level: 'debug', enable: true}]},
         modules: {paths: [__dirname + '/../../..']},
         storage: {default: TEST_STORAGE_OPTIONS},
         eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}}
@@ -76,7 +76,7 @@ class TasksSystemSpec {
     bootstrap = await bootstrap.activateStorage();
     bootstrap = await bootstrap.startup();
 
-    let remoteNode: SystemNodeInfo = null;
+    const remoteNodes: SystemNodeInfo[] = [];
 
     class OnSystem implements ISystemApi {
       getNodeInfos(): INodeInfo | INodeInfo[] {
@@ -84,11 +84,11 @@ class TasksSystemSpec {
       }
 
       onNodeRegister(x: SystemNodeInfo): void {
-        remoteNode = x;
+        remoteNodes.push(x);
       }
 
       onNodeUnregister(x: SystemNodeInfo): void {
-        remoteNode = x;
+        remoteNodes.push(x);
       }
     }
 
@@ -99,21 +99,25 @@ class TasksSystemSpec {
 
     const p = SpawnHandle.do(__dirname + '/fake_app/node.ts').start(LOG_EVENT);
     await p.started;
-    await TestHelper.wait(200);
-
+    // await TestHelper.wait(200);
+    let remoteNode = remoteNodes.shift();
     expect(remoteNode.nodeId).to.be.eq('fakeapp01');
     expect(remoteNode.state).to.be.eq('register');
     expect(system.nodes).to.have.length(1);
     expect(system.nodes[0].nodeId).to.be.eq('fakeapp01');
+
+    let nodeInfos = await bootstrap.getStorage().get().getController().find(SystemNodeInfo);
+    expect(nodeInfos).to.have.length(2);
+
     p.shutdown();
     await p.done;
-
+    remoteNode = remoteNodes.shift();
     expect(remoteNode.nodeId).to.be.eq('fakeapp01');
     expect(remoteNode.state).to.be.eq('unregister');
     expect(system.nodes).to.have.length(0);
     expect(system.nodes).to.have.length(0);
 
-    const nodeInfos = await bootstrap.getStorage().get().getController().find(SystemNodeInfo);
+    nodeInfos = await bootstrap.getStorage().get().getController().find(SystemNodeInfo);
     expect(nodeInfos).to.have.length(2);
     expect(nodeInfos.map((x: any) => {
       return {isBackend: x.isBackend, nodeId: x.nodeId};

@@ -1,14 +1,10 @@
-import {IQueueWorkload} from "./IQueueWorkload";
-import {IQueue} from "./IQueue";
-
-import {CryptUtils} from "../utils/CryptUtils";
-import Timer = NodeJS.Timer;
-
+import {IQueueWorkload} from './IQueueWorkload';
+import {IQueue} from './IQueue';
+import {CryptUtils} from '../utils/CryptUtils';
 
 export class QueueJob<T extends IQueueWorkload> {
 
   private static _INC = 0;
-  private _TIMEOUT = 20000;
 
   private _id: string;
 
@@ -17,132 +13,167 @@ export class QueueJob<T extends IQueueWorkload> {
   private _workload: T;
 
   private _start: Date = null;
+
   private _stop: Date = null;
+
   private _enqueued: Date = null;
+
   private _duration: number;
-  private _error:Error = null;
+
+  private _error: Error = null;
 
   private _result: any = null;
-
-  // create a timer which destroy long running jobs
-  private _timer: Timer = null;
 
   constructor(queue: IQueue, workload: T) {
     this._workload = workload;
     this._queue = queue;
     this._id = CryptUtils.shorthash((new Date()).getTime() + '' + (QueueJob._INC++));
-    /*
-     this._queue.once('job '+this._id+' start',this.onStart.bind(this));
-     this._queue.once('job '+this._id+' start',this.onStart.bind(this));
-
-     */
-    this._queue.once('job ' + this._id + ' stop', this.onDone.bind(this))
+    this._queue.once(this.jobEventName('stop'), this.onDone.bind(this));
   }
 
   public get id(): string {
-    return this._id
+    return this._id;
   }
 
   public workload(): T {
-    return this._workload
+    return this._workload;
   }
 
   public enqueued(): Promise<QueueJob<T>> {
-    let self = this;
+    const self = this;
     return new Promise(function (resolve) {
       if (!self._enqueued) {
-        self._queue.once('job ' + self.id + ' enqueued', function (job: QueueJob<T>) {
-          resolve(job)
-        })
+        self._queue.once(this.jobEventName('enqueued'), function (job: QueueJob<T>) {
+          resolve(job);
+        });
       } else {
-        resolve(self)
+        resolve(self);
       }
-    })
+    });
   }
 
-  getResult(){
+  getResult() {
     return this._result;
   }
 
-  setResult(v:any) {
+  setResult(v: any) {
     this._result = v;
   }
 
-  getError(){
+  getError() {
     return this._error;
   }
 
+  /**
+   * Wait till the job is begins
+   */
   public starting(): Promise<QueueJob<T>> {
-    let self = this;
-    return new Promise(function (resolve) {
-      if (!self._start) {
-        self._queue.once('job ' + self.id + ' start', function () {
-          resolve(self)
-        })
+    return new Promise((resolve) => {
+      if (!this._start) {
+        this._queue.once(this.jobEventName('start'), function () {
+          resolve(this);
+        });
       } else {
         // if started then pass through
-        resolve(self)
+        resolve(this);
       }
-    })
+    });
   }
 
+  /**
+   * Wait till the job is finished
+   */
   public done(): Promise<QueueJob<T>> {
-    return new Promise( (resolve,reject) => {
+    return new Promise((resolve, reject) => {
       if (!this._stop) {
-        this._queue.once('job ' + this.id + ' stop', function (err:Error = null) {
-          if(err){
+        this._queue.once(this.jobEventName('stop'), function (err: Error = null) {
+          if (err) {
             reject(err);
-          }else{
-            resolve(this)
+          } else {
+            resolve(this);
           }
-        })
+        });
       } else {
         // if stopped then pass through
-        resolve(this)
+        resolve(this);
       }
-    })
+    });
   }
 
+  /**
+   * Fire event that the job was enqueued
+   */
   public doEnqueue() {
     this._enqueued = new Date();
-    this._queue.emit('job ' + this._id + ' enqueued', this)
+    this._queue.emit(this.jobEventName('enqueued'), this);
   }
 
+  /**
+   * Fire event that the job was started
+   */
   public doStart() {
     this._start = new Date();
-    this._queue.emit('job ' + this._id + ' start')
+    this._queue.emit(this.jobEventName('start'));
   }
 
-  public doStop(err:Error = null) {
+  /**
+   * Fire event that the job was stopped
+   */
+  public doStop(err: Error = null) {
     this._error = err;
     this._stop = new Date();
     this._duration = this._stop.getTime() - this._start.getTime();
-    this._queue.emit('job ' + this._id + ' stop',err);
+    this._queue.emit(this.jobEventName('stop'), err);
   }
 
+  /**
+   * Check if the job is enqueued
+   */
   public isEnqueued(): boolean {
-    return this._enqueued != null && this._start == null && this._stop == null
+    return this._enqueued != null && this._start == null && this._stop == null;
   }
 
+  /**
+   * Check if the job is started
+   */
   public isStarted(): boolean {
-    return this._enqueued != null && this._start != null && this._stop == null
+    return this._enqueued != null && this._start != null && this._stop == null;
   }
 
+  /**
+   * Check if the job is finished
+   */
   public isFinished(): boolean {
-    return this._enqueued != null && this._start != null && this._stop != null
+    return this._enqueued != null && this._start != null && this._stop != null;
   }
 
+
+  /**
+   * Fired when the job is finished
+   */
   private onDone() {
-    this.finalize()
+    this.finalize();
   }
 
 
-  private finalize() {
-    this._queue.removeAllListeners('job ' + this._id + ' start');
-    this._queue.removeAllListeners('job ' + this._id + ' stop');
-    this._queue.removeAllListeners('job ' + this._id + ' enqueued');
-
+  /**
+   * Clear references to the _queue object
+   */
+  finalize() {
+    this._queue.removeAllListeners(this.jobEventName('start'));
+    this._queue.removeAllListeners(this.jobEventName('stop'));
+    this._queue.removeAllListeners(this.jobEventName('enqueued'));
+    this._queue = null;
   }
 
+
+  /**
+   * Helper generating the event names for different jobs id and states
+   *
+   * @param type
+   */
+  private jobEventName(type: 'start' | 'stop' | 'enqueued') {
+    return `job ${this._id} ${type}`;
+  }
 
 }

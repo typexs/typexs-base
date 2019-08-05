@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import * as events from 'events';
+import {EventEmitter} from 'events';
 import {IAsyncQueueOptions} from './IAsyncQueueOptions';
 import {IQueueProcessor} from './IQueueProcessor';
 import {IQueueWorkload} from './IQueueWorkload';
@@ -7,6 +7,7 @@ import {QueueJob} from './QueueJob';
 import {Log} from '../logging/Log';
 import {IAsyncQueueStats} from './IAsyncQueueStats';
 import {ILoggerApi} from '../logging/ILoggerApi';
+import {E_DO_PROCESS, E_DRAIN, E_ENQUEUE, E_NO_RUNNING_JOBS} from './Constants';
 
 
 const ASYNC_QUEUE_DEFAULT: IAsyncQueueOptions = {
@@ -14,12 +15,9 @@ const ASYNC_QUEUE_DEFAULT: IAsyncQueueOptions = {
   concurrent: 5
 };
 
-export class AsyncWorkerQueue<T extends IQueueWorkload> extends events.EventEmitter {
 
-  static readonly E_NO_RUNNING_JOBS = 'running empty';
-  static readonly E_DO_PROCESS = 'process';
-  static readonly E_DRAIN = 'drain';
-  static readonly E_ENQUEUE = 'enqueue';
+export class AsyncWorkerQueue<T extends IQueueWorkload> extends EventEmitter {
+
 
   _inc = 0;
 
@@ -41,15 +39,16 @@ export class AsyncWorkerQueue<T extends IQueueWorkload> extends events.EventEmit
 
   logger: ILoggerApi;
 
+
   constructor(processor: IQueueProcessor<T>, options: IAsyncQueueOptions = {name: 'none'}) {
     super();
-    this.setMaxListeners(1000);
+    this.setMaxListeners(10000);
     this.options = _.defaults(options, ASYNC_QUEUE_DEFAULT);
     this.logger = _.get(this.options, 'logger', Log.getLoggerFor(AsyncWorkerQueue, {prefix: this.options.name}));
     this.processor = processor;
-    this.on(AsyncWorkerQueue.E_DO_PROCESS, this.process.bind(this));
-    this.on(AsyncWorkerQueue.E_ENQUEUE, this.enqueue.bind(this));
-    this.on(AsyncWorkerQueue.E_DRAIN, this.drained.bind(this));
+    this.on(E_DO_PROCESS, this.process.bind(this));
+    this.on(E_ENQUEUE, this.enqueue.bind(this));
+    this.on(E_DRAIN, this.drained.bind(this));
   }
 
   private next() {
@@ -59,7 +58,7 @@ export class AsyncWorkerQueue<T extends IQueueWorkload> extends events.EventEmit
       ' running=' + this.running() + ' todo=' + this.enqueued() + ' active=' + this.active.length);
     if (this.isPaused()) {
       if (!this.isRunning()) {
-        this.emit(AsyncWorkerQueue.E_NO_RUNNING_JOBS);
+        this.emit(E_NO_RUNNING_JOBS);
       }
     } else {
       this.fireProcess();
@@ -77,9 +76,6 @@ export class AsyncWorkerQueue<T extends IQueueWorkload> extends events.EventEmit
     };
   }
 
-  private paused() {
-
-  }
 
   private process() {
     // ignore if is paused
@@ -116,13 +112,13 @@ export class AsyncWorkerQueue<T extends IQueueWorkload> extends events.EventEmit
           worker.doStop(err);
           self._error++;
           self.next();
-          this.logger.error('Queue=>', err);
+          this.logger.error(err);
         });
 
     } else {
       if (this.amount() === 0) {
         // notthing to do
-        this.emit(AsyncWorkerQueue.E_DRAIN);
+        this.emit(E_DRAIN);
       } else {
         // worker exists and occupied
       }
@@ -143,7 +139,7 @@ export class AsyncWorkerQueue<T extends IQueueWorkload> extends events.EventEmit
   }
 
   private fireProcess() {
-    this.emit(AsyncWorkerQueue.E_DO_PROCESS);
+    this.emit(E_DO_PROCESS);
   }
 
 
@@ -153,9 +149,9 @@ export class AsyncWorkerQueue<T extends IQueueWorkload> extends events.EventEmit
   await(): Promise<void> {
     const self = this;
 
-    return new Promise<void>(function (resolve) {
+    return new Promise<void>((resolve) => {
       if (self.amount() > 0) {
-        self.once(AsyncWorkerQueue.E_DRAIN, function () {
+        self.once(E_DRAIN, function () {
           resolve();
         });
       } else {
@@ -174,7 +170,7 @@ export class AsyncWorkerQueue<T extends IQueueWorkload> extends events.EventEmit
   push(entry: T): QueueJob<T> {
     const _entry: QueueJob<T> = new QueueJob(this, entry);
     // let $p = _entry.enqueued();
-    this.emit(AsyncWorkerQueue.E_ENQUEUE, _entry);
+    this.emit(E_ENQUEUE, _entry);
     return _entry;
   }
 
@@ -212,9 +208,9 @@ export class AsyncWorkerQueue<T extends IQueueWorkload> extends events.EventEmit
   pause(): Promise<boolean> {
     const self = this;
     this._paused = true;
-    return new Promise(function (resolve) {
+    return new Promise((resolve) => {
       if (self.isRunning()) {
-        self.once(AsyncWorkerQueue.E_NO_RUNNING_JOBS, function () {
+        self.once(E_NO_RUNNING_JOBS, () => {
           resolve(self._paused);
         });
       } else {
@@ -231,5 +227,18 @@ export class AsyncWorkerQueue<T extends IQueueWorkload> extends events.EventEmit
     }
   }
 
+  async shutdown(doAwait: boolean = false) {
+    if (doAwait) {
+      await this.await();
+    }
+    await this.pause();
+    this.logger = null;
+    this.processor = null;
+    this.worker.map(jobs => jobs.finalize());
+    this.active.map(jobs => jobs.finalize());
+    this.worker = null;
+    this.active = null;
+    this.removeAllListeners();
+  }
 
 }

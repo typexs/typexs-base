@@ -111,7 +111,7 @@ class TasksSystemSpec {
 
     p.shutdown();
     await p.done;
-    remoteNode = remoteNodes.shift();
+    remoteNode = remoteNodes.pop();
     expect(remoteNode.nodeId).to.be.eq('fakeapp01');
     expect(remoteNode.state).to.be.eq('unregister');
     expect(system.nodes).to.have.length(0);

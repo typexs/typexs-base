@@ -109,8 +109,12 @@ export class System {
     delete nodeInfo.isBackend;
     let doSave = false;
     const node = _.find(this.nodes, n => n.nodeId === nodeInfo.nodeId);
-    if (!node && (nodeInfo.state === 'register' || nodeInfo.state === 'idle')) {
+    if ((nodeInfo.state === 'register')) {
+      if (node) {
+        _.remove(this.nodes, node);
+      }
       this.nodes.push(nodeInfo);
+
       Log.debug('add remote node ' + nodeInfo.hostname + ':' + nodeInfo.nodeId);
       doSave = true;
       await EventBus.postAndForget(this.node);
@@ -119,7 +123,7 @@ export class System {
       } catch (e) {
         Log.error(e);
       }
-    } else if (node && nodeInfo.state === 'unregister') {
+    } else if (nodeInfo.state === 'unregister') {
       _.remove(this.nodes, n => n.nodeId === nodeInfo.nodeId);
       doSave = true;
       Log.debug('remove remote node ' + nodeInfo.hostname + ':' + nodeInfo.nodeId);

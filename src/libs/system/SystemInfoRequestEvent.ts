@@ -1,5 +1,5 @@
-import {AbstractEvent} from "../events/AbstractEvent";
+import {AbstractEvent} from '../events/AbstractEvent';
 
-export class SystemInfoRequestEvent extends AbstractEvent{
+export class SystemInfoRequestEvent extends AbstractEvent {
 
 }

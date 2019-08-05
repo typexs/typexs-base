@@ -59,10 +59,12 @@ export class System {
     return this.enabled;
   }
 
+
   static enableDistribution(b: boolean = true) {
     this.enabled = b;
     Config.set(APP_SYSTEM_DISTRIBUTED, b, TYPEXS_NAME);
   }
+
 
   async initialize(hostname: string, nodeId: string) {
     const key = [hostname, nodeId].join(C_KEY_SEPARATOR);
@@ -137,7 +139,6 @@ export class System {
         Log.error(e);
       }
     }
-
     return this.node;
   }
 
@@ -193,7 +194,12 @@ export class System {
     this.info.cpuUsage = process.cpuUsage();
   }
 
-
+  /**
+   * Act on info request event and send the
+   * system runtime informations back
+   *
+   * @param event
+   */
   @subscribe(SystemInfoRequestEvent)
   onInfoRequest(event: SystemInfoRequestEvent) {
     if (this.node.nodeId === event.nodeId) {
@@ -210,12 +216,15 @@ export class System {
     return Promise.resolve();
   }
 
-
+  /**
+   * Register this system node
+   */
   async register() {
     await this.gatherNodeInfos();
     this.node.state = 'register';
     this._registered = true;
     await EventBus.register(this);
+
 
     this.updateTimer = setInterval(this.updateInfo.bind(this), 5000);
     const ret = await EventBus.post(this.node);
@@ -235,10 +244,12 @@ export class System {
     if (this.storageRef) {
       await this.storageRef.getController().save(this.node);
     }
-
   }
 
 
+  /**
+   * Method for unregister blocking objects on system shutdown
+   */
   async unregister() {
     if (!this._registered) {
       return;

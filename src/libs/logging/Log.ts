@@ -20,7 +20,8 @@ const DEFAULT_OPTIONS: ILoggerOptions = {
         name: 'console',
         // stderrLevels: [],
         timestamp: true,
-        json: false
+        json: false,
+
       }
     }
   ]
@@ -121,6 +122,10 @@ export class Log {
     Log.log.apply(Log, args);
   }
 
+  static trace(...args: any[]) {
+    args.unshift('SILLY');
+    Log.log.apply(Log, args);
+  }
 
   static error(...args: any[]) {
     args.unshift('ERROR');

@@ -132,7 +132,7 @@ export class WinstonLoggerJar implements ILoggerApi {
     if (_.isBoolean(set)) {
       this.enabled = set;
     }
-    return this.enabled;
+    return this.enabled && Log.enable;
   }
 
 
@@ -165,7 +165,7 @@ export class WinstonLoggerJar implements ILoggerApi {
 
 
   trace(...msg: any[]): void {
-    this.log('trace', ...msg);
+    this.log('silly', ...msg);
   }
 
 

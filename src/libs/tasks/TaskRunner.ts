@@ -229,7 +229,6 @@ export class TaskRunner extends EventEmitter {
           parent.subTaskNrs.push(taskRun.nr);
         }
       }
-
     }
   }
 

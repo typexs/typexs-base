@@ -40,14 +40,13 @@ export class QueueJob<T extends IQueueWorkload> {
   }
 
   public enqueued(): Promise<QueueJob<T>> {
-    const self = this;
-    return new Promise(function (resolve) {
-      if (!self._enqueued) {
-        self._queue.once(this.jobEventName('enqueued'), function (job: QueueJob<T>) {
+    return new Promise((resolve) => {
+      if (!this._enqueued) {
+        this._queue.once(this.jobEventName('enqueued'), (job: QueueJob<T>) => {
           resolve(job);
         });
       } else {
-        resolve(self);
+        resolve(this);
       }
     });
   }
@@ -70,7 +69,7 @@ export class QueueJob<T extends IQueueWorkload> {
   public starting(): Promise<QueueJob<T>> {
     return new Promise((resolve) => {
       if (!this._start) {
-        this._queue.once(this.jobEventName('start'), function () {
+        this._queue.once(this.jobEventName('start'), () => {
           resolve(this);
         });
       } else {
@@ -86,7 +85,7 @@ export class QueueJob<T extends IQueueWorkload> {
   public done(): Promise<QueueJob<T>> {
     return new Promise((resolve, reject) => {
       if (!this._stop) {
-        this._queue.once(this.jobEventName('stop'), function (err: Error = null) {
+        this._queue.once(this.jobEventName('stop'), (err: Error = null) => {
           if (err) {
             reject(err);
           } else {

@@ -25,7 +25,7 @@ import {TaskLog} from '../../../src/entities/TaskLog';
 import {StorageRef} from '../../../src/libs/storage/StorageRef';
 
 
-const LOG_EVENT = TestHelper.logEnable(false);
+const LOG_EVENT = TestHelper.logEnable(true);
 let bootstrap: Bootstrap = null;
 
 @suite('functional/tasks/tasks_worker')
@@ -563,7 +563,7 @@ class TasksWorkerSpec {
       .setConfigSources([{type: 'system'}])
       .configure(<ITypexsOptions & any>{
         app: {name: 'test', nodeId: 'worker'},
-        logging: {enable: LOG_EVENT, level: 'debug'},
+        logging: {enable: true, level: 'debug'},
         modules: {paths: [__dirname + '/../../..']},
         storage: {default: TEST_STORAGE_OPTIONS},
         eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}},

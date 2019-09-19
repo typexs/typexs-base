@@ -5,7 +5,6 @@ import * as fs from 'fs';
 import {PlatformUtils} from 'commons-base';
 
 import {IQueueProcessor} from '../libs/queue/IQueueProcessor';
-import {Cache} from '../libs/cache/Cache';
 import {Tasks} from '../libs/tasks/Tasks';
 import {AsyncWorkerQueue} from '../libs/queue/AsyncWorkerQueue';
 import {TasksStorageHelper} from '../libs/tasks/helper/TasksStorageHelper';
@@ -31,9 +30,6 @@ export class TaskMonitorWorker implements IQueueProcessor<TaskEvent>, IWorker {
   nodeId: string;
 
   queue: AsyncWorkerQueue<TaskEvent>;
-
-  @Inject(Cache.NAME)
-  cache: Cache;
 
   @Inject(Tasks.NAME)
   tasks: Tasks;
@@ -88,7 +84,7 @@ export class TaskMonitorWorker implements IQueueProcessor<TaskEvent>, IWorker {
         if (this.storageRef) {
           // storage may be not initialized
           if (event.data) {
-            await TasksStorageHelper.save(event.data, this.storageRef, this.cache);
+            await TasksStorageHelper.save(event.data, this.storageRef);
           } else {
             this.logger.error('event from ' + event.nodeId + ' has no data to save', event);
           }

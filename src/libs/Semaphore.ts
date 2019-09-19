@@ -17,10 +17,12 @@ export class Semaphore extends EventEmitter {
   private waiting: { resolve: Function, err: Function }[] = [];
 
   private readonly max: number;
+  private readonly name: string;
 
-  constructor(max: number) {
+  constructor(max: number, name: string = null) {
     super();
     this.max = max;
+    this.name = name;
   }
 
   /**
@@ -98,7 +100,7 @@ export class Semaphore extends EventEmitter {
         this.once('empty', fn);
         const timer = setTimeout(() => {
           this.removeListener('empty', fn);
-          reject(new Error('timeout waiting for free semaphore'));
+          reject(new Error('timeout waiting for free semaphore ' + this.name));
         }, timeout);
       });
     }

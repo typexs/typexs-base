@@ -7,7 +7,7 @@ import {IShutdown} from './api/IShutdown';
 import {RuntimeLoader} from './base/RuntimeLoader';
 import {Cache} from './libs/cache/Cache';
 import {ICacheConfig} from './libs/cache/ICacheConfig';
-import {APP_SYSTEM_DISTRIBUTED, C_EVENTBUS, K_CLS_CACHE_ADAPTER, K_CLS_SCHEDULE_ADAPTER_FACTORIES} from './libs/Constants';
+import {C_EVENTBUS, K_CLS_CACHE_ADAPTER, K_CLS_SCHEDULE_ADAPTER_FACTORIES} from './libs/Constants';
 import {Log} from './libs/logging/Log';
 import {IScheduleDef} from './libs/schedule/IScheduleDef';
 import {Scheduler} from './libs/schedule/Scheduler';
@@ -16,7 +16,6 @@ import {Tasks} from './libs/tasks/Tasks';
 import {TasksHelper} from './libs/tasks/TasksHelper';
 import {WatcherRegistry} from './libs/watchers/WatcherRegistry';
 import {Workers} from './libs/worker/Workers';
-import {LockFactory} from './libs/LockFactory';
 
 
 export class Startup implements IBootstrap, IShutdown {
@@ -112,7 +111,7 @@ export class Startup implements IBootstrap, IShutdown {
     this.tasks.reset();
     await this.workers.shutdown();
     await this.watcherRegistry.stopAll();
-    LockFactory.$().shutdown(10000);
+
   }
 
 }

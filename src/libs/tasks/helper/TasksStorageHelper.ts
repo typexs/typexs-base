@@ -19,8 +19,7 @@ export class TasksStorageHelper {
 
 
   static async save(taskRunnerResults: ITaskRunnerResult,
-                    storageRef: StorageRef,
-                    cache: Cache = null) {
+                    storageRef: StorageRef) {
 
     let semaphore = null;
     if (!this.semaphores[taskRunnerResults.id]) {
@@ -78,10 +77,10 @@ export class TasksStorageHelper {
           };
         }
 
-        if (exists.tasksId && exists.respId && cache) {
-          const cacheKey = ['tasklog', exists.tasksId, targetId].join(':');
-          cache.set(cacheKey, exists);
-        }
+        // if (exists.tasksId && exists.respId && cache) {
+        //   const cacheKey = ['tasklog', exists.tasksId, targetId].join(':');
+        //   cache.set(cacheKey, exists);
+        // }
       }
       // TODO notify a push api if it exists
     }

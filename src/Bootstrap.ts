@@ -42,6 +42,7 @@ import {K_CLS_WORKERS} from './libs/worker/Constants';
 import {K_CLS_TASKS} from './libs/tasks/Constants';
 import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
 import {ICommand} from './libs/commands/ICommand';
+import {LockFactory} from "./libs/LockFactory";
 
 useContainer(Container);
 
@@ -599,6 +600,11 @@ export class Bootstrap {
       Log.debug('shutdown of ' + ClassesLoader.getModulName(bootstrap.constructor));
       await (<IShutdown>bootstrap).shutdown();
     }
+
+    LockFactory.$().shutdown(10000);
+    // shutdown storages
+    // await Promise.all(this.storage.getNames().map(x => this.storage.get(x).shutdownOnFinish()));
+
   }
 
   getActivators(): IActivator[] {

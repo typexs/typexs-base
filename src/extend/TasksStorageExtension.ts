@@ -58,7 +58,7 @@ export class TasksStorageExtension implements ITasksApi {
       if (_runner.getOption('local', false)) {
         // only local tasks must be saved
         const results = _runner.collectStats();
-        return TasksStorageHelper.save(results, this.storageRef, this.cache);
+        return TasksStorageHelper.save(results, this.storageRef);
       }
     }
     return null;

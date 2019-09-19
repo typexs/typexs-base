@@ -33,10 +33,10 @@ export class StorageRef {
     // Apply some unchangeable and fixed options
     // options = Utils.merge(options, FIX_STORAGE_OPTIONS);
 
-    if (options.type == 'sqlite') {
+    if (options.type ===  'sqlite') {
       const opts = <SqliteConnectionOptions & IStorageOptions>options;
 
-      if (opts.database != ':memory:' &&
+      if (opts.database !== ':memory:' &&
         !_.isEmpty(opts.database) &&
         !path.isAbsolute(opts.database)) {
         // TODO check if file exists
@@ -63,9 +63,9 @@ export class StorageRef {
 
     this.options = _.assign({}, DEFAULT_STORAGEREF_OPTIONS, options);
 
-    if (this.options.type == 'sqlite') {
+    if (this.options.type ===  'sqlite') {
       this.singleConnection = true;
-      if (this.options['database'] == ':memory:') {
+      if (this.options['database'] ===  ':memory:') {
         this.isMemoryOnly = true;
       }
     }
@@ -73,7 +73,7 @@ export class StorageRef {
     let out = '';
     for (const x in this.options) {
       // todo define per config?
-      if (['type', 'logging', 'database', 'dialect', 'synchronize', 'name'].indexOf(x) == -1) {
+      if (['type', 'logging', 'database', 'dialect', 'synchronize', 'name'].indexOf(x) ===  -1) {
         continue;
       }
       if (_.isString(this.options[x])) {
@@ -195,7 +195,7 @@ export class StorageRef {
       const _ref = ClassRef.get(ref, REGISTRY_TYPEORM);
       return this.options.entities.find(x => _ref.machineName === StorageRef.machineName(x));
     } else {
-      return this.options.entities.find(x => (<IClassRef>ref).machineName === StorageRef.machineName(x));
+      return this.options.entities.find(x => (<IClassRef>ref).machineName ===  StorageRef.machineName(x));
     }
   }
 
@@ -240,14 +240,14 @@ export class StorageRef {
 
   async wrap(conn ?: Connection): Promise<ConnectionWrapper> {
     let wrapper: ConnectionWrapper = null;
-    if ((this.isSingleConnection() && this.connections.length == 0) || !this.isSingleConnection()) {
+    if ((this.isSingleConnection() && this.connections.length ===  0) || !this.isSingleConnection()) {
       if (conn) {
         wrapper = new ConnectionWrapper(this, conn);
       } else {
         wrapper = new ConnectionWrapper(this);
       }
       this.connections.push(wrapper);
-    } else if (this.isSingleConnection() && this.connections.length == 1) {
+    } else if (this.isSingleConnection() && this.connections.length ===  1) {
       wrapper = this.connections[0];
     }
     return Promise.resolve(wrapper);

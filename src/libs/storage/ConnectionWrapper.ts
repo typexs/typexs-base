@@ -2,6 +2,7 @@ import {Connection, EntityManager, getConnectionManager} from 'typeorm';
 import {Log} from '../logging/Log';
 import {StorageRef} from './StorageRef';
 import {Semaphore} from '../Semaphore';
+import * as _ from 'lodash';
 
 export class ConnectionWrapper {
 
@@ -22,7 +23,7 @@ export class ConnectionWrapper {
 
   static $INC = 0;
 
-  private static _LOCK = new Semaphore(1);
+  private static _LOCK: { [k: string]: Semaphore } = {};
 
   inc: number = ConnectionWrapper.$INC++;
 
@@ -41,6 +42,13 @@ export class ConnectionWrapper {
    */
   persist<Entity>(o: Entity): Promise<any> {
     return this.manager.save(o);
+  }
+
+  get lock() {
+    if (!_.has(ConnectionWrapper._LOCK, this.name)) {
+      ConnectionWrapper._LOCK[this.name] = new Semaphore(1);
+    }
+    return ConnectionWrapper._LOCK[this.name];
   }
 
   save<Entity>(o: Entity): Promise<any> {
@@ -62,7 +70,7 @@ export class ConnectionWrapper {
   }
 
   async connect(): Promise<ConnectionWrapper> {
-    await ConnectionWrapper._LOCK.acquire();
+    await this.lock.acquire();
     try {
       if (!this._connection) {
         this._connection = await getConnectionManager().get(this.name);
@@ -74,19 +82,19 @@ export class ConnectionWrapper {
     } catch (err) {
       Log.error(err);
     } finally {
-      ConnectionWrapper._LOCK.release();
+      this.lock.release();
     }
     return Promise.resolve(this);
   }
 
   async close(): Promise<ConnectionWrapper> {
-    await ConnectionWrapper._LOCK.acquire();
+    await this.lock.acquire();
     try {
       await this.storage.remove(this);
     } catch (err) {
       Log.error(err);
     } finally {
-      ConnectionWrapper._LOCK.release();
+      this.lock.release();
     }
     return Promise.resolve(this);
   }

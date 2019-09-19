@@ -7,6 +7,7 @@ import {TasksApi} from '../api/Tasks.api';
 import {System} from '../libs/system/System';
 import {TasksHelper} from '../libs/tasks/TasksHelper';
 import {ICommand} from '../libs/commands/ICommand';
+import {Log} from '../libs/logging/Log';
 
 
 /**
@@ -85,16 +86,19 @@ export class TaskCommand implements ICommand {
 
     if (taskNames.length > 0) {
       const args = Config.get('argv');
+      try {
+        const results = await TasksHelper.exec(taskNames, {
+          isLocal: isLocal,
+          remote: isRemote,
+          targetId: targetId,
+          skipTargetCheck: true,
+          ...args
+        });
+        Console.log(JSON.stringify(results, null, 2));
+      } catch (e) {
+        Log.error(e);
+      }
 
-      const results = await TasksHelper.exec(taskNames, {
-        isLocal: isLocal,
-        remote: isRemote,
-        targetId: targetId,
-        skipTargetCheck: true,
-        ...args
-      });
-
-      Console.log(JSON.stringify(results, null, 2));
     } else {
       const res = this.tasks.names();
       Console.log('List of supported tasks:');

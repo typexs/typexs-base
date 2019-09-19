@@ -490,7 +490,6 @@ export class Bootstrap {
 
   private addShutdownEvents() {
     process.on('exit', async (code) => {
-      Log.info('Caught interrupt signal [exit]');
       await this.shutdown(code);
     });
     process.on('SIGINT', async () => {

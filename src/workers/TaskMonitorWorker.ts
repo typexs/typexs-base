@@ -65,18 +65,6 @@ export class TaskMonitorWorker implements IQueueProcessor<TaskEvent>, IWorker {
     this.queue.push(event);
   }
 
-  //
-  // onTaskResults(results: ITaskRunnerResult) {
-  //   if (results) {
-  //     const event = new TaskEvent();
-  //     event.topic = 'data';
-  //     event.data = results;
-  //     this.queue.push(event);
-  //   } else {
-  //     this.logger.warn('taskmonitor: results are empty?');
-  //   }
-  // }
-
 
   async do(event: TaskEvent, queue?: AsyncWorkerQueue<any>): Promise<any> {
     try {

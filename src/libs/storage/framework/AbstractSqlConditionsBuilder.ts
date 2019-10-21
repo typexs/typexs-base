@@ -59,7 +59,7 @@ export abstract class AbstractSqlConditionsBuilder {
         }
         const key = this.lookupKeys(k);
         const value = condition[k];
-        if (_.isString(value) || _.isNumber(value) || _.isDate(value)) {
+        if (_.isString(value) || _.isNumber(value) || _.isDate(value) || _.isBoolean(value)) {
           return `${key} = ${this.escape(value)}`;
         } else {
           throw new Error(`SQL.build not a plain type ${key} = ${JSON.stringify(value)} (${typeof value})`);

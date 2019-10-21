@@ -102,7 +102,12 @@ export class TasksHelper {
     return taskSpec.map(x => _.isString(x) ? x : x.name);
   }
 
-
+  /**
+   * Helper analysing parameters and executes local or remote execution
+   *
+   * @param taskSpec
+   * @param argv
+   */
   static async exec(taskSpec: TASK_RUNNER_SPEC[], argv: ITaskExec) {
     // check nodes for tasks
     if (!_.isArray(taskSpec) || _.isEmpty(taskSpec)) {

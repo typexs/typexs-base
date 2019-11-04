@@ -59,7 +59,7 @@ export abstract class AbstractSqlConditionsBuilder {
         }
         const key = this.lookupKeys(k);
         const value = condition[k];
-        if (_.isString(value) || _.isNumber(value) || _.isDate(value) || _.isBoolean(value)) {
+        if (_.isString(value) || _.isNumber(value) || _.isDate(value) || _.isBoolean(value) || _.isNull(value)) {
           return `${key} = ${this.escape(value)}`;
         } else {
           throw new Error(`SQL.build not a plain type ${key} = ${JSON.stringify(value)} (${typeof value})`);
@@ -71,6 +71,12 @@ export abstract class AbstractSqlConditionsBuilder {
   }
 
   escape(str: any) {
+    if (_.isNull(str)) {
+      return 'NULL';
+    }
+    if (_.isBoolean(str)) {
+      return str ? 'TRUE' : 'FALSE';
+    }
     str = this.addSlashes(str);
     if (_.isString(str)) {
       str = `'${str}'`;
@@ -88,6 +94,17 @@ export abstract class AbstractSqlConditionsBuilder {
   $eq(condition: any, key: string = null, value: any = null) {
     const _key = this.lookupKeys(key);
     return `${_key} = ${this.escape(value)}`;
+  }
+
+
+  $isNull(condition: any, key: string = null, value: any = null) {
+    const _key = this.lookupKeys(key);
+    return `${_key} IS NULL`;
+  }
+
+  $isNotNull(condition: any, key: string = null, value: any = null) {
+    const _key = this.lookupKeys(key);
+    return `${_key} IS NOT NULL`;
   }
 
   $ne(condition: any, key: string = null, value: any = null) {

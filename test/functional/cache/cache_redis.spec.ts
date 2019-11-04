@@ -9,10 +9,12 @@ import {Container} from 'typedi';
 import {XS_DEFAULT} from 'commons-schema-api';
 import {Cache} from '../../../src/libs/cache/Cache';
 import {RedisCacheAdapter} from '../../../src/adapters/cache/RedisCacheAdapter';
+import {TestHelper} from '../TestHelper';
 
 let bootstrap: Bootstrap = null;
-@suite('functional/cache/cache_redis')
-class Cache_redisSpec {
+
+@suite(TestHelper.suiteName(__filename))
+class CacheRedisSpec {
 
 
   before() {
@@ -30,11 +32,11 @@ class Cache_redisSpec {
     bootstrap = Bootstrap
       .setConfigSources([{type: 'system'}])
       .configure({
-      app: {name: 'test'},
-      modules: {paths: [__dirname + '/../../..']},
-      storage: {default: TEST_STORAGE_OPTIONS},
-      cache: {bins: {default: 'redis1'}, adapter: {redis1: {type: 'redis', host: '127.0.0.1', port: 6379}}}
-    });
+        app: {name: 'test'},
+        modules: {paths: [__dirname + '/../../..']},
+        storage: {default: TEST_STORAGE_OPTIONS},
+        cache: {bins: {default: 'redis1'}, adapter: {redis1: {type: 'redis', host: '127.0.0.1', port: 6379}}}
+      });
     bootstrap.activateLogger();
     bootstrap.activateErrorHandling();
     await bootstrap.prepareRuntime();
@@ -97,6 +99,26 @@ class Cache_redisSpec {
 
     testValue = await cache.get('test2', testBin);
     expect(testValue).to.be.deep.eq('asdasdasd');
+
+    // expire by EX
+    const v = {k: 'data'};
+    await cache.set('test3', v, testBin, {ttl: 2000});
+    testValue = await cache.get('test3', testBin);
+    expect(testValue).to.be.deep.eq(v);
+
+    await TestHelper.wait(2500);
+    testValue = await cache.get('test3', testBin);
+    expect(testValue).to.be.null;
+
+    // expire by PX
+    const v2 = {k: 'data'};
+    await cache.set('test4', v2, testBin, {ttl: 1234});
+    testValue = await cache.get('test4', testBin);
+    expect(testValue).to.be.deep.eq(v2);
+
+    await TestHelper.wait(1234);
+    testValue = await cache.get('test4', testBin);
+    expect(testValue).to.be.null;
 
     await bootstrap.shutdown();
   }

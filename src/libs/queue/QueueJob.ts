@@ -159,6 +159,9 @@ export class QueueJob<T extends IQueueWorkload> {
    * Clear references to the _queue object
    */
   finalize() {
+    if (!this._stop) {
+      this.doStop();
+    }
     this._queue.removeAllListeners(this.jobEventName('start'));
     this._queue.removeAllListeners(this.jobEventName('stop'));
     this._queue.removeAllListeners(this.jobEventName('enqueued'));

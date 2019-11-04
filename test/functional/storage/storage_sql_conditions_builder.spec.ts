@@ -66,14 +66,9 @@ class StorageSqlConditionsBuilderSpec {
 
   }
 
-  @test.skip
-  async 'build join conditions for one-to-one typeorm relation'() {
-
-  }
 
   @test
   async 'build join conditions for many-to-one typeorm relation'() {
-
     const sql = new TypeOrmSqlConditionsBuilder(TypeOrmEntityRegistry.$().getEntityRefFor(Driver), 'driver');
     const where = sql.build({'car.id': 1});
 
@@ -83,6 +78,44 @@ class StorageSqlConditionsBuilderSpec {
       table: 'car',
       condition: 'car_1.id = driver.carId'
     }]);
+  }
+
+  @test
+  async 'build conditions handle NULL values'() {
+    const sql = new TypeOrmSqlConditionsBuilder(TypeOrmEntityRegistry.$().getEntityRefFor(Driver), 'driver');
+    let where = sql.build({'car.id': null});
+
+    expect(where).to.eq('car_1.id = NULL');
+    expect(sql.getJoins()).to.deep.eq([{
+      alias: 'car_1',
+      table: 'car',
+      condition: 'car_1.id = driver.carId'
+    }]);
+
+    where = sql.build({'car.id': {$ne: null}});
+    expect(where).to.eq('car_2.id <> NULL');
+
+    where = sql.build({'car.id': {$isNull: null}});
+    expect(where).to.eq('car_3.id IS NULL');
+
+    where = sql.build({'car.id': {$isNotNull: null}});
+    expect(where).to.eq('car_4.id IS NOT NULL');
+  }
+
+  @test
+  async 'build conditions handle boolean values'() {
+    const sql = new TypeOrmSqlConditionsBuilder(TypeOrmEntityRegistry.$().getEntityRefFor(Driver), 'driver');
+    let where = sql.build({'car.id': true});
+
+    expect(where).to.eq('car_1.id = TRUE');
+
+    where = sql.build({'car.id': false});
+    expect(where).to.eq('car_2.id = FALSE');
+  }
+
+  @test.skip
+  async 'build join conditions for one-to-one typeorm relation'() {
+
   }
 
   @test.skip

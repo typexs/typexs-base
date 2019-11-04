@@ -9,7 +9,7 @@ export class LogEvent {
 
   private _message = '';
 
-  private prefix = '';
+  prefix = '';
 
   private args: any[] = [];
 

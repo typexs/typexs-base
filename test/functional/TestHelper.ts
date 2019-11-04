@@ -1,10 +1,13 @@
 import * as _ from 'lodash';
-import {PlatformTools} from 'typeorm/platform/PlatformTools';
 import {getMetadataArgsStorage} from 'typeorm';
 import {SystemNodeInfo} from '../../src/entities/SystemNodeInfo';
 import {TaskLog} from '../../src/entities/TaskLog';
 
 export class TestHelper {
+
+  static suiteName(filename: string) {
+    return filename.split('/test/').pop();
+  }
 
   static wait(ms: number) {
     return new Promise(resolve => {

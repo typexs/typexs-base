@@ -15,6 +15,9 @@ import {TEST_STORAGE_OPTIONS} from '../config';
 import {Container} from 'typedi';
 import {ClassRef, XS_DEFAULT} from 'commons-schema-api';
 
+
+let bootstrap: Bootstrap;
+
 @suite('functional/storage/general')
 class StorageGeneralSpec {
 
@@ -22,6 +25,13 @@ class StorageGeneralSpec {
   before() {
     Bootstrap.reset();
     Config.clear();
+  }
+
+
+  async after() {
+    if (bootstrap) {
+      await bootstrap.shutdown();
+    }
   }
 
 
@@ -37,7 +47,7 @@ class StorageGeneralSpec {
   @test
   async 'storage bootstrap'() {
     const appdir = path.join(__dirname, 'fake_app');
-    let bootstrap = await Bootstrap.configure({
+    bootstrap = await Bootstrap.configure({
       app: {path: appdir},
       modules: {paths: [__dirname + '/../../..']}
     }).prepareRuntime();
@@ -56,9 +66,9 @@ class StorageGeneralSpec {
     for (const fn of storage['options']['entities']) {
       entityNames.push((<Function>fn).prototype.constructor.name);
     }
-    expect(entityNames).to.be.deep.eq([
+    expect(entityNames.sort()).to.be.deep.eq([
       'SystemNodeInfo', 'TaskLog', 'ModuleEntity', 'TestEntity'
-    ]);
+    ].sort());
 
     let storageRef = storageManager.forClass('module_entity');
     expect(storageRef.name).to.eq(XS_DEFAULT);
@@ -94,7 +104,7 @@ class StorageGeneralSpec {
 
 
   @test
-  async 'dynamically add entity class in db memory'() {
+  async 'dynamically add entity class to memory db'() {
 
     class X {
       @PrimaryColumn()
@@ -117,7 +127,7 @@ class StorageGeneralSpec {
   }
 
   @test
-  async 'dynamically add entity class in db file'() {
+  async 'dynamically add entity class to file db '() {
 
     class X {
       @PrimaryColumn()

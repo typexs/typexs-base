@@ -4,11 +4,12 @@ import {expect} from 'chai';
 import {Bootstrap} from '../../../src/Bootstrap';
 import {Config} from 'commons-config';
 import {TestEntity} from './fake_app/entities/TestEntity';
+import {TestHelper} from '../TestHelper';
 
 
 let bootstrap: Bootstrap = null;
 
-@suite('functional/storage/configuration')
+@suite(TestHelper.suiteName(__filename))
 class StorageConfigurationSpec {
 
 

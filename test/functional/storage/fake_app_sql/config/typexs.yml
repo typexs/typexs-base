@@ -9,5 +9,5 @@ storage:
     synchronize: true
     type: sqlite
     database: ':memory:'
-    # logging: all
-    # logger: simple-console
+#    logging: all
+#    logger: simple-console

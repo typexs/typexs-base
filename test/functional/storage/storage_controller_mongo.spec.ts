@@ -1,35 +1,41 @@
-import * as path from "path";
+import * as path from 'path';
 import * as _ from 'lodash';
-import {suite, test} from "mocha-typescript";
-import {expect} from "chai";
+import {suite, test} from 'mocha-typescript';
+import {expect} from 'chai';
 
-import {Bootstrap} from "../../../src/Bootstrap";
-import {Config} from "commons-config";
-//import {Car} from "./fake_app_mongo/entities/Car";
-//import {Driver} from "./fake_app_mongo/entities/Driver";
-import {inspect} from "util";
-import {PlatformTools} from "typeorm/platform/PlatformTools";
-import {TestHelper} from "../TestHelper";
+import {Bootstrap} from '../../../src/Bootstrap';
+import {Config} from 'commons-config';
+// import {MdbCar} from "./fake_app_mongo/entities/MdbCar";
+// import {MdbDriver} from "./fake_app_mongo/entities/MdbDriver";
+import {TestHelper} from '../TestHelper';
+
+let bootstrap: Bootstrap;
 
 
-@suite('functional/storage/storage_controller_mongo')
-class Storage_controller_mongoSpec {
+@suite(TestHelper.suiteName(__filename))
+class StorageControllerMongoSpec {
 
 
   before() {
-    TestHelper.typeOrmReset();
+    // TestHelper.typeOrmReset();
     Bootstrap.reset();
     Config.clear();
   }
 
 
+  async after() {
+    if (bootstrap) {
+      await bootstrap.shutdown();
+    }
+  }
+
   @test
   async 'lifecycle save, find, remove'() {
-    const Car = require('./fake_app_mongo/entities/Car').Car;
-    const Driver = require('./fake_app_mongo/entities/Driver').Driver;
+    const MdbCar = require('./fake_app_mongo/entities/MdbCar').MdbCar;
+    const MdbDriver = require('./fake_app_mongo/entities/MdbDriver').MdbDriver;
 
-    let appdir = path.join(__dirname, 'fake_app_mongo');
-    let bootstrap = await Bootstrap
+    const appdir = path.join(__dirname, 'fake_app_mongo');
+    bootstrap = await Bootstrap
       .configure({
         app: {
           path: appdir
@@ -42,35 +48,35 @@ class Storage_controller_mongoSpec {
 
     bootstrap = await bootstrap.activateStorage();
 
-    let storageManager = bootstrap.getStorage();
-    let storageRef = storageManager.get();
-    storageRef.addEntityType(Car);
-    storageRef.addEntityType(Driver);
+    const storageManager = bootstrap.getStorage();
+    const storageRef = storageManager.get();
+    storageRef.addEntityType(MdbCar);
+    storageRef.addEntityType(MdbDriver);
 
-    let c = await storageRef.connect();
-    await c.manager.getMongoRepository(Car).deleteMany({});
-    await c.manager.getMongoRepository(Driver).deleteMany({});
+    const c = await storageRef.connect();
+    await c.manager.getMongoRepository(MdbCar).deleteMany({});
+    await c.manager.getMongoRepository(MdbDriver).deleteMany({});
     await c.close();
 
 
-    let controller = storageRef.getController();
+    const controller = storageRef.getController();
     let inc = 0;
-    let car1 = new Driver();
+    const car1 = new MdbDriver();
     car1.firstName = 'Black';
     car1.lastName = 'Yellow';
     car1.id = 'rec-' + (inc++);
 
-    let car2 = new Driver();
+    const car2 = new MdbDriver();
     car2.firstName = 'Red';
     car2.lastName = 'Green';
     car2.id = 'rec-' + (inc++);
 
-    let car3 = new Driver();
+    const car3 = new MdbDriver();
     car3.firstName = 'Blue';
     car3.lastName = 'Pink';
     car3.id = 'rec-' + (inc++);
 
-    let car4 = new Driver();
+    const car4 = new MdbDriver();
     car4.firstName = 'Gray';
     car4.lastName = 'Dark';
     car4.id = 'rec-' + (inc++);
@@ -90,31 +96,31 @@ class Storage_controller_mongoSpec {
     car3.lastName = 'Pinky';
     driver_save_res = await controller.save([car1, car2, car3, car4], {raw: true});
 
-    let car = new Car();
+    const car = new MdbCar();
     car.name = 'Team Blue';
     car.driver = [car1, car2];
     car.id = 'rec-' + (inc++);
 
-    let car_ = new Car();
+    const car_ = new MdbCar();
     car_.name = 'Team Yellow';
     car_.driver = [car3];
     car_.id = 'rec-' + (inc++);
 
-    let car_save_res = await controller.save(car);
+    const car_save_res = await controller.save(car);
     expect(car_save_res).to.deep.include({
       name: 'Team Blue',
-      id: "rec-4"
+      id: 'rec-4'
     });
     expect(car_save_res.driver).to.have.length(2);
 
-    let car_save_res2 = await controller.save(car_);
+    const car_save_res2 = await controller.save(car_);
     expect(car_save_res2).to.deep.include({
       name: 'Team Yellow',
-      id: "rec-5"
+      id: 'rec-5'
     });
     expect(car_save_res2.driver).to.have.length(1);
 
-    let car_found_all = await controller.find(Car);
+    const car_found_all = await controller.find(MdbCar);
 
     expect(car_found_all).to.have.length(2);
     expect(car_found_all).to.deep.eq([{
@@ -140,10 +146,10 @@ class Storage_controller_mongoSpec {
             _id: 'rec-2'
           }]
       }]);
-    expect(car_found_all[0]).to.be.instanceOf(Car);
+    expect(car_found_all[0]).to.be.instanceOf(MdbCar);
 
-    let driver_found_all = await controller.find(Driver, null, {raw: true});
-    //console.log(driver_found_all);
+    const driver_found_all = await controller.find(MdbDriver, null, {raw: true});
+    // console.log(driver_found_all);
     expect(driver_found_all).to.deep.eq([{
       _id: 'rec-0',
       firstName: 'Black',
@@ -159,11 +165,11 @@ class Storage_controller_mongoSpec {
       },
       {_id: 'rec-3', firstName: 'Gray', lastName: 'Dark', id: 'rec-3'}]);
 
-    let car_found = await controller.find(Car, {id: car.id});
+    const car_found = await controller.find(MdbCar, {id: car.id});
     expect(car_found).to.have.length(1);
 
-    let car_found_raw = await controller.find(Car, {id: car_.id}, {raw: true});
-    //console.log(inspect(car_found_raw, null, 10));
+    const car_found_raw = await controller.find(MdbCar, {id: car_.id}, {raw: true});
+    // console.log(inspect(car_found_raw, null, 10));
     expect(car_found_raw).to.have.length(1);
     expect(car_found_raw[0]).to.deep.eq({
       _id: 'rec-5',
@@ -177,10 +183,10 @@ class Storage_controller_mongoSpec {
         }],
       id: 'rec-5'
     });
-    expect(car_found_raw[0]).to.be.not.instanceOf(Car);
+    expect(car_found_raw[0]).to.be.not.instanceOf(MdbCar);
 
-    let car_by_driver = await controller.find(Car, {'driver.id': car1.id});
-    //console.log(inspect(car_by_driver, false, 10));
+    const car_by_driver = await controller.find(MdbCar, {'driver.id': car1.id});
+    // console.log(inspect(car_by_driver, false, 10));
     expect(car_by_driver).to.have.length(1);
     expect(car_by_driver[0]).to.deep.eq({
       id: 'rec-4',
@@ -196,11 +202,11 @@ class Storage_controller_mongoSpec {
     });
 
 
-    let remove_car = await controller.remove(car_by_driver);
+    const remove_car = await controller.remove(car_by_driver);
     expect(remove_car).to.have.length(1);
-    expect(_.map(remove_car,(d:any) => d.id)).to.deep.eq([undefined]);
+    expect(_.map(remove_car, (d: any) => d.id)).to.deep.eq([undefined]);
 
-    let car_by_driver_empty = await controller.find(Car, {'driver.id': car1.id});
+    const car_by_driver_empty = await controller.find(MdbCar, {'driver.id': car1.id});
     expect(car_by_driver_empty).to.have.length(0);
 
 

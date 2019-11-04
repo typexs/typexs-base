@@ -1,0 +1,13 @@
+## Storage
+
+
+### Configuration
+
+
+
+```
+storage:
+  default:
+    # extends by an existing storage schema
+    extends: string | string[]
+```

@@ -5,16 +5,16 @@ services:
 
 
   typexs_base_dev_mongo:
-    image: mongo
+    image: mongo:4
     ports:
-    - 127.0.0.1:27017:27017
+      - 127.0.0.1:27017:27017
     volumes:
-    - ./local/mongodb:/data/db
+      - ./local/mongodb:/data/db
     networks:
       - typexs_base_dev
 
   typexs_base_dev_redis:
-    image: redis
+    image: redis:5
     ports:
       - 127.0.0.1:6379:6379
     volumes:

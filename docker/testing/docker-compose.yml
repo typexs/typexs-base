@@ -1,19 +1,16 @@
 version: '3'
 services:
 
-
-  mongodb:
-    container_name: typexs_base_test_mongo
-    image: mongo
+  typexs_base_test_mongo:
+    image: mongo:4
     ports:
     - 127.0.0.1:27017:27017
     volumes:
     - ./local/mongodb:/data/db
 
 
-  redis:
-    container_name: typexs_base_test_redis
-    image: redis
+  typexs_base_test_redis:
+    image: redis:5
     ports:
       - 127.0.0.1:6379:6379
     volumes:

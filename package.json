@@ -17,6 +17,7 @@
   "author": "Robert Kania",
   "license": "MIT",
   "devDependencies": {
+    "@allgemein/packaging": "^1.0.6",
     "@types/brace-expansion": "^1.1.0",
     "@types/chai": "^4.1.7",
     "@types/chai-as-promised": "^7.1.0",

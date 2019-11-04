@@ -60,6 +60,12 @@ export class ConnectionWrapper {
     }
   }
 
+  /**
+   * Is the connection opened
+   */
+  isOpened() {
+    return this._connection.isConnected;
+  }
 
   isSingleConnection(): boolean {
     return this.storage.isSingleConnection();

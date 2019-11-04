@@ -6,6 +6,7 @@ import {FindOp} from './framework/typeorm/FindOp';
 import {DeleteOp} from './framework/typeorm/DeleteOp';
 import {Invoker} from '../../base/Invoker';
 import {Container} from 'typedi';
+import {ConnectionWrapper} from './ConnectionWrapper';
 
 
 export class StorageEntityController {
@@ -15,12 +16,33 @@ export class StorageEntityController {
 
   readonly invoker: Invoker;
 
+  private timeout: NodeJS.Timeout;
+
+  connection: ConnectionWrapper;
 
   constructor(ref: StorageRef) {
     this.storageRef = ref;
     this.invoker = Container.get(Invoker.NAME);
   }
 
+  // async connect() {
+  //   if (this.connection) {
+  //     if (!this.connection.isOpened()) {
+  //       await this.connection.close();
+  //       this.connection = await this.storageRef.connect();
+  //     }
+  //   } else {
+  //     this.connection = await this.storageRef.connect();
+  //   }
+  //   return this.connection;
+  // }
+  //
+  // async close() {
+  //   if (this.connection) {
+  //     await this.connection.close();
+  //     this.connection = null;
+  //   }
+  // }
 
   async save<T>(object: T, options?: ISaveOptions): Promise<T>;
   async save<T>(object: T[], options?: ISaveOptions): Promise<T[]>;

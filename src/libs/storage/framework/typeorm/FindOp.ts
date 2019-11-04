@@ -32,7 +32,7 @@ export class FindOp<T> implements IFindOp<T> {
 
     this.connection = await this.controller.storageRef.connect();
     let results: T[] = [];
-    if (this.controller.storageRef.dbType == 'mongodb') {
+    if (this.controller.storageRef.dbType === 'mongodb') {
       results = await this.findMongo(entityType, findConditions);
     } else {
       results = await this.find(entityType, findConditions);
@@ -90,7 +90,7 @@ export class FindOp<T> implements IFindOp<T> {
     if (findConditions) {
       TreeUtils.walk(findConditions, x => {
         if (x.key && _.isString(x.key)) {
-          if (x.key == '$like') {
+          if (x.key === '$like') {
             x.parent['$regex'] = x.parent[x.key].replace('%%', '#$#').replace('%', '.*').replace('#$#', '%%');
           }
         }

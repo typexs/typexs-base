@@ -350,16 +350,32 @@ export class Bootstrap {
     Bootstrap.getContainer().set(K_STORAGE, this.storage);
 
     const o_storage: { [name: string]: IStorageOptions } = Config.get(K_STORAGE, CONFIG_NAMESPACE, {});
+    const storageNames = _.keys(o_storage);
 
-    for (const name in o_storage) {
-      if (!o_storage.hasOwnProperty(name)) {
-        continue;
-      }
-      const settings = o_storage[name];
+    // ...
+
+    for (const name of storageNames) {
+      const settings: any = o_storage[name];
       let entities: Function[] = [];
       if (this.runtimeLoader) {
         const _entities: Function[] = this.runtimeLoader.getClasses(['entity', name].join('.'));
         // Check if classes are realy for typeorm
+        if (_.has(settings, 'extends')) {
+          // if extends property is set
+          let _extends = [];
+          if (_.isString(settings.extends)) {
+            _extends.push(settings.extends);
+          } else {
+            _extends = settings.extends;
+          }
+
+          _extends.forEach((x: string) => {
+            const __entities = this.runtimeLoader.getClasses(['entity', x].join('.'));
+            if (__entities.length > 0) {
+              _entities.push(...__entities);
+            }
+          });
+        }
         const tables: TableMetadataArgs[] = getMetadataArgsStorage().tables;
         entities = tables
           .filter(t => _entities.indexOf(<Function>t.target) !== -1)

@@ -1,19 +1,19 @@
-import {IRuntimeLoaderOptions} from "../base/IRuntimeLoaderOptions";
-import {ILoggerOptions} from "./logging/ILoggerOptions";
-import {IStorageOptions} from "./storage/IStorageOptions";
-import {ICacheConfig} from "./cache/ICacheConfig";
+import {IRuntimeLoaderOptions} from '../base/IRuntimeLoaderOptions';
+import {ILoggerOptions} from './logging/ILoggerOptions';
+import {IStorageOptions} from './storage/IStorageOptions';
+import {ICacheConfig} from './cache/ICacheConfig';
 
 export interface ITypexsOptions {
   app?: {
     name?: string
     path?: string
-  }
+  };
 
-  modules?: IRuntimeLoaderOptions
+  modules?: IRuntimeLoaderOptions;
 
-  logging?: ILoggerOptions
+  logging?: ILoggerOptions;
 
-  storage?: { [name: string]: IStorageOptions }
+  storage?: { [name: string]: IStorageOptions };
 
-  cache?: ICacheConfig
+  cache?: ICacheConfig;
 }

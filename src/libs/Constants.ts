@@ -4,6 +4,7 @@ export const TYPEXS_NAME = 'typexs';
 export const CONFIG_NAMESPACE = 'typexs';
 export const K_WORKDIR = 'workdir';
 
+export const __DEFAULT__ = '__default__';
 
 export const K_CLS_ACTIVATOR = 'activator.js';
 export const K_CLS_BOOTSTRAP = 'bootstrap.js';

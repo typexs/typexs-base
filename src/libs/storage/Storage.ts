@@ -1,16 +1,12 @@
 import {IStorageOptions} from './IStorageOptions';
-import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
 import {StorageRef} from './StorageRef';
 import * as _ from 'lodash';
 
 import {AbstractSchemaHandler} from './AbstractSchemaHandler';
 import {RuntimeLoader} from '../../base/RuntimeLoader';
-import {K_CLS_STORAGE_SCHEMAHANDLER} from '../Constants';
+import {__DEFAULT__, K_CLS_STORAGE_SCHEMAHANDLER} from '../Constants';
 import {DefaultSchemaHandler} from '../../adapters/storage/DefaultSchemaHandler';
 import {IClassRef} from 'commons-schema-api';
-
-
-
 
 
 export class Storage {
@@ -24,14 +20,14 @@ export class Storage {
   private schemaHandler: { [key: string]: Function } = {};
 
   constructor() {
-    this.schemaHandler['__default__'] = DefaultSchemaHandler;
+    this.schemaHandler[__DEFAULT__] = DefaultSchemaHandler;
   }
 
 
   register(name: string, options: IStorageOptions) {
     // Todo load other handling class from baseClass if necassary options.baseClass
     const ref = new StorageRef(options);
-    let type = '__default__';
+    let type = __DEFAULT__;
     if (_.has(this.schemaHandler, options.type)) {
       type = options.type;
     }

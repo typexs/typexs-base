@@ -33,7 +33,7 @@ export class StorageRef {
     // Apply some unchangeable and fixed options
     // options = Utils.merge(options, FIX_STORAGE_OPTIONS);
 
-    if (options.type ===  'sqlite') {
+    if (options.type === 'sqlite') {
       const opts = <SqliteConnectionOptions & IStorageOptions>options;
 
       if (opts.database !== ':memory:' &&
@@ -63,9 +63,9 @@ export class StorageRef {
 
     this.options = _.assign({}, DEFAULT_STORAGEREF_OPTIONS, options);
 
-    if (this.options.type ===  'sqlite') {
+    if (this.options.type === 'sqlite') {
       this.singleConnection = true;
-      if (this.options['database'] ===  ':memory:') {
+      if (this.options['database'] === ':memory:') {
         this.isMemoryOnly = true;
       }
     }
@@ -73,7 +73,7 @@ export class StorageRef {
     let out = '';
     for (const x in this.options) {
       // todo define per config?
-      if (['type', 'logging', 'database', 'dialect', 'synchronize', 'name'].indexOf(x) ===  -1) {
+      if (['type', 'logging', 'database', 'dialect', 'synchronize', 'name'].indexOf(x) === -1) {
         continue;
       }
       if (_.isString(this.options[x])) {
@@ -114,21 +114,26 @@ export class StorageRef {
 
   private _prepared = false;
 
+
   private static getClassName(x: string | EntitySchema | Function) {
     return ClassUtils.getClassName(x instanceof EntitySchema ? x.options.target : x);
   }
+
 
   private static machineName(x: string | EntitySchema | Function) {
     return _.snakeCase(this.getClassName(x));
   }
 
+
   isSingleConnection(): boolean {
     return this.singleConnection || this.isInternalPooled;
   }
 
+
   isOnlyMemory(): boolean {
     return this.isMemoryOnly;
   }
+
 
   addEntityClass(type: Function, name: string, options: EntityOptions = {}) {
     const args: TableMetadataArgs = {
@@ -145,6 +150,7 @@ export class StorageRef {
     this.addEntityType(type);
   }
 
+
   addEntityType(type: EntitySchema | Function): void {
     const opts: any = {
       entities: []
@@ -160,6 +166,7 @@ export class StorageRef {
       opts.entities.push(type);
       this.options = _.assign(this.options, opts);
     }
+
     if (this._prepared) {
       this._forceReload = true;
     }
@@ -174,6 +181,7 @@ export class StorageRef {
     return null;
   }
 
+
   getClassRef(name: string | Function): IClassRef {
     const clazz = this.getEntityClass(name);
     if (clazz) {
@@ -187,6 +195,7 @@ export class StorageRef {
     return !!this.getEntityClass(ref);
   }
 
+
   getEntityClass(ref: IClassRef | string | Function) {
     if (_.isString(ref)) {
       const _ref = _.snakeCase(ref);
@@ -195,7 +204,7 @@ export class StorageRef {
       const _ref = ClassRef.get(ref, REGISTRY_TYPEORM);
       return this.options.entities.find(x => _ref.machineName === StorageRef.machineName(x));
     } else {
-      return this.options.entities.find(x => (<IClassRef>ref).machineName ===  StorageRef.machineName(x));
+      return this.options.entities.find(x => (<IClassRef>ref).machineName === StorageRef.machineName(x));
     }
   }
 
@@ -223,6 +232,7 @@ export class StorageRef {
     return this.prepare();
   }
 
+
   async prepare(): Promise<void> {
     if (!getConnectionManager().has(this.name)) {
       // todo maybe handle exception?
@@ -234,20 +244,19 @@ export class StorageRef {
       await (await this.wrap()).close();
     }
     this._prepared = true;
-    // return Promise.resolve()
   }
 
 
   async wrap(conn ?: Connection): Promise<ConnectionWrapper> {
     let wrapper: ConnectionWrapper = null;
-    if ((this.isSingleConnection() && this.connections.length ===  0) || !this.isSingleConnection()) {
+    if ((this.isSingleConnection() && this.connections.length === 0) || !this.isSingleConnection()) {
       if (conn) {
         wrapper = new ConnectionWrapper(this, conn);
       } else {
         wrapper = new ConnectionWrapper(this);
       }
       this.connections.push(wrapper);
-    } else if (this.isSingleConnection() && this.connections.length ===  1) {
+    } else if (this.isSingleConnection() && this.connections.length === 1) {
       wrapper = this.connections[0];
     }
     return Promise.resolve(wrapper);
@@ -257,6 +266,7 @@ export class StorageRef {
   size() {
     return this.connections.length;
   }
+
 
   async remove(wrapper: ConnectionWrapper) {
     _.remove(this.connections, {inc: wrapper.inc});
@@ -272,9 +282,11 @@ export class StorageRef {
     }
   }
 
+
   getOptions(): IStorageOptions {
     return this.options;
   }
+
 
   getController() {
     return this.controller;
@@ -318,6 +330,7 @@ export class StorageRef {
       this.removeFromConnectionManager();
     }
   }
+
 
   async forceShutdown(): Promise<void> {
     await this.closeConnections();

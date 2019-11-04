@@ -39,13 +39,15 @@ export class SaveOp<T> implements ISaveOp<T> {
       objectsValid = await this.validate();
     }
 
+
     if (objectsValid) {
+      const promises: Promise<any>[] = [];
       const resolveByEntityDef = TypeOrmUtils.resolveByEntityDef(this.objects);
       const entityNames = _.keys(resolveByEntityDef);
       this.c = await this.ec.storageRef.connect();
 
       if (this.isMongoDB()) {
-        const promises = [];
+
         for (const entityName of entityNames) {
           const repo = this.c.manager.getMongoRepository(entityName);
           const entityDef = TypeOrmEntityRegistry.$().getEntityRefFor(entityName);
@@ -58,9 +60,7 @@ export class SaveOp<T> implements ISaveOp<T> {
               }
               bulk.find({_id: e._id}).upsert().replaceOne(e);
             });
-            await bulk.execute();
-
-
+            promises.push(bulk.execute());
           } else {
             resolveByEntityDef[entityName].forEach((x: any) => {
               if (!x._id && propertyDef.name !== '_id') {
@@ -78,7 +78,7 @@ export class SaveOp<T> implements ISaveOp<T> {
             promises.push(p);
           }
         }
-        await Promise.all(promises);
+
       } else {
         // start transaction, got to leafs and save
         if (this.c.isSingleConnection()) {
@@ -87,20 +87,25 @@ export class SaveOp<T> implements ISaveOp<T> {
 
         if (options.noTransaction) {
           for (const entityName of entityNames) {
-            await this.c.manager.getRepository(entityName).save(resolveByEntityDef[entityName]);
+            const p = this.c.manager.getRepository(entityName).save(resolveByEntityDef[entityName]);
+            promises.push(p);
           }
         } else {
-          const results = await this.c.manager.transaction(async em => {
-            const promises = [];
+          const promise = this.c.manager.transaction(async em => {
+            const _promises = [];
             for (const entityName of entityNames) {
               const p = em.getRepository(entityName).save(resolveByEntityDef[entityName]);
-              promises.push(p);
+              _promises.push(p);
             }
-            return Promise.all(promises);
+            return Promise.all(_promises);
           });
+          promises.push(promise);
         }
       }
 
+      if (promises.length > 0) {
+        await Promise.all(promises);
+      }
       await this.c.close();
     } else {
       throw new ObjectsNotValidError(this.objects, isArray);

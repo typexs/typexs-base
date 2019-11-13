@@ -42,7 +42,7 @@ import {K_CLS_WORKERS} from './libs/worker/Constants';
 import {K_CLS_TASKS} from './libs/tasks/Constants';
 import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
 import {ICommand} from './libs/commands/ICommand';
-import {LockFactory} from "./libs/LockFactory";
+import {LockFactory} from './libs/LockFactory';
 
 useContainer(Container);
 
@@ -354,6 +354,7 @@ export class Bootstrap {
 
     // ...
 
+    const storageRefs = [];
     for (const name of storageNames) {
       const settings: any = o_storage[name];
       let entities: Function[] = [];
@@ -388,8 +389,30 @@ export class Bootstrap {
       if (storageRef.getOptions().connectOnStartup) {
         await storageRef.prepare();
       }
+      storageRefs.push(storageRef);
       Bootstrap.getContainer().set([K_STORAGE, name].join('.'), storageRef);
     }
+
+    for (const ref of storageRefs) {
+      let _extended = [];
+      const extended = ref.getOptions().extends;
+      if (_.isString(extended)) {
+        _extended.push(extended);
+      } else {
+        _extended = extended;
+      }
+
+      if (!_.isEmpty(_extended)) {
+        for (const ext of _extended) {
+          const extRef = this.storage.get(ext);
+          extRef.addExtendedStorageRef(ref);
+          ref.addExtendingStorageRef(extRef);
+        }
+      }
+
+
+    }
+
     return this;
   }
 

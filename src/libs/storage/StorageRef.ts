@@ -114,6 +114,9 @@ export class StorageRef {
 
   private _prepared = false;
 
+  private _extending: StorageRef[] = [];
+
+  private _extends: StorageRef[] = [];
 
   private static getClassName(x: string | EntitySchema | Function) {
     return ClassUtils.getClassName(x instanceof EntitySchema ? x.options.target : x);
@@ -134,6 +137,13 @@ export class StorageRef {
     return this.isMemoryOnly;
   }
 
+  getExtendingStorageRef(): StorageRef[] {
+    return this._extending;
+  }
+
+  getExtendedStorageRef(): StorageRef[] {
+    return this._extends;
+  }
 
   addEntityClass(type: Function, name: string, options: EntityOptions = {}) {
     const args: TableMetadataArgs = {
@@ -148,6 +158,15 @@ export class StorageRef {
     };
     getMetadataArgsStorage().tables.push(args);
     this.addEntityType(type);
+  }
+
+
+  populateToExtended(type: EntitySchema | Function) {
+    if (!_.isEmpty(this.getExtendedStorageRef())) {
+      for (const ref of this.getExtendedStorageRef()) {
+        ref.addEntityType(type);
+      }
+    }
   }
 
 
@@ -170,6 +189,9 @@ export class StorageRef {
     if (this._prepared) {
       this._forceReload = true;
     }
+
+    this.populateToExtended(type);
+
   }
 
 
@@ -337,4 +359,11 @@ export class StorageRef {
     this.removeFromConnectionManager();
   }
 
+  addExtendedStorageRef(ref: StorageRef) {
+    this._extends.push(ref);
+  }
+
+  addExtendingStorageRef(extRef: StorageRef) {
+    this._extending.push(extRef);
+  }
 }

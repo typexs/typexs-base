@@ -1,5 +1,6 @@
 import {ILoggerApi} from 'commons-base';
 import {TaskState} from './TaskState';
+import {Counter} from '../helper/Counter';
 
 export interface ITaskRuntimeContainer {
 
@@ -16,5 +17,11 @@ export interface ITaskRuntimeContainer {
   total?(total: number): void;
 
   addTask(name: string, incomings?: any): Promise<TaskState>;
+
+  /**
+   * Get counters entry for increase/decrease some value
+   * @param key
+   */
+  counter(key: string): Counter;
 
 }

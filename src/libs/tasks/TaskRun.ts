@@ -56,6 +56,11 @@ export class TaskRun {
   }
 
 
+  getTaskName() {
+    return this.$taskRef.name;
+  }
+
+
   taskRef() {
     return this.$taskRef;
   }
@@ -65,13 +70,16 @@ export class TaskRun {
     return this.$runner;
   }
 
+
   isRunning() {
     return this.status.running;
   }
 
+
   isDone() {
     return this.status.done;
   }
+
 
   ready() {
     if (!this.isDone() && !this.isRunning()) {
@@ -104,7 +112,7 @@ export class TaskRun {
       this.$wrapper.logger().debug('taskRef start: ' + this.taskRef().name);
       const outgoings: TaskExchangeRef[] = this.taskRef().getOutgoings();
 
-      this.status.incoming =  _.clone(incoming);
+      this.status.incoming = _.clone(incoming);
 
       // let _incoming = this.$incoming;
       const runtimeReference = this.taskRef().getRuntime();
@@ -142,6 +150,7 @@ export class TaskRun {
     }
   }
 
+
   error(err: Error) {
     if (err) {
       this.status.error = err;
@@ -150,13 +159,16 @@ export class TaskRun {
     }
   }
 
+
   result(res: any) {
     this.status.result = res;
   }
 
+
   hasError() {
     return !!this.status.error;
   }
+
 
   stop() {
     this.$wrapper.logger().debug('stop: ' + this.taskRef().name);
@@ -170,6 +182,7 @@ export class TaskRun {
     this.$wrapper.done();
     this.getRunner().emit('task_' + this.nr + '_done');
   }
+
 
   asPromise(): Promise<TaskState> {
     return new Promise((resolve, reject) => {
@@ -196,10 +209,12 @@ export class TaskRun {
     this.status.weight += nr;
   }
 
+
   update() {
     this.$runner.api().onProgress(this);
     this.getRunner().update(this.taskRef().name);
   }
+
 
   stats() {
     const stats: ITaskRunResult = _.clone(this.status);

@@ -12,6 +12,7 @@ import {RuntimeLoader} from '../../base/RuntimeLoader';
 import {Tasks} from './Tasks';
 import {Log} from '../logging/Log';
 import {TaskRunner} from './TaskRunner';
+import {TaskRunnerRegistry} from "./TaskRunnerRegistry";
 
 
 export class TasksHelper {
@@ -122,6 +123,21 @@ export class TasksHelper {
     const isRemote = _.get(argv, 'remote', false);
     const skipTargetCheck = _.get(argv, 'skipTargetCheck', false);
 
+    if (argv.executionConcurrency) {
+      if (argv.executionConcurrency !== 0) {
+        const registry = Container.get(TaskRunnerRegistry.NAME) as TaskRunnerRegistry;
+        const counts = registry.getTaskCounts(taskNames);
+        if (!_.isEmpty(counts)) {
+          const max = _.max(_.values(counts));
+          if (max >= argv.executionConcurrency) {
+            Log.warn(`task command: maximal concurrent process of ${taskNames} reached (${max} < ${argv.executionConcurrency}). `);
+            return null;
+          }
+        }
+      }
+
+    }
+
     if (targetId === null && !isRemote) {
       isLocal = true;
     } else {
@@ -140,7 +156,10 @@ export class TasksHelper {
 
       Log.debug('task command: before request fire');
       const execReq = Container.get(TaskExecutionRequestFactory).createRequest();
-      const results = await execReq.run(taskSpec, argv, {targetIds: targetId ? [targetId] : [], skipTargetCheck: skipTargetCheck});
+      const results = await execReq.run(taskSpec, argv, {
+        targetIds: targetId ? [targetId] : [],
+        skipTargetCheck: skipTargetCheck
+      });
       Log.debug('task command: event enqueue results', results);
       return results;
       // } else {

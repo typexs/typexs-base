@@ -29,8 +29,19 @@ import {Stream} from 'stream';
 import {ITaskRunnerOptions} from './ITaskRunnerOptions';
 import {CryptUtils} from '../utils/CryptUtils';
 import {TasksApi} from '../../api/Tasks.api';
+import {TaskRunnerRegistry} from './TaskRunnerRegistry';
 
-
+/**
+ * Container for single or multiple task execution
+ *
+ * Events:
+ *
+ * - TASKRUN_STATE_FINISHED
+ * - TASKRUN_STATE_NEXT
+ * - TASKRUN_STATE_RUN
+ * - TASKRUN_STATE_DONE
+ *
+ */
 export class TaskRunner extends EventEmitter {
 
   static taskRunnerId = 0;
@@ -129,7 +140,7 @@ export class TaskRunner extends EventEmitter {
     });
     this.taskLogger.info('execute tasks: ' + this.$tasks.map(t => t.taskRef().name).join(', '));
 
-    const sefl = this;
+    const self = this;
     this.readStream = new Stream.Readable({
       read(size: number) {
         return size > 0;
@@ -138,7 +149,7 @@ export class TaskRunner extends EventEmitter {
 
     this.writeStream = new Stream.Writable({
       write(chunk: any, encoding: any, next: any) {
-        (<any>sefl.readStream).push(chunk, encoding);
+        (<any>self.readStream).push(chunk, encoding);
         next();
       }
     });
@@ -159,11 +170,20 @@ export class TaskRunner extends EventEmitter {
     this.on(TASKRUN_STATE_DONE, this.taskDone.bind(this));
 
     this.state = 'started';
+
+    try {
+      const registry: TaskRunnerRegistry = Container.get(TaskRunnerRegistry.NAME);
+      registry.addRunner(this);
+    } catch (e) {
+      this.getLogger().debug(`couldn't locally register task nr=${this.nr} id=${this.id}`);
+    }
   }
+
 
   getOption(key: string, defaultValue?: any) {
     return _.get(this.$options, key, defaultValue);
   }
+
 
   getOptions() {
     return this.$options;
@@ -174,6 +194,7 @@ export class TaskRunner extends EventEmitter {
     return this.taskNrs++;
   }
 
+
   getLogger() {
     return this.taskLogger;
   }
@@ -181,6 +202,11 @@ export class TaskRunner extends EventEmitter {
 
   getReadStream() {
     return this.readStream;
+  }
+
+
+  getTaskNames(): string[] {
+    return this.$tasks.map(x => x.getTaskName());
   }
 
 

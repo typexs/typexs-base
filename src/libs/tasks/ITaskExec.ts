@@ -3,6 +3,11 @@
  */
 export interface ITaskExec {
   /**
+   * how many task with same names can runn parallel
+   */
+  executionConcurrency?: number;
+
+  /**
    * skip throw error when required parameter found
    */
   skipRequiredThrow?: boolean;

@@ -1,3 +1,4 @@
+import * as _ from 'lodash';
 import {TaskRun} from './TaskRun';
 import {ITaskRuntimeContainer} from './ITaskRuntimeContainer';
 import {TaskRuntimeLogger} from './TaskRuntimeLogger';
@@ -20,6 +21,15 @@ export class TaskRuntimeContainer implements ITaskRuntimeContainer {
   constructor(taskRun: TaskRun) {
     this.$_run_ = taskRun;
     this.$total = 100;
+  }
+
+  /**
+   * Get internal statistic counter
+   *
+   * @param key
+   */
+  counter(key: string) {
+    return this.$_run_.status.counters.get(key);
   }
 
 
@@ -83,10 +93,12 @@ export class TaskRuntimeContainer implements ITaskRuntimeContainer {
 
 
   stats() {
-    return {
+    const obj = this.$_run_.status.counters.asObject();
+    _.assign(obj, {
       progress: this.$progress,
       total: this.$total
-    };
+    });
+    return obj;
   }
 
 }

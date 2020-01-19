@@ -1,4 +1,5 @@
-import {ITaskRunResult} from "./ITaskRunResult";
+import {ITaskRunResult} from './ITaskRunResult';
+import {Counters} from '../helper/Counters';
 
 export class TaskState implements ITaskRunResult {
 
@@ -16,15 +17,15 @@ export class TaskState implements ITaskRunResult {
 
   duration: number;
 
-  weight: number = 0;
+  weight = 0;
 
-  progress: number = 0;
+  progress = 0;
 
-  total: number = 1;
+  total = 1;
 
-  done: boolean = false;
+  done = false;
 
-  running: boolean = false;
+  running = false;
 
   incoming: any = {};
 
@@ -34,7 +35,14 @@ export class TaskState implements ITaskRunResult {
 
   error: Error = null;
 
-  has_error: boolean = false;
+  has_error = false;
+
+  /**
+   * Statistical counters which can be used in task processing
+   *
+   * this.counters.get('item.active').inc()
+   */
+  counters: Counters = new Counters();
 
   calcDuration() {
     this.duration = this.stop.getTime() - this.start.getTime();

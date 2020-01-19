@@ -7,6 +7,7 @@ export {ClassesLoader, ModuleRegistry} from 'commons-moduls';
 export {PlatformUtils, FileUtils, ClassLoader} from 'commons-base';
 
 
+
 export * from './api/Tasks.api';
 export * from './api/ITasksApi';
 
@@ -32,6 +33,8 @@ export * from './base/cli';
 export * from './base/IRuntimeLoaderOptions';
 export * from './base/RuntimeLoader';
 
+export * from './libs/helper/Counter';
+export * from './libs/helper/Counters';
 
 export * from './libs/IHttpHeaders';
 export * from './libs/IKeyValuePair';
@@ -96,7 +99,7 @@ export * from './libs/tasks/decorators/IExchange';
 export * from './libs/tasks/decorators/TaskRuntime';
 export * from './libs/tasks/TaskState';
 
-
+export * from './libs/tasks/TaskRunnerRegistry';
 
 
 export * from './libs/worker/Workers';

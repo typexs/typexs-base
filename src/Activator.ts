@@ -10,7 +10,7 @@ import {Tasks} from './libs/tasks/Tasks';
 import {WatcherRegistry} from './libs/watchers/WatcherRegistry';
 import {C_WORKERS} from './libs/worker/Constants';
 import {Workers} from './libs/worker/Workers';
-import {LockFactory} from './libs/LockFactory';
+import {TaskRunnerRegistry} from "./libs/tasks/TaskRunnerRegistry";
 
 export class Activator implements IActivator {
 
@@ -28,12 +28,17 @@ export class Activator implements IActivator {
 //    system.initialize(Bootstrap.getNodeId());
 //    Container.set(System.NAME, system);
 
+    /**
+     * Initialize task content
+     */
     const tasks = new Tasks(Bootstrap.getNodeId());
     let cfg = Config.get(C_TASKS, null);
     if (cfg) {
       tasks.setConfig(cfg);
     }
     Container.set(Tasks.NAME, tasks);
+    Container.set(TaskRunnerRegistry.NAME, new TaskRunnerRegistry());
+
 
     // Schedule init
     const scheduler = Container.get(Scheduler);

@@ -12,7 +12,7 @@ export interface ITaskSchedule extends ITaskExec {
 
 export class TaskExecuteFactory implements IScheduleFactory {
 
-  create(taskNames: TASK_RUNNER_SPEC[], params: ITaskExec = {skipTargetCheck: false}) {
+  create(taskNames: TASK_RUNNER_SPEC[], params: ITaskExec = {skipTargetCheck: false, executionConcurrency: 1}) {
     return async function () {
       return TasksHelper.exec(taskNames, params);
     };
@@ -23,8 +23,14 @@ export class TaskExecuteFactory implements IScheduleFactory {
     const taskDef: ITaskSchedule = _.get(schedule.options, 'task', null);
     if (taskDef) {
       const names = _.isArray(taskDef.name) ? taskDef.name : [taskDef.name];
-      const def = _.clone(taskDef);
+      let def = _.clone(taskDef);
       delete def.name;
+      if (_.has(def, 'params')) {
+        def = def['params'];
+      }
+      if (_.has(def, 'parallel')) {
+        def.executionConcurrency = _.get(def, 'parallel', 1);
+      }
       schedule.execute = this.create(names, def);
       return true;
     }

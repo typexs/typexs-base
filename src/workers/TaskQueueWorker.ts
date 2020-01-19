@@ -145,7 +145,6 @@ export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker 
 
     runner.on(TASKRUN_STATE_UPDATE, () => {
       e.topic = 'data';
-
       e.data = runner.collectStats();
       this.fireState(e);
     });
@@ -163,6 +162,7 @@ export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker 
           }
         }
       }
+      
       e.state = 'running';
       results = await runner.run();
       e.state = 'stopped';

@@ -28,6 +28,8 @@ import {Invoker} from '../../../src/base/Invoker';
 import {TasksApi} from '../../../src/api/Tasks.api';
 import {TaskRunner} from '../../../src/libs/tasks/TaskRunner';
 import {Tasks} from '../../../src/libs/tasks/Tasks';
+import {TaskRunnerRegistry} from '../../../src/libs/tasks/TaskRunnerRegistry';
+import {TasksHelper} from '../../../src/libs/tasks/TasksHelper';
 
 const stdMocks = require('std-mocks');
 
@@ -42,6 +44,9 @@ class TasksSpec {
     const i = new Invoker();
     Container.set(Invoker.NAME, i);
     i.register(TasksApi, []);
+
+    const registry = new TaskRunnerRegistry();
+    Container.set(TaskRunnerRegistry.NAME, registry);
 
   }
 
@@ -187,6 +192,24 @@ class TasksSpec {
     expect(res.incoming).to.be.deep.eq({value: 'SomeValue', list: ['asd', 'bfr']});
   }
 
+  @test
+  async 'task execution'() {
+    const tasks = new Tasks('testnode');
+    const taskRef = tasks.addTask(SimpleTaskWithDefaultArgs);
+    expect(taskRef.name).to.be.eq('simple_task_with_default_args');
+    expect(taskRef.getIncomings().map(x => x.name)).to.be.deep.eq(['value', 'list']);
+    expect(taskRef.getIncomings().map(x => x.getOptions('default'))).to.be.deep.eq(['SomeValue', ['asd', 'bfr']]);
+
+    const runner = new TaskRunner(tasks, ['simple_task_with_default_args']);
+    const req = runner.getRequiredIncomings();
+    expect(req.map(x => x.storingName)).to.be.deep.eq(['value', 'list']);
+
+    const data = await runner.run();
+    expect(data.results).to.have.length(1);
+
+    const res = data.results.shift();
+    expect(res.incoming).to.be.deep.eq({value: 'SomeValue', list: ['asd', 'bfr']});
+  }
 
   @test
   async 'grouped tasks without grouping task'() {
@@ -441,6 +464,80 @@ class TasksSpec {
 
     expect(data.results).to.have.length(2);
     expect(data.results.map(d => d.name)).to.be.deep.eq(['simple_task_starting_other_task', 'simple_other_task']);
+  }
+
+
+  @test
+  async 'registry check task running collection'() {
+    const tasks = new Tasks('testnode1');
+    const taskRef = tasks.addTask(SimpleTask);
+    expect(taskRef.name).to.be.eq('simple_task');
+
+    const registry = Container.get(TaskRunnerRegistry.NAME) as TaskRunnerRegistry;
+    expect(registry.getRunners()).to.have.length(0);
+
+    const runner = new TaskRunner(tasks, ['simple_task']);
+    expect(registry.getRunners()).to.have.length(1);
+    expect(registry.hasRunningTasks('simple_task')).to.be.true;
+    expect(registry.hasRunningTasks(['simple_task'])).to.be.true;
+
+    const data = await runner.run();
+    expect(data.results).to.have.length(1);
+    expect(registry.getRunners()).to.have.length(0);
+    expect(registry.hasRunningTasks('simple_task')).to.be.false;
+  }
+
+
+  @test
+  async 'execute task by helper'() {
+    const tasks = new Tasks('testnode');
+    const taskRef = tasks.addTask(SimpleTaskPromise);
+    Container.set(Tasks.NAME, tasks);
+
+    // expect(taskRef.name).to.be.eq('simple_task_promise');
+    // const runner = new TaskRunner(tasks, ['simple_task_promise']);
+    // const data = await runner.run();
+    // expect(data.results).to.have.length(1);
+    // // tslint:disable-next-line:no-shadowed-variable
+    // const x = data.results.find(x => x.name === taskRef.name);
+    // expect(x.name).to.be.eq(taskRef.name);
+    // expect(x.result).to.be.eq('test');
+    const data = await TasksHelper.exec(['simple_task_promise'], {isLocal: true, skipTargetCheck: true}) as any;
+    const x = data.results.find((x: any) => x.name === taskRef.name);
+    expect(x.name).to.be.eq(taskRef.name);
+    expect(x.result).to.be.eq('test');
+    Container.remove(Tasks.NAME);
+  }
+
+  @test
+  async 'execute task by helper and check concurrency limit'() {
+    const tasks = new Tasks('testnode');
+    const taskRef = tasks.addTask(SimpleTaskPromise);
+    Container.set(Tasks.NAME, tasks);
+
+    // expect(taskRef.name).to.be.eq('simple_task_promise');
+    // const runner = new TaskRunner(tasks, ['simple_task_promise']);
+    // const data = await runner.run();
+    // expect(data.results).to.have.length(1);
+    // // tslint:disable-next-line:no-shadowed-variable
+    // const x = data.results.find(x => x.name === taskRef.name);
+    // expect(x.name).to.be.eq(taskRef.name);
+    // expect(x.result).to.be.eq('test');
+    const promise1 = TasksHelper.exec(['simple_task_promise'], {
+      isLocal: true,
+      skipTargetCheck: true,
+      executionConcurrency: 1
+    }) as any;
+    const promise2 = TasksHelper.exec(['simple_task_promise'], {
+      isLocal: true,
+      skipTargetCheck: true,
+      executionConcurrency: 1
+    }) as any;
+
+    const results = await Promise.all([promise1, promise2]);
+    expect(results.shift()).not.to.be.null;
+    expect(results.shift()).to.be.null;
+    Container.remove(Tasks.NAME);
   }
 
 

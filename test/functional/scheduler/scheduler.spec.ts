@@ -14,7 +14,8 @@ import {K_CLS_SCHEDULE_ADAPTER_FACTORIES} from '../../../src/libs/Constants';
 import {Invoker} from '../../../src/base/Invoker';
 import {TasksApi} from '../../../src/api/Tasks.api';
 import {Tasks} from '../../../src/libs/tasks/Tasks';
-import moment = require('moment');
+import * as moment from 'moment';
+import {TaskRunnerRegistry} from '../../../src/libs/tasks/TaskRunnerRegistry';
 
 let loader: RuntimeLoader = null;
 let factories: IScheduleFactory[] = [];
@@ -47,6 +48,10 @@ class SchedulerSpec {
     const i = new Invoker();
     Container.set(Invoker.NAME, i);
     i.register(TasksApi, []);
+
+    const registry = new TaskRunnerRegistry();
+    Container.set(TaskRunnerRegistry.NAME, registry);
+
   }
 
 

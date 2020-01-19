@@ -30,12 +30,23 @@ schedules:
 
 #### Task scheduling
 
+The key for definition is "task" with different options:
+
+* name: string - name or list of names of task to run if the schedule is executed
+* parallel: number - how many parallel tasks can run (default: 1)
+* params.[keys]: any - keys in the "task" object are automatically parameters for the task
+
+
+
+
+Example:
 ```yaml
 
 schedules:
   - name: example_task_schedule_cron_01:
     ...: {doSchedule}
     task:
+      parallel: false
       name: simple_task
 
   - name: example_task_schedule_cron_02:
@@ -44,7 +55,8 @@ schedules:
       name:
         - simple_task
         - simple_task2
-      param1: test
+      params:
+        param1: test
 
   - name: example_task_schedule_cron_02:
     ...: {doSchedule}
@@ -53,7 +65,8 @@ schedules:
         - name: simple_task3
           incomings:
             taskParam: taskSpecificData
-      someParam: test
+      params:
+        someParam: test
 
 ```
 

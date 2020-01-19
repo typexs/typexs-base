@@ -115,6 +115,7 @@ class DistributedQuerySpec {
 
     const p = SpawnHandle.do(__dirname + '/fake_app/node.ts').start(LOG_EVENT);
     await p.started;
+    await TestHelper.wait(100);
 
     const controller = Container.get(DistributedStorageEntityController);
     const results = await controller.find(SystemNodeInfo);

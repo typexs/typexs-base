@@ -1,13 +1,17 @@
 export {
-  NestedException, TodoException, NotYetImplementedError, NotSupportedError, StringOrFunction, MetaArgs
-}from 'commons-base/browser';
+  NestedException,
+  TodoException,
+  NotYetImplementedError,
+  NotSupportedError,
+  StringOrFunction,
+  MetaArgs
+} from 'commons-base/browser';
 
 
 export * from './api/IActivator';
 export * from './api/IBootstrap';
 export * from './api/IModule';
 export * from './api/IShutdown';
-export * from './api/IPermissions';
 
 export * from './decorators/UseAPI';
 

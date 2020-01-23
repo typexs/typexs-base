@@ -1,6 +1,6 @@
 {
   "name": "@typexs/base",
-  "version": "0.11.0",
+  "version": "0.10.2",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -17,7 +17,7 @@
   "author": "Robert Kania",
   "license": "MIT",
   "devDependencies": {
-    "@allgemein/packaging": "^1.0.6",
+    "@allgemein/packaging": "^1.0.7",
     "@types/brace-expansion": "^1.1.0",
     "@types/chai": "^4.2.4",
     "@types/chai-as-promised": "^7.1.2",

@@ -51,7 +51,7 @@ export class Startup implements IBootstrap, IShutdown {
   }
 
   async bootstrap(): Promise<void> {
-    await this.schedule();
+
 
     TasksHelper.prepare(this.tasks, this.loader);
     await this.workers.prepare(this.loader);
@@ -81,6 +81,10 @@ export class Startup implements IBootstrap, IShutdown {
 
   async ready() {
     await this.workers.startup();
+
+    // TODO start schedules only on a worker node!
+    await this.schedule();
+
     if (System.isDistributionEnabled()) {
       await this.system.register();
       const wait = Config.get('nodes.ready.wait', 500);

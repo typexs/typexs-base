@@ -10,7 +10,7 @@ import {Tasks} from './libs/tasks/Tasks';
 import {WatcherRegistry} from './libs/watchers/WatcherRegistry';
 import {C_WORKERS} from './libs/worker/Constants';
 import {Workers} from './libs/worker/Workers';
-import {TaskRunnerRegistry} from "./libs/tasks/TaskRunnerRegistry";
+import {TaskRunnerRegistry} from './libs/tasks/TaskRunnerRegistry';
 
 export class Activator implements IActivator {
 

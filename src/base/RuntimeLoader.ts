@@ -7,6 +7,7 @@ import {DEFAULT_RUNTIME_OPTIONS} from '../Bootstrap';
 import {TYPEXS_NAME} from '../libs/Constants';
 import {PlatformUtils} from 'commons-base';
 import {Log} from './../libs/logging/Log';
+import {MatchUtils} from '../libs/utils/MatchUtils';
 
 
 export class RuntimeLoader {
@@ -72,16 +73,17 @@ export class RuntimeLoader {
       }
     }
 
+    // @ts-ignore
     this.registry = new ModuleRegistry({
       packageFilter: (json: any) => {
-        return _.intersection(Object.keys(json), modulePackageJsonKeys).length > 0;
+        return _.intersection(Object.keys(json), modulePackageJsonKeys).length > 0 && this.isEnabled(json.name);
       },
       module: module,
       paths: modulPaths,
       pattern: this._options.subModulPattern ? this._options.subModulPattern : []
     });
-    await this.registry.rebuild();
 
+    await this.registry.rebuild();
 
     const settingsLoader = await this.registry.createSettingsLoader({
       ref: 'package.json',
@@ -132,9 +134,6 @@ export class RuntimeLoader {
     return _.set(this._options.included, modulName, {enabled: true});
   }
 
-  isEnabled(modulName: string) {
-    return _.get(this._options.included, modulName + '.enabled', true);
-  }
 
   async getSettings(key: string) {
     const settingsLoader = await this.registry.createSettingsLoader({
@@ -161,6 +160,51 @@ export class RuntimeLoader {
         this.disabledClassNames.indexOf(className) !== -1));
     }
     return [];
+  }
+
+  isEnabled(name: string) {
+    return this.isEnabledByMatch(name) && this.isEnabledByInclude(name);
+  }
+
+
+  isEnabledByInclude(modulName: string) {
+    return _.get(this._options.included, modulName + '.enabled', true) === true;
+  }
+
+
+  isEnabledByMatch(name: string) {
+    if (_.has(this._options, 'match')) {
+      // if access empty then
+      let allow = this._options.match.length > 0 ? false : true;
+      let count = 0;
+      for (const a of this._options.match) {
+        if (_.isUndefined(a.match)) {
+          if (/\+|\.|\(|\||\)|\*/.test(a.name)) {
+            a.match = a.name;
+          } else {
+            a.match = false;
+          }
+        }
+        if (_.isBoolean(a.match)) {
+          if (a.name === name) {
+            count++;
+            allow = a.enabled;
+            return allow;
+          }
+        } else {
+          if (MatchUtils.miniMatch(a.match, name)) {
+            allow = allow || a.enabled;
+            count++;
+          }
+        }
+      }
+      // no allowed or denied
+      if (count === 0) {
+        allow = true;
+      }
+      return allow;
+    }
+    return true;
   }
 
 

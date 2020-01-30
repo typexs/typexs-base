@@ -1,0 +1,20 @@
+
+
+```yml
+
+modules:
+    included:
+        'module1':
+            enabled: false | true
+
+```
+
+
+```yml
+
+modules:
+    match:
+    - name: 'module*'
+      enabled: false
+
+```

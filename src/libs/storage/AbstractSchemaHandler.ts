@@ -1,9 +1,9 @@
 import * as _ from 'lodash';
-import {StorageRef} from "./StorageRef";
-import {IDBType} from "./IDBType";
-import {JS_DATA_TYPES} from "commons-schema-api/browser";
-import {ICollection} from "./ICollection";
-import {ICollectionProperty} from "./ICollectionProperty";
+import {StorageRef} from './StorageRef';
+import {IDBType} from './IDBType';
+import {JS_DATA_TYPES} from 'commons-schema-api/browser';
+import {ICollection} from './ICollection';
+import {ICollectionProperty} from './ICollectionProperty';
 
 
 export abstract class AbstractSchemaHandler {
@@ -19,27 +19,27 @@ export abstract class AbstractSchemaHandler {
   abstract getCollectionNames(): Promise<string[]>;
 
   async getCollection(name: string): Promise<any> {
-    let c = await this.storageRef.connect();
+    const c = await this.storageRef.connect();
     return await c.manager.connection.createQueryRunner().getTable(name);
   }
 
   async getCollections(names: string[]): Promise<ICollection[]> {
-    let c = await this.storageRef.connect();
-    let collections = await c.manager.connection.createQueryRunner().getTables(names);
-    let colls: ICollection[] = [];
+    const c = await this.storageRef.connect();
+    const collections = await c.manager.connection.createQueryRunner().getTables(names);
+    const colls: ICollection[] = [];
     _.map(collections, c => {
-      let props: ICollectionProperty[] = [];
+      const props: ICollectionProperty[] = [];
       c.columns.map(c => {
         props.push(c);
       });
 
-      let _c: ICollection = {
+      const _c: ICollection = {
         name: c.name,
         framework: 'typeorm',
         properties: props
       };
 
-      _.keys(c).filter(x => x != 'columns').map(k => {
+      _.keys(c).filter(x => x !== 'columns').map(k => {
         _c[k] = c[k];
       });
 
@@ -95,14 +95,14 @@ export abstract class AbstractSchemaHandler {
   }
 
   translateToStorageType(jsType: string, length: number = null): IDBType {
-    let type: IDBType = {
+    const type: IDBType = {
       type: null,
       variant: null,
       sourceType: null,
       length: length
     };
 
-    let split = jsType.split(':');
+    const split = jsType.split(':');
     type.sourceType = <JS_DATA_TYPES>split.shift();
     if (split.length > 0) {
       type.variant = split.shift();

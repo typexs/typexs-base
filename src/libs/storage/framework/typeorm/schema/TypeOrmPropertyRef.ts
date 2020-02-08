@@ -22,6 +22,8 @@ import {TreeUtils, WalkValues} from '../../../../../browser';
 
 export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
 
+  ormPropertyType: string = null;
+
   targetRef: ClassRef = null;
 
   column: ColumnMetadataArgs = null;
@@ -33,6 +35,7 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
   constructor(c: ColumnMetadataArgs | RelationMetadataArgs | EmbeddedMetadataArgs, type: 'column' | 'relation' | 'embedded') {
     super(XS_TYPE_PROPERTY, c.propertyName, c.target, REGISTRY_TYPEORM);
     this.setOptions(c);
+    this.ormPropertyType = type;
     if (type === 'column') {
       this.column = <ColumnMetadataArgs>c;
       if (this.column.options.name) {
@@ -250,6 +253,7 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
     o.generated = this.column ? this.column.options.generated : null;
     o.identifier = this.isIdentifier();
     o.cardinality = this.isCollection() ? 0 : 1;
+    o.ormPropertyType = this.ormPropertyType;
 
     const targetRef = this.getTargetRef();
     if (targetRef) {

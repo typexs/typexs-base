@@ -3,15 +3,17 @@ import * as _ from 'lodash';
 import {TypeOrmEntityRef} from './TypeOrmEntityRef';
 import {TableMetadataArgs} from 'typeorm/browser/metadata-args/TableMetadataArgs';
 
-import {ILookupRegistry} from 'commons-schema-api/browser';
 import {
+  AbstractRef,
+  Binding,
   ClassRef,
   IEntityRef,
   IEntityRefMetadata,
+  ILookupRegistry,
   LookupRegistry,
   SchemaUtils,
   XS_TYPE_ENTITY,
-  XS_TYPE_PROPERTY, AbstractRef, Binding
+  XS_TYPE_PROPERTY
 } from 'commons-schema-api/browser';
 import {REGISTRY_TYPEORM} from './TypeOrmConstants';
 import {ClassUtils, NotYetImplementedError} from 'commons-base/browser';
@@ -99,10 +101,18 @@ export class TypeOrmEntityRegistry implements ILookupRegistry {
           .filter(c => c.target === fn.target),
         c => this.register(new TypeOrmPropertyRef(c, 'column'))),
       _.map(this.metadatastore.filterRelations(fn.target),
-        c => this.register(new TypeOrmPropertyRef(c, 'relation'))),
-      _.map(this.metadatastore.filterEmbeddeds(fn.target),
-        c => this.register(new TypeOrmPropertyRef(c, 'embedded'))),
+        c => this.register(new TypeOrmPropertyRef(c, 'relation')))
     );
+
+    _.map(this.metadatastore.filterEmbeddeds(fn.target),
+      c => {
+        const exists = properties.find(x => x.storingName === c.propertyName && x.getClass() === c.target);
+        if (!exists) {
+          const r = this.register(new TypeOrmPropertyRef(c, 'embedded')) as TypeOrmPropertyRef;
+          properties.push(r);
+        }
+      });
+
 
     properties.filter(p => p.isReference()).map(p => {
       const classRef = p.getTargetRef();
@@ -131,7 +141,9 @@ export class TypeOrmEntityRegistry implements ILookupRegistry {
 
 
   getEntityRefFor(instance: Object | string): TypeOrmEntityRef {
-    if (!instance) { return null; }
+    if (!instance) {
+      return null;
+    }
     const entityRef = this.find(instance);
     if (entityRef) {
       return entityRef;
@@ -175,14 +187,25 @@ export class TypeOrmEntityRegistry implements ILookupRegistry {
 
     if (entityRef) {
       for (const prop of json.properties) {
+        const exists = entityRef.getPropertyRef(prop.name);
+        if (exists) continue;
         let targetRef = null;
-        if (prop.targetRef) {
+        const propType = _.get(prop, 'ormPropertyType', false);
+        if (propType === 'relation') {
           targetRef = ClassRef.get(prop.targetRef.className, REGISTRY_TYPEORM);
           targetRef.setSchema(prop.targetRef.schema);
           const r: RelationMetadataArgs = prop.options;
           (<any>r).target = classRef.getClass();
           (<any>r).type = targetRef.getClass();
           const p = new TypeOrmPropertyRef(r, 'relation');
+          this.register(p);
+        } else if (propType === 'embedded') {
+          targetRef = ClassRef.get(prop.targetRef.className, REGISTRY_TYPEORM);
+          targetRef.setSchema(prop.targetRef.schema);
+          const r: RelationMetadataArgs = prop.options;
+          (<any>r).target = classRef.getClass();
+          (<any>r).type = targetRef.getClass();
+          const p = new TypeOrmPropertyRef(r, 'embedded');
           this.register(p);
         } else {
           const c: ColumnMetadataArgs = prop.options;
@@ -198,6 +221,9 @@ export class TypeOrmEntityRegistry implements ILookupRegistry {
               break;
             case 'Boolean':
               type = Boolean;
+              break;
+            case 'Symbol':
+              type = Symbol;
               break;
             case 'Date':
               type = Date;

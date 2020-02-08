@@ -10,7 +10,7 @@ import {TestHelper} from '../TestHelper';
 
 let bootstrap: Bootstrap;
 
-@suite(TestHelper.suiteName(__filename))
+@suite('functional/storage/controller_sql')
 class StorageControllerSqlSpec {
 
 

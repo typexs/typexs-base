@@ -3,7 +3,7 @@ import {suite, test} from 'mocha-typescript';
 import {TestHelper} from '../TestHelper';
 import {Counters} from '../../../src/libs/helper/Counters';
 
-@suite(TestHelper.suiteName(__filename))
+@suite('functional/helper/counters')
 class CountersSpec {
 
   @test

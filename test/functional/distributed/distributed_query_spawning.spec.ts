@@ -35,7 +35,7 @@ const settingsTemplate: any = {
 let bootstrap: Bootstrap = null;
 
 
-@suite(TestHelper.suiteName(__filename)) @timeout(300000)
+@suite('functional/distributed/query_spawning') @timeout(300000)
 class DistributedStorageControllerSpec {
 
 

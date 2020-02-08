@@ -5,9 +5,9 @@ import {TaskLog} from '../../src/entities/TaskLog';
 
 export class TestHelper {
 
-  static suiteName(filename: string) {
-    return filename.split('/test/').pop();
-  }
+  // static suiteName(filename: string) {
+  //   return filename.split('/test/').pop();
+  // }
 
   static wait(ms: number) {
     return new Promise(resolve => {

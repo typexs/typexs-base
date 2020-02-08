@@ -9,7 +9,7 @@ import {TestHelper} from '../TestHelper';
 
 let bootstrap: Bootstrap = null;
 
-@suite(TestHelper.suiteName(__filename))
+@suite('functional/storage/configuration')
 class StorageConfigurationSpec {
 
 

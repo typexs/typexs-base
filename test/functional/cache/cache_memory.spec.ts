@@ -11,7 +11,7 @@ import {Cache} from '../../../src/libs/cache/Cache';
 import {MemoryCacheAdapter} from '../../../src/adapters/cache/MemoryCacheAdapter';
 let bootstrap: Bootstrap = null;
 @suite('functional/cache/memory')
-class Cache_memorySpec {
+class CacheMemorySpec {
 
 
   before() {

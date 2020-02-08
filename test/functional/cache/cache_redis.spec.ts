@@ -13,7 +13,7 @@ import {TestHelper} from '../TestHelper';
 
 let bootstrap: Bootstrap = null;
 
-@suite(TestHelper.suiteName(__filename))
+@suite('functional/cache/redis')
 class CacheRedisSpec {
 
 

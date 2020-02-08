@@ -1,9 +1,9 @@
 import {validate} from 'class-validator';
-import * as _ from 'lodash'
-import {IValidationError} from "./IValidationError";
-import {IValidationResult} from "./IValidationResult";
-import {ILookupRegistry} from "commons-schema-api/browser";
-import {IValidationMessage} from "./IValidationMessage";
+import * as _ from 'lodash';
+import {IValidationError} from './IValidationError';
+import {IValidationResult} from './IValidationResult';
+import {ILookupRegistry} from 'commons-schema-api/browser';
+import {IValidationMessage} from './IValidationMessage';
 
 
 
@@ -29,8 +29,8 @@ export class DataContainer<T> {
 
   constructor(instance: T, registry: ILookupRegistry) {
     this.instance = instance;
-    let entityDef = registry.getEntityRefFor(this.instance);
-    if(!entityDef){
+    const entityDef = registry.getEntityRefFor(this.instance);
+    if (!entityDef) {
       throw new Error('none definition found for instance ' + JSON.stringify(instance));
     }
     entityDef.getPropertyRefs().forEach(propDef => {
@@ -66,7 +66,7 @@ export class DataContainer<T> {
 
 
   value(str: string) {
-    let wrap = {};
+    const wrap = {};
     Object.defineProperty(wrap, str, {
       get: () => {
         return this.instance[str];
@@ -98,13 +98,13 @@ export class DataContainer<T> {
 
   async validate(): Promise<boolean> {
     this.isValidated = true;
-    _.remove(this.errors, error => error.type == 'validate');
-    let results:IValidationError[] = [];
+    _.remove(this.errors, error => error.type === 'validate');
+    let results: IValidationError[] = [];
     try {
 //      const validator = await import('class-validator');
 
       results = <IValidationError[]>await validate(this.instance, {validationError: {target: false}});
-    }catch (e) {
+    } catch (e) {
       // TODO log no validator
     }
 
@@ -117,8 +117,8 @@ export class DataContainer<T> {
     this.isSuccessValidated = true;
     Object.keys(this.validation).forEach(key => {
       if (this.validation[key]) {
-        let valid = this.validation[key];
-        let found = _.find(this.errors, {property: key});
+        const valid = this.validation[key];
+        const found = _.find(this.errors, {property: key});
         valid.messages = [];
         if (found) {
           valid.valid = false;
@@ -139,7 +139,7 @@ export class DataContainer<T> {
 
 
   applyState() {
-    let $state: any = {};
+    const $state: any = {};
     DataContainer.keys.forEach(k => {
       const value = _.get(this, k, null);
 

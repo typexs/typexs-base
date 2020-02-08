@@ -1,6 +1,6 @@
-import {Table} from "typeorm";
-
-
-export class Collection extends Table {
-
-}
+// import {Table} from "typeorm";
+//
+//
+// export class Collection extends Table {
+//
+// }

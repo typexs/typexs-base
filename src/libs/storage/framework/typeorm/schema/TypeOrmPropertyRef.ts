@@ -2,9 +2,17 @@ import * as _ from 'lodash';
 
 import {ColumnMetadataArgs} from 'typeorm/browser/metadata-args/ColumnMetadataArgs';
 import {RelationMetadataArgs} from 'typeorm/browser/metadata-args/RelationMetadataArgs';
+import {EmbeddedMetadataArgs} from 'typeorm/browser/metadata-args/EmbeddedMetadataArgs';
 
 import {ClassUtils, NotYetImplementedError} from 'commons-base/browser';
-import {AbstractRef, ClassRef, IPropertyRef, IPropertyRefMetadata, XS_TYPE_PROPERTY} from 'commons-schema-api/browser';
+import {
+  AbstractRef,
+  ClassRef,
+  IBuildOptions,
+  IPropertyRef,
+  IPropertyRefMetadata,
+  XS_TYPE_PROPERTY
+} from 'commons-schema-api/browser';
 import {TypeOrmEntityRef} from './TypeOrmEntityRef';
 import {TypeOrmUtils} from '../TypeOrmUtils';
 import {REGISTRY_TYPEORM} from './TypeOrmConstants';
@@ -20,8 +28,9 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
 
   relation: RelationMetadataArgs = null;
 
+  embedded: EmbeddedMetadataArgs = null;
 
-  constructor(c: ColumnMetadataArgs | RelationMetadataArgs, type: 'column' | 'relation') {
+  constructor(c: ColumnMetadataArgs | RelationMetadataArgs | EmbeddedMetadataArgs, type: 'column' | 'relation' | 'embedded') {
     super(XS_TYPE_PROPERTY, c.propertyName, c.target, REGISTRY_TYPEORM);
     this.setOptions(c);
     if (type === 'column') {
@@ -29,6 +38,15 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
       if (this.column.options.name) {
         this.setOption('name', this.column.options.name);
       }
+      if (this.column.options.type && !_.isString(this.column.options.type)) {
+        const className = ClassUtils.getClassName(this.column.options.type);
+        if (!['string', 'number', 'boolean', 'date', 'float', 'array'].includes(className.toLowerCase())) {
+          this.targetRef = ClassRef.get(this.column.options.type, REGISTRY_TYPEORM);
+        }
+      }
+    } else if (type === 'embedded') {
+      this.embedded = <EmbeddedMetadataArgs>c;
+      this.targetRef = ClassRef.get(this.embedded.type(), REGISTRY_TYPEORM);
     } else if (type === 'relation') {
       this.relation = <RelationMetadataArgs>c;
       if ((_.isFunction(this.relation.type) && !_.isEmpty(this.relation.type.name)) || _.isString(this.relation.type)) {
@@ -54,34 +72,25 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
 
   getTargetRef(): ClassRef {
     return this.targetRef;
-    /*
-    if (this.isReference()) {
-      if ((_.isFunction(this.relation.type) && !_.isEmpty(this.relation.type.name)) || _.isString(this.relation.type)) {
-        return TypeOrmEntityRegistry.$().getEntityDefFor(this.relation.type)
-      } else if (_.isFunction(this.relation.type)) {
-        return TypeOrmEntityRegistry.$().getEntityDefFor(this.relation.type())
-      }
-      throw new NotSupportedError('unknown relation type ' + JSON.stringify(this.relation))
-    } else {
-      throw new NotSupportedError('get target ref is empty')
-    }
-    */
-
   }
 
   isCollection(): boolean {
-    return this.isReference() ? this.relation.relationType === 'one-to-many' || this.relation.relationType === 'many-to-many' : false;
+    return (this.relation ?
+      this.relation.relationType === 'one-to-many' ||
+      this.relation.relationType === 'many-to-many' : false) ||
+      (this.embedded ? this.embedded.isArray : false);
   }
 
   isReference(): boolean {
-    return !!this.relation;
+    return !!this.targetRef;
   }
 
-  private convertRegular(data: any) {
+  private convertRegular(data: any, options?: IBuildOptions) {
     const type = (<string>this.getType());
     if (!type || !_.isString(type)) {
       return data;
     }
+
     const jsType = type.toLowerCase();
 
     switch (jsType) {
@@ -141,27 +150,28 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
 
 
       case 'byte':
-      case 'object':
       case 'json':
+      case 'object':
       case 'array':
         return data;
-
     }
 
     throw new NotYetImplementedError('value "' + data + '" of type ' + (typeof data) + ' column type=' + jsType);
   }
 
-  private convertDate(data: any) {
+
+  private convertDate(data: any, options?: IBuildOptions) {
     return new Date(data);
   }
 
-  convert(data: any): any {
+
+  convert(data: any, options?: IBuildOptions): any {
     switch (this.column.mode) {
       case 'regular':
-        return this.convertRegular(data);
+        return this.convertRegular(data, options);
       case 'createDate':
       case 'updateDate':
-        return this.convertDate(data);
+        return this.convertDate(data, options);
     }
     // if mongo no column types are defined
     return data;
@@ -173,7 +183,7 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
   }
 
   isEntityReference(): boolean {
-    return this.isReference();
+    return !!this.relation;
   }
 
   getType() {

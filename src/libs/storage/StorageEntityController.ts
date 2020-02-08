@@ -8,7 +8,11 @@ import {Invoker} from '../../base/Invoker';
 import {Container} from 'typedi';
 import {ConnectionWrapper} from './ConnectionWrapper';
 
-
+/**
+ * TODO Should be renamed to StorageEntityManager
+ *
+ * TODO also an interface for EntityManager should be implemented
+ */
 export class StorageEntityController {
 
   // revision support

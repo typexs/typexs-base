@@ -72,7 +72,6 @@ export * from './libs/storage/IStorageOptions';
 export * from './libs/storage/IDBType';
 export * from './libs/storage/Storage';
 export * from './libs/storage/StorageRef';
-export * from './libs/storage/Collection';
 export * from './libs/storage/AbstractSchemaHandler';
 export * from './libs/storage/StorageEntityController';
 

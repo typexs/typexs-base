@@ -101,8 +101,9 @@ class CacheRedisSpec {
     expect(testValue).to.be.deep.eq('asdasdasd');
 
     // expire by EX
-    const v = {k: 'data'};
+    const v = {k: 'data2'};
     await cache.set('test3', v, testBin, {ttl: 2000});
+    await TestHelper.wait(20);
     testValue = await cache.get('test3', testBin);
     expect(testValue).to.be.deep.eq(v);
 
@@ -111,8 +112,9 @@ class CacheRedisSpec {
     expect(testValue).to.be.null;
 
     // expire by PX
-    const v2 = {k: 'data'};
+    const v2 = {k: 'data3'};
     await cache.set('test4', v2, testBin, {ttl: 1234});
+    await TestHelper.wait(20);
     testValue = await cache.get('test4', testBin);
     expect(testValue).to.be.deep.eq(v2);
 

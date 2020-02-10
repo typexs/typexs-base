@@ -1,6 +1,6 @@
 {
   "name": "@typexs/base",
-  "version": "0.10.5",
+  "version": "0.10.6",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -69,7 +69,7 @@
     "commons-eventbus": "^0.11.2",
     "commons-expressions": "^1.0.7",
     "commons-moduls": "^1.1.5",
-    "commons-schema-api": "^1.1.6",
+    "commons-schema-api": "^1.1.8",
     "js-yaml": "^3.13.1",
     "moment": "^2.24.0",
     "node-machine-id": "^1.1.12",

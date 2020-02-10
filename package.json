@@ -1,6 +1,6 @@
 {
   "name": "@typexs/base",
-  "version": "0.10.5",
+  "version": "0.10.3",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -58,13 +58,13 @@
     "std-mocks": "^1.0.1",
     "ts-node": "^6.2.0",
     "tslint": "6.0.0",
-    "typescript": "3.7.5",
+    "typescript": "3.5.3",
     "typescript-require": "^0.2.10"
   },
   "dependencies": {
     "@cezaryrk/minimatch": "^3.0.4",
     "class-validator": "^0.11.0",
-    "commons-base": "^1.2.0",
+    "commons-base": "^1.2.1",
     "commons-config": "^0.4.19",
     "commons-eventbus": "^0.11.2",
     "commons-expressions": "^1.0.7",

@@ -1,6 +1,7 @@
 import {IQueueWorkload} from './IQueueWorkload';
 import {IQueue} from './IQueue';
-import {CryptUtils} from '../utils/CryptUtils';
+import {CryptUtils} from 'commons-base/browser';
+
 
 export class QueueJob<T extends IQueueWorkload> {
 

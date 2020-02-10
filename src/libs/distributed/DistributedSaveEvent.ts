@@ -1,6 +1,6 @@
 import {AbstractEvent} from '../events/AbstractEvent';
-import {CryptUtils} from '../utils/CryptUtils';
 import {ISaveOptions} from '../storage/framework/ISaveOptions';
+import {CryptUtils} from 'commons-base/browser';
 
 export class DistributedSaveEvent extends AbstractEvent {
 

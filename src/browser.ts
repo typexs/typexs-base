@@ -69,5 +69,3 @@ export * from './libs/tasks/decorators/IValueProvider';
 export * from './libs/tasks/decorators/IIncomingOptions';
 export * from './libs/tasks/decorators/IOutgoingOptions';
 
-export * from './libs/utils/CryptUtils';
-export * from './libs/utils/TreeUtils';

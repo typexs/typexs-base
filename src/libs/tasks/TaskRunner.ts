@@ -27,7 +27,7 @@ import {DefaultJsonFormat} from '../logging/DefaultJsonFormat';
 
 import {Stream} from 'stream';
 import {ITaskRunnerOptions} from './ITaskRunnerOptions';
-import {CryptUtils} from '../utils/CryptUtils';
+import {CryptUtils} from 'commons-base/browser';
 import {TasksApi} from '../../api/Tasks.api';
 import {TaskRunnerRegistry} from './TaskRunnerRegistry';
 

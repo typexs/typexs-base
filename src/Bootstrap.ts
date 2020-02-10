@@ -1,5 +1,4 @@
 import * as _ from 'lodash';
-import {CryptUtils} from './libs/utils/CryptUtils';
 import {Log} from './libs/logging/Log';
 import {IOptions} from 'commons-config';
 import {RuntimeLoader} from './base/RuntimeLoader';
@@ -15,7 +14,7 @@ import * as os from 'os';
 
 import {getMetadataArgsStorage, useContainer} from 'typeorm';
 import {BaseUtils} from './libs/utils/BaseUtils';
-import {MetaArgs, PlatformUtils} from 'commons-base';
+import {CryptUtils, MetaArgs, PlatformUtils} from 'commons-base';
 import {
   CONFIG_NAMESPACE,
   K_CLS_ACTIVATOR,

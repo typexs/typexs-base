@@ -1,9 +1,9 @@
 import {AbstractRef, IClassRef, IPropertyRef, XS_TYPE_PROPERTY} from 'commons-schema-api/browser';
 import {TaskRef} from './TaskRef';
 import {C_TASKS} from './Constants';
-import {ClassUtils, NotYetImplementedError} from 'commons-base/browser';
+import {ClassUtils, NotYetImplementedError, TreeUtils, WalkValues} from 'commons-base/browser';
 import {ITaskPropertyDesc} from './ITaskPropertyDesc';
-import {TreeUtils, WalkValues} from '../../libs/utils/TreeUtils';
+
 import * as _ from 'lodash';
 
 

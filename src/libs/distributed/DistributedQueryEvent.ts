@@ -1,6 +1,6 @@
 import {AbstractEvent} from '../events/AbstractEvent';
-import {CryptUtils} from '../utils/CryptUtils';
 import {IFindOptions} from '../storage/framework/IFindOptions';
+import {CryptUtils} from 'commons-base/browser';
 
 export class DistributedQueryEvent extends AbstractEvent {
 

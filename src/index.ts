@@ -109,8 +109,6 @@ export * from './libs/worker/WorkerRef';
 
 
 export * from './libs/utils/BaseUtils';
-export * from './libs/utils/CryptUtils';
 export * from './libs/utils/DomainUtils';
-export * from './libs/utils/TreeUtils';
 
 export * from './Bootstrap';

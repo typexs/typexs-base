@@ -1,11 +1,9 @@
 import * as _ from 'lodash';
 import {InterpolationSupport, Utils} from 'commons-config';
-import {TreeUtils, WalkValues} from './TreeUtils';
+import {TreeUtils, WalkValues} from 'commons-base/browser';
 
 
 export class BaseUtils {
-
-
 
 
   static wait(time: number): Promise<any> {
@@ -77,7 +75,7 @@ export class BaseUtils {
       const paths = path.split('.');
       let first: string | number = paths.shift();
       if (/^[1-9]+\d*$/.test(first)) {
-        first = parseInt(first);
+        first = parseInt(first, 0);
       }
       if (arr.hasOwnProperty(first)) {
         const pointer: any = arr[first];
@@ -100,7 +98,7 @@ export class BaseUtils {
     const normPaths: any[] = [];
     paths.forEach(function (_x) {
       if (typeof _x === 'string' && /\d+/.test(_x)) {
-        normPaths.push(parseInt(_x));
+        normPaths.push(parseInt(_x, 0));
       } else {
         normPaths.push(_x);
       }

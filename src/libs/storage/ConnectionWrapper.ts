@@ -17,9 +17,17 @@ export class ConnectionWrapper {
     return this._connection.manager;
   }
 
+
   get connection() {
     return this._connection;
   }
+
+  // /**
+  //  *
+  //  */
+  // getOriginalEntityManager(){
+  //
+  // }
 
   static $INC = 0;
 
@@ -50,6 +58,7 @@ export class ConnectionWrapper {
     }
     return ConnectionWrapper._LOCK[this.name];
   }
+
 
   save<Entity>(o: Entity): Promise<any> {
     try {

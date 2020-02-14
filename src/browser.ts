@@ -35,7 +35,8 @@ export * from './libs/commands/ICommand';
 
 export * from './libs/di/Injector';
 
-export * from './libs/events/AbstractEvent';
+export * from './libs/messaging/AbstractEvent';
+export * from './libs/messaging/Message';
 export * from './libs/system/SystemInfoEvent';
 
 

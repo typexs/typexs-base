@@ -16,6 +16,11 @@ export abstract class AbstractEvent {
    */
   id: string;
 
+  /**
+   * For multiparted messages
+   */
+  seqNr: number = 0;
+
 
   /**
    * Id of system node which created the event
@@ -30,12 +35,20 @@ export abstract class AbstractEvent {
    */
   targetIds: string[];
 
+  /**
+   * Id of requesting event id node
+   */
+  reqEventId: string;
 
   /**
    * Id of responding system node
    */
   respId: string;
 
+  /**
+   * Error
+   */
+  error: Error;
 
   constructor() {
     this.id = CryptUtils.shorthash('event-' + (new Date()).getTime() + '' + (AbstractEvent.inc++));

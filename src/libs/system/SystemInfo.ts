@@ -7,11 +7,11 @@ export interface NetworkInterfaceBase {
 }
 
 export interface NetworkInterfaceInfoIPv4 extends NetworkInterfaceBase {
-  family: "IPv4";
+  family: 'IPv4';
 }
 
 export interface NetworkInterfaceInfoIPv6 extends NetworkInterfaceBase {
-  family: "IPv6";
+  family: 'IPv6';
   scopeid: number;
 }
 

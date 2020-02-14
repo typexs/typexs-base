@@ -1,4 +1,4 @@
-import {AbstractEvent} from '../events/AbstractEvent';
+import {AbstractEvent} from '../messaging/AbstractEvent';
 import {IFindOptions} from '../storage/framework/IFindOptions';
 import {CryptUtils} from 'commons-base/browser';
 

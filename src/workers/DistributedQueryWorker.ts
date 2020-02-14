@@ -24,6 +24,7 @@ import {__DISTRIBUTED_ID__} from '../libs/distributed/Constants';
 
 
 export interface IQueryWorkload extends IQueueWorkload {
+
   /**
    * Which operation should be done
    */
@@ -43,6 +44,7 @@ export interface IQueryWorkload extends IQueueWorkload {
    * Received event
    */
   event: DistributedQueryEvent | DistributedSaveEvent;
+
 }
 
 

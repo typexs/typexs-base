@@ -1,7 +1,7 @@
 import {IError} from '../../exceptions/IError';
 import {ITaskRunnerResult} from '../../tasks/ITaskRunnerResult';
 import * as _ from 'lodash';
-import {AbstractEvent} from '../../events/AbstractEvent';
+import {AbstractEvent} from '../../messaging/AbstractEvent';
 import {IQueueWorkload} from '../../../libs/queue/IQueueWorkload';
 import {TASK_RUNNER_SPEC, TASK_STATES} from '../Constants';
 import * as moment from 'moment';

@@ -7,13 +7,15 @@ import {DeleteOp} from './framework/typeorm/DeleteOp';
 import {Invoker} from '../../base/Invoker';
 import {Container} from 'typedi';
 import {ConnectionWrapper} from './ConnectionWrapper';
+import {IEntityController} from './IEntityController';
+import {ClassType} from 'commons-schema-api';
 
 /**
  * TODO Should be renamed to StorageEntityManager
  *
  * TODO also an interface for EntityManager should be implemented
  */
-export class StorageEntityController {
+export class StorageEntityController implements IEntityController {
 
   // revision support
   readonly storageRef: StorageRef;
@@ -29,24 +31,29 @@ export class StorageEntityController {
     this.invoker = Container.get(Invoker.NAME);
   }
 
-  // async connect() {
-  //   if (this.connection) {
-  //     if (!this.connection.isOpened()) {
-  //       await this.connection.close();
-  //       this.connection = await this.storageRef.connect();
-  //     }
-  //   } else {
-  //     this.connection = await this.storageRef.connect();
-  //   }
-  //   return this.connection;
-  // }
-  //
-  // async close() {
-  //   if (this.connection) {
-  //     await this.connection.close();
-  //     this.connection = null;
-  //   }
-  // }
+  async connect() {
+    if (this.connection) {
+      if (!this.connection.isOpened()) {
+        await this.connection.close();
+        this.connection = await this.storageRef.connect();
+      } else {
+        this.connection.usageInc();
+      }
+    } else {
+      this.connection = await this.storageRef.connect();
+    }
+    return this.connection;
+  }
+
+  async close() {
+    if (this.connection) {
+      this.connection.usageDec();
+      if (this.connection.getUsage() <= 0) {
+        await this.connection.close();
+        this.connection = null;
+      }
+    }
+  }
 
   async save<T>(object: T, options?: ISaveOptions): Promise<T>;
   async save<T>(object: T[], options?: ISaveOptions): Promise<T[]>;
@@ -71,6 +78,14 @@ export class StorageEntityController {
   async remove<T>(object: T | T[]): Promise<T | T[]> {
     return new DeleteOp<T>(this).run(object);
 
+  }
+
+  update<T>(cls: ClassType<T>, condition: any, update: any): Promise<T[]> {
+    throw new Error('Method not implemented.');
+  }
+
+  aggregate<T>(baseClass: ClassType<T>, ...pipeline: any[]): Promise<T[]> {
+    throw new Error('Method not implemented.');
   }
 
 }

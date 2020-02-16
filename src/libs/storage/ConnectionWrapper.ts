@@ -6,6 +6,7 @@ import * as _ from 'lodash';
 
 export class ConnectionWrapper {
 
+
   constructor(s: StorageRef, conn?: Connection) {
     this.storage = s;
     this._connection = conn;
@@ -22,16 +23,18 @@ export class ConnectionWrapper {
     return this._connection;
   }
 
-  // /**
-  //  *
-  //  */
-  // getOriginalEntityManager(){
-  //
-  // }
+  get lock() {
+    if (!_.has(ConnectionWrapper._LOCK, this.name)) {
+      ConnectionWrapper._LOCK[this.name] = new Semaphore(1);
+    }
+    return ConnectionWrapper._LOCK[this.name];
+  }
 
   static $INC = 0;
 
   private static _LOCK: { [k: string]: Semaphore } = {};
+
+  usage: number = 0;
 
   inc: number = ConnectionWrapper.$INC++;
 
@@ -42,6 +45,18 @@ export class ConnectionWrapper {
   _connection: Connection;
 
 
+  usageInc() {
+    return ++this.usage;
+  }
+
+  usageDec() {
+    return --this.usage;
+  }
+
+  getUsage() {
+    return this.usage;
+  }
+
   /**
    * Persists (saves) all given entities in the database.
    * If entities do not exist in the database then inserts, otherwise updates.
@@ -50,13 +65,6 @@ export class ConnectionWrapper {
    */
   persist<Entity>(o: Entity): Promise<any> {
     return this.manager.save(o);
-  }
-
-  get lock() {
-    if (!_.has(ConnectionWrapper._LOCK, this.name)) {
-      ConnectionWrapper._LOCK[this.name] = new Semaphore(1);
-    }
-    return ConnectionWrapper._LOCK[this.name];
   }
 
 
@@ -85,31 +93,39 @@ export class ConnectionWrapper {
   }
 
   async connect(): Promise<ConnectionWrapper> {
-    await this.lock.acquire();
-    try {
-      if (!this._connection) {
-        this._connection = await getConnectionManager().get(this.name);
+    if (this.getUsage() <= 0) {
+      await this.lock.acquire();
+      try {
+        if (!this._connection) {
+          this._connection = await getConnectionManager().get(this.name);
+        }
+        if (!this._connection.isConnected) {
+          this._connection = await this._connection.connect();
+        }
+        this.usageInc();
+      } catch (err) {
+        Log.error(err);
+      } finally {
+        this.lock.release();
       }
-
-      if (!this._connection.isConnected) {
-        this._connection = await this._connection.connect();
-      }
-    } catch (err) {
-      Log.error(err);
-    } finally {
-      this.lock.release();
+    } else {
+      this.usageInc();
     }
     return Promise.resolve(this);
   }
 
   async close(): Promise<ConnectionWrapper> {
-    await this.lock.acquire();
-    try {
-      await this.storage.remove(this);
-    } catch (err) {
-      Log.error(err);
-    } finally {
-      this.lock.release();
+    const rest = this.usageDec();
+    if (rest <= 0) {
+      await this.lock.acquire();
+
+      try {
+        await this.storage.remove(this);
+      } catch (err) {
+        Log.error(err);
+      } finally {
+        this.lock.release();
+      }
     }
     return Promise.resolve(this);
   }

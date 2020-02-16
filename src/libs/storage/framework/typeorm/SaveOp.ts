@@ -1,7 +1,6 @@
 import * as _ from 'lodash';
 
 import {ISaveOp} from '../ISaveOp';
-import {ConnectionWrapper} from '../../ConnectionWrapper';
 import {StorageEntityController} from '../../StorageEntityController';
 import {ISaveOptions} from '../ISaveOptions';
 import {DataContainer} from '../../DataContainer';
@@ -18,7 +17,7 @@ export class SaveOp<T> implements ISaveOp<T> {
 
   private objects: T[] = [];
 
-  private c: ConnectionWrapper;
+  // private c: ConnectionWrapper;
 
 
   constructor(controller: StorageEntityController) {
@@ -44,12 +43,13 @@ export class SaveOp<T> implements ISaveOp<T> {
       const promises: Promise<any>[] = [];
       const resolveByEntityDef = TypeOrmUtils.resolveByEntityDef(this.objects);
       const entityNames = _.keys(resolveByEntityDef);
-      this.c = await this.ec.storageRef.connect();
+      const c = await this.ec.connect();
 
       if (this.isMongoDB()) {
 
+
         for (const entityName of entityNames) {
-          const repo = this.c.manager.getMongoRepository(entityName);
+          const repo = c.manager.getMongoRepository(entityName);
           const entityDef = TypeOrmEntityRegistry.$().getEntityRefFor(entityName);
           const propertyDef = entityDef.getPropertyRefs().find(p => p.isIdentifier());
           if (options.raw) {
@@ -58,14 +58,18 @@ export class SaveOp<T> implements ISaveOp<T> {
               if (!e._id && propertyDef.name !== '_id') {
                 _.set(e, '_id', _.get(e, propertyDef.name, null));
               }
+              // filter command values
+              _.keys(e).filter(x => /^$/.test(x)).map(x => delete e[x]);
               bulk.find({_id: e._id}).upsert().replaceOne(e);
             });
             promises.push(bulk.execute());
           } else {
-            resolveByEntityDef[entityName].forEach((x: any) => {
-              if (!x._id && propertyDef.name !== '_id') {
-                _.set(x, '_id', _.get(x, propertyDef.name, null));
+            resolveByEntityDef[entityName].forEach((entity: any) => {
+              if (!entity._id && propertyDef.name !== '_id') {
+                _.set(entity, '_id', _.get(entity, propertyDef.name, null));
               }
+              // filter command values
+              _.keys(entity).filter(x => /^$/.test(x)).map(x => delete entity[x]);
             });
 
             const p = repo.save(resolveByEntityDef[entityName]).then((x: any) => {
@@ -81,17 +85,17 @@ export class SaveOp<T> implements ISaveOp<T> {
 
       } else {
         // start transaction, got to leafs and save
-        if (this.c.isSingleConnection()) {
+        if (c.isSingleConnection()) {
           options.noTransaction = true;
         }
 
         if (options.noTransaction) {
           for (const entityName of entityNames) {
-            const p = this.c.manager.getRepository(entityName).save(resolveByEntityDef[entityName]);
+            const p = c.manager.getRepository(entityName).save(resolveByEntityDef[entityName]);
             promises.push(p);
           }
         } else {
-          const promise = this.c.manager.transaction(async em => {
+          const promise = c.manager.transaction(async em => {
             const _promises = [];
             for (const entityName of entityNames) {
               const p = em.getRepository(entityName).save(resolveByEntityDef[entityName]);
@@ -106,7 +110,7 @@ export class SaveOp<T> implements ISaveOp<T> {
       if (promises.length > 0) {
         await Promise.all(promises);
       }
-      await this.c.close();
+      await c.close();
     } else {
       throw new ObjectsNotValidError(this.objects, isArray);
     }

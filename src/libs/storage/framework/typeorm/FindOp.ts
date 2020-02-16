@@ -2,20 +2,19 @@ import * as _ from 'lodash';
 import {IFindOp} from '../IFindOp';
 import {IFindOptions} from '../IFindOptions';
 import {StorageEntityController} from '../../StorageEntityController';
-import {ConnectionWrapper} from '../../ConnectionWrapper';
 
 
 import {XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '../../../Constants';
 
 import {TypeOrmSqlConditionsBuilder} from './TypeOrmSqlConditionsBuilder';
 import {TypeOrmEntityRegistry} from './schema/TypeOrmEntityRegistry';
-import {TreeUtils} from "commons-base";
+import {TreeUtils} from 'commons-base';
 
 
 export class FindOp<T> implements IFindOp<T> {
 
   readonly controller: StorageEntityController;
-  private connection: ConnectionWrapper;
+  // private connection: ConnectionWrapper;
   private options: IFindOptions;
 
   constructor(controller: StorageEntityController) {
@@ -30,19 +29,26 @@ export class FindOp<T> implements IFindOp<T> {
     });
     this.options = options;
 
-    this.connection = await this.controller.storageRef.connect();
+    const connection = await this.controller.connect();
     let results: T[] = [];
-    if (this.controller.storageRef.dbType === 'mongodb') {
-      results = await this.findMongo(entityType, findConditions);
-    } else {
-      results = await this.find(entityType, findConditions);
+    try {
+      if (this.controller.storageRef.dbType === 'mongodb') {
+        results = await this.findMongo(entityType, findConditions);
+      } else {
+        results = await this.find(entityType, findConditions);
+      }
+    } catch (e) {
+      throw e;
+    } finally {
+      await connection.close();
     }
-    await this.connection.close();
+
     return results;
   }
 
   private async find(entityType: Function | string, findConditions?: any): Promise<T[]> {
-    const repo = this.connection.manager.getRepository(entityType);
+    const connection = await this.controller.connect();
+    const repo = connection.manager.getRepository(entityType);
     const qb = repo.createQueryBuilder();
     const entityDef = TypeOrmEntityRegistry.$().getEntityRefFor(entityType);
     if (findConditions) {
@@ -79,13 +85,14 @@ export class FindOp<T> implements IFindOp<T> {
     results[XS_P_$COUNT] = recordCount;
     results[XS_P_$OFFSET] = this.options.offset;
     results[XS_P_$LIMIT] = this.options.limit;
-
+    await connection.close();
     return results;
   }
 
 
   private async findMongo(entityType: Function | string, findConditions?: any): Promise<T[]> {
-    const repo = this.connection.manager.getMongoRepository(entityType);
+    const connection = await this.controller.connect();
+    const repo = connection.manager.getMongoRepository(entityType);
 
     if (findConditions) {
       TreeUtils.walk(findConditions, x => {
@@ -98,7 +105,6 @@ export class FindOp<T> implements IFindOp<T> {
     }
 
     const qb = this.options.raw ? repo.createCursor(findConditions) : repo.createEntityCursor(findConditions);
-
 
     if (!_.isNull(this.options.limit) && _.isNumber(this.options.limit)) {
       qb.limit(this.options.limit);

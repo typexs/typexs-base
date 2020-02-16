@@ -6,9 +6,7 @@ export class DistributedSaveResultsEvent extends AbstractEvent {
   queryId: string;
 
   options: ISaveOptions;
-
-  error: string;
-
+  
   forbidden = false;
 
   results: { [type: string]: any[] } = {};

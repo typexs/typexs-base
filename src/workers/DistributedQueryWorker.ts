@@ -122,7 +122,7 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
       if (!entityRef) {
         // no entity ref
         const resultsEvent = this.createQueryResultEvent(event);
-        resultsEvent.error = 'entity ref not found';
+        resultsEvent.error = new Error('entity ref not found');
         resultsEvent.results = [];
         EventBus.postAndForget(resultsEvent);
         return;
@@ -170,7 +170,7 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
         if (!entityRefs[entityType]) {
           // no entity ref
           const resultsEvent = this.createSaveResultEvent(event);
-          resultsEvent.error = 'entity ref ' + entityType + ' not found';
+          resultsEvent.error = new Error('entity ref ' + entityType + ' not found');
           resultsEvent.results = {};
           EventBus.postAndForget(resultsEvent);
           return;

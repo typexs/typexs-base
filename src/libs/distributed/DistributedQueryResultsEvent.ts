@@ -4,8 +4,6 @@ export class DistributedQueryResultsEvent extends AbstractEvent {
 
   queryId: string;
 
-  error: string;
-
   forbidden = false;
 
   results: any[] = [];

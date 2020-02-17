@@ -23,6 +23,7 @@ import {ColumnMetadataArgs} from 'typeorm/browser/metadata-args/ColumnMetadataAr
 import {ValidationMetadata} from 'class-validator/metadata/ValidationMetadata';
 import {getFromContainer, MetadataStorage} from 'class-validator';
 import {MetadataArgsStorage} from 'typeorm/browser/metadata-args/MetadataArgsStorage';
+import {classRefGet} from "../../../Helper";
 
 
 export class TypeOrmEntityRegistry implements ILookupRegistry {
@@ -173,7 +174,7 @@ export class TypeOrmEntityRegistry implements ILookupRegistry {
     const json = _.cloneDeep(orgJson);
     let classRef = ClassRef.find(json.name, REGISTRY_TYPEORM);
     if (!classRef) {
-      classRef = ClassRef.get(SchemaUtils.clazz(json.name), REGISTRY_TYPEORM);
+      classRef = classRefGet(SchemaUtils.clazz(json.name));
     }
     classRef.setSchema(json.schema);
 
@@ -192,7 +193,7 @@ export class TypeOrmEntityRegistry implements ILookupRegistry {
         let targetRef = null;
         const propType = _.get(prop, 'ormPropertyType', false);
         if (propType === 'relation') {
-          targetRef = ClassRef.get(prop.targetRef.className, REGISTRY_TYPEORM);
+          targetRef = classRefGet(prop.targetRef.className);
           targetRef.setSchema(prop.targetRef.schema);
           const r: RelationMetadataArgs = prop.options;
           (<any>r).target = classRef.getClass();
@@ -200,7 +201,7 @@ export class TypeOrmEntityRegistry implements ILookupRegistry {
           const p = new TypeOrmPropertyRef(r, 'relation');
           this.register(p);
         } else if (propType === 'embedded') {
-          targetRef = ClassRef.get(prop.targetRef.className, REGISTRY_TYPEORM);
+          targetRef = classRefGet(prop.targetRef.className);
           targetRef.setSchema(prop.targetRef.schema);
           const r: RelationMetadataArgs = prop.options;
           (<any>r).target = classRef.getClass();

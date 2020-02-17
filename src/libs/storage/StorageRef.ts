@@ -18,6 +18,7 @@ import {StorageEntityController} from './StorageEntityController';
 import {ClassRef, IClassRef, IEntityRef} from 'commons-schema-api';
 import {REGISTRY_TYPEORM} from './framework/typeorm/schema/TypeOrmConstants';
 import {TypeOrmEntityRegistry} from './framework/typeorm/schema/TypeOrmEntityRegistry';
+import {classRefGet} from "./Helper";
 
 
 export const DEFAULT_STORAGEREF_OPTIONS: IStorageOptions = <SqliteConnectionOptions & IStorageOptions>{
@@ -207,7 +208,7 @@ export class StorageRef {
   getClassRef(name: string | Function): IClassRef {
     const clazz = this.getEntityClass(name);
     if (clazz) {
-      return ClassRef.get(clazz instanceof EntitySchema ? clazz.options.target : clazz, REGISTRY_TYPEORM);
+      return classRefGet(clazz instanceof EntitySchema ? clazz.options.target : clazz);
     }
     return null;
   }
@@ -223,7 +224,7 @@ export class StorageRef {
       const _ref = _.snakeCase(ref);
       return this.options.entities.find(x => _ref === StorageRef.machineName(x));
     } else if (_.isFunction(ref)) {
-      const _ref = ClassRef.get(ref, REGISTRY_TYPEORM);
+      const _ref = classRefGet(ref);
       return this.options.entities.find(x => _ref.machineName === StorageRef.machineName(x));
     } else {
       return this.options.entities.find(x => (<IClassRef>ref).machineName === StorageRef.machineName(x));

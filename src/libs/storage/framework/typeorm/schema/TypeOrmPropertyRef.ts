@@ -16,6 +16,7 @@ import {
 import {TypeOrmEntityRef} from './TypeOrmEntityRef';
 import {TypeOrmUtils} from '../TypeOrmUtils';
 import {REGISTRY_TYPEORM} from './TypeOrmConstants';
+import {classRefGet} from "../../../Helper";
 
 
 
@@ -43,18 +44,18 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
       if (this.column.options.type && !_.isString(this.column.options.type)) {
         const className = ClassUtils.getClassName(this.column.options.type);
         if (!['string', 'number', 'boolean', 'date', 'float', 'array'].includes(className.toLowerCase())) {
-          this.targetRef = ClassRef.get(this.column.options.type, REGISTRY_TYPEORM);
+          this.targetRef = classRefGet(this.column.options.type);
         }
       }
     } else if (type === 'embedded') {
       this.embedded = <EmbeddedMetadataArgs>c;
-      this.targetRef = ClassRef.get(this.embedded.type(), REGISTRY_TYPEORM);
+      this.targetRef = classRefGet(this.embedded.type());
     } else if (type === 'relation') {
       this.relation = <RelationMetadataArgs>c;
       if ((_.isFunction(this.relation.type) && !_.isEmpty(this.relation.type.name)) || _.isString(this.relation.type)) {
-        this.targetRef = ClassRef.get(this.relation.type, REGISTRY_TYPEORM);
+        this.targetRef = classRefGet(this.relation.type);
       } else if (_.isFunction(this.relation.type)) {
-        this.targetRef = ClassRef.get(this.relation.type(), REGISTRY_TYPEORM);
+        this.targetRef = classRefGet(this.relation.type());
       }
 
       this.targetRef.isEntity = true;

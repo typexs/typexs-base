@@ -1,6 +1,9 @@
 import {ISaveOptions} from './framework/ISaveOptions';
 import {IFindOptions} from './framework/IFindOptions';
 import {ClassType} from 'commons-schema-api/browser';
+import {IUpdateOptions} from './framework/IUpdateOptions';
+import {IAggregateOptions} from './framework/IAggregateOptions';
+import {IDeleteOptions} from './framework/IDeleteOptions';
 
 export interface IEntityController {
 
@@ -12,14 +15,14 @@ export interface IEntityController {
 
   save<T>(object: T[], options?: ISaveOptions): Promise<T[]>;
 
-  remove<T>(object: T): Promise<T>;
+  remove<T>(object: T, options?: IDeleteOptions): Promise<T>;
 
-  remove<T>(object: T[]): Promise<T[]>;
+  remove<T>(object: T[], options?: IDeleteOptions): Promise<T[]>;
 
-  remove<T>(cls: ClassType<T>, condition: any): Promise<T[]>;
+  remove<T>(cls: ClassType<T>, condition: any, options?: IDeleteOptions): Promise<number>;
 
-  update<T>(cls: ClassType<T>, condition: any, update: any): Promise<T[]>;
+  update<T>(cls: ClassType<T>, condition: any, update: any, options?: IUpdateOptions): Promise<number>;
 
-  aggregate<T>(baseClass: ClassType<T>, aggregationPipeline: any): Promise<T[]>;
+  aggregate<T>(baseClass: ClassType<T>, pipeline: any[], options?: IAggregateOptions): Promise<any[]>;
 
 }

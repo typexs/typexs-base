@@ -3,6 +3,7 @@ import {Log} from '../logging/Log';
 import {StorageRef} from './StorageRef';
 import {Semaphore} from '../Semaphore';
 import * as _ from 'lodash';
+import {LockFactory} from '../LockFactory';
 
 export class ConnectionWrapper {
 
@@ -11,6 +12,7 @@ export class ConnectionWrapper {
     this.storage = s;
     this._connection = conn;
     this.name = this.storage.name;
+
   }
 
 
@@ -25,7 +27,7 @@ export class ConnectionWrapper {
 
   get lock() {
     if (!_.has(ConnectionWrapper._LOCK, this.name)) {
-      ConnectionWrapper._LOCK[this.name] = new Semaphore(1);
+      ConnectionWrapper._LOCK[this.name] = LockFactory.$().semaphore(1);
     }
     return ConnectionWrapper._LOCK[this.name];
   }
@@ -50,7 +52,11 @@ export class ConnectionWrapper {
   }
 
   usageDec() {
-    return --this.usage;
+    if (this.usage > 0) {
+      return --this.usage;
+    }
+    return this.usage;
+
   }
 
   getUsage() {
@@ -77,6 +83,7 @@ export class ConnectionWrapper {
     }
   }
 
+
   /**
    * Is the connection opened
    */
@@ -84,13 +91,16 @@ export class ConnectionWrapper {
     return this._connection.isConnected;
   }
 
+
   isSingleConnection(): boolean {
     return this.storage.isSingleConnection();
   }
 
+
   isOnlyMemory(): boolean {
     return this.storage.isOnlyMemory();
   }
+
 
   async connect(): Promise<ConnectionWrapper> {
     if (this.getUsage() <= 0) {
@@ -114,11 +124,11 @@ export class ConnectionWrapper {
     return Promise.resolve(this);
   }
 
+
   async close(): Promise<ConnectionWrapper> {
     const rest = this.usageDec();
     if (rest <= 0) {
       await this.lock.acquire();
-
       try {
         await this.storage.remove(this);
       } catch (err) {

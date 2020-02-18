@@ -9,6 +9,11 @@ import {Container} from 'typedi';
 import {ConnectionWrapper} from './ConnectionWrapper';
 import {IEntityController} from './IEntityController';
 import {ClassType} from 'commons-schema-api';
+import {IUpdateOptions} from './framework/IUpdateOptions';
+import {UpdateOp} from './framework/typeorm/UpdateOp';
+import {IDeleteOptions} from './framework/IDeleteOptions';
+import {IAggregateOptions} from "./framework/IAggregateOptions";
+import {AggregateOp} from "./framework/typeorm/AggregateOp";
 
 /**
  * TODO Should be renamed to StorageEntityManager
@@ -62,30 +67,31 @@ export class StorageEntityController implements IEntityController {
   }
 
 
-  async findOne<T>(fn: Function | string, conditions: any = null, options: IFindOptions = {limit: 1}): Promise<T> {
+  async findOne<T>(fn: Function | string | ClassType<T>, conditions: any = null, options: IFindOptions = {limit: 1}): Promise<T> {
     return this.find<T>(fn, conditions, options).then(r => r.shift());
   }
 
 
-  async find<T>(fn: Function | string, conditions: any = null, options: IFindOptions = {limit: 100}): Promise<T[]> {
+  async find<T>(fn: Function | string | ClassType<T>, conditions: any = null, options: IFindOptions = {limit: 100}): Promise<T[]> {
     return new FindOp<T>(this).run(fn, conditions, options);
 
   }
 
 
-  async remove<T>(object: T): Promise<T>;
-  async remove<T>(object: T[]): Promise<T[]>;
-  async remove<T>(object: T | T[]): Promise<T | T[]> {
-    return new DeleteOp<T>(this).run(object);
+  async remove<T>(object: T, options?: IDeleteOptions): Promise<T>;
+  async remove<T>(object: T[], options?: IDeleteOptions): Promise<T[]>;
+  async remove<T>(object: ClassType<T>, condition: any, options?: IDeleteOptions): Promise<number>;
+  async remove<T>(object: T | T[] | ClassType<T>, condition?: any, options?: IDeleteOptions): Promise<T | T[] | number> {
+    return new DeleteOp<T>(this).run(object, condition, options);
 
   }
 
-  update<T>(cls: ClassType<T>, condition: any, update: any): Promise<T[]> {
-    throw new Error('Method not implemented.');
+  update<T>(cls: ClassType<T>, condition: any, update: any, options: IUpdateOptions = {}): Promise<number> {
+    return new UpdateOp<T>(this).run(cls, condition, update, options);
   }
 
-  aggregate<T>(baseClass: ClassType<T>, ...pipeline: any[]): Promise<T[]> {
-    throw new Error('Method not implemented.');
+  aggregate<T>(cls: ClassType<T>, pipeline: any[], options: IAggregateOptions = {}): Promise<any[]> {
+    return new AggregateOp<T>(this).run(cls, pipeline, options);
   }
 
 }

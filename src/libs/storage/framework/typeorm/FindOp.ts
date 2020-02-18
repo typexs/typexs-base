@@ -9,19 +9,23 @@ import {XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '../../../Constants';
 import {TypeOrmSqlConditionsBuilder} from './TypeOrmSqlConditionsBuilder';
 import {TypeOrmEntityRegistry} from './schema/TypeOrmEntityRegistry';
 import {TreeUtils} from 'commons-base';
+import {SelectQueryBuilder} from 'typeorm';
+import {ClassType} from 'commons-schema-api';
 
 
 export class FindOp<T> implements IFindOp<T> {
 
   readonly controller: StorageEntityController;
-  // private connection: ConnectionWrapper;
+
   private options: IFindOptions;
+
+  error: Error = null;
 
   constructor(controller: StorageEntityController) {
     this.controller = controller;
   }
 
-  async run(entityType: Function | string, findConditions?: any, options?: IFindOptions): Promise<T[]> {
+  async run(entityType: Function | string | ClassType<T>, findConditions?: any, options?: IFindOptions): Promise<T[]> {
     _.defaults(options, {
       limit: 50,
       offset: null,
@@ -29,111 +33,126 @@ export class FindOp<T> implements IFindOp<T> {
     });
     this.options = options;
 
-    const connection = await this.controller.connect();
     let results: T[] = [];
-    try {
-      if (this.controller.storageRef.dbType === 'mongodb') {
-        results = await this.findMongo(entityType, findConditions);
-      } else {
-        results = await this.find(entityType, findConditions);
-      }
-    } catch (e) {
-      throw e;
-    } finally {
-      await connection.close();
+    if (this.controller.storageRef.dbType === 'mongodb') {
+      results = await this.findMongo(entityType, findConditions);
+    } else {
+      results = await this.find(entityType, findConditions);
     }
-
     return results;
   }
 
-  private async find(entityType: Function | string, findConditions?: any): Promise<T[]> {
+  private async find(entityType: Function | string | ClassType<T>, findConditions?: any): Promise<T[]> {
     const connection = await this.controller.connect();
-    const repo = connection.manager.getRepository(entityType);
-    const qb = repo.createQueryBuilder();
-    const entityDef = TypeOrmEntityRegistry.$().getEntityRefFor(entityType);
-    if (findConditions) {
-      const builder = new TypeOrmSqlConditionsBuilder(entityDef, qb.alias);
-      const where = builder.build(findConditions);
-      builder.getJoins().forEach(join => {
-        qb.leftJoin(join.table, join.alias, join.condition);
-      });
-      qb.where(where);
+    let results: T[] = [];
+    try {
+      // const repo = connection.manager.getRepository(entityType);
+      // const qb = repo.createQueryBuilder() as SelectQueryBuilder<T>;
+      let qb: SelectQueryBuilder<T> = null;
+      const entityDef = TypeOrmEntityRegistry.$().getEntityRefFor(entityType);
+      if (findConditions) {
+        const builder = new TypeOrmSqlConditionsBuilder<T>(connection.manager, entityDef);
+        const where = builder.build(findConditions);
+        qb = builder.getQueryBuilder();
+        // builder.getJoins().forEach(join => {
+        //   qb.leftJoin(join.table, join.alias, join.condition);
+        // });
+        qb.where(where);
+      } else {
+        qb = connection.manager.getRepository(entityType).createQueryBuilder() as SelectQueryBuilder<T>;
+      }
+
+      const recordCount = await qb.getCount();
+
+      if (!_.isNull(this.options.limit) && _.isNumber(this.options.limit)) {
+        qb.limit(this.options.limit);
+      }
+
+      if (!_.isNull(this.options.offset) && _.isNumber(this.options.offset)) {
+        qb.offset(this.options.offset);
+      }
+
+      if (_.isNull(this.options.sort)) {
+        entityDef.getPropertyRefs().filter(x => x.isIdentifier()).forEach(x => {
+          qb.addOrderBy(qb.alias + '.' + x.storingName, 'ASC');
+        });
+      } else {
+        _.keys(this.options.sort).forEach(sortKey => {
+          const v: string = this.options.sort[sortKey];
+          qb.addOrderBy(qb.alias + '.' + sortKey, <'ASC' | 'DESC'>v.toUpperCase());
+        });
+      }
+
+      results = this.options.raw ? await qb.getRawMany() : await qb.getMany();
+      results[XS_P_$COUNT] = recordCount;
+      results[XS_P_$OFFSET] = this.options.offset;
+      results[XS_P_$LIMIT] = this.options.limit;
+    } catch (e) {
+      this.error = e;
+    } finally {
+      await connection.close();
+      if (this.error) {
+        throw this.error;
+      }
     }
 
-    const recordCount = await qb.getCount();
-
-    if (!_.isNull(this.options.limit) && _.isNumber(this.options.limit)) {
-      qb.limit(this.options.limit);
-    }
-
-    if (!_.isNull(this.options.offset) && _.isNumber(this.options.offset)) {
-      qb.offset(this.options.offset);
-    }
-
-    if (_.isNull(this.options.sort)) {
-      entityDef.getPropertyRefs().filter(x => x.isIdentifier()).forEach(x => {
-        qb.addOrderBy(qb.alias + '.' + x.storingName, 'ASC');
-      });
-    } else {
-      _.keys(this.options.sort).forEach(sortKey => {
-        const v: string = this.options.sort[sortKey];
-        qb.addOrderBy(qb.alias + '.' + sortKey, <'ASC' | 'DESC'>v.toUpperCase());
-      });
-    }
-
-    const results = this.options.raw ? await qb.getRawMany() : await qb.getMany();
-    results[XS_P_$COUNT] = recordCount;
-    results[XS_P_$OFFSET] = this.options.offset;
-    results[XS_P_$LIMIT] = this.options.limit;
-    await connection.close();
     return results;
   }
 
 
   private async findMongo(entityType: Function | string, findConditions?: any): Promise<T[]> {
-    const connection = await this.controller.connect();
-    const repo = connection.manager.getMongoRepository(entityType);
-
-    if (findConditions) {
-      TreeUtils.walk(findConditions, x => {
-        if (x.key && _.isString(x.key)) {
-          if (x.key === '$like') {
-            x.parent['$regex'] = x.parent[x.key].replace('%%', '#$#').replace('%', '.*').replace('#$#', '%%');
-          }
-        }
-      });
-    }
-
-    const qb = this.options.raw ? repo.createCursor(findConditions) : repo.createEntityCursor(findConditions);
-
-    if (!_.isNull(this.options.limit) && _.isNumber(this.options.limit)) {
-      qb.limit(this.options.limit);
-    }
-
-    if (!_.isNull(this.options.offset) && _.isNumber(this.options.offset)) {
-      qb.skip(this.options.offset);
-    }
-
-    if (!_.isNull(this.options.sort)) {
-      const s: any[] = [];
-      _.keys(this.options.sort).forEach(sortKey => {
-        const v: string = this.options.sort[sortKey];
-        s.push([sortKey, v === 'asc' ? 1 : -1]);
-      });
-      qb.sort(s);
-    }
-
-    const recordCount = await qb.count(false);
-
     const results: T[] = [];
+    const connection = await this.controller.connect();
+    try {
+      const repo = connection.manager.getMongoRepository(entityType);
 
-    while (await qb.hasNext()) {
-      results.push(await qb.next());
+      if (findConditions) {
+        TreeUtils.walk(findConditions, x => {
+          if (x.key && _.isString(x.key)) {
+            if (x.key === '$like') {
+              x.parent['$regex'] = x.parent[x.key].replace('%%', '#$#').replace('%', '.*').replace('#$#', '%%');
+            }
+          }
+        });
+      }
+
+      const qb = this.options.raw ? repo.createCursor(findConditions) : repo.createEntityCursor(findConditions);
+
+      if (!_.isNull(this.options.limit) && _.isNumber(this.options.limit)) {
+        qb.limit(this.options.limit);
+      }
+
+      if (!_.isNull(this.options.offset) && _.isNumber(this.options.offset)) {
+        qb.skip(this.options.offset);
+      }
+
+      if (!_.isNull(this.options.sort)) {
+        const s: any[] = [];
+        _.keys(this.options.sort).forEach(sortKey => {
+          const v: string = this.options.sort[sortKey];
+          s.push([sortKey, v === 'asc' ? 1 : -1]);
+        });
+        qb.sort(s);
+      }
+
+      const recordCount = await qb.count(false);
+
+
+      while (await qb.hasNext()) {
+        results.push(await qb.next());
+      }
+
+      results[XS_P_$COUNT] = recordCount;
+      results[XS_P_$OFFSET] = this.options.offset;
+      results[XS_P_$LIMIT] = this.options.limit;
+    } catch (e) {
+      this.error = e;
+    } finally {
+      await connection.close();
+      if (this.error) {
+        throw this.error;
+      }
     }
-
-    results[XS_P_$COUNT] = recordCount;
-    results[XS_P_$OFFSET] = this.options.offset;
-    results[XS_P_$LIMIT] = this.options.limit;
 
     return results;
   }

@@ -2,9 +2,14 @@ import {Inject} from 'typedi';
 import {DistributedOperationFactory} from './DistributedOperationFactory';
 import {IDistributedFindOptions} from './IDistributedFindOptions';
 import {IDistributedSaveOptions} from './IDistributedSaveOptions';
+import {IEntityController} from '../storage/IEntityController';
+import {ClassType} from 'commons-schema-api';
+import {IUpdateOptions} from '../storage/framework/IUpdateOptions';
+import {IAggregateOptions} from '../storage/framework/IAggregateOptions';
 
 
-export class DistributedStorageEntityController {
+export class DistributedStorageEntityController implements IEntityController {
+
 
   @Inject()
   factory: DistributedOperationFactory;
@@ -28,14 +33,19 @@ export class DistributedStorageEntityController {
 
   }
 
+  remove<T>(object: T): Promise<T>;
+  remove<T>(object: T[]): Promise<T[]>;
+  remove<T>(cls: ClassType<T>, condition: any): Promise<number>;
+  remove<T>(cls: T | T[] | ClassType<T>, condition?: any): Promise<T | T[]> {
+    throw new Error('Method not implemented.');
+  }
 
-  /*
+  update<T>(cls: ClassType<T>, condition: any, update: any, options?: IUpdateOptions): Promise<number> {
+    throw new Error('Method not implemented.');
+  }
 
-    async remove<T>(object: T): Promise<T>;
-    async remove<T>(object: T[]): Promise<T[]>;
-    async remove<T>(object: T | T[]): Promise<T | T[]> {
-      return new DeleteOp<T>(this).run(object);
+  aggregate<T>(baseClass: ClassType<T>, aggregationPipeline: any, options?: IAggregateOptions): Promise<T[]> {
+    throw new Error('Method not implemented.');
+  }
 
-    }
-  */
 }

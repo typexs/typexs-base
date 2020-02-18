@@ -16,6 +16,7 @@ import {Tasks} from './libs/tasks/Tasks';
 import {TasksHelper} from './libs/tasks/TasksHelper';
 import {WatcherRegistry} from './libs/watchers/WatcherRegistry';
 import {Workers} from './libs/worker/Workers';
+import {Storage} from "./libs/storage/Storage";
 
 
 export class Startup implements IBootstrap, IShutdown {
@@ -115,6 +116,7 @@ export class Startup implements IBootstrap, IShutdown {
     this.tasks.reset();
     await this.workers.shutdown();
     await this.watcherRegistry.stopAll();
+    await (Container.get(Storage.NAME) as Storage).shutdown();
 
   }
 

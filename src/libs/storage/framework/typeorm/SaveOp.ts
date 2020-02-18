@@ -12,8 +12,9 @@ import {TypeOrmEntityRegistry} from './schema/TypeOrmEntityRegistry';
 
 export class SaveOp<T> implements ISaveOp<T> {
 
+  error: Error = null;
 
-  readonly ec: StorageEntityController;
+  readonly controller: StorageEntityController;
 
   private objects: T[] = [];
 
@@ -21,11 +22,11 @@ export class SaveOp<T> implements ISaveOp<T> {
 
 
   constructor(controller: StorageEntityController) {
-    this.ec = controller;
+    this.controller = controller;
   }
 
   private isMongoDB() {
-    return this.ec.storageRef.dbType === 'mongodb';
+    return this.controller.storageRef.dbType === 'mongodb';
   }
 
   async run(object: T[] | T, options?: ISaveOptions): Promise<T[] | T> {
@@ -43,74 +44,81 @@ export class SaveOp<T> implements ISaveOp<T> {
       const promises: Promise<any>[] = [];
       const resolveByEntityDef = TypeOrmUtils.resolveByEntityDef(this.objects);
       const entityNames = _.keys(resolveByEntityDef);
-      const c = await this.ec.connect();
+      const connection = await this.controller.connect();
 
-      if (this.isMongoDB()) {
+      try {
+        if (this.isMongoDB()) {
 
-
-        for (const entityName of entityNames) {
-          const repo = c.manager.getMongoRepository(entityName);
-          const entityDef = TypeOrmEntityRegistry.$().getEntityRefFor(entityName);
-          const propertyDef = entityDef.getPropertyRefs().find(p => p.isIdentifier());
-          if (options.raw) {
-            const bulk = repo.initializeOrderedBulkOp();
-            resolveByEntityDef[entityName].forEach((e: any) => {
-              if (!e._id && propertyDef.name !== '_id') {
-                _.set(e, '_id', _.get(e, propertyDef.name, null));
-              }
-              // filter command values
-              _.keys(e).filter(x => /^$/.test(x)).map(x => delete e[x]);
-              bulk.find({_id: e._id}).upsert().replaceOne(e);
-            });
-            promises.push(bulk.execute());
-          } else {
-            resolveByEntityDef[entityName].forEach((entity: any) => {
-              if (!entity._id && propertyDef.name !== '_id') {
-                _.set(entity, '_id', _.get(entity, propertyDef.name, null));
-              }
-              // filter command values
-              _.keys(entity).filter(x => /^$/.test(x)).map(x => delete entity[x]);
-            });
-
-            const p = repo.save(resolveByEntityDef[entityName]).then((x: any) => {
-              resolveByEntityDef[entityName].forEach((x: any) => {
-                if (!x._id && propertyDef.name !== '_id') {
-                  _.set(x, '_id', _.get(x, propertyDef.name, null));
-                }
-              });
-            });
-            promises.push(p);
-          }
-        }
-
-      } else {
-        // start transaction, got to leafs and save
-        if (c.isSingleConnection()) {
-          options.noTransaction = true;
-        }
-
-        if (options.noTransaction) {
           for (const entityName of entityNames) {
-            const p = c.manager.getRepository(entityName).save(resolveByEntityDef[entityName]);
-            promises.push(p);
-          }
-        } else {
-          const promise = c.manager.transaction(async em => {
-            const _promises = [];
-            for (const entityName of entityNames) {
-              const p = em.getRepository(entityName).save(resolveByEntityDef[entityName]);
-              _promises.push(p);
+            const repo = connection.manager.getMongoRepository(entityName);
+            const entityDef = TypeOrmEntityRegistry.$().getEntityRefFor(entityName);
+            const propertyDef = entityDef.getPropertyRefs().find(p => p.isIdentifier());
+            if (options.raw) {
+              const bulk = repo.initializeOrderedBulkOp();
+              resolveByEntityDef[entityName].forEach((e: any) => {
+                if (!e._id && propertyDef.name !== '_id') {
+                  _.set(e, '_id', _.get(e, propertyDef.name, null));
+                }
+                // filter command values
+                _.keys(e).filter(x => /^$/.test(x)).map(x => delete e[x]);
+                bulk.find({_id: e._id}).upsert().replaceOne(e);
+              });
+              promises.push(bulk.execute());
+            } else {
+              resolveByEntityDef[entityName].forEach((entity: any) => {
+                if (!entity._id && propertyDef.name !== '_id') {
+                  _.set(entity, '_id', _.get(entity, propertyDef.name, null));
+                }
+                // filter command values
+                _.keys(entity).filter(x => /^$/.test(x)).map(x => delete entity[x]);
+              });
+
+              const p = repo.save(resolveByEntityDef[entityName]).then((x: any) => {
+                resolveByEntityDef[entityName].forEach((x: any) => {
+                  if (!x._id && propertyDef.name !== '_id') {
+                    _.set(x, '_id', _.get(x, propertyDef.name, null));
+                  }
+                });
+              });
+              promises.push(p);
             }
-            return Promise.all(_promises);
-          });
-          promises.push(promise);
+          }
+
+        } else {
+          // start transaction, got to leafs and save
+          if (connection.isSingleConnection()) {
+            options.noTransaction = true;
+          }
+
+          if (options.noTransaction) {
+            for (const entityName of entityNames) {
+              const p = connection.manager.getRepository(entityName).save(resolveByEntityDef[entityName]);
+              promises.push(p);
+            }
+          } else {
+            const promise = connection.manager.transaction(async em => {
+              const _promises = [];
+              for (const entityName of entityNames) {
+                const p = em.getRepository(entityName).save(resolveByEntityDef[entityName]);
+                _promises.push(p);
+              }
+              return Promise.all(_promises);
+            });
+            promises.push(promise);
+          }
+        }
+
+        if (promises.length > 0) {
+          await Promise.all(promises);
+        }
+      } catch (e) {
+        this.error = e;
+      } finally {
+        await connection.close();
+        if (this.error) {
+          throw this.error;
         }
       }
-
-      if (promises.length > 0) {
-        await Promise.all(promises);
-      }
-      await c.close();
     } else {
       throw new ObjectsNotValidError(this.objects, isArray);
     }

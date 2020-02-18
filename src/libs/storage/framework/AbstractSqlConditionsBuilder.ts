@@ -35,8 +35,8 @@ export abstract class AbstractSqlConditionsBuilder {
 
   abstract lookupKeys(key: string): string;
 
-  build(condition: any, k: string = null): string {
 
+  build(condition: any, k: string = null): string {
     if (_.isEmpty(condition)) {
       return null;
     }
@@ -69,6 +69,7 @@ export abstract class AbstractSqlConditionsBuilder {
       }).filter(c => !_.isNull(c)).join(' AND ');
     }
   }
+
 
   escape(str: any) {
     if (_.isNull(str)) {

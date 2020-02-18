@@ -76,6 +76,11 @@ export class Storage {
     return _.values(this.refs).map(ref => ref.getOptions());
   }
 
+  shutdown() {
+    const ps = _.values(this.refs).map(async x => x.shutdown());
+    return Promise.all(ps);
+  }
+
 }
 
 

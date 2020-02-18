@@ -15,10 +15,9 @@ import {ClassUtils, PlatformUtils, TodoException} from 'commons-base';
 import {AbstractSchemaHandler} from './AbstractSchemaHandler';
 import {BaseUtils} from '../utils/BaseUtils';
 import {StorageEntityController} from './StorageEntityController';
-import {ClassRef, IClassRef, IEntityRef} from 'commons-schema-api';
-import {REGISTRY_TYPEORM} from './framework/typeorm/schema/TypeOrmConstants';
+import {IClassRef, IEntityRef} from 'commons-schema-api';
 import {TypeOrmEntityRegistry} from './framework/typeorm/schema/TypeOrmEntityRegistry';
-import {classRefGet} from "./Helper";
+import {classRefGet} from './Helper';
 
 
 export const DEFAULT_STORAGEREF_OPTIONS: IStorageOptions = <SqliteConnectionOptions & IStorageOptions>{
@@ -26,14 +25,15 @@ export const DEFAULT_STORAGEREF_OPTIONS: IStorageOptions = <SqliteConnectionOpti
 };
 
 
-export class StorageRef {
+export class StorageRef /* extends EventEmitter */ {
 
   // private static $$: Storage = null;
 
   constructor(options: IStorageOptions/* = DEFAULT_STORAGE_OPTIONS, FIX_STORAGE_OPTIONS: any = {}*/) {
     // Apply some unchangeable and fixed options
     // options = Utils.merge(options, FIX_STORAGE_OPTIONS);
-
+    // super();
+    // this.on('close', this.onCloseConnection.bind(this));
     if (options.type === 'sqlite') {
       const opts = <SqliteConnectionOptions & IStorageOptions>options;
 
@@ -118,6 +118,8 @@ export class StorageRef {
   private _extending: StorageRef[] = [];
 
   private _extends: StorageRef[] = [];
+
+  // private static _LOCK: { [k: string]: Semaphore } = {};
 
   private static getClassName(x: string | EntitySchema | Function) {
     return ClassUtils.getClassName(x instanceof EntitySchema ? x.options.target : x);
@@ -286,15 +288,39 @@ export class StorageRef {
   }
 
 
+  // get lock() {
+  //   if (!_.has(StorageRef._LOCK, this.name)) {
+  //     StorageRef._LOCK[this.name] = LockFactory.$().semaphore(1);
+  //   }
+  //   return StorageRef._LOCK[this.name];
+  // }
+
+
   size() {
     return this.connections.length;
   }
 
+  // async onCloseConnection(inc: number) {
+  //   if (_.isEmpty(this.connections) && !this.isOnlyMemory()) {
+  //     if (getConnectionManager().has(this.name) && getConnectionManager().get(this.name).isConnected) {
+  //       try {
+  //         await getConnectionManager().get(this.name).close();
+  //       } catch (err) {
+  //         Log.error(err);
+  //       }
+  //     }
+  //   }
+  // }
 
   async remove(wrapper: ConnectionWrapper) {
     _.remove(this.connections, {inc: wrapper.inc});
-    if (_.isEmpty(this.connections) && !this.isOnlyMemory()) {
+    // setTimeout(() => {
+    //   this.emit('close');
+    // }, 250)
+  }
 
+  async closeConnection() {
+    if (_.isEmpty(this.connections) && !this.isOnlyMemory()) {
       if (getConnectionManager().has(this.name) && getConnectionManager().get(this.name).isConnected) {
         try {
           await getConnectionManager().get(this.name).close();
@@ -348,16 +374,19 @@ export class StorageRef {
     if (!this.isOnlyMemory() || full) {
       await this.closeConnections();
     }
-
+    await this.closeConnection();
     if (full) {
       this.removeFromConnectionManager();
     }
+    // this.removeAllListeners();
   }
 
 
   async forceShutdown(): Promise<void> {
     await this.closeConnections();
+    await this.closeConnection();
     this.removeFromConnectionManager();
+    // this.removeAllListeners();
   }
 
   addExtendedStorageRef(ref: StorageRef) {

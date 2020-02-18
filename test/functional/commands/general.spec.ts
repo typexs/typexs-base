@@ -1,9 +1,9 @@
-import {suite, test} from "mocha-typescript";
-import {expect} from "chai";
-import * as path from "path";
-import {Bootstrap} from "../../../src/Bootstrap";
-import {Config} from "commons-config";
-import * as _ from "lodash";
+import {suite, test} from 'mocha-typescript';
+import {expect} from 'chai';
+import * as path from 'path';
+import {Bootstrap} from '../../../src/Bootstrap';
+import {Config} from 'commons-config';
+import * as _ from 'lodash';
 
 @suite('functional/commands/general')
 class GeneralSpec {
@@ -17,8 +17,8 @@ class GeneralSpec {
 
   @test
   async 'load dummy command'() {
-    let appdir = path.join(__dirname, 'fake_app');
-    let bootstrap = await Bootstrap.configure({
+    const appdir = path.join(__dirname, 'fake_app');
+    const bootstrap = await Bootstrap.configure({
       app: {path: appdir},
       modules: {paths: [__dirname + '/../../..']}
     });
@@ -27,12 +27,12 @@ class GeneralSpec {
     await bootstrap.startup();
 
     await bootstrap.shutdown();
-    let commands = bootstrap.getCommands();
+    const commands = bootstrap.getCommands();
     expect(commands.length).to.be.gt(0);
 
-    let command = _.find(commands, e => e.command == 'dummy');
+    const command = _.find(commands, e => e.command === 'dummy');
 
-    let result = await command.handler({});
+    const result = await command.handler({});
     expect(result).to.deep.include({
       connectOnStartup: false,
       name: 'default',

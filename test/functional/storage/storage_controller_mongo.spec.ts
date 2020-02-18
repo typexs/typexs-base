@@ -7,32 +7,36 @@ import {Bootstrap} from '../../../src/Bootstrap';
 import {Config} from 'commons-config';
 // import {MdbCar} from "./fake_app_mongo/entities/MdbCar";
 // import {MdbDriver} from "./fake_app_mongo/entities/MdbDriver";
-import {TestHelper} from '../TestHelper';
+import {StorageEntityController, StorageRef} from '../../../src';
+import {ClassType} from 'commons-schema-api/browser';
+
 
 let bootstrap: Bootstrap;
+let storageRef: StorageRef;
+
+let MdbCar: ClassType<any> = null;
+let MdbPerson: ClassType<any> = null;
+let MdbDriver: ClassType<any> = null;
+let controller: StorageEntityController = null;
 
 
 @suite('functional/storage/controller_mongo')
 class StorageControllerMongoSpec {
 
+  static after() {
+    const ref = storageRef['connections'];
+    console.log('');
+  }
 
-  before() {
+
+  async before() {
     // TestHelper.typeOrmReset();
     Bootstrap.reset();
     Config.clear();
-  }
 
-
-  async after() {
-    if (bootstrap) {
-      await bootstrap.shutdown();
-    }
-  }
-
-  @test
-  async 'lifecycle save, find, remove'() {
-    const MdbCar = require('./fake_app_mongo/entities/MdbCar').MdbCar;
-    const MdbDriver = require('./fake_app_mongo/entities/MdbDriver').MdbDriver;
+    MdbCar = require('./fake_app_mongo/entities/MdbCar').MdbCar;
+    MdbDriver = require('./fake_app_mongo/entities/MdbDriver').MdbDriver;
+    MdbPerson = require('./fake_app_mongo/entities/MdbPerson').MdbPerson;
 
     const appdir = path.join(__dirname, 'fake_app_mongo');
     bootstrap = await Bootstrap
@@ -49,17 +53,32 @@ class StorageControllerMongoSpec {
     bootstrap = await bootstrap.activateStorage();
 
     const storageManager = bootstrap.getStorage();
-    const storageRef = storageManager.get();
+    storageRef = storageManager.get();
     storageRef.addEntityType(MdbCar);
     storageRef.addEntityType(MdbDriver);
 
     const c = await storageRef.connect();
     await c.manager.getMongoRepository(MdbCar).deleteMany({});
     await c.manager.getMongoRepository(MdbDriver).deleteMany({});
+    await c.manager.getMongoRepository(MdbPerson).deleteMany({});
     await c.close();
 
 
-    const controller = storageRef.getController();
+    controller = storageRef.getController();
+  }
+
+
+  async after() {
+    if (bootstrap) {
+      // await controller.close();
+      await bootstrap.shutdown();
+      await bootstrap.getStorage().shutdown();
+    }
+  }
+
+  @test
+  async 'lifecycle save, find, remove'() {
+
     let inc = 0;
     const car1 = new MdbDriver();
     car1.firstName = 'Black';
@@ -212,6 +231,97 @@ class StorageControllerMongoSpec {
 
   }
 
+
+  @test
+  async 'remove by conditions'() {
+
+    const car1 = new MdbDriver();
+    car1.firstName = 'Black';
+    car1.lastName = 'Yellow';
+
+    const car2 = new MdbDriver();
+    car2.firstName = 'Blue';
+    car2.lastName = 'Green';
+
+    const car3 = new MdbDriver();
+    car3.firstName = 'Blue';
+    car3.lastName = 'Pink';
+
+    const driver_save_res = await controller.save([car1, car2, car3]);
+
+    const driver_found = await controller.find(MdbDriver);
+    expect(driver_found).to.have.length(3);
+
+    const driver_removed_count = await controller.remove(MdbDriver, {firstName: 'Blue'});
+    expect(driver_removed_count).to.not.eq(-1);
+
+    const driver_found_rest = await controller.find(MdbDriver);
+    expect(driver_found_rest).to.have.length(1);
+
+
+  }
+
+
+  @test
+  async 'update by conditions'() {
+
+    const car1 = new MdbDriver();
+    car1.firstName = 'Green';
+    car1.lastName = 'Yellow';
+
+    const car2 = new MdbDriver();
+    car2.firstName = 'Blue';
+    car2.lastName = 'Green';
+
+    const car3 = new MdbDriver();
+    car3.firstName = 'Blue';
+    car3.lastName = 'Pink';
+
+    const driver_save_res = await controller.save([car1, car2, car3]);
+
+    const driver_found = await controller.find(MdbDriver);
+    expect(driver_found).to.have.length(3);
+
+    const driver_removed_count = await controller.update(MdbDriver, {firstName: 'Blue'}, {$set: {firstName: 'Black'}});
+    expect(driver_removed_count).to.not.eq(-1);
+
+    const driver_found_rest = await controller.find(MdbDriver, {firstName: 'Black'});
+    expect(driver_found_rest).to.have.length(2);
+
+
+  }
+
+  @test
+  async 'aggregate'() {
+
+    const car1 = new MdbPerson();
+    car1.firstName = 'Green';
+    car1.lastName = 'Yellow';
+    car1.age = 10;
+
+    const car2 = new MdbPerson();
+    car2.firstName = 'Blue';
+    car2.lastName = 'Green';
+    car2.age = 20;
+
+    const car3 = new MdbPerson();
+    car3.firstName = 'Blue';
+    car3.lastName = 'Pink';
+    car3.age = 30;
+
+    const driver_save_res = await controller.save([car1, car2, car3]);
+
+    const driver_found = await controller.find(MdbPerson);
+    expect(driver_found).to.have.length(3);
+
+    const driver_removed_count = await controller.aggregate(MdbPerson, [{$match: {firstName: 'Blue'}}, {
+      $group: {
+        _id: 'count',
+        sum: {$sum: '$age'}
+      }
+    }]);
+    expect(driver_removed_count).to.deep.eq([{_id: 'count', sum: 50}]);
+  }
 
 }
 

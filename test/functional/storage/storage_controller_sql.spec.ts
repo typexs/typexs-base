@@ -5,32 +5,27 @@ import {expect} from 'chai';
 
 import {Bootstrap} from '../../../src/Bootstrap';
 import {Config} from 'commons-config';
-import {XS_P_$COUNT} from '../../../src';
-import {TestHelper} from '../TestHelper';
+import {StorageEntityController, StorageRef, XS_P_$COUNT} from '../../../src';
+import {ClassType} from 'commons-schema-api/browser';
 
 let bootstrap: Bootstrap;
+let storageRef: StorageRef;
+
+let Car: ClassType<any> = null;
+let Driver: ClassType<any> = null;
+let controller: StorageEntityController = null;
 
 @suite('functional/storage/controller_sql')
 class StorageControllerSqlSpec {
 
 
-  before() {
+  async before() {
     // TestHelper.typeOrmReset();
     Bootstrap.reset();
     Config.clear();
-  }
 
-
-  async after() {
-    if (bootstrap) {
-      await bootstrap.shutdown();
-    }
-  }
-
-  @test
-  async 'lifecycle save, find, remove'() {
-    const Car = require('./fake_app_sql/entities/Car').Car;
-    const Driver = require('./fake_app_sql/entities/Driver').Driver;
+    Car = require('./fake_app_sql/entities/Car').Car;
+    Driver = require('./fake_app_sql/entities/Driver').Driver;
 
     const appdir = path.join(__dirname, 'fake_app_sql');
     bootstrap = await Bootstrap
@@ -47,12 +42,23 @@ class StorageControllerSqlSpec {
     bootstrap = await bootstrap.activateStorage();
 
     const storageManager = bootstrap.getStorage();
-    const storageRef = storageManager.get();
+    storageRef = storageManager.get();
     storageRef.addEntityType(Car);
     storageRef.addEntityType(Driver);
+    controller = storageRef.getController();
+  }
 
 
-    const controller = storageRef.getController();
+  async after() {
+    if (bootstrap) {
+      await bootstrap.shutdown();
+      await bootstrap.getStorage().shutdown();
+    }
+  }
+
+  @test
+  async 'lifecycle save, find, remove'() {
+
 
     const car1 = new Driver();
     car1.firstName = 'Black';
@@ -188,6 +194,60 @@ class StorageControllerSqlSpec {
 
   }
 
+  @test
+  async 'remove by conditions'() {
+    const car1 = new Driver();
+    car1.firstName = 'Black';
+    car1.lastName = 'Yellow';
+
+    const car2 = new Driver();
+    car2.firstName = 'Blue';
+    car2.lastName = 'Green';
+
+    const car3 = new Driver();
+    car3.firstName = 'Blue';
+    car3.lastName = 'Pink';
+
+    const driver_save_res = await controller.save([car1, car2, car3]);
+
+    const driver_found = await controller.find(Driver);
+    expect(driver_found).to.have.length(3);
+
+    const driver_removed_count = await controller.remove(Driver, {firstName: 'Blue'});
+    expect(driver_removed_count).to.not.eq(-1);
+
+    const driver_found_rest = await controller.find(Driver);
+    expect(driver_found_rest).to.have.length(1);
+
+
+  }
+
+
+  @test
+  async 'update by conditions'() {
+    const car1 = new Driver();
+    car1.firstName = 'Green';
+    car1.lastName = 'Yellow';
+
+    const car2 = new Driver();
+    car2.firstName = 'Blue';
+    car2.lastName = 'Green';
+
+    const car3 = new Driver();
+    car3.firstName = 'Blue';
+    car3.lastName = 'Pink';
+
+    const driver_save_res = await controller.save([car1, car2, car3]);
+
+    const driver_found = await controller.find(Driver);
+    expect(driver_found).to.have.length(3);
+
+    const driver_removed_count = await controller.update(Driver, {firstName: 'Blue'}, {$set: {firstName: 'Black'}});
+    expect(driver_removed_count).to.not.eq(-1);
+
+    const driver_found_rest = await controller.find(Driver, {firstName: 'Black'});
+    expect(driver_found_rest).to.have.length(2);
+  }
 
 }
 

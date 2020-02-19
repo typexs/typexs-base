@@ -3,7 +3,7 @@ import {ClassType} from 'commons-schema-api';
 import {AbstractEvent} from './AbstractEvent';
 import {System} from '../../libs/system/System';
 import {Inject} from 'typedi';
-import {Message} from './Message';
+import {IMessageOptions, Message} from './Message';
 import {EventBus, subscribe} from 'commons-eventbus';
 import {ILoggerApi} from '../../libs/logging/ILoggerApi';
 import {Log} from '../../libs/logging/Log';
@@ -19,8 +19,10 @@ export abstract class AbstractExchange<REQ extends AbstractEvent, RES extends Ab
 
   logger: ILoggerApi = Log.getLogger();
 
-  constructor() {
-    subscribe(this.getReqClass())(this, 'onResults');
+  constructor(reqCls: ClassType<REQ>, resCls: ClassType<RES>) {
+    this.reqCls = reqCls;
+    this.resCls = resCls;
+    subscribe(this.getReqClass())(this, 'onRequest');
   }
 
   getSystem() {
@@ -35,21 +37,15 @@ export abstract class AbstractExchange<REQ extends AbstractEvent, RES extends Ab
     return this.resCls;
   }
 
-
-  create(nodeIds: string[] = []): Message<REQ, RES> {
-    const msg = new Message(this);
-    if (nodeIds && _.isArray(nodeIds)) {
-      nodeIds.forEach(x => {
-        msg.target(x);
-      });
-    }
+  create(options: IMessageOptions = {}): Message<REQ, RES> {
+    const msg = new Message(this, options);
     return msg;
   }
 
   async onRequest(request: REQ) {
     const response: RES = Reflect.construct(this.getResClass(), []);
     response.reqEventId = request.id;
-    response.nodeId = this.getSystem().node.nodeId;
+    response.of(this.getSystem().node);
     response.targetIds = [request.nodeId];
     try {
       await this.handleRequest(request, response);
@@ -59,6 +55,7 @@ export abstract class AbstractExchange<REQ extends AbstractEvent, RES extends Ab
     }
     return EventBus.postAndForget(response);
   }
+
 
   abstract handleRequest(request: REQ, response: RES): void;
 

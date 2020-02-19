@@ -6,6 +6,13 @@ import EventBusMeta from 'commons-eventbus/bus/EventBusMeta';
 import {AbstractExchange} from './AbstractExchange';
 
 
+export interface IMessageOptions {
+
+  mode?: 'map' | 'only_value' | 'embed_nodeId' | 'raw';
+
+  nodeIds?: string[];
+}
+
 export class Message<REQ extends AbstractEvent, RES extends AbstractEvent> extends EventEmitter {
 
   private timeout = 5000;
@@ -24,9 +31,17 @@ export class Message<REQ extends AbstractEvent, RES extends AbstractEvent> exten
 
   private factory: AbstractExchange<REQ, RES>;
 
-  constructor(factory: AbstractExchange<REQ, RES>) {
+  private options: IMessageOptions = {};
+
+  constructor(factory: AbstractExchange<REQ, RES>, options: IMessageOptions = {}) {
     super();
+    this.options = options;
     this.factory = factory;
+    if (options.nodeIds && _.isArray(options.nodeIds)) {
+      options.nodeIds.forEach(x => {
+        this.target(x);
+      });
+    }
 
     this.once('postprocess', this.postProcess.bind(this));
   }
@@ -39,12 +54,9 @@ export class Message<REQ extends AbstractEvent, RES extends AbstractEvent> exten
 
 
   async run(req: REQ): Promise<RES[]> {
-
     if (this.nodeIds.length === 0) {
       this.targetIds = this.factory.getSystem().nodes.map(n => n.nodeId);
     }
-
-    // const name = ClassUtils.getClassName(req);
 
     this.req = req || Reflect.construct(this.factory.getReqClass(), []);
     this.req.nodeId = this.factory.getSystem().node.nodeId;
@@ -55,13 +67,38 @@ export class Message<REQ extends AbstractEvent, RES extends AbstractEvent> exten
     await EventBus.register(this);
     await EventBus.postAndForget(this.req);
     await this.ready();
-    await EventBus.unregister(this);
+    try {
+      await EventBus.unregister(this);
+    } catch (e) {
+    }
     return this.results;
   }
 
 
   postProcess(err: Error) {
-    this.results = this.responses.map(x => this.factory.handleResponse(x, err));
+
+    switch (this.options.mode) {
+      case 'embed_nodeId':
+        this.results = this.responses.map(x => {
+          const y = this.factory.handleResponse(x, err);
+          y['__nodeId__'] = x.nodeId;
+          y['__instNr__'] = x.instNr;
+          return y;
+        });
+        break;
+      case 'map':
+        this.responses.map(x => {
+          const y = this.factory.handleResponse(x, err);
+          this.results[[x.nodeId, x.instNr].join(':')] = y;
+        });
+        break;
+      case 'raw':
+        this.results = this.responses;
+        break;
+      default:
+        this.results = this.responses.map(x => this.factory.handleResponse(x, err));
+    }
+
     this.emit('finished', err, this.results);
   }
 
@@ -94,7 +131,6 @@ export class Message<REQ extends AbstractEvent, RES extends AbstractEvent> exten
       this.active = false;
       this.emit('postprocess');
     }
-
   }
 
 

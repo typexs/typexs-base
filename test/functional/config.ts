@@ -1,5 +1,5 @@
-import {IStorageOptions} from '../../src';
 import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
+import {IStorageOptions} from "../../src/libs/storage/IStorageOptions";
 
 export const TEST_STORAGE_OPTIONS: IStorageOptions = process.env.SQL_LOG ? <SqliteConnectionOptions & IStorageOptions>{
   name: 'default',

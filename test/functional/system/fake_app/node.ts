@@ -1,7 +1,8 @@
-import {Bootstrap, ITypexsOptions} from '../../../../src';
 import {TEST_STORAGE_OPTIONS} from '../../config';
 import {IEventBusConfiguration} from 'commons-eventbus';
 import {Config} from 'commons-config';
+import {Bootstrap} from '../../../../src/Bootstrap';
+import {ITypexsOptions} from '../../../../src/libs/ITypexsOptions';
 
 (async function () {
   const LOG_EVENT = true; //

@@ -5,8 +5,10 @@ import {expect} from 'chai';
 
 import {Bootstrap} from '../../../src/Bootstrap';
 import {Config} from 'commons-config';
-import {StorageEntityController, StorageRef, XS_P_$COUNT} from '../../../src';
 import {ClassType} from 'commons-schema-api/browser';
+import {StorageRef} from "../../../src/libs/storage/StorageRef";
+import {StorageEntityController} from "../../../src/libs/storage/StorageEntityController";
+import {XS_P_$COUNT} from "../../../src/libs/Constants";
 
 let bootstrap: Bootstrap;
 let storageRef: StorageRef;

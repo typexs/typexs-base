@@ -12,7 +12,7 @@ import {DistributedStorageEntityController} from '../../../src/libs/distributed/
 import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
 import {DataRow} from './fake_app/entities/DataRow';
 import {__REMOTE_IDS__, XS_P_$ERRORED, XS_P_$SAVED} from '../../../src/libs/distributed/Constants';
-import {IDistributedQueryWorkerOptions} from '../../../src';
+import {IDistributedQueryWorkerOptions} from '../../../src/libs/distributed/IDistributedQueryWorkerOptions';
 
 
 const LOG_EVENT = TestHelper.logEnable(true);

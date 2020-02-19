@@ -1,7 +1,8 @@
-import {Bootstrap, ITypexsOptions, Log} from '../../../../src';
 import {TEST_STORAGE_OPTIONS} from '../../config';
 import {IEventBusConfiguration} from 'commons-eventbus';
 import {Config} from 'commons-config';
+import {Bootstrap} from '../../../../src/Bootstrap';
+import {ITypexsOptions} from '../../../../src/libs/ITypexsOptions';
 
 
 (async function () {
@@ -22,7 +23,7 @@ import {Config} from 'commons-config';
   await bootstrap.prepareRuntime();
   bootstrap = await bootstrap.activateStorage();
   bootstrap = await bootstrap.startup();
-  const timeout = parseInt(Config.get('argv.timeout', 20000));
+  const timeout = parseInt(Config.get('argv.timeout', 20000), 0);
   /*
   let commands = bootstrap.getCommands();
   expect(commands.length).to.be.gt(0);

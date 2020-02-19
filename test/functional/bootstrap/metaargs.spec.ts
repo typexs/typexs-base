@@ -1,6 +1,6 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
-import {MetaArgs} from '../../../src';
+import {MetaArgs} from 'commons-base';
 
 
 @suite('functional/bootstrap/metaargs')

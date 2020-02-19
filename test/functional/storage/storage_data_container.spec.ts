@@ -1,10 +1,10 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
-import {DataContainer} from '../../../src';
 import {TypeOrmEntityRegistry} from '../../../src/libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry';
 
 import * as _ from 'lodash';
 import {TreeUtils, WalkValues} from 'commons-base';
+import {DataContainer} from '../../../src/libs/storage/DataContainer';
 
 
 @suite('functional/storage/storage_data_container')

@@ -1,11 +1,11 @@
 import * as _ from 'lodash';
-import {suite, test} from "mocha-typescript";
+import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
-import {Log} from "../../../src";
-import {TestHelper} from "../TestHelper";
+import {TestHelper} from '../TestHelper';
 import * as os from 'os';
 import * as fs from 'fs';
 import * as path from 'path';
+import {Log} from '../../../src/libs/logging/Log';
 
 const stdMocks = require('std-mocks');
 
@@ -25,15 +25,15 @@ class LoggingSpec {
   async 'log to console'() {
 
     Log.options({enable: true, level: 'debug'});
-    let defaultLogger = Log.getLogger();
-    let level = defaultLogger.getLevel();
+    const defaultLogger = Log.getLogger();
+    const level = defaultLogger.getLevel();
     expect(level).to.deep.eq({name: 'debug', nr: null});
 
     stdMocks.use();
     Log.info('test');
     stdMocks.restore();
 
-    let content = stdMocks.flush();
+    const content = stdMocks.flush();
     expect(content.stdout[0]).to.contain('test');
 
 
@@ -41,28 +41,28 @@ class LoggingSpec {
 
   @test
   async 'log to file'() {
-    let tmp = os.tmpdir();
-    let tmpId = 'testfile-' + (new Date()).getTime();
-    let logFile = path.join(tmp, tmpId) + '.log';
+    const tmp = os.tmpdir();
+    const tmpId = 'testfile-' + (new Date()).getTime();
+    const logFile = path.join(tmp, tmpId) + '.log';
 
     Log.options({enable: true, level: 'debug'});
 
-    let defaultLogger = Log.getLogger();
-    let level = defaultLogger.getLevel();
+    const defaultLogger = Log.getLogger();
+    const level = defaultLogger.getLevel();
     expect(level).to.deep.eq({name: 'debug', nr: null});
 
     stdMocks.use();
     Log.info('test');
     stdMocks.restore();
 
-    let content = stdMocks.flush();
+    const content = stdMocks.flush();
     expect(content.stdout[0]).to.contain('test');
 
     Log.options({enable: true, level: 'debug', transports: [{file: {filename: logFile}}]});
     Log.info('testfile');
 
     await TestHelper.wait(100);
-    let data = fs.readFileSync(logFile).toString();
+    const data = fs.readFileSync(logFile).toString();
     expect(data).to.contain('testfile');
     fs.unlinkSync(logFile);
   }
@@ -70,9 +70,9 @@ class LoggingSpec {
 
   @test
   async 'sublogger create / get / remove'() {
-    let tmp = os.tmpdir();
-    let tmpId = 'testfile-${testKey}';
-    let logFile = path.join(tmp, tmpId) + '.log';
+    const tmp = os.tmpdir();
+    const tmpId = 'testfile-${testKey}';
+    const logFile = path.join(tmp, tmpId) + '.log';
 
     Log.options({
       enable: true, level: 'debug',
@@ -82,7 +82,7 @@ class LoggingSpec {
       ]
     });
 
-    let x = Log._().createLogger('fixed_name', {testKey: 'fixed'});
+    const x = Log._().createLogger('fixed_name', {testKey: 'fixed'});
     expect(x.getOptions()).to.deep.eq({
       name: 'fixed_name',
       level: 'info',
@@ -93,7 +93,7 @@ class LoggingSpec {
 
     x.info('test_fix');
 
-    let y = Log._().createLogger('tasklog-hallo', {testKey: 'tasklogfile'});
+    const y = Log._().createLogger('tasklog-hallo', {testKey: 'tasklogfile'});
     expect(y.getOptions()).to.deep.eq({
       name: 'tasklog-*',
       level: 'info',
@@ -105,10 +105,10 @@ class LoggingSpec {
     y.info('test_tasklog');
 
     await TestHelper.wait(100);
-    let data_fixed = fs.readFileSync(logFile.replace('${testKey}', 'fixed')).toString();
+    const data_fixed = fs.readFileSync(logFile.replace('${testKey}', 'fixed')).toString();
     expect(data_fixed).to.contain('test_fix');
 
-    let data_tasklog = fs.readFileSync(logFile.replace('${testKey}', 'tasklogfile')).toString();
+    const data_tasklog = fs.readFileSync(logFile.replace('${testKey}', 'tasklogfile')).toString();
     expect(data_tasklog).to.contain('test_tasklog');
 
     Log._().removeLogger('tasklog-hallo');
@@ -122,8 +122,8 @@ class LoggingSpec {
     stdMocks.use();
     Log.info('default_format');
     stdMocks.restore();
-    let content = stdMocks.flush();
-    expect(content.stdout[0]).to.contain('default_format')
+    const content = stdMocks.flush();
+    expect(content.stdout[0]).to.contain('default_format');
   }
 
 
@@ -133,8 +133,8 @@ class LoggingSpec {
     stdMocks.use();
     Log.info('default_format');
     stdMocks.restore();
-    let content = stdMocks.flush();
-    expect(content.stdout[0]).to.contain('default_format')
+    const content = stdMocks.flush();
+    expect(content.stdout[0]).to.contain('default_format');
   }
 
 
@@ -144,8 +144,8 @@ class LoggingSpec {
     stdMocks.use();
     Log.info('default_format');
     stdMocks.restore();
-    let content = stdMocks.flush();
-    expect(content.stdout[0]).to.contain('"level":"info","message":"default_format"')
+    const content = stdMocks.flush();
+    expect(content.stdout[0]).to.contain('"level":"info","message":"default_format"');
   }
 
 }

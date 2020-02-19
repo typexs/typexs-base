@@ -2,7 +2,6 @@ import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 import * as _ from 'lodash';
 import {Bootstrap} from '../../../src/Bootstrap';
-import {ITypexsOptions, Log, XS_P_$COUNT} from '../../../src';
 import {Config} from 'commons-config';
 import {TEST_STORAGE_OPTIONS} from '../config';
 import {EventBus, IEventBusConfiguration} from 'commons-eventbus';

@@ -45,11 +45,12 @@ class StorageSqlConditionsBuilderSpec {
     await storageRef.prepare();
   }
 
+
   static after() {
     Bootstrap.reset();
     Config.clear();
-
   }
+
 
   @test
   async 'condition $eq'() {
@@ -168,13 +169,6 @@ class StorageSqlConditionsBuilderSpec {
 
   @test
   async 'build join conditions for one-to-many typeorm relation'() {
-    // const connection = await bootstrap.getStorage().get().connect();
-    //
-    // const sql = new TypeOrmSqlConditionsBuilder(connection.manager, TypeOrmEntityRegistry.$().getEntityRefFor(Car), 'car');
-    // const where = sql.build({'driver.id': 1});
-    // sql.baseQueryBuilder.where(where);
-    // const query2 = sql.baseQueryBuilder.getQueryAndParameters();
-    // await connection.close();
     const query = await getQuery({'driver.id': 1}, Car, 'car');
     expect(query).to.deep.eq([
 
@@ -183,24 +177,12 @@ class StorageSqlConditionsBuilderSpec {
       [
         1
       ]
-      //
-      // 'SELECT "car"."id" AS "car_id", "car"."name" AS "car_name" FROM "car" "car" ' +
-      // 'LEFT JOIN "driver" "driver_1" ON driver_1.carId = "car"."id" ' +
-      // 'WHERE "driver_1"."id" = 1',
-      // []
     ]);
-    // expect(where).to.eq('driver_1.id = 1');
-    // expect(sql.getJoins()).to.deep.eq([{
-    //   alias: 'driver_1',
-    //   table: 'driver',
-    //   condition: 'driver_1.carId = car.id'
-    // }]);
   }
 
 
   @test
   async 'build join conditions for many-to-one typeorm relation'() {
-
     const query = await getQuery({'car.id': 1}, Driver, 'driver');
     expect(query).to.deep.eq(
       [

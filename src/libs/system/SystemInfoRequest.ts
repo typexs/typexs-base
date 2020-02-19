@@ -4,10 +4,9 @@ import {EventEmitter} from 'events';
 
 import * as _ from 'lodash';
 
-import {subscribe} from 'commons-eventbus';
-import {EventBus} from 'commons-eventbus';
-import {SystemInfo} from './SystemInfo';
-import {SystemInfoEvent} from './SystemInfoEvent';
+import {subscribe, EventBus} from 'commons-eventbus';
+import {NodeRuntimeInfo} from './NodeRuntimeInfo';
+import {SystemInfoResponse} from './SystemInfoResponse';
 import {Log} from '../logging/Log';
 
 export class SystemInfoRequest extends EventEmitter {
@@ -18,7 +17,7 @@ export class SystemInfoRequest extends EventEmitter {
 
   private event: SystemInfoRequestEvent;
 
-  private responses: SystemInfoEvent[] = [];
+  private responses: SystemInfoResponse[] = [];
 
   private targetIds: string[];
 
@@ -33,13 +32,14 @@ export class SystemInfoRequest extends EventEmitter {
   }
 
 
-  async run(nodeIds: string[] = []): Promise<SystemInfo[]> {
+  async run(nodeIds: string[] = []): Promise<NodeRuntimeInfo[]> {
 
     if (nodeIds.length === 0) {
       this.targetIds = this.system.nodes.map(n => n.nodeId);
     }
 
     this.event = new SystemInfoRequestEvent();
+    this.event.instNr = this.system.node.instNr;
     this.event.nodeId = this.system.node.nodeId;
     this.event.targetIds = this.targetIds;
     await EventBus.register(this);
@@ -50,13 +50,13 @@ export class SystemInfoRequest extends EventEmitter {
   }
 
   postProcess(err: Error) {
-    this.results = this.responses.map(x => _.assign(new SystemInfo(), x.info));
+    this.results = this.responses.map(x => _.assign(new NodeRuntimeInfo(), x.info));
     this.emit('finished', err, this.results);
   }
 
 
-  @subscribe(SystemInfoEvent)
-  onResults(event: SystemInfoEvent) {
+  @subscribe(SystemInfoResponse)
+  onResults(event: SystemInfoResponse) {
     if (!this.active) { return; }
 
     // has query event

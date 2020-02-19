@@ -28,11 +28,19 @@ export class SystemNodeInfo {
   @Column()
   nodeId: string;
 
+  /**
+   * Instance number for multiple instance of same nodeId
+   */
+  @IsNotEmpty()
+  @Index()
+  @Column()
+  instNr: number = 0;
+
   @Column({nullable: true})
   isBackend: boolean;
 
   @Column()
-  state: string;
+  state: string; // 'startup' | 'offline' | 'register' | 'unregister' | 'idle' | 'active';
 
   @Column({nullable: true})
   started: Date = new Date();
@@ -41,6 +49,8 @@ export class SystemNodeInfo {
   finished: Date;
 
   contexts: INodeInfo[] = [];
+
+  active: boolean = false;
 
 
   getRuntime() {
@@ -51,6 +61,10 @@ export class SystemNodeInfo {
     if (_.isString(this.started)) {
       this.started = new Date(this.started);
     }
+  }
+
+  eqNode(x: { nodeId: string, instNr: number }) {
+    return this.nodeId === x.nodeId && x.instNr === this.instNr;
   }
 
 

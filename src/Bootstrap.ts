@@ -42,6 +42,7 @@ import {K_CLS_TASKS} from './libs/tasks/Constants';
 import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
 import {ICommand} from './libs/commands/ICommand';
 import {LockFactory} from './libs/LockFactory';
+import {Injector} from "./libs/di/Injector";
 
 useContainer(Container);
 
@@ -545,7 +546,7 @@ export class Bootstrap {
 
 
   private async createSystemInfo() {
-    const system = Bootstrap.getContainer().get(System);
+    const system = Injector.create(System) as System;
     await system.initialize(os.hostname(), this.getNodeId());
     Bootstrap.getContainer().set(System.NAME, system);
     // todo ip + command
@@ -579,11 +580,9 @@ export class Bootstrap {
 
   async startup(command: ICommand = null): Promise<Bootstrap> {
     Log.debug('startup ...');
-
     if (command && command.beforeStartup) {
       await command.beforeStartup();
     }
-
 
     await this.createSystemInfo();
 

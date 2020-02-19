@@ -37,7 +37,7 @@ export * from './libs/di/Injector';
 
 export * from './libs/messaging/AbstractEvent';
 export * from './libs/messaging/Message';
-export * from './libs/system/SystemInfoEvent';
+export * from './libs/system/SystemInfoResponse';
 
 
 export * from './libs/storage/DataContainer';

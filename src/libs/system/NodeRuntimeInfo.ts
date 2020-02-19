@@ -58,7 +58,7 @@ export interface CpuUsage {
   system: number;
 }
 
-export class SystemInfo {
+export class NodeRuntimeInfo {
   machineId: string;
 
   nodeId: string;

@@ -7,6 +7,7 @@ import {ClassType} from 'commons-schema-api';
 import {TypeOrmSqlConditionsBuilder} from './TypeOrmSqlConditionsBuilder';
 import {TypeOrmEntityRegistry} from './schema/TypeOrmEntityRegistry';
 import {IDeleteOptions} from '../IDeleteOptions';
+import {DeleteQueryBuilder} from 'typeorm';
 
 
 export class DeleteOp<T> implements IDeleteOp<T> {
@@ -45,9 +46,9 @@ export class DeleteOp<T> implements IDeleteOp<T> {
       } else {
         // start transaction, got to leafs and save
         await connection.manager.transaction(async em => {
-          const x = new TypeOrmSqlConditionsBuilder(em, TypeOrmEntityRegistry.$().getEntityRefByName(entityName));
-          const qb = x.getQueryBuilder();
-          const result = await qb.delete().where(x.build(condition)).execute();
+          const x = new TypeOrmSqlConditionsBuilder(em, TypeOrmEntityRegistry.$().getEntityRefByName(entityName), 'delete');
+          const qb = x.getQueryBuilder() as DeleteQueryBuilder<any>;
+          const result = await qb.where(x.build(condition)).execute();
           // depends by db type
           count = result.affected ? result.affected : 0;
           return result.affected;
@@ -100,7 +101,7 @@ export class DeleteOp<T> implements IDeleteOp<T> {
         throw this.error;
       }
     }
-    
+
     if (!isArray) {
       return this.objects.shift();
     }

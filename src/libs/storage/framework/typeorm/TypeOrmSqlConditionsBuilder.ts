@@ -4,14 +4,14 @@ import {RelationMetadataArgs} from 'typeorm/browser/metadata-args/RelationMetada
 import {IConditionJoin} from '../IConditionJoin';
 import {TypeOrmPropertyRef} from './schema/TypeOrmPropertyRef';
 import {IClassRef, IEntityRef} from 'commons-schema-api/browser';
-import {Brackets, EntityManager, SelectQueryBuilder} from 'typeorm';
+import {Brackets, EntityManager, QueryBuilder, SelectQueryBuilder} from 'typeorm';
 
 
 export class TypeOrmSqlConditionsBuilder<T> /*extends AbstractSqlConditionsBuilder*/ {
 
   protected inc = 1;
 
-  baseQueryBuilder: SelectQueryBuilder<T>;
+  baseQueryBuilder: QueryBuilder<T>;
 
   paramInc: number = 0;
 
@@ -19,33 +19,49 @@ export class TypeOrmSqlConditionsBuilder<T> /*extends AbstractSqlConditionsBuild
 
   entityRef: IEntityRef;
 
+  type: 'update' | 'select' | 'delete' = 'select';
 
   protected joins: IConditionJoin[] = [];
 
 
-  constructor(manager: EntityManager, entityRef: IEntityRef, alias: string = null) {
+  constructor(manager: EntityManager, entityRef: IEntityRef, type: 'update' | 'select' | 'delete', alias: string = null) {
     // super(entityRef, alias);
     this.entityRef = entityRef;
     this.alias = alias;
+    this.type = type;
     const repo = manager
       .getRepository(entityRef.getClassRef().getClass());
     if (alias) {
-      this.baseQueryBuilder = repo.createQueryBuilder(alias) as SelectQueryBuilder<T>;
+      this.baseQueryBuilder = repo.createQueryBuilder(alias) as QueryBuilder<T>;
     } else {
-      this.baseQueryBuilder = repo.createQueryBuilder() as SelectQueryBuilder<T>;
+      this.baseQueryBuilder = repo.createQueryBuilder() as QueryBuilder<T>;
       this.alias = this.baseQueryBuilder.alias;
+    }
+
+    switch (type) {
+      case 'delete':
+        this.baseQueryBuilder = this.baseQueryBuilder.delete();
+        break;
+      case 'update':
+        this.baseQueryBuilder = this.baseQueryBuilder.update();
+        break;
     }
   }
 
 
-  getQueryBuilder(): SelectQueryBuilder<T> {
+  getQueryBuilder(): QueryBuilder<T> {
     return this.baseQueryBuilder;
   }
 
   lookupKeys(key: string): string {
+    switch (this.type) {
+      case 'delete':
+      case 'update':
+        return key;
+    }
     const joins = key.split('.');
     let tmp: IClassRef = this.entityRef.getClassRef();
-    let names: string[] = this.alias ?  [this.alias] : [];
+    let names: string[] = this.alias ? [this.alias] : [];
     let rootAlias = this.alias;
     for (const _join of joins) {
       const prop = tmp.getPropertyRef(_join);
@@ -90,7 +106,10 @@ export class TypeOrmSqlConditionsBuilder<T> /*extends AbstractSqlConditionsBuild
         rootAlias = join.alias;
         names = [rootAlias];
 
-        this.baseQueryBuilder.leftJoin(join.table, join.alias, join.condition);
+        if (this.baseQueryBuilder instanceof SelectQueryBuilder) {
+          this.baseQueryBuilder.leftJoin(join.table, join.alias, join.condition);
+        }
+
 
       } else {
         names.push(prop.name);
@@ -248,6 +267,14 @@ export class TypeOrmSqlConditionsBuilder<T> /*extends AbstractSqlConditionsBuild
     const p = this.paramName();
     return new Brackets(qb => {
       qb.where(`${_key} IN (:...${p})`, this.paramValue(p, value));
+    });
+  }
+
+  $nin(condition: any, key: string = null, value: any = null) {
+    const _key = this.lookupKeys(key);
+    const p = this.paramName();
+    return new Brackets(qb => {
+      qb.where(`${_key} NOT IN (:...${p})`, this.paramValue(p, value));
     });
   }
 

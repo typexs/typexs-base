@@ -15,7 +15,8 @@ export class Injector {
     return <T>this.$().get(identifier);
   }
 
-  static create<T>(identifier: ServiceIdentifier, service?: ServiceMetadata<any, any> | undefined): T {
+
+  static create<T>(identifier: ServiceIdentifier<T>, service?: ServiceMetadata<any, any> | undefined): T {
     return this.$().create(identifier, service);
   }
 

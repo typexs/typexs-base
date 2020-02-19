@@ -27,6 +27,11 @@ export abstract class AbstractEvent {
    */
   nodeId: string;
 
+  /**
+   * Nr of nodeId instance if multiple are running
+   */
+  instNr: number;
+
 
   /**
    * Id of target system node
@@ -52,6 +57,11 @@ export abstract class AbstractEvent {
 
   constructor() {
     this.id = CryptUtils.shorthash('event-' + (new Date()).getTime() + '' + (AbstractEvent.inc++));
+  }
+
+  of(system: { nodeId: string, instNr: number }) {
+    this.nodeId = system.nodeId;
+    this.instNr = system.instNr;
   }
 
 }

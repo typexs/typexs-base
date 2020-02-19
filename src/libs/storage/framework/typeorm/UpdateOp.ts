@@ -37,9 +37,9 @@ export class UpdateOp<T> implements IUpdateOp<T> {
     try {
       let qb: UpdateQueryBuilder<T> = null;
       if (findConditions) {
-        const builder = new TypeOrmSqlConditionsBuilder<T>(connection.manager, entityDef);
+        const builder = new TypeOrmSqlConditionsBuilder<T>(connection.manager, entityDef, 'update');
         const where = builder.build(findConditions);
-        qb = builder.getQueryBuilder().update();
+        qb = builder.getQueryBuilder() as UpdateQueryBuilder<T>;
         qb.where(where);
       } else {
         qb = connection.manager.getRepository(entityDef.getClassRef().getClass()).createQueryBuilder().update() as UpdateQueryBuilder<T>;

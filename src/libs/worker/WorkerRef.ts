@@ -1,5 +1,5 @@
-import {AbstractRef, IBuildOptions, IEntityRef, IPropertyRef, XS_TYPE_ENTITY} from "commons-schema-api";
-import {ClassUtils} from "commons-base";
+import {AbstractRef, IBuildOptions, IEntityRef, IPropertyRef, XS_TYPE_ENTITY} from 'commons-schema-api';
+import {ClassUtils} from 'commons-base';
 
 
 export class WorkerRef extends AbstractRef implements IEntityRef {
@@ -28,7 +28,7 @@ export class WorkerRef extends AbstractRef implements IEntityRef {
   }
 
   id(): string {
-    return "";
+    return '';
   }
 
 

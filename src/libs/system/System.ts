@@ -93,8 +93,7 @@ export class System {
       this.nodes = await this.controller.find(SystemNodeInfo,
         {$and: [{state: {$ne: 'unregister'}}, {state: {$ne: 'offline'}}]}, {limit: 0});
 
-      const filtered = this.nodes.filter(c => c.hostname === hostname && c.nodeId === nodeId &&
-        !['unregister', 'offline'].includes(c.state));
+      const filtered = this.nodes.filter(c => c.nodeId === nodeId && !['unregister', 'offline'].includes(c.state));
       if (!_.isEmpty(filtered)) {
         instNr = _.max(filtered.map(x => x.instNr)) + 1;
       }

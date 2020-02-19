@@ -11,6 +11,8 @@ import {WatcherRegistry} from './libs/watchers/WatcherRegistry';
 import {C_WORKERS} from './libs/worker/Constants';
 import {Workers} from './libs/worker/Workers';
 import {TaskRunnerRegistry} from './libs/tasks/TaskRunnerRegistry';
+import {ExchangeMessageRegistry} from "./libs/messaging/ExchangeMessageRegistry";
+import {C_EXCHANGE_MESSAGE} from "./libs/messaging/Constants";
 
 export class Activator implements IActivator {
 
@@ -51,6 +53,13 @@ export class Activator implements IActivator {
       workers.setConfig(cfg);
     }
     Container.set(Workers.NAME, workers);
+
+    const exchange = new ExchangeMessageRegistry();
+    cfg = Config.get(C_EXCHANGE_MESSAGE, null);
+    if (cfg) {
+      exchange.setConfig(cfg);
+    }
+    Container.set(ExchangeMessageRegistry.NAME, exchange);
 
     Container.set(WatcherRegistry.NAME, new WatcherRegistry());
   }

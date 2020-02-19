@@ -4,7 +4,7 @@
 import * as _ from 'lodash';
 import {TaskRunner} from './TaskRunner';
 import {TASKRUN_STATE_FINISHED} from './Constants';
-import {Counters} from "../..";
+import {Counters} from "../helper/Counters";
 
 /**
  * Node specific registry for TaskRunner which is initalized as singleton in Activator.

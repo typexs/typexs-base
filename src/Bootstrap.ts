@@ -23,6 +23,7 @@ import {
   K_CLS_CACHE_ADAPTER,
   K_CLS_COMMANDS,
   K_CLS_ENTITIES_DEFAULT,
+  K_CLS_EXCHANGE_MESSAGE,
   K_CLS_GENERATORS,
   K_CLS_SCHEDULE_ADAPTER_FACTORIES,
   K_CLS_STORAGE_SCHEMAHANDLER,
@@ -42,9 +43,10 @@ import {K_CLS_TASKS} from './libs/tasks/Constants';
 import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
 import {ICommand} from './libs/commands/ICommand';
 import {LockFactory} from './libs/LockFactory';
-import {Injector} from "./libs/di/Injector";
+import {Injector} from './libs/di/Injector';
 
 useContainer(Container);
+
 
 /**
  * Search for config files
@@ -180,6 +182,12 @@ export const DEFAULT_RUNTIME_OPTIONS: IRuntimeLoaderOptions = {
         'workers', 'workers/*/*', 'src/workers', 'src/workers/*/*'
       ]
     },
+    {
+      topic: K_CLS_EXCHANGE_MESSAGE,
+      refs: [
+        'adapters/exchange/*/*Exchange.*', 'src/adapters/exchange/*/*Exchange.*'
+      ]
+    },
   ]
 };
 
@@ -191,6 +199,7 @@ export const DEFAULT_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions
   synchronize: true,
   connectOnStartup: false
 };
+
 
 const DEFAULT_OPTIONS: ITypexsOptions = {
   app: {
@@ -205,7 +214,6 @@ const DEFAULT_OPTIONS: ITypexsOptions = {
   storage: {
     'default': DEFAULT_STORAGE_OPTIONS
   }
-
 
 };
 
@@ -409,8 +417,6 @@ export class Bootstrap {
           ref.addExtendingStorageRef(extRef);
         }
       }
-
-
     }
 
     return this;
@@ -440,6 +446,7 @@ export class Bootstrap {
   detectCommand() {
     const commands = this.getCommands(false).map(c => c.command);
   }
+
 
   configure(c: any = null) {
     if (this.CONFIG_LOADED) {
@@ -605,7 +612,6 @@ export class Bootstrap {
       await command.afterStartup();
     }
 
-
     this.running = true;
 
     // system ready
@@ -637,6 +643,8 @@ export class Bootstrap {
       Log.debug('shutdown of ' + ClassesLoader.getModulName(bootstrap.constructor));
       await (<IShutdown>bootstrap).shutdown();
     }
+
+    await (Container.get(Storage.NAME) as Storage).shutdown();
 
     LockFactory.$().shutdown(10000);
     // shutdown storages

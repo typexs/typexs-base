@@ -29,8 +29,7 @@ export class TypeOrmSqlConditionsBuilder<T> /*extends AbstractSqlConditionsBuild
     this.entityRef = entityRef;
     this.alias = alias;
     this.type = type;
-    const repo = manager
-      .getRepository(entityRef.getClassRef().getClass());
+    const repo = manager.getRepository(entityRef.getClassRef().getClass());
     if (alias) {
       this.baseQueryBuilder = repo.createQueryBuilder(alias) as QueryBuilder<T>;
     } else {

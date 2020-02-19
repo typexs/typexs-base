@@ -27,7 +27,7 @@ export class Tasks implements ILookupRegistry {
     this.nodeId = nodeId;
   }
 
-  static NAME = 'Tasks';
+  static NAME = Tasks.name;
 
   static taskId = 0;
 

@@ -7,7 +7,12 @@ import {IShutdown} from './api/IShutdown';
 import {RuntimeLoader} from './base/RuntimeLoader';
 import {Cache} from './libs/cache/Cache';
 import {ICacheConfig} from './libs/cache/ICacheConfig';
-import {C_EVENTBUS, K_CLS_CACHE_ADAPTER, K_CLS_SCHEDULE_ADAPTER_FACTORIES} from './libs/Constants';
+import {
+  C_EVENTBUS,
+  K_CLS_CACHE_ADAPTER,
+  K_CLS_EXCHANGE_MESSAGE,
+  K_CLS_SCHEDULE_ADAPTER_FACTORIES
+} from './libs/Constants';
 import {Log} from './libs/logging/Log';
 import {IScheduleDef} from './libs/schedule/IScheduleDef';
 import {Scheduler} from './libs/schedule/Scheduler';
@@ -16,7 +21,8 @@ import {Tasks} from './libs/tasks/Tasks';
 import {TasksHelper} from './libs/tasks/TasksHelper';
 import {WatcherRegistry} from './libs/watchers/WatcherRegistry';
 import {Workers} from './libs/worker/Workers';
-import {Storage} from "./libs/storage/Storage";
+import {Storage} from './libs/storage/Storage';
+import {ExchangeMessageRegistry} from './libs/messaging/ExchangeMessageRegistry';
 
 
 export class Startup implements IBootstrap, IShutdown {
@@ -32,6 +38,9 @@ export class Startup implements IBootstrap, IShutdown {
 
   @Inject(System.NAME)
   system: System;
+
+  @Inject(ExchangeMessageRegistry.NAME)
+  exchangeMessages: ExchangeMessageRegistry;
 
   @Inject(Workers.NAME)
   workers: Workers;
@@ -52,8 +61,6 @@ export class Startup implements IBootstrap, IShutdown {
   }
 
   async bootstrap(): Promise<void> {
-
-
     TasksHelper.prepare(this.tasks, this.loader);
     await this.workers.prepare(this.loader);
 
@@ -73,6 +80,10 @@ export class Startup implements IBootstrap, IShutdown {
           // console.log(x);
         }
       }
+    }
+
+    for (const cls of this.loader.getClasses(K_CLS_EXCHANGE_MESSAGE)) {
+      await this.exchangeMessages.add(<any>cls);
     }
 
     await this.watcherRegistry.init();
@@ -116,7 +127,6 @@ export class Startup implements IBootstrap, IShutdown {
     this.tasks.reset();
     await this.workers.shutdown();
     await this.watcherRegistry.stopAll();
-    await (Container.get(Storage.NAME) as Storage).shutdown();
 
   }
 

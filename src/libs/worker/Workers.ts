@@ -147,7 +147,6 @@ export class Workers implements ILookupRegistry {
 
   fromJson(json: any): WorkerRef {
     throw new NotYetImplementedError();
-    // return undefined;
   }
 
 

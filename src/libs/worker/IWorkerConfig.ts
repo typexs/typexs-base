@@ -12,7 +12,7 @@ export interface IWorkerAccess {
   /**
    * define allow or deny for given name or pattern
    */
-  access: 'allow' | 'deny'
+  access: 'allow' | 'deny';
 
   /**
    * generate minimatch
@@ -33,7 +33,7 @@ export interface IWorkerConfig {
    * - and then allow only one worker
    *   {task:'MyWorkerClassName', access:'allow'}
    */
-  access: IWorkerAccess[]
+  access: IWorkerAccess[];
 
 
   config?: { [name: string]: any };

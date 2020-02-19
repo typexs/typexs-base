@@ -1,3 +1,4 @@
+process.env.SQL_LOG = '1';
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 import {Bootstrap} from '../../../src/Bootstrap';
@@ -16,23 +17,29 @@ import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
 import {Invoker} from '../../../src/base/Invoker';
 
 
-const LOG_EVENT = TestHelper.logEnable(false);
-
+const LOG_EVENT = TestHelper.logEnable(true);
+let bootstrap: Bootstrap;
 
 @suite('functional/system/system_redis_connected')
 class TasksSystemSpec {
 
 
-  before() {
+  async before() {
     // TestHelper.typeOrmRestore();
     Bootstrap.reset();
     Config.clear();
   }
 
+  async after() {
+    if (bootstrap) {
+      await bootstrap.shutdown();
+    }
+  }
+
 
   @test
   async 'check own node info'() {
-    let bootstrap = Bootstrap
+    bootstrap = Bootstrap
       .setConfigSources([{type: 'system'}])
       .configure(<ITypexsOptions & any>{
         app: {name: 'test', nodeId: 'system', path: __dirname + '/fake_app'},
@@ -43,8 +50,6 @@ class TasksSystemSpec {
       });
     bootstrap.activateLogger();
     bootstrap.activateErrorHandling();
-
-    // let d = getMetadataArgsStorage();
 
     await bootstrap.prepareRuntime();
     bootstrap = await bootstrap.activateStorage();
@@ -61,7 +66,7 @@ class TasksSystemSpec {
 
   @test
   async 'node register and unregister'() {
-    let bootstrap = Bootstrap
+    bootstrap = Bootstrap
       .setConfigSources([{type: 'system'}])
       .configure(<ITypexsOptions & any>{
         app: {name: 'test', nodeId: 'system', path: __dirname + '/fake_app'},
@@ -118,18 +123,15 @@ class TasksSystemSpec {
     expect(system.nodes).to.have.length(0);
 
     nodeInfos = await bootstrap.getStorage().get().getController().find(SystemNodeInfo);
-    expect(nodeInfos).to.have.length(2);
+    console.log(nodeInfos);
+    expect(nodeInfos).to.have.length(1);
     expect(nodeInfos.map((x: any) => {
       return {isBackend: x.isBackend, nodeId: x.nodeId};
     })).to.deep.eq(
       [{
-        isBackend: null, nodeId: 'fakeapp01'
-      }, {
         isBackend: true, nodeId: 'system'
       }]
     );
-
-    await bootstrap.shutdown();
     expect(system.nodes).to.have.length(0);
 
   }
@@ -137,7 +139,7 @@ class TasksSystemSpec {
 
   @test
   async 'check system information'() {
-    let bootstrap = Bootstrap
+    bootstrap = Bootstrap
       .setConfigSources([{type: 'system'}])
       .configure(<ITypexsOptions & any>{
         app: {name: 'test', nodeId: 'system', path: __dirname + '/fake_app'},
@@ -169,7 +171,6 @@ class TasksSystemSpec {
 
     p.shutdown();
     await p.done;
-    await bootstrap.shutdown();
 
   }
 

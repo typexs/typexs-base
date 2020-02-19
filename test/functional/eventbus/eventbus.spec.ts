@@ -1,20 +1,20 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
-import * as _ from "lodash";
-import {Bootstrap} from "../../../src/Bootstrap";
-import {ITypexsOptions, Log, XS_P_$COUNT} from "../../../src";
-import {Config} from "commons-config";
-import {TEST_STORAGE_OPTIONS} from "../config";
-import {EventBus, IEventBusConfiguration} from "commons-eventbus";
-import {Container} from "typedi";
-import {TestHelper} from "../TestHelper";
-import {SpawnHandle} from "../SpawnHandle";
-import {SystemNodeInfo} from "../../../src/entities/SystemNodeInfo";
+import * as _ from 'lodash';
+import {Bootstrap} from '../../../src/Bootstrap';
+import {ITypexsOptions, Log, XS_P_$COUNT} from '../../../src';
+import {Config} from 'commons-config';
+import {TEST_STORAGE_OPTIONS} from '../config';
+import {EventBus, IEventBusConfiguration} from 'commons-eventbus';
+import {Container} from 'typedi';
+import {TestHelper} from '../TestHelper';
+import {SpawnHandle} from '../SpawnHandle';
+import {SystemNodeInfo} from '../../../src/entities/SystemNodeInfo';
 
-import {DistributedStorageEntityController} from "../../../src/libs/distributed/DistributedStorageEntityController";
-import {DistributedQueryWorker} from "../../../src/workers/DistributedQueryWorker";
-import {Workers} from "../../../src/libs/worker/Workers";
-import {C_DEFAULT} from "commons-base";
+import {DistributedStorageEntityController} from '../../../src/libs/distributed/DistributedStorageEntityController';
+import {DistributedQueryWorker} from '../../../src/workers/DistributedQueryWorker';
+import {Workers} from '../../../src/libs/worker/Workers';
+import {C_DEFAULT} from 'commons-base';
 import {subscribe} from 'commons-eventbus';
 
 
@@ -24,7 +24,7 @@ let inc = 0;
 
 class TestEvent {
   id: number ;
-  constructor(id:number = -1){
+  constructor(id: number = -1) {
     this.id = id;
   }
 }
@@ -33,7 +33,7 @@ class TestEvent {
 class TestEventHandler {
   id: number = inc++;
 
-  collect:any[] = [];
+  collect: any[] = [];
 
   @subscribe(TestEvent)
   on(e: TestEvent) {
@@ -58,7 +58,7 @@ class EventbusSpec {
   @test
   async 'check eventbus on/off register'() {
 
-    let h1 = new TestEventHandler();
+    const h1 = new TestEventHandler();
     await EventBus.register(h1);
 
     let e = new TestEvent(1);

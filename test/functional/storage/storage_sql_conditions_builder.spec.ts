@@ -7,6 +7,7 @@ import {Config} from 'commons-config';
 import {TypeOrmSqlConditionsBuilder} from '../../../src/libs/storage/framework/typeorm/TypeOrmSqlConditionsBuilder';
 import {TypeOrmEntityRegistry} from '../../../src/libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry';
 import {TestHelper} from '../TestHelper';
+import {SelectQueryBuilder} from 'typeorm';
 
 let bootstrap: Bootstrap;
 let Car: any = null;
@@ -52,14 +53,7 @@ class StorageSqlConditionsBuilderSpec {
 
   @test
   async 'condition $eq'() {
-    const connection = await bootstrap.getStorage().get().connect();
-
-    const sql = new TypeOrmSqlConditionsBuilder(connection.manager, TypeOrmEntityRegistry.$().getEntityRefFor(Car), 'car');
-    const where = sql.build({'name': 1});
-    sql.baseQueryBuilder.where(where);
-    const query2 = sql.baseQueryBuilder.getQueryAndParameters();
-    await connection.close();
-
+    const query2 = await getQuery({'name': 1}, Car, 'car');
     expect(query2).to.deep.eq([
       'SELECT "car"."id" AS "car_id", "car"."name" AS "car_name" FROM "car" "car" WHERE ("car"."name" = ?)',
       [
@@ -71,14 +65,7 @@ class StorageSqlConditionsBuilderSpec {
 
   @test
   async 'condition $lt'() {
-    const connection = await bootstrap.getStorage().get().connect();
-
-    const sql = new TypeOrmSqlConditionsBuilder(connection.manager, TypeOrmEntityRegistry.$().getEntityRefFor(Car), 'car');
-    const where = sql.build({'id': {$lt: 1}});
-    sql.baseQueryBuilder.where(where);
-    const query2 = sql.baseQueryBuilder.getQueryAndParameters();
-    await connection.close();
-
+    const query2 = await getQuery({'id': {$lt: 1}}, Car, 'car');
     expect(query2).to.deep.eq([
       'SELECT "car"."id" AS "car_id", "car"."name" AS "car_name" FROM "car" "car" WHERE ("car"."id" < ?)',
       [
@@ -89,14 +76,7 @@ class StorageSqlConditionsBuilderSpec {
 
   @test
   async 'condition $le'() {
-    const connection = await bootstrap.getStorage().get().connect();
-
-    const sql = new TypeOrmSqlConditionsBuilder(connection.manager, TypeOrmEntityRegistry.$().getEntityRefFor(Car), 'car');
-    const where = sql.build({'id': {$le: 1}});
-    sql.baseQueryBuilder.where(where);
-    const query2 = sql.baseQueryBuilder.getQueryAndParameters();
-    await connection.close();
-
+    const query2 = await getQuery({'id': {$le: 1}}, Car, 'car');
     expect(query2).to.deep.eq([
       'SELECT "car"."id" AS "car_id", "car"."name" AS "car_name" FROM "car" "car" WHERE ("car"."id" <= ?)',
       [
@@ -107,14 +87,7 @@ class StorageSqlConditionsBuilderSpec {
 
   @test
   async 'condition $ge'() {
-    const connection = await bootstrap.getStorage().get().connect();
-
-    const sql = new TypeOrmSqlConditionsBuilder(connection.manager, TypeOrmEntityRegistry.$().getEntityRefFor(Car), 'car');
-    const where = sql.build({'id': {$ge: 1}});
-    sql.baseQueryBuilder.where(where);
-    const query2 = sql.baseQueryBuilder.getQueryAndParameters();
-    await connection.close();
-
+    const query2 = await getQuery({'id': {$ge: 1}}, Car, 'car');
     expect(query2).to.deep.eq([
       'SELECT "car"."id" AS "car_id", "car"."name" AS "car_name" FROM "car" "car" WHERE ("car"."id" >= ?)',
       [
@@ -126,14 +99,7 @@ class StorageSqlConditionsBuilderSpec {
 
   @test
   async 'condition $gt'() {
-    const connection = await bootstrap.getStorage().get().connect();
-
-    const sql = new TypeOrmSqlConditionsBuilder(connection.manager, TypeOrmEntityRegistry.$().getEntityRefFor(Car), 'car');
-    const where = sql.build({'id': {$gt: 1}});
-    sql.baseQueryBuilder.where(where);
-    const query2 = sql.baseQueryBuilder.getQueryAndParameters();
-    await connection.close();
-
+    const query2 = await getQuery({'id': {$gt: 1}}, Car, 'car');
     expect(query2).to.deep.eq([
       'SELECT "car"."id" AS "car_id", "car"."name" AS "car_name" FROM "car" "car" WHERE ("car"."id" > ?)',
       [
@@ -144,15 +110,7 @@ class StorageSqlConditionsBuilderSpec {
 
   @test
   async 'condition $in'() {
-    const connection = await bootstrap.getStorage().get().connect();
-
-    const sql = new TypeOrmSqlConditionsBuilder(connection.manager, TypeOrmEntityRegistry.$().getEntityRefFor(Car), 'car');
-    const where = sql.build({'id': {$in: [1, 2, 3]}});
-    sql.baseQueryBuilder.where(where);
-    const query2 = sql.baseQueryBuilder.getQueryAndParameters();
-    await connection.close();
-    const e = await sql.baseQueryBuilder.getManyAndCount();
-
+    const query2 = await getQuery({'id': {$in: [1, 2, 3]}}, Car, 'car');
     expect(query2).to.deep.eq([
       'SELECT "car"."id" AS "car_id", "car"."name" AS "car_name" FROM "car" "car" WHERE ("car"."id" IN (?, ?, ?))',
 
@@ -163,14 +121,7 @@ class StorageSqlConditionsBuilderSpec {
 
   @test
   async 'condition $isNull'() {
-    const connection = await bootstrap.getStorage().get().connect();
-
-    const sql = new TypeOrmSqlConditionsBuilder(connection.manager, TypeOrmEntityRegistry.$().getEntityRefFor(Car), 'car');
-    const where = sql.build({'name': {$isNull: 1}});
-    sql.baseQueryBuilder.where(where);
-    const query2 = sql.baseQueryBuilder.getQueryAndParameters();
-    await connection.close();
-
+    const query2 = await getQuery({'name': {$isNull: 1}}, Car, 'car');
     expect(query2).to.deep.eq([
       'SELECT "car"."id" AS "car_id", "car"."name" AS "car_name" FROM "car" "car" WHERE ("car"."name" IS NULL)',
       []
@@ -179,14 +130,8 @@ class StorageSqlConditionsBuilderSpec {
 
   @test
   async 'condition $isNotNull'() {
-    const connection = await bootstrap.getStorage().get().connect();
 
-    const sql = new TypeOrmSqlConditionsBuilder(connection.manager, TypeOrmEntityRegistry.$().getEntityRefFor(Car), 'car');
-    const where = sql.build({'name': {$isNotNull: 1}});
-    sql.baseQueryBuilder.where(where);
-    const query2 = sql.baseQueryBuilder.getQueryAndParameters();
-    await connection.close();
-
+    const query2 = await getQuery({'name': {$isNotNull: 1}}, Car, 'car');
     expect(query2).to.deep.eq([
       'SELECT "car"."id" AS "car_id", "car"."name" AS "car_name" FROM "car" "car" WHERE ("car"."name" IS NOT NULL)',
       []
@@ -196,14 +141,8 @@ class StorageSqlConditionsBuilderSpec {
 
   @test
   async 'condition $or'() {
-    const connection = await bootstrap.getStorage().get().connect();
 
-    const sql = new TypeOrmSqlConditionsBuilder(connection.manager, TypeOrmEntityRegistry.$().getEntityRefFor(Car), 'car');
-    const where = sql.build({'$or': [{name: 'test'}, {id: 12}]});
-    sql.baseQueryBuilder.where(where);
-    const query2 = sql.baseQueryBuilder.getQueryAndParameters();
-    await connection.close();
-
+    const query2 = await getQuery({'$or': [{name: 'test'}, {id: 12}]}, Car, 'car');
     expect(query2).to.deep.eq([
       'SELECT "car"."id" AS "car_id", "car"."name" AS "car_name" FROM "car" "car" WHERE (("car"."name" = ?) OR ("car"."id" = ?))',
       [
@@ -216,14 +155,7 @@ class StorageSqlConditionsBuilderSpec {
 
   @test
   async 'condition $and'() {
-    const connection = await bootstrap.getStorage().get().connect();
-
-    const sql = new TypeOrmSqlConditionsBuilder(connection.manager, TypeOrmEntityRegistry.$().getEntityRefFor(Car), 'car');
-    const where = sql.build({'$and': [{name: 'test'}, {id: 12}]});
-    sql.baseQueryBuilder.where(where);
-    const query2 = sql.baseQueryBuilder.getQueryAndParameters();
-    await connection.close();
-
+    const query2 = await getQuery({'$and': [{name: 'test'}, {id: 12}]}, Car, 'car');
     expect(query2).to.deep.eq([
       'SELECT "car"."id" AS "car_id", "car"."name" AS "car_name" FROM "car" "car" WHERE (("car"."name" = ?) AND ("car"."id" = ?))',
       [
@@ -396,9 +328,9 @@ class StorageSqlConditionsBuilderSpec {
 
 async function getQuery(condition: any, type: Function, alias: string) {
   const connection = await bootstrap.getStorage().get().connect();
-  const sql = new TypeOrmSqlConditionsBuilder(connection.manager, TypeOrmEntityRegistry.$().getEntityRefFor(type), alias);
+  const sql = new TypeOrmSqlConditionsBuilder(connection.manager, TypeOrmEntityRegistry.$().getEntityRefFor(type), 'select', alias);
   const where = sql.build(condition);
-  sql.baseQueryBuilder.where(where);
+  (sql.getQueryBuilder() as SelectQueryBuilder<any>).where(where);
   const query2 = sql.baseQueryBuilder.getQueryAndParameters();
   await connection.close();
   return query2;

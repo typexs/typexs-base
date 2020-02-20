@@ -108,8 +108,6 @@ class MessagingSpec {
     const fileContent = await FileUtils.readFile(filePath);
     expect(data.data.toString()).to.be.eq(fileContent.toString());
     expect(data.stats).to.include({
-      'birthtimeMs': 0,
-      'blksize': 4096,
       'isBlockDevice': false,
       'isCharacterDevice': false,
       'isDirectory': false,

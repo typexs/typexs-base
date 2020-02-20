@@ -4,14 +4,8 @@ import * as _ from 'lodash';
 import {AbstractEvent} from './AbstractEvent';
 import EventBusMeta from 'commons-eventbus/bus/EventBusMeta';
 import {AbstractExchange} from './AbstractExchange';
+import {IMessageOptions} from './IMessageOptions';
 
-
-export interface IMessageOptions {
-
-  mode?: 'map' | 'only_value' | 'embed_nodeId' | 'raw';
-
-  nodeIds?: string[];
-}
 
 export class Message<REQ extends AbstractEvent, RES extends AbstractEvent> extends EventEmitter {
 
@@ -76,10 +70,14 @@ export class Message<REQ extends AbstractEvent, RES extends AbstractEvent> exten
 
 
   postProcess(err: Error) {
+    let responses: RES[] = this.responses;
+    if (this.options.filterErrors) {
+      responses = this.responses.filter(x => !x.error);
+    }
 
     switch (this.options.mode) {
       case 'embed_nodeId':
-        this.results = this.responses.map(x => {
+        this.results = responses.map(x => {
           const y = this.factory.handleResponse(x, err);
           y['__nodeId__'] = x.nodeId;
           y['__instNr__'] = x.instNr;
@@ -87,16 +85,16 @@ export class Message<REQ extends AbstractEvent, RES extends AbstractEvent> exten
         });
         break;
       case 'map':
-        this.responses.map(x => {
+        responses.filter(x => !x.error).map(x => {
           const y = this.factory.handleResponse(x, err);
           this.results[[x.nodeId, x.instNr].join(':')] = y;
         });
         break;
       case 'raw':
-        this.results = this.responses;
+        this.results = responses.filter(x => !x.error);
         break;
       default:
-        this.results = this.responses.map(x => this.factory.handleResponse(x, err));
+        this.results = responses.map(x => this.factory.handleResponse(x, err));
     }
 
     this.emit('finished', err, this.results);

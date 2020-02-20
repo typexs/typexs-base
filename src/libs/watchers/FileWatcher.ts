@@ -1,12 +1,11 @@
-import * as _ from 'lodash';
-import {existsSync, PathLike, stat, watch} from 'fs';
+import {existsSync, PathLike, watch} from 'fs';
 import {join, resolve} from 'path';
 import {AbstractWatcher} from './AbstractWatcher';
 import {FileWatcherConfig, isFileWatcherConfig} from './FileWatcherConfig';
 import {InvalidWatcherConfig, WatcherStarted, WatcherStopped} from './WatcherErrors';
 import {Log} from '../logging/Log';
-import {IFileStat} from './IFileStat';
-import {STATS_METHODS} from './Constants';
+import {IFileStat} from '../filesystem/IFileStat';
+import {FileReadUtils} from '../filesystem/FileReadUtils';
 
 /**
  * A file watcher
@@ -58,24 +57,10 @@ export class FileWatcher extends AbstractWatcher {
     }, async (type, filename) => {
       const filepath = join(<string>this.path, filename);
       const exists = existsSync(filepath);
-      const stats: IFileStat = {};
+      let stats: IFileStat = {};
       if (exists) {
         try {
-          const _stats = await new Promise((resolve, reject) => {
-            stat(filepath, (err, _stats) => {
-              if (err) {
-                reject(err);
-              } else {
-                resolve(_stats);
-              }
-            });
-          });
-          for (const statKey of _.keys(_stats)) {
-            stats[statKey] = _stats[statKey];
-          }
-          STATS_METHODS.forEach(method => {
-            stats[method] = _stats[method]();
-          });
+          stats = await FileReadUtils.statInfo(filepath);
         } catch (e) {
         }
       }

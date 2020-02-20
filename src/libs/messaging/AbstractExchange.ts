@@ -1,14 +1,17 @@
-import * as _ from 'lodash';
 import {ClassType} from 'commons-schema-api';
 import {AbstractEvent} from './AbstractEvent';
 import {System} from '../../libs/system/System';
 import {Inject} from 'typedi';
-import {IMessageOptions, Message} from './Message';
+import {Message} from './Message';
 import {EventBus, subscribe} from 'commons-eventbus';
 import {ILoggerApi} from '../../libs/logging/ILoggerApi';
 import {Log} from '../../libs/logging/Log';
+import {IMessageOptions} from './IMessageOptions';
+
 
 export abstract class AbstractExchange<REQ extends AbstractEvent, RES extends AbstractEvent> {
+
+  private reqCache: { [k: string]: boolean } = {};
 
   @Inject(System.NAME)
   private system: System;
@@ -43,6 +46,10 @@ export abstract class AbstractExchange<REQ extends AbstractEvent, RES extends Ab
   }
 
   async onRequest(request: REQ) {
+    if (this.reqCache[request.id]) {
+      return;
+    }
+    this.reqCache[request.id] = true;
     const response: RES = Reflect.construct(this.getResClass(), []);
     response.reqEventId = request.id;
     response.of(this.getSystem().node);
@@ -53,6 +60,7 @@ export abstract class AbstractExchange<REQ extends AbstractEvent, RES extends Ab
       this.logger.error(err);
       response.error = err.message;
     }
+    delete this.reqCache[request.id];
     return EventBus.postAndForget(response);
   }
 

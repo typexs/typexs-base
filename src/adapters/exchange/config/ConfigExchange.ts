@@ -4,7 +4,7 @@ import {ClassLoader, TreeUtils, WalkValues} from 'commons-base';
 import {AbstractExchange} from '../../../libs/messaging/AbstractExchange';
 import {ConfigRequest} from './ConfigRequest';
 import {ConfigResponse} from './ConfigResponse';
-import {IMessageOptions} from '../../../libs/messaging/Message';
+import {IMessageOptions} from '../../../libs/messaging/IMessageOptions';
 
 const filterKeys = [
   'password',

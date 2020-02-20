@@ -162,7 +162,7 @@ export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker 
           }
         }
       }
-      
+
       e.state = 'running';
       results = await runner.run();
       e.state = 'stopped';
@@ -192,11 +192,6 @@ export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker 
     return _e;
   }
 
-  /*
-  onEmpty(): Promise<void> {
-
-  }
-  */
 
 
   statistic(): IWorkerStatisitic {

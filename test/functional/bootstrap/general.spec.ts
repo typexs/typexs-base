@@ -141,14 +141,24 @@ class BootstrapGeneralSpec {
                 'modules/*/entities', 'src/modules/*/entities', 'src/entitytest'
               ]
             },
-            {topic: 'flow', refs: ['flow']},
+            {
+              topic: 'exchange.messages',
+              refs: [
+                'adapters/exchange/*/*Exchange.*',
+                'src/adapters/exchange/*/*Exchange.*'
+              ]
+            },
+            {
+              topic: 'flow',
+              refs: ['flow']
+            },
             {topic: 'generators', refs: ['generators', 'src/generators']},
             {
+              'topic': 'scheduler-factories',
               'refs': [
                 'adapters/scheduler/*Factory.*',
                 'src/adapters/scheduler/*Factory.*'
-              ],
-              'topic': 'scheduler-factories'
+              ]
             },
 
             {

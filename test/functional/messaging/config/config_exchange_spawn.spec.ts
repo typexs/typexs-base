@@ -8,32 +8,20 @@ import {TestHelper} from '../../TestHelper';
 import {SpawnHandle} from '../../SpawnHandle';
 import {Injector} from '../../../../src/libs/di/Injector';
 import {ConfigExchange} from '../../../../src/adapters/exchange/config/ConfigExchange';
-import {Log} from '../../../../src/libs/logging/Log';
 
-const LOG_EVENT = TestHelper.logEnable(true);
+const LOG_EVENT = TestHelper.logEnable(false);
 
 let bootstrap: Bootstrap;
+let spawned: SpawnHandle;
 
 @suite('functional/messaging/config/exchange_spawn')
 class MessagingSpec {
 
 
-  async before() {
+  static async before() {
     Bootstrap.reset();
     Config.clear();
-    Log.enable = true;
-  }
-
-  async after() {
-    if (bootstrap) {
-      await bootstrap.shutdown();
-    }
-  }
-
-
-  @test
-  async 'config message exchange'() {
-    const p = SpawnHandle.do(__dirname + '/fake_app/node_01.ts').start(LOG_EVENT);
+    spawned = SpawnHandle.do(__dirname + '/fake_app/node_01.ts').start(LOG_EVENT);
 
     const appdir = path.join(__dirname, 'fake_app');
 
@@ -53,16 +41,31 @@ class MessagingSpec {
     await bootstrap.startup();
 
 
-    Log.debug('----------------------');
-    await p.started;
-    await TestHelper.wait(50);
+    await spawned.started;
+  }
+
+
+
+  static async after() {
+
+    if (spawned) {
+      spawned.shutdown();
+      await spawned.done;
+    }
+
+    if (bootstrap) {
+      await bootstrap.shutdown();
+    }
+  }
+
+  @test
+  async 'config message exchange'() {
+
 
     const exchange = Injector.get(ConfigExchange);
     const results = await exchange.key('app', {mode: 'map'});
 
 
-    p.shutdown();
-    await p.done;
 
     expect(_.keys(results)).to.be.deep.eq(['remote_fakeapp01:0']);
     expect(_.values(results)).to.be.deep.eq([

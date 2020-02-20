@@ -15,10 +15,10 @@ import {__REMOTE_IDS__, XS_P_$ERRORED, XS_P_$SAVED} from '../../../src/libs/dist
 import {IDistributedQueryWorkerOptions} from '../../../src/libs/distributed/IDistributedQueryWorkerOptions';
 
 
-const LOG_EVENT = TestHelper.logEnable(true);
+const LOG_EVENT = TestHelper.logEnable(false);
 
 
-@suite('functional/distributed/distributed_storage_save')
+@suite('functional/distributed/storage_save')
 class DistributedStorageSaveSpec {
 
 

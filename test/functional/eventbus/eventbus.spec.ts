@@ -17,7 +17,7 @@ import {C_DEFAULT} from 'commons-base';
 import {subscribe} from 'commons-eventbus';
 
 
-const LOG_EVENT = TestHelper.logEnable(true);
+const LOG_EVENT = TestHelper.logEnable(false);
 
 let inc = 0;
 
@@ -36,7 +36,6 @@ class TestEventHandler {
 
   @subscribe(TestEvent)
   on(e: TestEvent) {
-    console.log(this.id, e.id);
     this.collect.push([this.id, e.id]);
   }
 }

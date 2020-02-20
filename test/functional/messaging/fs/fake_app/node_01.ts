@@ -5,7 +5,7 @@ import {TEST_STORAGE_OPTIONS} from '../../../config';
 import {Bootstrap} from '../../../../../src/Bootstrap';
 
 (async function () {
-  const LOG_EVENT = true; //
+  const LOG_EVENT = false; //
   let bootstrap = Bootstrap
     .setConfigSources([{type: 'system'}])
     .configure(<ITypexsOptions & any>{
@@ -21,6 +21,8 @@ import {Bootstrap} from '../../../../../src/Bootstrap';
   await bootstrap.prepareRuntime();
   bootstrap = await bootstrap.activateStorage();
   bootstrap = await bootstrap.startup();
+
+  process.send('startup');
 
 
   const timeout = parseInt(Config.get('argv.timeout', 20000), 0);

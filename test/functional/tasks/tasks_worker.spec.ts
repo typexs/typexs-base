@@ -25,7 +25,7 @@ import {TaskLog} from '../../../src/entities/TaskLog';
 import {StorageRef} from '../../../src/libs/storage/StorageRef';
 
 
-const LOG_EVENT = TestHelper.logEnable(true);
+const LOG_EVENT = TestHelper.logEnable(false);
 let bootstrap: Bootstrap = null;
 
 @suite('functional/tasks/tasks_worker')
@@ -142,9 +142,6 @@ class TasksWorkerSpec {
 
     // ---- finished
     await bootstrap.shutdown();
-
-    //  console.log(inspect(events,false,10))
-
   }
 
 
@@ -198,18 +195,12 @@ class TasksWorkerSpec {
     const z = new T02();
     await EventBus.register(z);
 
-
     const tasks: Tasks = Container.get(Tasks.NAME);
     const ref = tasks.addTask(SimpleWorkerTask);
 
-    // const workers: Workers = Container.get(Workers.NAME);
-    // const worker: TaskQueueWorker = <TaskQueueWorker>workers.workers.find(x => x instanceof TaskQueueWorker);
-
     const execReq = Container.get(TaskExecutionRequestFactory).createRequest();
     const results = await execReq.run([ref.name]);
-    Log.debug('got results');
     await TestHelper.waitFor(() => events.length >= 4, 100);
-    // await worker.queue.await();
 
     // ---- finished
     await EventBus.unregister(z);
@@ -238,7 +229,7 @@ class TasksWorkerSpec {
       .setConfigSources([{type: 'system'}])
       .configure(<ITypexsOptions & any>{
         app: {name: 'test', nodeId: 'system', path: __dirname + '/fake_app'},
-        logging: {enable: true, level: 'debug'},
+        logging: {enable: LOG_EVENT, level: 'debug'},
         modules: {paths: [__dirname + '/../../..']},
         storage: {default: TEST_STORAGE_OPTIONS},
         eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}}
@@ -263,11 +254,8 @@ class TasksWorkerSpec {
 
     const l = new T2();
     await EventBus.register(l);
-
     const p = SpawnHandle.do(__dirname + '/fake_app/node_task_worker.ts').start(LOG_EVENT);
-
     await p.started;
-    await TestHelper.wait(50);
 
     const taskEvent = new TaskEvent();
     taskEvent.nodeId = bootstrap.getNodeId();
@@ -279,24 +267,23 @@ class TasksWorkerSpec {
     // the result are null cause of not
     // registered subscribers of remote nodes
     const results = await EventBus.post(taskEvent);
+    await TestHelper.waitFor(() => !!events.find(x => x.state === 'stopped'));
 
-    await TestHelper.waitFor(() => events.length > 5);
     p.shutdown();
     await p.done;
+
 
     await EventBus.unregister(l);
     // ---- finished
     await bootstrap.shutdown();
 
-    expect(events).to.have.length(6);
+    expect(events).to.have.length.gte(4);
     expect(events.map(x => {
       return {state: x.state, respId: x.respId};
     })).to.deep.eq([
       {state: 'proposed', respId: undefined},
       {state: 'enqueue', respId: 'fakeapp01'},
       {state: 'started', respId: 'fakeapp01'},
-      {state: 'stopped', respId: 'fakeapp01'},
-      {state: 'stopped', respId: 'fakeapp01'},
       {state: 'stopped', respId: 'fakeapp01'}
     ]);
     const x = events.map(x => {
@@ -306,9 +293,7 @@ class TasksWorkerSpec {
       {result: null},
       {result: null},
       {result: null},
-      {result: {res: 'okay', value: 'someValueEntry'}},
-      {result: null},
-      {result: null}
+      {result: {res: 'okay', value: 'someValueEntry'}}
     ]);
   }
 
@@ -406,11 +391,6 @@ class TasksWorkerSpec {
       on(e: TaskEvent) {
         const _e = _.cloneDeep(e);
         events.push(_e);
-        /*
-        if (events.length > 6) {
-          handle.shutdown();
-        }
-        */
       }
     }
 
@@ -448,8 +428,8 @@ class TasksWorkerSpec {
     // the result are null cause of not
     // registered subscribers of remote nodes
     await EventBus.post(taskEvent2);
-
-    await TestHelper.waitFor(() => events.length > 6);
+    await TestHelper.waitFor(() => !!events.find(x => x.state === 'stopped'));
+    // await TestHelper.waitFor(() => events.length > 6);
     handle.shutdown();
 
     await handle.done;
@@ -461,7 +441,7 @@ class TasksWorkerSpec {
 
     const events_01: TaskEvent[] = events.filter(x => x.targetIds.indexOf('fakeapp01') !== -1);
     const events_02: TaskEvent[] = events.filter(x => x.targetIds.indexOf('fakeapp02') !== -1);
-    expect(events_01).to.have.length(6);
+    expect(events_01).to.have.length(4);
     expect(events_02).to.have.length(1);
 
     expect(events_01.map(x => {
@@ -470,8 +450,6 @@ class TasksWorkerSpec {
       {state: 'proposed', respId: undefined},
       {state: 'enqueue', respId: 'fakeapp01'},
       {state: 'started', respId: 'fakeapp01'},
-      {state: 'stopped', respId: 'fakeapp01'},
-      {state: 'stopped', respId: 'fakeapp01'},
       {state: 'stopped', respId: 'fakeapp01'}
     ]);
 
@@ -487,9 +465,7 @@ class TasksWorkerSpec {
       {result: null},
       {result: null},
       {result: null},
-      {result: {res: 'okay', value: 'valueSome'}},
-      {result: null},
-      {result: null}
+      {result: {res: 'okay', value: 'valueSome'}}
     ]);
   }
 
@@ -542,7 +518,7 @@ class TasksWorkerSpec {
 
     await command.handler({});
 
-    await TestHelper.waitFor(() => events.length > 6);
+    await TestHelper.waitFor(() => !!events.find(x => x.state === 'stopped'));
     handle.shutdown();
 
     await EventBus.unregister(l);
@@ -550,10 +526,8 @@ class TasksWorkerSpec {
     handle.shutdown();
     await handle.done;
     await bootstrap.shutdown();
-    // console.log(inspect(events,false,10))
-    expect(events).to.have.length.gt(6);
+    expect(events).to.have.length.gte(4);
     expect(events.map(x => x.state)).to.contain.members(['proposed', 'enqueue', 'started', 'stopped']);
-    expect(events.map(x => x.topic)).to.contain.members(['data', 'log']);
   }
 
 
@@ -563,7 +537,7 @@ class TasksWorkerSpec {
       .setConfigSources([{type: 'system'}])
       .configure(<ITypexsOptions & any>{
         app: {name: 'test', nodeId: 'worker'},
-        logging: {enable: true, level: 'debug'},
+        logging: {enable: LOG_EVENT, level: 'debug'},
         modules: {paths: [__dirname + '/../../..']},
         storage: {default: TEST_STORAGE_OPTIONS},
         eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}},
@@ -595,7 +569,7 @@ class TasksWorkerSpec {
 
     const execReq = Container.get(TaskExecutionRequestFactory).createRequest();
     const results = await execReq.run([ref.name]);
-    await TestHelper.waitFor(() => events.length >= 9);
+    await TestHelper.waitFor(() => !!events.find(x => x.state === 'stopped'));
 
     await (Container.get(TaskMonitorWorker) as TaskMonitorWorker).queue.await();
     const storeRef: StorageRef = Container.get(C_STORAGE_DEFAULT);

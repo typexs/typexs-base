@@ -10,5 +10,6 @@ storage:
     type: mongodb
     database: typexs
     useNewUrlParser: true
+    useUnifiedTopology: true
     # logging: all
     # logger: simple-console

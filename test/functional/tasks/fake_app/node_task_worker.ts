@@ -11,7 +11,7 @@ import {ITypexsOptions} from '../../../../src/libs/ITypexsOptions';
     .setConfigSources([{type: 'system'}])
     .configure(<ITypexsOptions & any>{
       app: {name: 'fakeapp01', nodeId: 'fakeapp01', path: __dirname},
-      logging: {enable: true, level: 'debug', loggers: [{name: '*', level: 'debug'}]},
+      logging: {enable: false, level: 'debug', loggers: [{name: '*', level: 'debug'}]},
       modules: {paths: [__dirname + '/../../../..']},
       storage: {default: TEST_STORAGE_OPTIONS},
       // cache: {bins: {default: 'redis1'}, adapter: {redis1: {type: 'redis', host: '127.0.0.1', port: 6379}}},
@@ -23,13 +23,8 @@ import {ITypexsOptions} from '../../../../src/libs/ITypexsOptions';
   await bootstrap.prepareRuntime();
   bootstrap = await bootstrap.activateStorage();
   bootstrap = await bootstrap.startup();
+  process.send('startup');
   const timeout = parseInt(Config.get('argv.timeout', 20000), 0);
-  /*
-  let commands = bootstrap.getCommands();
-  expect(commands.length).to.be.gt(0);
-  let command = _.find(commands, e => e.command == 'worker');
-  command.handler({});
-  */
 
   const t = setTimeout(async () => {
     await bootstrap.shutdown();
@@ -37,7 +32,6 @@ import {ITypexsOptions} from '../../../../src/libs/ITypexsOptions';
 
   let running = true;
   process.on(<any>'message', async (m: string) => {
-
     if (m === 'shutdown') {
       running = false;
       clearTimeout(t);

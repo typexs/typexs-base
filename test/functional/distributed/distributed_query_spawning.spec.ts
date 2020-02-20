@@ -78,7 +78,6 @@ class DistributedStorageControllerSpec {
     const res = await controller.find(SystemNodeInfo);
 
     p.shutdown();
-
     await p.done;
 
     expect(res).to.not.be.null;

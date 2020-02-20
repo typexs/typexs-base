@@ -48,6 +48,11 @@ export class SpawnHandle {
           resolve();
         }
       });
+      this.process.on('message', d => {
+        if (d === 'startup') {
+          resolve();
+        }
+      });
     });
     return this;
   }

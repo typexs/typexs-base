@@ -1,4 +1,4 @@
-process.env.SQL_LOG = '1';
+// process.env.SQL_LOG = '1';
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 import {Bootstrap} from '../../../src/Bootstrap';
@@ -17,11 +17,11 @@ import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
 import {Invoker} from '../../../src/base/Invoker';
 
 
-const LOG_EVENT = TestHelper.logEnable(true);
+const LOG_EVENT = TestHelper.logEnable(false);
 let bootstrap: Bootstrap;
 
 @suite('functional/system/system_redis_connected')
-class TasksSystemSpec {
+class SystemRedisConnectedSpec {
 
 
   async before() {
@@ -123,7 +123,6 @@ class TasksSystemSpec {
     expect(system.nodes).to.have.length(0);
 
     nodeInfos = await bootstrap.getStorage().get().getController().find(SystemNodeInfo);
-    console.log(nodeInfos);
     expect(nodeInfos).to.have.length(1);
     expect(nodeInfos.map((x: any) => {
       return {isBackend: x.isBackend, nodeId: x.nodeId};

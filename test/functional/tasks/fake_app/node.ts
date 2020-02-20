@@ -9,7 +9,7 @@ import {Bootstrap} from '../../../../src/Bootstrap';
     .setConfigSources([{type: 'system'}])
     .configure(<ITypexsOptions & any>{
       app: {name: 'fakeapp01', nodeId: 'fakeapp01', path: __dirname},
-      logging: {enable: true, level: 'debug'},
+      logging: {enable: false, level: 'debug'},
       modules: {paths: [__dirname + '/../../../..']},
       storage: {default: TEST_STORAGE_OPTIONS},
       // cache: {bins: {default: 'redis1'}, adapter: {redis1: {type: 'redis', host: '127.0.0.1', port: 6379}}},
@@ -20,6 +20,7 @@ import {Bootstrap} from '../../../../src/Bootstrap';
   await bootstrap.prepareRuntime();
   bootstrap = await bootstrap.activateStorage();
   bootstrap = await bootstrap.startup();
+  process.send('startup');
   const timeout = parseInt(Config.get('argv.timeout', 20000), 0);
   /*
   let commands = bootstrap.getCommands();

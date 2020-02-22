@@ -45,11 +45,7 @@ export abstract class AbstractExchange<REQ extends AbstractEvent, RES extends Ab
     return msg;
   }
 
-  async onRequest(request: REQ) {
-    if (this.reqCache[request.id]) {
-      return;
-    }
-    this.reqCache[request.id] = true;
+  async getResponse(request: REQ) {
     const response: RES = Reflect.construct(this.getResClass(), []);
     response.reqEventId = request.id;
     response.of(this.getSystem().node);
@@ -60,6 +56,16 @@ export abstract class AbstractExchange<REQ extends AbstractEvent, RES extends Ab
       this.logger.error(err);
       response.error = err.message;
     }
+    return response;
+  }
+
+
+  async onRequest(request: REQ) {
+    if (this.reqCache[request.id]) {
+      return;
+    }
+    this.reqCache[request.id] = true;
+    const response = await this.getResponse(request);
     delete this.reqCache[request.id];
     return EventBus.postAndForget(response);
   }

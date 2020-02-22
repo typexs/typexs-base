@@ -1,3 +1,5 @@
+import exp = require("constants");
+
 export * from './browser';
 
 // extern exports
@@ -16,6 +18,9 @@ export * from './api/ISystemApi';
 
 export * from './entities/SystemNodeInfo';
 export * from './entities/TaskLog';
+
+export * from './adapters/exchange/config/ConfigExchange';
+export * from './adapters/exchange/filesystem/FileSystemExchange';
 
 export * from './adapters/cache/MemoryCacheAdapter';
 export * from './adapters/cache/RedisCacheAdapter';
@@ -36,17 +41,27 @@ export * from './base/RuntimeLoader';
 export * from './libs/helper/Counter';
 export * from './libs/helper/Counters';
 
+export * from './libs/filesystem/FileReadUtils';
+export * from './libs/filesystem/IFileStat';
+
+
 export * from './libs/IHttpHeaders';
 export * from './libs/IKeyValuePair';
 export * from './libs/IUrlBase';
 export * from './libs/Progress';
 
-
 export * from './libs/logging/Log';
 export * from './libs/logging/Console';
 export * from './libs/logging/LogEvent';
-
 export * from './libs/logging/WinstonLoggerJar';
+
+export * from './libs/messaging/AbstractEvent';
+export * from './libs/messaging/AbstractExchange';
+export * from './libs/messaging/ExchangeMessageRegistry';
+export * from './libs/messaging/Message';
+export * from './libs/messaging/IMessageOptions';
+
+
 
 export * from './libs/queue/AsyncWorkerQueue';
 export * from './libs/queue/IAsyncQueueOptions';
@@ -54,13 +69,6 @@ export * from './libs/queue/IQueue';
 export * from './libs/queue/IQueueProcessor';
 export * from './libs/queue/IQueueWorkload';
 export * from './libs/queue/QueueJob';
-
-// export * from "./libs/schematics/FileSystemEngineHost";
-// export * from "./libs/schematics/IFileSystemEngineHost";
-// export * from "./libs/schematics/ISchematicsInfo";
-// export * from "./libs/schematics/ISchematicsOptions";
-// export * from "./libs/schematics/SchematicsExecutor";
-// export * from "./libs/schematics/SimpleRegexCodeModifierHelper";
 
 export * from './libs/system/System';
 export * from './libs/system/INodeInfo';
@@ -110,5 +118,7 @@ export * from './libs/worker/WorkerRef';
 
 export * from './libs/utils/BaseUtils';
 export * from './libs/utils/DomainUtils';
+export * from './libs/utils/ConfigUtils';
+export * from './libs/utils/MatchUtils';
 
 export * from './Bootstrap';

@@ -1,0 +1,45 @@
+import {Config} from 'commons-config';
+import * as _ from 'lodash';
+import {TreeUtils, WalkValues} from 'commons-base/browser';
+import {ClassLoader} from 'commons-base';
+import {C_CONFIG, C_CONFIG_FILTER_KEYS, C_CONFIGURATION_FILTER_KEYS_KEY, C_KEY_SEPARATOR} from '../Constants';
+import {Cache} from '../../libs/cache/Cache';
+import {Injector} from '../../libs/di/Injector';
+
+export class ConfigUtils {
+
+
+  static clone(key: string = null, filterKeys: string[] = C_CONFIG_FILTER_KEYS) {
+    filterKeys = _.concat(filterKeys, Config.get(C_CONFIGURATION_FILTER_KEYS_KEY, []));
+    const _orgCfg = key ? Config.get(key) : Config.get();
+    const cfg = _.cloneDeepWith(_orgCfg);
+
+    TreeUtils.walk(cfg, (x: WalkValues) => {
+      // TODO make this list configurable! system.info.hide.keys!
+      if (_.isString(x.key) && filterKeys.indexOf(x.key) !== -1) {
+        delete x.parent[x.key];
+      }
+      if (_.isFunction(x.value)) {
+        if (_.isArray(x.parent)) {
+          x.parent[x.index] = ClassLoader.getClassName(x.value);
+        } else {
+          x.parent[x.key] = ClassLoader.getClassName(x.value);
+        }
+      }
+    });
+    return cfg.shift();
+
+  }
+
+
+  static async getCached(nodeId: string, key: string = null) {
+    const cache = Injector.get(Cache.NAME) as Cache;
+    const config = await cache.get([C_CONFIG, nodeId].join(C_KEY_SEPARATOR))
+    if (_.isEmpty(key)) {
+      return config;
+    }
+    return _.get(config, key);
+
+  }
+
+}

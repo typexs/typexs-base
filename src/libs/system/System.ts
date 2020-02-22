@@ -17,6 +17,7 @@ import {Invoker} from '../../base/Invoker';
 import {SystemInfoResponse} from './SystemInfoResponse';
 import {ILoggerApi} from '../logging/ILoggerApi';
 import {StorageEntityController} from '../../libs/storage/StorageEntityController';
+import {Cache} from '../../libs/cache/Cache';
 
 export class System {
 
@@ -29,6 +30,7 @@ export class System {
 
   @Inject(C_STORAGE_DEFAULT)
   storageRef: StorageRef;
+
 
   /**
    * Use entity controller to handle values
@@ -63,6 +65,7 @@ export class System {
    */
   logger: ILoggerApi;
 
+
   static isDistributionEnabled() {
     const e = Config.get(APP_SYSTEM_DISTRIBUTED);
     if (_.isBoolean(e)) {
@@ -85,7 +88,6 @@ export class System {
   async initialize(hostname: string, nodeId: string, instNr: number = 0) {
     const key = [hostname, nodeId, instNr].join(C_KEY_SEPARATOR);
 
-
     // clear table before startup
     if (this.storageRef) {
       this.controller = this.storageRef.getController();
@@ -97,10 +99,6 @@ export class System {
       if (!_.isEmpty(filtered)) {
         instNr = _.max(filtered.map(x => x.instNr)) + 1;
       }
-      // this.controller.remove(SystemNodeInfo, {nodeId: nodeId})
-      // const c = await this.storageRef.connect();
-      // await c.manager.clear(SystemNodeInfo);
-      // await c.close();
     }
 
     this.node = new SystemNodeInfo();
@@ -176,12 +174,17 @@ export class System {
 
 
   getNodesWith(context: string) {
-    return this.getNodes().filter(v => !!v.contexts.find(c => c.context === context));
+    return this.getAllNodes().filter(v => !!v.contexts.find(c => c.context === context));
   }
 
 
-  getNodes(): SystemNodeInfo[] {
+  getAllNodes(): SystemNodeInfo[] {
     return [this.node, ...this.nodes];
+  }
+
+
+  getRemoteNodes() {
+    return this.nodes;
   }
 
 

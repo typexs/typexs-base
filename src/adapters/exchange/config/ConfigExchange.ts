@@ -1,19 +1,9 @@
 import * as _ from 'lodash';
-import {Config} from 'commons-config';
-import {ClassLoader, TreeUtils, WalkValues} from 'commons-base';
 import {AbstractExchange} from '../../../libs/messaging/AbstractExchange';
 import {ConfigRequest} from './ConfigRequest';
 import {ConfigResponse} from './ConfigResponse';
 import {IMessageOptions} from '../../../libs/messaging/IMessageOptions';
-
-const filterKeys = [
-  'password',
-  'pass',
-  'credential',
-  'credentials',
-  'secret',
-  'token'
-];
+import {ConfigUtils} from '../../../libs/utils/ConfigUtils';
 
 
 export class ConfigExchange extends AbstractExchange<ConfigRequest, ConfigResponse> {
@@ -34,28 +24,12 @@ export class ConfigExchange extends AbstractExchange<ConfigRequest, ConfigRespon
   handleRequest(request: ConfigRequest, res: ConfigResponse) {
     let _orgCfg: any = {};
     if (!_.isEmpty(request) && !_.isEmpty(request.key)) {
-      _orgCfg = Config.get(request.key);
+      _orgCfg = ConfigUtils.clone(request.key);
     } else {
-      _orgCfg = Config.get();
+      _orgCfg = ConfigUtils.clone();
     }
 
-    const cfg = _.cloneDeepWith(_orgCfg);
-    const _filteredKeys = _.concat(filterKeys, Config.get('config.hide.keys', []));
-
-    TreeUtils.walk(cfg, (x: WalkValues) => {
-      // TODO make this list configurable! system.info.hide.keys!
-      if (_.isString(x.key) && _filteredKeys.indexOf(x.key) !== -1) {
-        delete x.parent[x.key];
-      }
-      if (_.isFunction(x.value)) {
-        if (_.isArray(x.parent)) {
-          x.parent[x.index] = ClassLoader.getClassName(x.value);
-        } else {
-          x.parent[x.key] = ClassLoader.getClassName(x.value);
-        }
-      }
-    });
-    res.value = cfg;
+    res.value = _orgCfg;
   }
 
 

@@ -52,9 +52,15 @@ export class Message<REQ extends AbstractEvent, RES extends AbstractEvent> exten
       this.targetIds = this.factory.getSystem().nodes.map(n => n.nodeId);
     }
 
+    if (_.isUndefined(this.options.skipLocal) ||
+      !_.get(this.options, 'skipLocal', false)) {
+      const localResponse = await this.factory.getResponse(req);
+      this.responses.push(localResponse);
+    }
+
     this.req = req || Reflect.construct(this.factory.getReqClass(), []);
     this.req.nodeId = this.factory.getSystem().node.nodeId;
-    this.req.targetIds = this.targetIds;
+    this.req.targetIds = _.uniq(this.targetIds);
 
     subscribe(this.factory.getResClass())(this, 'onResults');
 

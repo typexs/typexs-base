@@ -8,7 +8,9 @@ import {RuntimeLoader} from './base/RuntimeLoader';
 import {Cache} from './libs/cache/Cache';
 import {ICacheConfig} from './libs/cache/ICacheConfig';
 import {
+  C_CONFIG,
   C_EVENTBUS,
+  C_KEY_SEPARATOR,
   K_CLS_CACHE_ADAPTER,
   K_CLS_EXCHANGE_MESSAGE,
   K_CLS_SCHEDULE_ADAPTER_FACTORIES
@@ -21,8 +23,8 @@ import {Tasks} from './libs/tasks/Tasks';
 import {TasksHelper} from './libs/tasks/TasksHelper';
 import {WatcherRegistry} from './libs/watchers/WatcherRegistry';
 import {Workers} from './libs/worker/Workers';
-import {Storage} from './libs/storage/Storage';
 import {ExchangeMessageRegistry} from './libs/messaging/ExchangeMessageRegistry';
+import {ConfigUtils} from "./libs/utils/ConfigUtils";
 
 
 export class Startup implements IBootstrap, IShutdown {
@@ -69,6 +71,7 @@ export class Startup implements IBootstrap, IShutdown {
     }
     const cache: ICacheConfig = Config.get('cache');
     await this.cache.configure(this.system.node.nodeId, cache);
+    await this.cache.set([C_CONFIG, this.system.node.nodeId].join(C_KEY_SEPARATOR), ConfigUtils.clone());
 
     const bus: { [name: string]: IEventBusConfiguration } = Config.get(C_EVENTBUS, false);
     if (bus) {
@@ -119,6 +122,15 @@ export class Startup implements IBootstrap, IShutdown {
    * - watchers
    */
   async shutdown() {
+
+    const nodes = this.system
+      .getAllNodes()
+      .filter(x => x.nodeId === this.system.node.nodeId);
+    if (nodes.length > 0) {
+      // remove if no node exists
+      await this.cache.set([C_CONFIG, this.system.node.nodeId].join(C_KEY_SEPARATOR), null);
+    }
+
     await this.cache.shutdown();
     if (System.isDistributionEnabled()) {
       await this.system.unregister();

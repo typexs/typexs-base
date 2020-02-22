@@ -18,6 +18,7 @@ export const K_CLS_EXCHANGE_MESSAGE = 'exchange.messages';
 
 
 export const C_EVENTBUS = 'eventbus';
+export const C_CONFIG = 'config';
 
 export const APP_SYSTEM_DISTRIBUTED = 'app.system.distributed';
 
@@ -28,3 +29,13 @@ export const XS_P_$OFFSET = '$offset';
 
 export const C_KEY_SEPARATOR = ':';
 export const C_STORAGE_DEFAULT = 'storage.default';
+
+export const C_CONFIGURATION_FILTER_KEYS_KEY = 'config.hide.keys';
+export const C_CONFIG_FILTER_KEYS = [
+  'password',
+  'pass',
+  'credential',
+  'credentials',
+  'secret',
+  'token'
+];

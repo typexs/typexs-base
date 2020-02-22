@@ -82,7 +82,6 @@ class MessagingSpec {
   async 'config message exchange remote'() {
     const exchange = Injector.get(ConfigExchange);
     const results = await exchange.key('app', {mode: 'map', skipLocal: true});
-
     expect(_.keys(results)).to.be.deep.eq(['remote_fakeapp01:0']);
     expect(_.values(results)).to.be.deep.eq([
       {

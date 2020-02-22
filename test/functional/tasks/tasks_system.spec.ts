@@ -52,8 +52,8 @@ class TasksSystemSpec {
 
     expect(n.nodeId).to.eq(nodeId);
     expect(n.contexts).to.have.length.gt(0);
-    expect(n.contexts[0].context).to.eq(C_TASKS);
-    expect(_.find(n.contexts[0].tasks, x => x.name === 'test')).to.deep.eq({
+    expect(n.contexts[1].context).to.eq(C_TASKS);
+    expect(_.find(n.contexts[1].tasks, x => x.name === 'test')).to.deep.eq({
       name: 'test',
       description: 'Hallo welt',
       permissions: null,

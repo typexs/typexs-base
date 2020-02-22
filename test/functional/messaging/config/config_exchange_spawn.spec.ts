@@ -45,7 +45,6 @@ class MessagingSpec {
   }
 
 
-
   static async after() {
 
     if (spawned) {
@@ -60,12 +59,29 @@ class MessagingSpec {
 
   @test
   async 'config message exchange'() {
-
-
     const exchange = Injector.get(ConfigExchange);
     const results = await exchange.key('app', {mode: 'map'});
 
+    expect(_.keys(results)).to.be.deep.eq(['fake_app:0', 'remote_fakeapp01:0']);
+    expect(_.values(results)).to.be.deep.eq([
+      {
+        'name': 'fake_app',
+        'nodeId': 'fake_app',
+        'path': __dirname + '/fake_app'
+      },
+      {
+        'name': 'fakeapp01',
+        'nodeId': 'remote_fakeapp01',
+        'path': __dirname + '/fake_app'
+      }
+    ]);
 
+  }
+
+  @test
+  async 'config message exchange remote'() {
+    const exchange = Injector.get(ConfigExchange);
+    const results = await exchange.key('app', {mode: 'map', skipLocal: true});
 
     expect(_.keys(results)).to.be.deep.eq(['remote_fakeapp01:0']);
     expect(_.values(results)).to.be.deep.eq([
@@ -77,7 +93,6 @@ class MessagingSpec {
     ]);
 
   }
-
 
 }
 

@@ -66,7 +66,7 @@ class MessagingSpec {
   async 'read remote file'() {
     const filePath = __dirname + '/fake_app/test.txt';
     const exchange = Injector.get(FileSystemExchange);
-    const results = await exchange.file({path: filePath});
+    const results = await exchange.file({path: filePath, skipLocal: true});
 
     expect(results).to.have.length(1);
     const data = results[0].toString();
@@ -80,7 +80,7 @@ class MessagingSpec {
   async 'read remote file - tail'() {
     const filePath = __dirname + '/fake_app/test.txt';
     const exchange = Injector.get(FileSystemExchange);
-    const results = await exchange.file({path: filePath, tail: 1, unit: 'line'});
+    const results = await exchange.file({path: filePath, tail: 1, unit: 'line', skipLocal: true});
     expect(results).to.have.length(1);
     const data = results[0];
     expect(data).to.be.eq('interessanter Test\n');
@@ -91,7 +91,7 @@ class MessagingSpec {
   async 'read remote file - less'() {
     const filePath = __dirname + '/fake_app/test.txt';
     const exchange = Injector.get(FileSystemExchange);
-    const results = await exchange.file({path: filePath, offset: 2, limit: 1, unit: 'line'});
+    const results = await exchange.file({path: filePath, offset: 2, limit: 1, unit: 'line', skipLocal: true});
     expect(results).to.have.length(1);
     const data = results[0];
     expect(data).to.be.eq('das ist ein');
@@ -102,7 +102,7 @@ class MessagingSpec {
   async 'read remote file - stats'() {
     const filePath = __dirname + '/fake_app/test.txt';
     const exchange = Injector.get(FileSystemExchange);
-    const results = await exchange.file({path: filePath, stats: true});
+    const results = await exchange.file({path: filePath, stats: true, skipLocal: true});
     expect(results).to.have.length(1);
     const data = results[0];
     const fileContent = await FileUtils.readFile(filePath);
@@ -124,7 +124,7 @@ class MessagingSpec {
   async 'read remote directory'() {
     const filePath = __dirname + '/fake_app';
     const exchange = Injector.get(FileSystemExchange);
-    const results = await exchange.file({path: filePath});
+    const results = await exchange.file({path: filePath, skipLocal: true});
     expect(results).to.have.length(1);
     const data = results[0];
 
@@ -142,7 +142,7 @@ class MessagingSpec {
   async 'read remote directory with stats'() {
     const filePath = __dirname + '/fake_app';
     const exchange = Injector.get(FileSystemExchange);
-    const results = await exchange.file({path: filePath, stats: true});
+    const results = await exchange.file({path: filePath, stats: true, skipLocal: true});
     expect(results).to.have.length(1);
     const data = results[0] as any[];
 

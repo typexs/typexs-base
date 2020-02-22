@@ -28,7 +28,6 @@ export class ConfigExchange extends AbstractExchange<ConfigRequest, ConfigRespon
     } else {
       _orgCfg = ConfigUtils.clone();
     }
-
     res.value = _orgCfg;
   }
 

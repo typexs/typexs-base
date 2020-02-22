@@ -12,7 +12,10 @@ export class ConfigUtils {
   static clone(key: string = null, filterKeys: string[] = C_CONFIG_FILTER_KEYS) {
     filterKeys = _.concat(filterKeys, Config.get(C_CONFIGURATION_FILTER_KEYS_KEY, []));
     const _orgCfg = key ? Config.get(key) : Config.get();
-    const cfg = _.cloneDeepWith(_orgCfg);
+    let cfg = _.cloneDeepWith(_orgCfg);
+    if (!key && _.isArray(cfg)) {
+      cfg = cfg.shift();
+    }
 
     TreeUtils.walk(cfg, (x: WalkValues) => {
       // TODO make this list configurable! system.info.hide.keys!
@@ -27,7 +30,7 @@ export class ConfigUtils {
         }
       }
     });
-    return cfg.shift();
+    return cfg;
 
   }
 

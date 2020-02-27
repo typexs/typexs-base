@@ -9,6 +9,7 @@ import {Injector} from '../../../../src/libs/di/Injector';
 import {Log} from '../../../../src/libs/logging/Log';
 import {expect} from 'chai';
 import {TasksExchange} from '../../../../src/adapters/exchange/tasks/TasksExchange';
+import Test = Mocha.Test;
 
 
 const LOG_EVENT = TestHelper.logEnable(false);
@@ -44,6 +45,7 @@ class MessagingSpec {
     await bootstrap.activateStorage();
     await bootstrap.startup();
     await spawned.started;
+    await TestHelper.wait(50);
 
   }
 

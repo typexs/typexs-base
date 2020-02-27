@@ -1,3 +1,4 @@
+import * as _ from 'lodash';
 import {ClassType} from 'commons-schema-api';
 import {AbstractEvent} from './AbstractEvent';
 import {System} from '../../libs/system/System';
@@ -61,11 +62,21 @@ export abstract class AbstractExchange<REQ extends AbstractEvent, RES extends Ab
 
 
   async onRequest(request: REQ) {
+    if (!_.isEmpty(request.targetIds) && !request.targetIds.includes(this.getSystem().node.nodeId)) {
+      // process request only if it is mine
+      return;
+    }
     if (this.reqCache[request.id]) {
       return;
     }
     this.reqCache[request.id] = true;
     const response = await this.getResponse(request);
+    if (response.error) {
+      response.error = {
+        name: response.error.name,
+        message: response.error.message
+      };
+    }
     delete this.reqCache[request.id];
     return EventBus.postAndForget(response);
   }

@@ -13,6 +13,7 @@ export class ExchangeMessageRef extends AbstractRef implements IEntityRef {
     super(XS_TYPE_ENTITY, ClassUtils.getClassName(fn), fn);
     this.setOptions(options || {});
     this.exchange = Injector.get(fn);
+    Injector.set(this.name, this.exchange);
   }
 
 

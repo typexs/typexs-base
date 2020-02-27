@@ -14,8 +14,10 @@ export * from './api/IModule';
 export * from './api/IShutdown';
 
 export * from './decorators/UseAPI';
-
 export * from './base/Invoker';
+
+export * from './entities/SystemNodeInfo';
+export * from './entities/TaskLog';
 
 export * from './libs/Constants';
 export * from './libs/Semaphore';

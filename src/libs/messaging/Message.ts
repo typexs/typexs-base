@@ -19,7 +19,7 @@ export class Message<REQ extends AbstractEvent, RES extends AbstractEvent> exten
 
   private targetIds: string[];
 
-  private results: any[] = [];
+  private results: any = [];
 
   private active = true;
 
@@ -52,6 +52,7 @@ export class Message<REQ extends AbstractEvent, RES extends AbstractEvent> exten
       this.targetIds = this.factory.getSystem().nodes.map(n => n.nodeId);
     }
 
+
     if (_.isUndefined(this.options.skipLocal) ||
       !_.get(this.options, 'skipLocal', false)) {
       const localResponse = await this.factory.getResponse(req);
@@ -61,7 +62,6 @@ export class Message<REQ extends AbstractEvent, RES extends AbstractEvent> exten
     this.req = req || Reflect.construct(this.factory.getReqClass(), []);
     this.req.nodeId = this.factory.getSystem().node.nodeId;
     this.req.targetIds = _.uniq(this.targetIds);
-
     subscribe(this.factory.getResClass())(this, 'onResults');
 
     await EventBus.register(this);
@@ -81,29 +81,52 @@ export class Message<REQ extends AbstractEvent, RES extends AbstractEvent> exten
       responses = this.responses.filter(x => !x.error);
     }
 
-    switch (this.options.mode) {
-      case 'embed_nodeId':
-        this.results = responses.map(x => {
-          const y = this.factory.handleResponse(x, err);
-          y['__nodeId__'] = x.nodeId;
-          y['__instNr__'] = x.instNr;
-          return y;
-        });
-        break;
-      case 'map':
-        responses.filter(x => !x.error).map(x => {
-          const y = this.factory.handleResponse(x, err);
-          this.results[[x.nodeId, x.instNr].join(':')] = y;
-        });
-        break;
-      case 'raw':
-        this.results = responses.filter(x => !x.error);
-        break;
-      default:
-        this.results = responses.map(x => this.factory.handleResponse(x, err));
+    try {
+      switch (this.options.mode) {
+        case 'embed_nodeId':
+          this.results = responses.map(x => {
+            let y: any = null;
+            if (x.error) {
+              y = new Error(x.error.message);
+            } else {
+              y = this.factory.handleResponse(x, err);
+            }
+            y['__nodeId__'] = x.nodeId;
+            y['__instNr__'] = x.instNr;
+            return y;
+          });
+          break;
+        case 'map':
+          this.results = {};
+          responses.filter(x => !x.error).map(x => {
+            let y: any = null;
+            if (x.error) {
+              y = new Error(x.error.message);
+            } else {
+              y = this.factory.handleResponse(x, err);
+            }
+            this.results[[x.nodeId, x.instNr].join(':')] = y;
+          });
+          break;
+        case 'raw':
+          this.results = responses;
+          break;
+        default:
+          this.results = responses.map(x => {
+            let y: any = null;
+            if (x.error) {
+              y = new Error(x.error.message);
+            } else {
+              y = this.factory.handleResponse(x, err);
+            }
+            return y;
+          });
+      }
+      this.emit('finished', err, this.results);
+    } catch (e) {
+      this.emit('finished', e, this.results);
     }
 
-    this.emit('finished', err, this.results);
   }
 
 

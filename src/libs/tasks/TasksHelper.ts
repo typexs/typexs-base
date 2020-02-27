@@ -95,8 +95,13 @@ export class TasksHelper {
 
 
   static getTaskLogFile(runnerId: string, nodeId: string) {
-    const logdir = Config.get('tasks.logdir', Config.get('os.tmpdir'));
-    return PlatformUtils.join(logdir, 'taskmonitor-' + runnerId + '-' + nodeId + '.log');
+    let logdir = Config.get('tasks.logdir', Config.get('os.tmpdir'));
+    if (!PlatformUtils.isAbsolute(logdir)) {
+      logdir = PlatformUtils.join(Config.get('app.path'), logdir);
+    }
+    return PlatformUtils.join(
+      logdir,
+      'taskmonitor-' + runnerId + '-' + nodeId + '.log');
   }
 
   static getTaskNames(taskSpec: TASK_RUNNER_SPEC[]) {
@@ -135,7 +140,6 @@ export class TasksHelper {
           }
         }
       }
-
     }
 
     if (targetId === null && !isRemote) {
@@ -144,16 +148,8 @@ export class TasksHelper {
       isLocal = false;
     }
 
-    // const tasksForWorkers = tasks.filter(t => t.hasWorker() && (targetId === null || (targetId && t.hasTargetNodeId(targetId))));
-    // const remotePossible = tasks.length === tasksForWorkers.length;
     const localPossible = _.uniq(taskNames).length === tasks.length;
-
     if (!isLocal) {
-
-      // if (remotePossible) {
-      //   // all tasks can be send to workers
-      //   // execute
-
       Log.debug('task command: before request fire');
       const execReq = Container.get(TaskExecutionRequestFactory).createRequest();
       const results = await execReq.run(taskSpec, argv, {
@@ -162,10 +158,6 @@ export class TasksHelper {
       });
       Log.debug('task command: event enqueue results', results);
       return results;
-      // } else {
-      //   // there are no worker running!
-      //   Log.error('There are no worker running for tasks: ' + taskNames.join(', '));
-      // }
     } else if (isLocal) {
 
       if (localPossible) {

@@ -1,4 +1,3 @@
-import exp = require("constants");
 
 export * from './browser';
 
@@ -16,10 +15,9 @@ export * from './api/ITasksApi';
 export * from './api/System.api';
 export * from './api/ISystemApi';
 
-export * from './entities/SystemNodeInfo';
-export * from './entities/TaskLog';
 
 export * from './adapters/exchange/config/ConfigExchange';
+export * from './adapters/exchange/tasks/TasksExchange';
 export * from './adapters/exchange/filesystem/FileSystemExchange';
 
 export * from './adapters/cache/MemoryCacheAdapter';
@@ -93,6 +91,7 @@ export * from './libs/distributed/DistributedQueryEvent';
 export * from './libs/distributed/DistributedSaveResultsEvent';
 export * from './libs/distributed/DistributedSaveEvent';
 
+
 export * from './libs/tasks/NullTaskRef';
 export * from './libs/tasks/ITask';
 export * from './libs/tasks/TaskRuntimeContainer';
@@ -105,7 +104,6 @@ export * from './libs/tasks/decorators/Outgoing';
 export * from './libs/tasks/decorators/IExchange';
 export * from './libs/tasks/decorators/TaskRuntime';
 export * from './libs/tasks/TaskState';
-
 export * from './libs/tasks/TaskRunnerRegistry';
 
 

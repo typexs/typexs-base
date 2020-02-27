@@ -15,6 +15,9 @@ export class Injector {
     return <T>this.$().get(identifier);
   }
 
+  static set<T>(identifier: ServiceIdentifier<T> | string | Token<T> | ObjectType<T> | { service: T }, x: T): T {
+    return <T>this.$().set(identifier, x);
+  }
 
   static create<T>(identifier: ServiceIdentifier<T>, service?: ServiceMetadata<any, any> | undefined): T {
     return this.$().create(identifier, service);
@@ -35,6 +38,13 @@ export class Injector {
     return Container.get(<any>identifier);
   }
 
+  /**
+   * Sets a object for given name
+   */
+  set<T>(identifier: ServiceIdentifier<T> | string | Token<T> | ObjectType<T> | { service: T }, x: T) {
+    Container.set(<any>identifier, x);
+    return x;
+  }
 
   /**
    * Create a new instance of value

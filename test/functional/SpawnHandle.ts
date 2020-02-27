@@ -26,6 +26,9 @@ export class SpawnHandle {
 
 
   start(withLog: boolean = false): SpawnHandle {
+    if (withLog) {
+      this.args.push('--enable_log');
+    }
     this.process = spawn(process.execPath, ['--require', 'ts-node/register', this.file]
       .concat(this.args), {stdio: ['pipe', 'pipe', 'pipe', 'ipc']});
     if (withLog) {

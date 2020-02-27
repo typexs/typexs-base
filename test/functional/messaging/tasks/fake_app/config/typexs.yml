@@ -1,0 +1,32 @@
+app:
+  name: fake_app
+  nodeId: fake_app
+
+logging:
+  enable: true
+  level: debug
+  transports:
+    - console: {}
+
+eventbus:
+  default:
+    adapter: redis
+    extra:
+      host: '127.0.0.1'
+      port: 6379
+
+storage:
+  default:
+    synchronize: true
+    type: sqlite
+    database: ':memory:'
+
+
+workers:
+  access:
+    - name: ExchangeMessageWorker
+      access: allow
+
+
+tasks:
+  logdir: ./logs2

@@ -17,7 +17,6 @@ import {Invoker} from '../../base/Invoker';
 import {SystemInfoResponse} from './SystemInfoResponse';
 import {ILoggerApi} from '../logging/ILoggerApi';
 import {StorageEntityController} from '../../libs/storage/StorageEntityController';
-import {Cache} from '../../libs/cache/Cache';
 
 export class System {
 
@@ -134,11 +133,12 @@ export class System {
       nodeInfo.restore();
     }
 
-    this.logger.debug(`system node: ${nodeInfo.hostname}:${nodeInfo.nodeId}--${nodeInfo.instNr} state=${nodeInfo.state} [${this.node.nodeId}]`);
+
     // clear local info
     delete nodeInfo.isBackend;
 
     const node = _.find(this.nodes, n => n.eqNode(nodeInfo));
+    this.logger.debug(`system node: ${nodeInfo.hostname}:${nodeInfo.nodeId}-${nodeInfo.instNr} state=${nodeInfo.state} [${this.node.nodeId}] already exists=${!!node}`);
     if ((nodeInfo.state === 'register' || (nodeInfo.state === 'idle' && !node))) {
       if (!node) {
         this.nodes.push(nodeInfo);

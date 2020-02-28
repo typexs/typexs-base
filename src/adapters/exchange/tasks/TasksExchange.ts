@@ -2,7 +2,6 @@ import {AbstractExchange} from '../../../libs/messaging/AbstractExchange';
 import {TasksRequest} from './TasksRequest';
 import {TasksResponse} from './TasksResponse';
 import {TasksHelper} from '../../../libs/tasks/TasksHelper';
-import {Bootstrap} from '../../../Bootstrap';
 import {NotYetImplementedError, PlatformUtils} from 'commons-base';
 import {TaskRunnerRegistry} from '../../../libs/tasks/TaskRunnerRegistry';
 import {Inject} from 'typedi';
@@ -65,6 +64,7 @@ export class TasksExchange extends AbstractExchange<TasksRequest, TasksResponse>
 
       }
     } catch (e) {
+      this.logger.error(e);
       response.error = e;
     }
   }

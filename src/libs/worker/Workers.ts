@@ -4,11 +4,11 @@ import {ClassUtils, NotYetImplementedError} from 'commons-base';
 import {WorkerRef} from './WorkerRef';
 import {IWorkerConfig} from './IWorkerConfig';
 import * as _ from 'lodash';
-import {Container} from 'typedi';
 import {IWorker} from './IWorker';
 import {IWorkerInfo} from './IWorkerInfo';
 import {MatchUtils} from '../utils/MatchUtils';
 import {RuntimeLoader} from '../../base/RuntimeLoader';
+import {Injector, Log} from "../..";
 
 
 const DEFAULT_OPTIONS: IWorkerConfig = {access: [{access: 'deny', name: '*'}]};
@@ -45,14 +45,19 @@ export class Workers implements ILookupRegistry {
   async startup() {
     const refs: WorkerRef[] = this.registry.list(XS_TYPE_ENTITY);
     for (const ref of refs) {
-      const workerInstance = <IWorker>Container.get(ref.getClass());
-      const config = _.get(this.config, 'config.' + ref.name, _.get(this.config, 'config.' + workerInstance.name, null));
-      if (config) {
-        await workerInstance.prepare(config);
-      } else {
-        await workerInstance.prepare();
+      Log.debug('worker name ' + ref.name);
+      try {
+        const workerInstance = <IWorker>Injector.get(ref.getClass());
+        const config = _.get(this.config, 'config.' + ref.name, _.get(this.config, 'config.' + workerInstance.name, null));
+        if (config) {
+          await workerInstance.prepare(config);
+        } else {
+          await workerInstance.prepare();
+        }
+        this.workers.push(workerInstance);
+      } catch (e) {
+        Log.error(e);
       }
-      this.workers.push(workerInstance);
     }
   }
 

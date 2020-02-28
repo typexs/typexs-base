@@ -63,6 +63,7 @@ export class Message<REQ extends AbstractEvent, RES extends AbstractEvent> exten
     this.req.targetIds = _.uniq(this.targetIds);
     subscribe(this.factory.getResClass())(this, 'onResults');
 
+    this.factory.logger.debug('REQ: ' + this.factory.getSystem().node.nodeId + ' => ' + this.req.id + ' ' + this.req.targetIds);
     await EventBus.register(this);
     await EventBus.postAndForget(this.req);
     await this.ready();
@@ -123,7 +124,7 @@ export class Message<REQ extends AbstractEvent, RES extends AbstractEvent> exten
       }
       this.emit('finished', err, this.results);
     } catch (e) {
-      this.emit('finished', e, this.results);
+      this.emit('finished', err || e, this.results);
     }
 
   }
@@ -133,6 +134,8 @@ export class Message<REQ extends AbstractEvent, RES extends AbstractEvent> exten
     if (!this.active) {
       return;
     }
+
+    this.factory.logger.debug('RES: ' + this.factory.getSystem().node.nodeId + ' => ' + this.req.id + ' ' + res.reqEventId);
 
     // has query req
     if (!this.req || res.reqEventId !== this.req.id) {
@@ -173,6 +176,7 @@ export class Message<REQ extends AbstractEvent, RES extends AbstractEvent> exten
         unsubscribe(this, this.factory.getResClass(), 'onResults');
         clearTimeout(t);
         if (err) {
+          this.factory.logger.error(err);
           if (data) {
             resolve(data);
           } else {

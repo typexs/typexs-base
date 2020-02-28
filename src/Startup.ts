@@ -24,7 +24,7 @@ import {TasksHelper} from './libs/tasks/TasksHelper';
 import {WatcherRegistry} from './libs/watchers/WatcherRegistry';
 import {Workers} from './libs/worker/Workers';
 import {ExchangeMessageRegistry} from './libs/messaging/ExchangeMessageRegistry';
-import {ConfigUtils} from "./libs/utils/ConfigUtils";
+import {ConfigUtils} from './libs/utils/ConfigUtils';
 
 
 export class Startup implements IBootstrap, IShutdown {
@@ -126,6 +126,7 @@ export class Startup implements IBootstrap, IShutdown {
     const nodes = this.system
       .getAllNodes()
       .filter(x => x.nodeId === this.system.node.nodeId);
+
     if (nodes.length > 0) {
       // remove if no node exists
       await this.cache.set([C_CONFIG, this.system.node.nodeId].join(C_KEY_SEPARATOR), null);

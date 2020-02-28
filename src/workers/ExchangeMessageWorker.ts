@@ -17,6 +17,7 @@ import {Bootstrap} from '../Bootstrap';
 import {Log} from '../libs/logging/Log';
 import {IMessageWorkload} from '../libs/messaging/IMessageWorkload';
 import {ExchangeMessageRegistry} from '../libs/messaging/ExchangeMessageRegistry';
+import {ClassUtils} from 'commons-base';
 
 
 export class ExchangeMessageWorker implements IQueueProcessor<IMessageWorkload>, IWorker {
@@ -45,19 +46,24 @@ export class ExchangeMessageWorker implements IQueueProcessor<IMessageWorkload>,
     for (const messageRef of this.messageRegistry.getEntries()) {
       this.register(messageRef.getExchange());
     }
+    await EventBus.register(this);
     this.logger.debug('waiting for requests ...');
   }
 
 
   async register(x: AbstractExchange<any, any>) {
-    await EventBus.register(x);
     try {
-      await EventBus.unregister(this);
-    } catch (e) {
+      this.logger.debug('register ' + ClassUtils.getClassName(<any>x));
+      await EventBus.register(x);
+      try {
+      //   await EventBus.unregister(this);
+      } catch (e) {
+      }
+      subscribe(x.getReqClass())(this, 'onRequest');
 
+    } catch (e) {
+      this.logger.error(e);
     }
-    subscribe(x.getReqClass())(this, 'onRequest');
-    await EventBus.register(this);
   }
 
 
@@ -67,17 +73,18 @@ export class ExchangeMessageWorker implements IQueueProcessor<IMessageWorkload>,
     } catch (e) {
     }
     unsubscribe(this, x.getReqClass(), 'onRequest');
-    try {
-      await EventBus.register(this);
-    } catch (e) {
-
-    }
+    // try {
+    //   await EventBus.register(this);
+    // } catch (e) {
+    //
+    // }
   }
 
 
   onRequest(event: AbstractEvent) {
     // todo check
     try {
+      this.logger.debug('event: ' + event.id + ' ' + event.reqEventId + ' ' + event.targetIds);
       // check if its for me
       if (event.targetIds && event.targetIds.indexOf(this.system.node.nodeId) === -1) {
         return;
@@ -118,6 +125,7 @@ export class ExchangeMessageWorker implements IQueueProcessor<IMessageWorkload>,
 
 
   async finish() {
+
     for (const messageRef of this.messageRegistry.getEntries()) {
       this.unregister(messageRef.getExchange());
     }

@@ -5,7 +5,7 @@ import {AbstractEvent} from './../libs/messaging/AbstractEvent';
 import {Inject} from 'typedi';
 import {AbstractExchange} from './../libs/messaging/AbstractExchange';
 import * as _ from 'lodash';
-import {EventBus, subscribe} from 'commons-eventbus';
+import {EventBus, subscribe, unsubscribe} from 'commons-eventbus';
 import {IWorkerStatisitic} from './../libs/worker/IWorkerStatisitic';
 
 import {IWorker} from './../libs/worker/IWorker';
@@ -17,7 +17,6 @@ import {Bootstrap} from '../Bootstrap';
 import {Log} from '../libs/logging/Log';
 import {IMessageWorkload} from '../libs/messaging/IMessageWorkload';
 import {ExchangeMessageRegistry} from '../libs/messaging/ExchangeMessageRegistry';
-import EventBusMeta from 'commons-eventbus/bus/EventBusMeta';
 
 
 export class ExchangeMessageWorker implements IQueueProcessor<IMessageWorkload>, IWorker {
@@ -67,8 +66,7 @@ export class ExchangeMessageWorker implements IQueueProcessor<IMessageWorkload>,
       await EventBus.unregister(x);
     } catch (e) {
     }
-    const ns = EventBusMeta.toNamespace(x.getReqClass());
-    _.remove(EventBusMeta.$()['$types'], (y: any) => y.namespace === ns);
+    unsubscribe(this, x.getReqClass(), 'onRequest');
     try {
       await EventBus.register(this);
     } catch (e) {

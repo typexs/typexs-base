@@ -8,8 +8,8 @@ import {Config} from 'commons-config';
 // import {MdbCar} from "./fake_app_mongo/entities/MdbCar";
 // import {MdbDriver} from "./fake_app_mongo/entities/MdbDriver";
 import {ClassType} from 'commons-schema-api/browser';
-import {StorageRef} from "../../../src/libs/storage/StorageRef";
-import {StorageEntityController} from "../../../src/libs/storage/StorageEntityController";
+import {StorageRef} from '../../../src/libs/storage/StorageRef';
+import {StorageEntityController} from '../../../src/libs/storage/StorageEntityController';
 
 
 let bootstrap: Bootstrap;
@@ -25,8 +25,7 @@ let controller: StorageEntityController = null;
 class StorageControllerMongoSpec {
 
   static after() {
-    const ref = storageRef['connections'];
-    console.log('');
+    // const ref = storageRef['connections'];
   }
 
 

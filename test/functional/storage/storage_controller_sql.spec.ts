@@ -6,15 +6,15 @@ import {expect} from 'chai';
 import {Bootstrap} from '../../../src/Bootstrap';
 import {Config} from 'commons-config';
 import {ClassType} from 'commons-schema-api/browser';
-import {StorageRef} from "../../../src/libs/storage/StorageRef";
-import {StorageEntityController} from "../../../src/libs/storage/StorageEntityController";
-import {XS_P_$COUNT} from "../../../src/libs/Constants";
+import {StorageRef} from '../../../src/libs/storage/StorageRef';
+import {StorageEntityController} from '../../../src/libs/storage/StorageEntityController';
+import {XS_P_$COUNT} from '../../../src/libs/Constants';
 
 let bootstrap: Bootstrap;
 let storageRef: StorageRef;
 
-let Car: ClassType<any> = null;
-let Driver: ClassType<any> = null;
+let CarSql: ClassType<any> = null;
+let DriverSql: ClassType<any> = null;
 let controller: StorageEntityController = null;
 
 @suite('functional/storage/controller_sql')
@@ -26,8 +26,8 @@ class StorageControllerSqlSpec {
     Bootstrap.reset();
     Config.clear();
 
-    Car = require('./fake_app_sql/entities/Car').Car;
-    Driver = require('./fake_app_sql/entities/Driver').Driver;
+    CarSql = require('./fake_app_sql/entities/CarSql').CarSql;
+    DriverSql = require('./fake_app_sql/entities/DriverSql').DriverSql;
 
     const appdir = path.join(__dirname, 'fake_app_sql');
     bootstrap = await Bootstrap
@@ -45,8 +45,8 @@ class StorageControllerSqlSpec {
 
     const storageManager = bootstrap.getStorage();
     storageRef = storageManager.get();
-    storageRef.addEntityType(Car);
-    storageRef.addEntityType(Driver);
+    storageRef.addEntityType(CarSql);
+    storageRef.addEntityType(DriverSql);
     controller = storageRef.getController();
   }
 
@@ -54,7 +54,7 @@ class StorageControllerSqlSpec {
   async after() {
     if (bootstrap) {
       await bootstrap.shutdown();
-      await bootstrap.getStorage().shutdown();
+      // await bootstrap.getStorage().shutdown();
     }
   }
 
@@ -62,15 +62,15 @@ class StorageControllerSqlSpec {
   async 'lifecycle save, find, remove'() {
 
 
-    const car1 = new Driver();
+    const car1 = new DriverSql();
     car1.firstName = 'Black';
     car1.lastName = 'Yellow';
 
-    const car2 = new Driver();
+    const car2 = new DriverSql();
     car2.firstName = 'Red';
     car2.lastName = 'Green';
 
-    const car3 = new Driver();
+    const car3 = new DriverSql();
     car3.firstName = 'Blue';
     car3.lastName = 'Pink';
 
@@ -99,11 +99,11 @@ class StorageControllerSqlSpec {
       }]
     );
 
-    const car = new Car();
+    const car = new CarSql();
     car.name = 'Team Blue';
     car.driver = [car1, car2];
 
-    const car_ = new Car();
+    const car_ = new CarSql();
     car_.name = 'Team Yellow';
     car_.driver = [car3];
 
@@ -121,62 +121,62 @@ class StorageControllerSqlSpec {
     });
     expect(car_save_res2.driver).to.have.length(1);
 
-    const car_found_all = await controller.find(Car);
+    const car_found_all = await controller.find(CarSql);
     expect(car_found_all).to.have.length(2);
     expect(car_found_all).to.deep.eq([{id: 1, name: 'Team Blue'},
       {id: 2, name: 'Team Yellow'}]);
-    expect(car_found_all[0]).to.be.instanceOf(Car);
+    expect(car_found_all[0]).to.be.instanceOf(CarSql);
 
-    const driver_found_all = await controller.find(Driver, null, {raw: true});
+    const driver_found_all = await controller.find(DriverSql, null, {raw: true});
     // console.log(driver_found_all);
     expect(driver_found_all).to.deep.eq([
       {
-        Driver_id: 1,
-        Driver_firstName: 'Black',
-        Driver_lastName: 'Yellow',
-        Driver_carId: 1
+        DriverSql_id: 1,
+        DriverSql_firstName: 'Black',
+        DriverSql_lastName: 'Yellow',
+        DriverSql_carId: 1
       },
       {
-        Driver_id: 2,
-        Driver_firstName: 'Red',
-        Driver_lastName: 'Green',
-        Driver_carId: 1
+        DriverSql_id: 2,
+        DriverSql_firstName: 'Red',
+        DriverSql_lastName: 'Green',
+        DriverSql_carId: 1
       },
       {
-        Driver_id: 3,
-        Driver_firstName: 'Blue',
-        Driver_lastName: 'Pink',
-        Driver_carId: 2
+        DriverSql_id: 3,
+        DriverSql_firstName: 'Blue',
+        DriverSql_lastName: 'Pink',
+        DriverSql_carId: 2
       }]);
 
-    const car_found = await controller.find(Car, {id: 1});
+    const car_found = await controller.find(CarSql, {id: 1});
 
     expect(car_found).to.have.length(1);
     expect(car_found[XS_P_$COUNT]).to.be.eq(1);
 
-    const car_found_raw = await controller.find(Car, {id: 2}, {raw: true});
+    const car_found_raw = await controller.find(CarSql, {id: 2}, {raw: true});
     // console.log(car_found_raw);
     expect(car_found_raw).to.have.length(1);
-    expect(car_found_raw[0]).to.deep.eq({Car_id: 2, Car_name: 'Team Yellow'});
-    expect(car_found_raw[0]).to.be.not.instanceOf(Car);
+    expect(car_found_raw[0]).to.deep.eq({CarSql_id: 2, CarSql_name: 'Team Yellow'});
+    expect(car_found_raw[0]).to.be.not.instanceOf(CarSql);
 
     // search by string field
-    const drivers_2 = await controller.find(Driver, {'firstName': 'Blue'});
+    const drivers_2 = await controller.find(DriverSql, {'firstName': 'Blue'});
     // console.log(car_by_driver);
     expect(drivers_2).to.have.length(1);
     expect(drivers_2[0]).to.deep.eq({id: 3, firstName: 'Blue', lastName: 'Pink'});
 
-    let car_by_driver = await controller.find(Car, {'driver.id': 1});
+    let car_by_driver = await controller.find(CarSql, {'driver.id': 1});
     // console.log(car_by_driver);
     expect(car_by_driver).to.have.length(1);
     expect(car_by_driver[0]).to.deep.eq({id: 1, name: 'Team Blue'});
 
-    car_by_driver = await controller.find(Car, {'driver.firstName': 'Black'});
+    car_by_driver = await controller.find(CarSql, {'driver.firstName': 'Black'});
     // console.log(car_by_driver);
     expect(car_by_driver).to.have.length(1);
     expect(car_by_driver[0]).to.deep.eq({id: 1, name: 'Team Blue'});
 
-    const car_by_driver_inv = await controller.find(Driver, {'car.id': 1});
+    const car_by_driver_inv = await controller.find(DriverSql, {'car.id': 1});
     // console.log(car_by_driver_inv);
     expect(car_by_driver_inv).to.have.length(2);
     expect(car_by_driver_inv[0]).to.deep.eq({id: 1, firstName: 'Black', lastName: 'Yellow'});
@@ -187,7 +187,7 @@ class StorageControllerSqlSpec {
     expect(remove_driver).to.have.length(2);
     expect(_.map(remove_driver, (d: any) => d.id)).to.deep.eq([undefined, undefined]);
 
-    const car_by_driver_inv_after_remove = await controller.find(Driver, {'car.id': 1});
+    const car_by_driver_inv_after_remove = await controller.find(DriverSql, {'car.id': 1});
     expect(car_by_driver_inv_after_remove).to.have.length(0);
 
     const remove_car = await controller.remove(car_by_driver);
@@ -198,27 +198,27 @@ class StorageControllerSqlSpec {
 
   @test
   async 'remove by conditions'() {
-    const car1 = new Driver();
+    const car1 = new DriverSql();
     car1.firstName = 'Black';
     car1.lastName = 'Yellow';
 
-    const car2 = new Driver();
+    const car2 = new DriverSql();
     car2.firstName = 'Blue';
     car2.lastName = 'Green';
 
-    const car3 = new Driver();
+    const car3 = new DriverSql();
     car3.firstName = 'Blue';
     car3.lastName = 'Pink';
 
     const driver_save_res = await controller.save([car1, car2, car3]);
 
-    const driver_found = await controller.find(Driver);
+    const driver_found = await controller.find(DriverSql);
     expect(driver_found).to.have.length(3);
 
-    const driver_removed_count = await controller.remove(Driver, {firstName: 'Blue'});
+    const driver_removed_count = await controller.remove(DriverSql, {firstName: 'Blue'});
     expect(driver_removed_count).to.not.eq(-1);
 
-    const driver_found_rest = await controller.find(Driver);
+    const driver_found_rest = await controller.find(DriverSql);
     expect(driver_found_rest).to.have.length(1);
 
 
@@ -227,27 +227,27 @@ class StorageControllerSqlSpec {
 
   @test
   async 'update by conditions'() {
-    const car1 = new Driver();
+    const car1 = new DriverSql();
     car1.firstName = 'Green';
     car1.lastName = 'Yellow';
 
-    const car2 = new Driver();
+    const car2 = new DriverSql();
     car2.firstName = 'Blue';
     car2.lastName = 'Green';
 
-    const car3 = new Driver();
+    const car3 = new DriverSql();
     car3.firstName = 'Blue';
     car3.lastName = 'Pink';
 
     const driver_save_res = await controller.save([car1, car2, car3]);
 
-    const driver_found = await controller.find(Driver);
+    const driver_found = await controller.find(DriverSql);
     expect(driver_found).to.have.length(3);
 
-    const driver_removed_count = await controller.update(Driver, {firstName: 'Blue'}, {$set: {firstName: 'Black'}});
+    const driver_removed_count = await controller.update(DriverSql, {firstName: 'Blue'}, {$set: {firstName: 'Black'}});
     expect(driver_removed_count).to.not.eq(-1);
 
-    const driver_found_rest = await controller.find(Driver, {firstName: 'Black'});
+    const driver_found_rest = await controller.find(DriverSql, {firstName: 'Black'});
     expect(driver_found_rest).to.have.length(2);
   }
 

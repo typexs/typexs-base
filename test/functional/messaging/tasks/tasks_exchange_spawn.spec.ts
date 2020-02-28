@@ -6,10 +6,8 @@ import {Config} from 'commons-config';
 import {TestHelper} from '../../TestHelper';
 import {SpawnHandle} from '../../SpawnHandle';
 import {Injector} from '../../../../src/libs/di/Injector';
-import {Log} from '../../../../src/libs/logging/Log';
 import {expect} from 'chai';
 import {TasksExchange} from '../../../../src/adapters/exchange/tasks/TasksExchange';
-import Test = Mocha.Test;
 
 
 const LOG_EVENT = TestHelper.logEnable(false);
@@ -33,6 +31,9 @@ class MessagingSpec {
         app: {
           path: appdir
         },
+        logging: {
+          enable: LOG_EVENT
+        },
         modules: {
           paths: [
             __dirname + '/../../../..'
@@ -45,17 +46,14 @@ class MessagingSpec {
     await bootstrap.activateStorage();
     await bootstrap.startup();
     await spawned.started;
-    await TestHelper.wait(50);
-
   }
 
-  static async after() {
 
+  static async after() {
     if (spawned) {
       spawned.shutdown();
       await spawned.done;
     }
-
     if (bootstrap) {
       await bootstrap.shutdown();
     }
@@ -69,6 +67,7 @@ class MessagingSpec {
     expect(results).to.have.length(1);
     expect(results[0]).to.be.eq(__dirname + '/fake_app/logs/taskmonitor-abcdef-remote_fakeapp01.log');
   }
+
 
   @test
   async 'get log file path from local and remote only'() {

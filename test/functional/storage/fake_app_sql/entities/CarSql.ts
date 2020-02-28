@@ -1,9 +1,9 @@
 import {Column, Entity, PrimaryGeneratedColumn, OneToMany} from 'typeorm';
 
-import {Driver} from './Driver';
+import {DriverSql} from './DriverSql';
 
 @Entity()
-export class Car {
+export class CarSql {
 
   @PrimaryGeneratedColumn()
   id: number;
@@ -11,6 +11,6 @@ export class Car {
   @Column()
   name: string;
 
-  @OneToMany(type => Driver, car => car.car)
-  driver: Driver[];
+  @OneToMany(type => DriverSql, car => car.car)
+  driver: DriverSql[];
 }

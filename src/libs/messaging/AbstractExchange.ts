@@ -26,6 +26,10 @@ export abstract class AbstractExchange<REQ extends AbstractEvent, RES extends Ab
   constructor(reqCls: ClassType<REQ>, resCls: ClassType<RES>) {
     this.reqCls = reqCls;
     this.resCls = resCls;
+
+  }
+
+  prepare() {
     subscribe(this.getReqClass())(this, 'onRequest');
   }
 

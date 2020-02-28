@@ -44,6 +44,7 @@ export class ExchangeMessageWorker implements IQueueProcessor<IMessageWorkload>,
     this.nodeId = Bootstrap.getNodeId();
     this.queue = new AsyncWorkerQueue<IMessageWorkload>(this, {...options, logger: this.logger});
     for (const messageRef of this.messageRegistry.getEntries()) {
+      await messageRef.getExchange().prepare();
       this.register(messageRef.getExchange());
     }
     await EventBus.register(this);
@@ -55,12 +56,11 @@ export class ExchangeMessageWorker implements IQueueProcessor<IMessageWorkload>,
     try {
       this.logger.debug('register ' + ClassUtils.getClassName(<any>x));
       await EventBus.register(x);
-      try {
-      //   await EventBus.unregister(this);
-      } catch (e) {
-      }
+      // try {
+      // //   await EventBus.unregister(this);
+      // } catch (e) {
+      // }
       subscribe(x.getReqClass())(this, 'onRequest');
-
     } catch (e) {
       this.logger.error(e);
     }

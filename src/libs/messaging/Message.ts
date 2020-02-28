@@ -65,8 +65,9 @@ export class Message<REQ extends AbstractEvent, RES extends AbstractEvent> exten
 
     this.factory.logger.debug('REQ: ' + this.factory.getSystem().node.nodeId + ' => ' + this.req.id + ' ' + this.req.targetIds);
     await EventBus.register(this);
-    await EventBus.postAndForget(this.req);
-    await this.ready();
+    await Promise.all([this.ready(), EventBus.postAndForget(this.req)]);
+    // await EventBus.postAndForget(this.req);
+    // await this.ready();
     try {
       await EventBus.unregister(this);
     } catch (e) {

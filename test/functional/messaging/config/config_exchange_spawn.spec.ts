@@ -42,6 +42,7 @@ class MessagingSpec {
 
 
     await spawned.started;
+    await TestHelper.wait(100);
   }
 
 

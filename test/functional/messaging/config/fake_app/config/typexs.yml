@@ -7,6 +7,12 @@ logging:
   level: debug
   transports:
     - console: {}
+  loggers:
+    - name: '*'
+      level: debug
+      transports:
+        - console: {}
+
 
 eventbus:
   default:

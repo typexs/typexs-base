@@ -46,7 +46,7 @@ class MessagingSpec {
     await bootstrap.activateStorage();
     await bootstrap.startup();
     await spawned.started;
-    await TestHelper.wait(100);
+    await TestHelper.wait(500);
   }
 
 

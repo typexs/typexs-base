@@ -5,12 +5,17 @@ import {TEST_STORAGE_OPTIONS} from '../../../config';
 import {Bootstrap} from '../../../../../src/Bootstrap';
 
 (async function () {
-  const LOG_EVENT = false; //
+  const LOG_EVENT = !!process.argv.find(x => x === '--enable_log');
   let bootstrap = Bootstrap
     .setConfigSources([{type: 'system'}])
     .configure(<ITypexsOptions & any>{
       app: {name: 'fakeapp01', nodeId: 'remote_fakeapp01', path: __dirname},
-      logging: {enable: LOG_EVENT, level: 'debug'},
+      logging: {
+        enable: LOG_EVENT,
+        level: 'debug',
+        transports: [{console: {}}],
+        loggers: [{name: '*', level: 'debug', transports: [{console: {}}]}]
+      },
       modules: {paths: [__dirname + '/../../../../..']},
       storage: {default: TEST_STORAGE_OPTIONS},
       eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}},
@@ -23,7 +28,7 @@ import {Bootstrap} from '../../../../../src/Bootstrap';
   bootstrap = await bootstrap.startup();
   process.send('startup');
 
-  const timeout = parseInt(Config.get('argv.timeout', 20000), 0);
+  const timeout = parseInt(Config.get('argv.timeout', 120000), 0);
   /*
   let commands = bootstrap.getCommands();
   expect(commands.length).to.be.gt(0);

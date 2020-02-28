@@ -33,6 +33,10 @@ class MessagingSpec {
         app: {
           path: appdir
         },
+        logging: {
+          enable: LOG_EVENT
+        },
+
         modules: {
           paths: [
             __dirname + '/../../../..'
@@ -45,7 +49,7 @@ class MessagingSpec {
     await bootstrap.activateStorage();
     await bootstrap.startup();
     await spawned.started;
-    await TestHelper.wait(100);
+    await TestHelper.wait(500);
 
   }
 
@@ -158,7 +162,7 @@ class MessagingSpec {
       {
         'isFile': true,
         'path': 'node_01.ts',
-        'size': 1791,
+        'size': 1969,
       },
       {
         'isFile': true,

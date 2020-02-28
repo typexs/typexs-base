@@ -77,19 +77,27 @@ export class TypeOrmSqlConditionsBuilder<T> /*extends AbstractSqlConditionsBuild
 
         const conditions: string[] = [];
         if (relation.relationType === 'one-to-many') {
+          const targetIdKeyProps = tmp.getPropertyRefs().filter(f => f.isIdentifier());
           const sourceIdKeyProps = from.getPropertyRefs().filter(f => f.isIdentifier());
-          if (sourceIdKeyProps.length === 1) {
-            const sourceIdKey = sourceIdKeyProps[0].name;
-            const targetIdKey = from.storingName + '' + _.capitalize(sourceIdKey);
-            conditions.push([join.alias + '.' + targetIdKey, rootAlias + '.' + sourceIdKey].join(' = '));
+          if (sourceIdKeyProps.length === 1 && targetIdKeyProps.length === 1) {
+            const reverseFieldMatch = relation.inverseSideProperty.toString().match(/\.(\w(\w|\d|_)+)/);
+            if (reverseFieldMatch && reverseFieldMatch[1]) {
+              const reverseField = reverseFieldMatch[1];
+              const sourceIdKey = sourceIdKeyProps[0].name;
+              const targetIdKey = reverseField + _.capitalize(targetIdKeyProps[0].name);
+              conditions.push([join.alias + '.' + targetIdKey, rootAlias + '.' + sourceIdKey].join(' = '));
+            } else {
+              throw new NotYetImplementedError();
+            }
           } else {
             throw new NotYetImplementedError();
           }
         } else if (relation.relationType === 'many-to-one') {
+          const sourceIdKeyProps = from.getPropertyRefs().filter(f => f.isIdentifier());
           const targetIdKeyProps = tmp.getPropertyRefs().filter(f => f.isIdentifier());
-          if (targetIdKeyProps.length === 1) {
+          if (targetIdKeyProps.length === 1 && targetIdKeyProps.length === 1) {
             const targetIdKey = targetIdKeyProps[0].name;
-            const sourceIdKey = tmp.storingName + '' + _.capitalize(targetIdKey);
+            const sourceIdKey = prop.storingName + '' + _.capitalize(sourceIdKeyProps[0].name);
             conditions.push([join.alias + '.' + targetIdKey, rootAlias + '.' + sourceIdKey].join(' = '));
           } else {
             throw new NotYetImplementedError();

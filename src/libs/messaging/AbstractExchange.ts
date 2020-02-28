@@ -29,17 +29,21 @@ export abstract class AbstractExchange<REQ extends AbstractEvent, RES extends Ab
     subscribe(this.getReqClass())(this, 'onRequest');
   }
 
+
   getSystem() {
     return this.system;
   }
+
 
   getReqClass() {
     return this.reqCls;
   }
 
+
   getResClass() {
     return this.resCls;
   }
+
 
   create(options: IMessageOptions = {}): Message<REQ, RES> {
     const msg = new Message(this, options);

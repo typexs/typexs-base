@@ -29,13 +29,13 @@ export class DeleteOp<T> implements IDeleteOp<T> {
 
   async run(object: T[] | T | ClassType<T>, conditions: any = null, options: IDeleteOptions = {}): Promise<T[] | T | number> {
     if (_.isFunction(object)) {
-      return this.removeByCondition(<ClassType<T>>object, conditions);
+      return this.removeByCondition(<ClassType<T>>object, conditions, options);
     } else {
-      return this.remove(<T | T[]>object);
+      return this.remove(<T | T[]>object, options);
     }
   }
 
-  private async removeByCondition(object: ClassType<T>, condition: any) {
+  private async removeByCondition(object: ClassType<T>, condition: any, options: IDeleteOptions = {}) {
     let count = -1;
     const connection = await this.controller.connect();
     try {
@@ -44,15 +44,27 @@ export class DeleteOp<T> implements IDeleteOp<T> {
         const p = await connection.manager.getMongoRepository(entityName).deleteMany(condition);
         return p.deletedCount;
       } else {
-        // start transaction, got to leafs and save
-        await connection.manager.transaction(async em => {
-          const x = new TypeOrmSqlConditionsBuilder(em, TypeOrmEntityRegistry.$().getEntityRefByName(entityName), 'delete');
+        if (connection.isSingleConnection()) {
+          options.noTransaction = true;
+        }
+
+        if (options.noTransaction) {
+          const x = new TypeOrmSqlConditionsBuilder(connection.manager, TypeOrmEntityRegistry.$().getEntityRefByName(entityName), 'delete');
           const qb = x.getQueryBuilder() as DeleteQueryBuilder<any>;
           const result = await qb.where(x.build(condition)).execute();
-          // depends by db type
           count = result.affected ? result.affected : 0;
-          return result.affected;
-        });
+        } else {
+          await connection.manager.transaction(async em => {
+            const x = new TypeOrmSqlConditionsBuilder(em, TypeOrmEntityRegistry.$().getEntityRefByName(entityName), 'delete');
+            const qb = x.getQueryBuilder() as DeleteQueryBuilder<any>;
+            const result = await qb.where(x.build(condition)).execute();
+            // depends by db type
+            count = result.affected ? result.affected : 0;
+            return result.affected;
+          });
+        }
+
+        // start transaction, got to leafs and save
       }
     } catch (e) {
       this.error = e;
@@ -65,7 +77,7 @@ export class DeleteOp<T> implements IDeleteOp<T> {
     return count;
   }
 
-  private async remove(object: T[] | T) {
+  private async remove(object: T[] | T, options: IDeleteOptions = {}) {
     const isArray = _.isArray(object);
     const connection = await this.controller.connect();
     try {
@@ -84,14 +96,27 @@ export class DeleteOp<T> implements IDeleteOp<T> {
         await Promise.all(promises);
       } else {
         // start transaction, got to leafs and save
-        await connection.manager.transaction(async em => {
+        if (connection.isSingleConnection()) {
+          options.noTransaction = true;
+        }
+
+        if (options.noTransaction) {
           const promises = [];
           for (const entityName of entityNames) {
-            const p = em.getRepository(entityName).remove(resolveByEntityDef[entityName]);
+            const p = connection.manager.getRepository(entityName).remove(resolveByEntityDef[entityName]);
             promises.push(p);
           }
-          return Promise.all(promises);
-        });
+          await  Promise.all(promises);
+        } else {
+          await connection.manager.transaction(async em => {
+            const promises = [];
+            for (const entityName of entityNames) {
+              const p = em.getRepository(entityName).remove(resolveByEntityDef[entityName]);
+              promises.push(p);
+            }
+            return Promise.all(promises);
+          });
+        }
       }
     } catch (e) {
       this.error = e;

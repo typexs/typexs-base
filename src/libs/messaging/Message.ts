@@ -1,8 +1,7 @@
 import {EventEmitter} from 'events';
-import {EventBus, subscribe} from 'commons-eventbus';
+import {EventBus, subscribe, unsubscribe} from 'commons-eventbus';
 import * as _ from 'lodash';
 import {AbstractEvent} from './AbstractEvent';
-import EventBusMeta from 'commons-eventbus/bus/EventBusMeta';
 import {AbstractExchange} from './AbstractExchange';
 import {IMessageOptions} from './IMessageOptions';
 
@@ -162,6 +161,7 @@ export class Message<REQ extends AbstractEvent, RES extends AbstractEvent> exten
 
 
   ready() {
+    const self = this;
     return new Promise((resolve, reject) => {
       const t = setTimeout(() => {
         this.emit('postprocess', new Error('timeout error'));
@@ -170,8 +170,7 @@ export class Message<REQ extends AbstractEvent, RES extends AbstractEvent> exten
 
       this.once('finished', (err: Error, data: any) => {
         // as long eventbus has no unregister
-        const ns = EventBusMeta.toNamespace(this.factory.getResClass());
-        _.remove(EventBusMeta.$()['$types'], x => x['namespace'] === ns);
+        unsubscribe(this, this.factory.getResClass(), 'onResults');
         clearTimeout(t);
         if (err) {
           if (data) {

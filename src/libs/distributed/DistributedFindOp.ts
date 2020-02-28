@@ -148,9 +148,7 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
     Log.debug('fire query event with id: ' + this.queryEvent.queryId + ' to targets ' + this.targetIds.join(', '));
     try {
       this.start = new Date();
-      const ready = this.ready();
-      await EventBus.postAndForget(this.queryEvent);
-      await ready;
+      await Promise.all([this.ready(), EventBus.postAndForget(this.queryEvent)]);
     } catch (err) {
       Log.error(err);
     }

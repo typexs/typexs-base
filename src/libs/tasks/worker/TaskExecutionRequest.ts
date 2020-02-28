@@ -90,9 +90,7 @@ export class TaskExecutionRequest extends EventEmitter {
     Log.debug('fire execution result: ', this.event);
     let _err: Error = null;
     try {
-      const ready = this.ready();
-      EventBus.postAndForget(this.event);
-      await ready;
+      await Promise.all([this.ready(), EventBus.postAndForget(this.event)]);
     } catch (err) {
       _err = err;
       Log.error(err);

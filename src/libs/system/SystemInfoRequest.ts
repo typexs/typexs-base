@@ -4,7 +4,7 @@ import {EventEmitter} from 'events';
 
 import * as _ from 'lodash';
 
-import {subscribe, EventBus} from 'commons-eventbus';
+import {EventBus, subscribe} from 'commons-eventbus';
 import {NodeRuntimeInfo} from './NodeRuntimeInfo';
 import {SystemInfoResponse} from './SystemInfoResponse';
 import {Log} from '../logging/Log';
@@ -43,8 +43,7 @@ export class SystemInfoRequest extends EventEmitter {
     this.event.nodeId = this.system.node.nodeId;
     this.event.targetIds = this.targetIds;
     await EventBus.register(this);
-    await EventBus.postAndForget(this.event);
-    await this.ready();
+    await Promise.all([this.ready(), EventBus.postAndForget(this.event)]);
     await EventBus.unregister(this);
     return this.results;
   }
@@ -57,16 +56,24 @@ export class SystemInfoRequest extends EventEmitter {
 
   @subscribe(SystemInfoResponse)
   onResults(event: SystemInfoResponse) {
-    if (!this.active) { return; }
+    if (!this.active) {
+      return;
+    }
 
     // has query event
-    if (!this.event) { return; }
+    if (!this.event) {
+      return;
+    }
 
     // results for me?
-    if (event.targetIds.indexOf(this.system.node.nodeId) === -1) { return; }
+    if (event.targetIds.indexOf(this.system.node.nodeId) === -1) {
+      return;
+    }
 
     // waiting for the results?
-    if (this.targetIds.indexOf(event.nodeId) === -1) { return; }
+    if (this.targetIds.indexOf(event.nodeId) === -1) {
+      return;
+    }
     _.remove(this.targetIds, x => x === event.nodeId);
 
     event.info['__nodeId__'] = event.nodeId;

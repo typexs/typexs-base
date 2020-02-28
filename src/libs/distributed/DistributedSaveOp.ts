@@ -155,9 +155,7 @@ export class DistributedSaveOp<T> extends EventEmitter implements ISaveOp<T> {
 
     try {
       this.start = new Date();
-      const ready = this.ready();
-      await EventBus.postAndForget(this.saveEvent);
-      await ready;
+      await Promise.all([this.ready(), EventBus.postAndForget(this.saveEvent)]);
     } catch (err) {
       Log.error(err);
     }

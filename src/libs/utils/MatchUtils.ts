@@ -2,6 +2,21 @@ export class MatchUtils {
 
   static MATCHER: any;
 
+  /**
+   * Checks if x is an glob pattern
+   *
+   * @param x
+   */
+  static isGlobPattern(x: string) {
+    return /\+|\.|\(|\||\)|\*/.test(x);
+  }
+
+  /**
+   * Check glob pattern against a string
+   *
+   * @param pattern
+   * @param string
+   */
   static miniMatch(pattern: string, string: string) {
     try {
       if (!MatchUtils.MATCHER) {

@@ -1,19 +1,58 @@
 import * as _ from 'lodash';
 import * as fs from 'fs';
-import {join} from 'path';
+import {join, resolve} from 'path';
 import {FileUtils} from 'commons-base';
 import {AbstractExchange} from '../../../libs/messaging/AbstractExchange';
 import {FileSystemRequest} from './FileSystemRequest';
 import {FileSystemResponse} from './FileSystemResponse';
 import {IFileOptions} from './IFileOptions';
 import {FileReadUtils} from '../../../libs/filesystem/FileReadUtils';
+import {Config} from 'commons-config';
+import {CFG_KEY_APP_PATH, CFG_KEY_FILESYSTEM} from '../../../libs/filesystem/Constants';
+import {IFileSystemConfig} from '../../../libs/filesystem/IFileSystemConfig';
+import {MatchUtils} from '../../../libs/utils/MatchUtils';
 
 
 export class FileSystemExchange extends AbstractExchange<FileSystemRequest, FileSystemResponse> {
 
+  config: IFileSystemConfig = {};
+
+  basePath: string;
+
+  allowedPaths: { path: string, match: boolean }[] = [];
+
 
   constructor() {
     super(FileSystemRequest, FileSystemResponse);
+  }
+
+  /**
+   * using prepare to declare accessible system paths
+   */
+  async prepare() {
+    this.basePath = resolve(Config.get(CFG_KEY_APP_PATH, '.'));
+    this.config = Config.get(CFG_KEY_FILESYSTEM, {}) as IFileSystemConfig;
+    if (this.config.paths) {
+
+      this.allowedPaths = this.config.paths
+        .map(
+          x => _.isString(x) && !_.isEmpty(x) ?
+            // todo check blob
+            resolve(this.basePath, x) : null
+        )
+        .filter(x => !_.isEmpty(x))
+        .map(x => {
+          return {
+            path: x,
+            match: MatchUtils.isGlobPattern(x)
+          };
+        });
+
+    } else {
+      this.logger.warn('message handler [file system exchange]: no accessible paths defined, no declaration of filesystem.paths in config');
+    }
+
+    await super.prepare();
   }
 
 
@@ -87,12 +126,22 @@ export class FileSystemExchange extends AbstractExchange<FileSystemRequest, File
     }
 
     const opts = request.options;
-    if (!fs.existsSync(opts.path)) {
+    const path = resolve(this.basePath, opts.path);
+    request.options.path = path;
+
+    const allowed = !!this.allowedPaths.find(x => x.match ? MatchUtils.miniMatch(x.path, path) : path.startsWith(x.path));
+    if (!allowed) {
+      res.error = new Error('access to path not allowed');
+      return;
+    }
+
+    if (!fs.existsSync(path)) {
       res.error = new Error('file not found');
       return;
     }
 
-    const stats = await FileReadUtils.statInfo(opts.path);
+
+    const stats = await FileReadUtils.statInfo(path);
     if (!_.isUndefined(opts.stats) && opts.stats) {
       res.stats = stats;
     }

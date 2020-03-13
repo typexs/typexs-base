@@ -1,0 +1,11 @@
+For FileSystemExchange
+
+```
+filesystem:
+  # define accessible paths in relative or absolute form
+  paths:
+  - ./config
+  - ./mylocal/static/files
+  - /var/log/tasks-logdir
+
+```

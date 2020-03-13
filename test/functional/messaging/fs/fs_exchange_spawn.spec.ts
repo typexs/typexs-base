@@ -5,7 +5,6 @@ import {Config} from 'commons-config';
 import {TestHelper} from '../../TestHelper';
 import {SpawnHandle} from '../../SpawnHandle';
 import {Injector} from '../../../../src/libs/di/Injector';
-import {Log} from '../../../../src/libs/logging/Log';
 import {FileUtils} from 'commons-base';
 import {expect} from 'chai';
 import {FileSystemExchange} from '../../../../src/adapters/exchange/filesystem/FileSystemExchange';
@@ -23,7 +22,6 @@ class MessagingSpec {
   static async before() {
     Bootstrap.reset();
     Config.clear();
-    Log.enable = true;
     spawned = SpawnHandle.do(__dirname + '/fake_app/node_01.ts').start(LOG_EVENT);
 
     const appdir = path.join(__dirname, 'fake_app');
@@ -77,6 +75,45 @@ class MessagingSpec {
 
     const fileContent = await FileUtils.readFile(filePath);
     expect(data).to.be.eq(fileContent.toString());
+  }
+
+  @test
+  async 'read remote file - use relative path'() {
+    const filePath = './test.txt';
+    const exchange = Injector.get(FileSystemExchange);
+    const results = await exchange.file({path: filePath, skipLocal: true});
+
+    expect(results).to.have.length(1);
+    const data = results[0].toString();
+
+    const fileContent = await FileUtils.readFile(__dirname + '/fake_app/test.txt');
+    expect(data).to.be.eq(fileContent.toString());
+  }
+
+  @test
+  async 'read remote file - access fail'() {
+    const filePath = '/tmp/test.txt';
+    await FileUtils.writeFile(filePath, '');
+
+    const exchange = Injector.get(FileSystemExchange);
+    const results = await exchange.file({path: filePath, skipLocal: true});
+
+    expect(results).to.have.length(1);
+    expect(results[0]).to.be.instanceOf(Error);
+    expect(results[0].message).to.be.eq('access to path not allowed');
+  }
+
+
+  @test
+  async 'read remote file - file not exists fail'() {
+    const filePath = './test1.txt';
+
+    const exchange = Injector.get(FileSystemExchange);
+    const results = await exchange.file({path: filePath, skipLocal: true});
+
+    expect(results).to.have.length(1);
+    expect(results[0]).to.be.instanceOf(Error);
+    expect(results[0].message).to.be.eq('file not found');
   }
 
 
@@ -162,7 +199,7 @@ class MessagingSpec {
       {
         'isFile': true,
         'path': 'node_01.ts',
-        'size': 1969,
+        'size': 2003,
       },
       {
         'isFile': true,

@@ -32,6 +32,8 @@ export const C_STORAGE_DEFAULT = 'storage.default';
 
 export const C_CONFIGURATION_FILTER_KEYS_KEY = 'config.hide.keys';
 export const C_CONFIG_FILTER_KEYS = [
+  'user',
+  'username',
   'password',
   'pass',
   'credential',

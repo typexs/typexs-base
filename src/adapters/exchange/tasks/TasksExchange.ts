@@ -17,6 +17,12 @@ export class TasksExchange extends AbstractExchange<TasksRequest, TasksResponse>
     super(TasksRequest, TasksResponse);
   }
 
+  /**
+   * Get log file path to fetch file content over FileSystemHandle
+   *
+   * @param runnerId
+   * @param opts
+   */
   getLogFilePath(runnerId: string, opts: IMessageOptions = {}) {
     const req = new TasksRequest();
     req.op = 'logfile';
@@ -26,6 +32,11 @@ export class TasksExchange extends AbstractExchange<TasksRequest, TasksResponse>
   }
 
 
+  /**
+   * Get current running runners
+   *
+   * @param opts
+   */
   getRunners(opts: IMessageOptions = {}) {
     const req = new TasksRequest();
     req.op = 'runners';
@@ -33,6 +44,33 @@ export class TasksExchange extends AbstractExchange<TasksRequest, TasksResponse>
     return msg.run(req);
   }
 
+  /**
+   * TODO start a task
+   *
+   * @param opts
+   */
+  start() {}
+
+  /**
+   * TODO stop a task
+   *
+   * @param opts
+   */
+  stop() {}
+
+  /**
+   * TODO pause a task (if possible)
+   *
+   * @param opts
+   */
+  pause() {}
+
+  /**
+   * TODO resume a task (if possible)
+   *
+   * @param opts
+   */
+  resume() {}
 
   async handleRequest(request: TasksRequest, response: TasksResponse) {
     response.op = request.op;

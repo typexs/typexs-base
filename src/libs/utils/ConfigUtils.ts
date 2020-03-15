@@ -8,9 +8,13 @@ import {Injector} from '../../libs/di/Injector';
 
 export class ConfigUtils {
 
+  static getFilteredKeys(filterKeys: string[] = C_CONFIG_FILTER_KEYS) {
+    return _.concat(filterKeys, Config.get(C_CONFIGURATION_FILTER_KEYS_KEY, []));
+  }
+
 
   static clone(key: string = null, filterKeys: string[] = C_CONFIG_FILTER_KEYS) {
-    filterKeys = _.concat(filterKeys, Config.get(C_CONFIGURATION_FILTER_KEYS_KEY, []));
+    filterKeys = this.getFilteredKeys(filterKeys);
     const _orgCfg = key ? Config.get(key) : Config.get();
     let cfg = _.cloneDeepWith(_orgCfg);
     if (!key && _.isArray(cfg)) {

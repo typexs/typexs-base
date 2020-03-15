@@ -8,6 +8,7 @@ import {DataContainer} from '../../DataContainer';
 import {TypeOrmUtils} from './TypeOrmUtils';
 import {ObjectsNotValidError} from '../../../exceptions/ObjectsNotValidError';
 import {TypeOrmEntityRegistry} from './schema/TypeOrmEntityRegistry';
+import {StorageApi} from '../../../../api/Storage.api';
 
 
 export class SaveOp<T> implements ISaveOp<T> {
@@ -16,13 +17,28 @@ export class SaveOp<T> implements ISaveOp<T> {
 
   readonly controller: StorageEntityController;
 
-  private objects: T[] = [];
 
-  // private c: ConnectionWrapper;
+  protected options: ISaveOptions;
+
+  protected objects: T[] = [];
+
+  protected isArray: boolean = true;
 
 
   constructor(controller: StorageEntityController) {
     this.controller = controller;
+  }
+
+  getOptions() {
+    return this.options;
+  }
+
+  getObjects() {
+    return this.objects;
+  }
+
+  getIsArray() {
+    return this.isArray;
   }
 
   private isMongoDB() {
@@ -31,9 +47,13 @@ export class SaveOp<T> implements ISaveOp<T> {
 
   async run(object: T[] | T, options?: ISaveOptions): Promise<T[] | T> {
     _.defaults(options, {validate: false, raw: false});
-    const isArray = _.isArray(object);
+    this.options = options;
+    this.isArray = _.isArray(object);
 
     this.objects = this.prepare(object);
+
+    await this.controller.invoker.use(StorageApi).doBeforeSave(this.objects, this);
+
     let objectsValid = true;
     if (_.get(options, 'validate', false)) {
       objectsValid = await this.validate();
@@ -115,18 +135,19 @@ export class SaveOp<T> implements ISaveOp<T> {
         this.error = e;
       } finally {
         await connection.close();
-        if (this.error) {
-          throw this.error;
-        }
       }
     } else {
-      throw new ObjectsNotValidError(this.objects, isArray);
+      this.error = new ObjectsNotValidError(this.objects, this.isArray);
     }
 
-    if (!isArray) {
-      return this.objects.shift();
+    const result = this.isArray ? this.objects : this.objects.shift();
+    await this.controller.invoker.use(StorageApi).doAfterSave(result, this.error, this);
+
+    if (this.error) {
+      throw this.error;
     }
-    return this.objects;
+
+    return result;
   }
 
 

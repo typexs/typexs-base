@@ -8,6 +8,7 @@ import {TypeOrmSqlConditionsBuilder} from './TypeOrmSqlConditionsBuilder';
 import {TypeOrmEntityRegistry} from './schema/TypeOrmEntityRegistry';
 import {IDeleteOptions} from '../IDeleteOptions';
 import {DeleteQueryBuilder} from 'typeorm';
+import {StorageApi} from '../../../../api/Storage.api';
 
 
 export class DeleteOp<T> implements IDeleteOp<T> {
@@ -18,6 +19,12 @@ export class DeleteOp<T> implements IDeleteOp<T> {
 
   private objects: any[] = [];
 
+  protected removable: T[] | T | ClassType<T>;
+
+  protected conditions: any;
+
+  protected options: IDeleteOptions;
+
   constructor(controller: StorageEntityController) {
     this.controller = controller;
   }
@@ -27,12 +34,40 @@ export class DeleteOp<T> implements IDeleteOp<T> {
   }
 
 
+  getRemovable() {
+    return this.removable;
+  }
+
+  getOptions() {
+    return this.options;
+  }
+
+  getConditions() {
+    return this.conditions;
+  }
+
+
   async run(object: T[] | T | ClassType<T>, conditions: any = null, options: IDeleteOptions = {}): Promise<T[] | T | number> {
+    this.removable = object;
+    this.conditions = conditions;
+    this.options = options;
+
+    await this.controller.invoker.use(StorageApi).doBeforeRemove(this);
+
+    let results: number | T[];
     if (_.isFunction(object)) {
-      return this.removeByCondition(<ClassType<T>>object, conditions, options);
+      results = await this.removeByCondition(<ClassType<T>>object, conditions, options);
     } else {
-      return this.remove(<T | T[]>object, options);
+      results = await this.remove(<T | T[]>object, options);
     }
+
+    await this.controller.invoker.use(StorageApi).doAfterRemove(results, this.error, this);
+
+    if (this.error) {
+      throw this.error;
+    }
+
+    return results;
   }
 
   private async removeByCondition(object: ClassType<T>, condition: any, options: IDeleteOptions = {}) {
@@ -70,9 +105,7 @@ export class DeleteOp<T> implements IDeleteOp<T> {
       this.error = e;
     } finally {
       await connection.close();
-      if (this.error) {
-        throw this.error;
-      }
+
     }
     return count;
   }
@@ -106,7 +139,7 @@ export class DeleteOp<T> implements IDeleteOp<T> {
             const p = connection.manager.getRepository(entityName).remove(resolveByEntityDef[entityName]);
             promises.push(p);
           }
-          await  Promise.all(promises);
+          await Promise.all(promises);
         } else {
           await connection.manager.transaction(async em => {
             const promises = [];
@@ -122,9 +155,7 @@ export class DeleteOp<T> implements IDeleteOp<T> {
       this.error = e;
     } finally {
       await connection.close();
-      if (this.error) {
-        throw this.error;
-      }
+
     }
 
     if (!isArray) {

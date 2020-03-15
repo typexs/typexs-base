@@ -12,8 +12,8 @@ import {ClassType} from 'commons-schema-api';
 import {IUpdateOptions} from './framework/IUpdateOptions';
 import {UpdateOp} from './framework/typeorm/UpdateOp';
 import {IDeleteOptions} from './framework/IDeleteOptions';
-import {IAggregateOptions} from "./framework/IAggregateOptions";
-import {AggregateOp} from "./framework/typeorm/AggregateOp";
+import {IAggregateOptions} from './framework/IAggregateOptions';
+import {AggregateOp} from './framework/typeorm/AggregateOp';
 
 /**
  * TODO Should be renamed to StorageEntityManager
@@ -60,21 +60,20 @@ export class StorageEntityController implements IEntityController {
     }
   }
 
-  async save<T>(object: T, options?: ISaveOptions): Promise<T>;
-  async save<T>(object: T[], options?: ISaveOptions): Promise<T[]>;
-  async save<T>(object: T | T[], options: ISaveOptions = {validate: true}): Promise<T | T[]> {
-    return new SaveOp<T>(this).run(object, options);
-  }
-
 
   async findOne<T>(fn: Function | string | ClassType<T>, conditions: any = null, options: IFindOptions = {limit: 1}): Promise<T> {
     return this.find<T>(fn, conditions, options).then(r => r.shift());
   }
 
-
   async find<T>(fn: Function | string | ClassType<T>, conditions: any = null, options: IFindOptions = {limit: 100}): Promise<T[]> {
     return new FindOp<T>(this).run(fn, conditions, options);
 
+  }
+
+  async save<T>(object: T, options?: ISaveOptions): Promise<T>;
+  async save<T>(object: T[], options?: ISaveOptions): Promise<T[]>;
+  async save<T>(object: T | T[], options: ISaveOptions = {validate: true}): Promise<T | T[]> {
+    return new SaveOp<T>(this).run(object, options);
   }
 
 

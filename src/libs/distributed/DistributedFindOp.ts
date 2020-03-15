@@ -5,7 +5,7 @@ import {IFindOp} from '../storage/framework/IFindOp';
 import {TypeOrmEntityRegistry} from '../storage/framework/typeorm/schema/TypeOrmEntityRegistry';
 import {EventEmitter} from 'events';
 import {System} from '../system/System';
-import {IEntityRef} from 'commons-schema-api';
+import {ClassType, IEntityRef} from 'commons-schema-api';
 import {IWorkerInfo} from '../worker/IWorkerInfo';
 import {DistributedQueryWorker} from '../../workers/DistributedQueryWorker';
 import {Log} from '../logging/Log';
@@ -16,7 +16,9 @@ import {DistributedQueryEvent} from './DistributedQueryEvent';
 import {IDistributedFindOptions} from './IDistributedFindOptions';
 
 
+
 export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
+
 
   private system: System;
 
@@ -42,15 +44,29 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
 
   private stop: Date;
 
+  protected findConditions: any;
+
+  protected entityType: Function | ClassType<T> | string;
+
   constructor(system: System) {
     super();
     this.system = system;
     this.once('postprocess', this.postProcess.bind(this));
   }
 
-  prepare(controller: DistributedStorageEntityController) {
-    // this.controller = controller;
+  getFindConditions() {
+    return this.findConditions;
+  }
 
+  getEntityType(): string | Function | ClassType<T> {
+    return this.entityType;
+  }
+
+  getOptions(): IDistributedFindOptions {
+    return this.options;
+  }
+
+  prepare(controller: DistributedStorageEntityController) {
     return this;
   }
 
@@ -95,7 +111,11 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
   }
 
 
-  async run(entityType: Function | string, findConditions?: any, options?: IDistributedFindOptions): Promise<T[]> {
+  async run(entityType: Function | string | ClassType<T>, findConditions?: any, options?: IDistributedFindOptions): Promise<T[]> {
+    this.findConditions = findConditions;
+    this.entityType = entityType;
+    this.options = options;
+
     _.defaults(options, {
       limit: 50,
       offset: null,

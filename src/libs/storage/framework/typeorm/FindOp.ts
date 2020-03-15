@@ -11,21 +11,41 @@ import {TypeOrmEntityRegistry} from './schema/TypeOrmEntityRegistry';
 import {TreeUtils} from 'commons-base';
 import {SelectQueryBuilder} from 'typeorm';
 import {ClassType} from 'commons-schema-api';
+import {StorageApi} from '../../../../api/Storage.api';
 
 
 export class FindOp<T> implements IFindOp<T> {
 
   readonly controller: StorageEntityController;
 
-  private options: IFindOptions;
+  protected options: IFindOptions;
 
-  error: Error = null;
+  protected entityType: Function | string | ClassType<T>;
+
+  protected findConditions: any;
+
+  protected error: Error = null;
 
   constructor(controller: StorageEntityController) {
     this.controller = controller;
   }
 
+  getFindConditions() {
+    return this.findConditions;
+  }
+
+  getEntityType() {
+    return this.entityType;
+  }
+
+  getOptions() {
+    return this.options;
+  }
+
   async run(entityType: Function | string | ClassType<T>, findConditions?: any, options?: IFindOptions): Promise<T[]> {
+    this.entityType = entityType;
+    this.findConditions = findConditions;
+
     _.defaults(options, {
       limit: 50,
       offset: null,
@@ -33,14 +53,24 @@ export class FindOp<T> implements IFindOp<T> {
     });
     this.options = options;
 
+    await this.controller.invoker.use(StorageApi).doBeforeFind(this);
+
     let results: T[] = [];
     if (this.controller.storageRef.dbType === 'mongodb') {
       results = await this.findMongo(entityType, findConditions);
     } else {
       results = await this.find(entityType, findConditions);
     }
+
+    await this.controller.invoker.use(StorageApi).doAfterFind(results, this.error, this);
+
+    if (this.error) {
+      throw this.error;
+    }
+
     return results;
   }
+
 
   private async find(entityType: Function | string | ClassType<T>, findConditions?: any): Promise<T[]> {
     const connection = await this.controller.connect();
@@ -91,9 +121,7 @@ export class FindOp<T> implements IFindOp<T> {
       this.error = e;
     } finally {
       await connection.close();
-      if (this.error) {
-        throw this.error;
-      }
+
     }
 
     return results;
@@ -149,9 +177,7 @@ export class FindOp<T> implements IFindOp<T> {
       this.error = e;
     } finally {
       await connection.close();
-      if (this.error) {
-        throw this.error;
-      }
+
     }
 
     return results;

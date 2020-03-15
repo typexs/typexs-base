@@ -42,7 +42,6 @@ export class DistributedSaveOp<T> extends EventEmitter implements ISaveOp<T> {
 
   private isArray: boolean;
 
-
   private start: Date;
 
   private stop: Date;
@@ -51,6 +50,18 @@ export class DistributedSaveOp<T> extends EventEmitter implements ISaveOp<T> {
     super();
     this.system = system;
     this.once('postprocess', this.postProcess.bind(this));
+  }
+
+  getOptions(): IDistributedSaveOptions {
+    return this.options;
+  }
+
+  getObjects(): T[] {
+    return this.objects;
+  }
+
+  getIsArray(): boolean {
+    return this.isArray;
   }
 
   prepare(controller: DistributedStorageEntityController) {
@@ -135,13 +146,6 @@ export class DistributedSaveOp<T> extends EventEmitter implements ISaveOp<T> {
     if (this.targetIds.length === 0) {
       throw new Error('no distributed worker found to execute the query.');
     }
-
-    // this.targetIds = [this.system.node.nodeId];
-    // this.system.nodes.forEach(x => {
-    //   if (!x.isBackend) {
-    //     this.targetIds.push(x.nodeId);
-    //   }
-    // });
 
     this.saveEvent.targetIds = this.targetIds;
     if (this.targetIds.length === 0) {

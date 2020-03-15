@@ -5,11 +5,20 @@ import {NotYetImplementedError, TreeUtils} from 'commons-base';
 import * as _ from 'lodash';
 import {IAggregateOp} from '../IAggregateOp';
 import {IAggregateOptions} from '../IAggregateOptions';
+import {StorageApi} from '../../../../api/Storage.api';
 
 
 export class AggregateOp<T> implements IAggregateOp {
 
   readonly controller: StorageEntityController;
+
+  protected entityType: Function | string | ClassType<any>;
+
+  protected pipeline: any[];
+
+  protected options: IAggregateOptions;
+
+  protected entityRef: IEntityRef;
 
   error: Error = null;
 
@@ -17,16 +26,39 @@ export class AggregateOp<T> implements IAggregateOp {
     this.controller = controller;
   }
 
-  async run(cls: ClassType<T>, pipeline: any[], options: IAggregateOptions = {}): Promise<any[]> {
-    const entityDef = TypeOrmEntityRegistry.$().getEntityRefFor(cls);
+  getEntityType() {
+    return this.entityType;
+  }
+
+  getPipeline() {
+    return this.pipeline;
+  }
+
+  getOptions() {
+    return this.options;
+  }
+
+
+  async run(cls: Function | string | ClassType<any>, pipeline: any[], options: IAggregateOptions = {}): Promise<any[]> {
+    this.entityType = cls;
+    this.pipeline = pipeline;
+    this.options = options;
+    this.entityRef = TypeOrmEntityRegistry.$().getEntityRefFor(cls);
     let results: any[] = [];
 
+    await this.controller.invoker.use(StorageApi).doBeforeAggregate(this);
+
     if (this.controller.storageRef.dbType === 'mongodb') {
-      results = await this.aggregateMongo(entityDef, pipeline, options);
+      results = await this.aggregateMongo(this.entityRef, pipeline, options);
     } else {
       throw new NotYetImplementedError('interpretation of aggregate array in pending ... ');
     }
 
+    await this.controller.invoker.use(StorageApi).doAfterAggregate(results, this.error, this);
+
+    if (this.error) {
+      throw this.error;
+    }
 
     return results;
   }
@@ -58,9 +90,7 @@ export class AggregateOp<T> implements IAggregateOp {
       this.error = e;
     } finally {
       await connection.close();
-      if (this.error) {
-        throw this.error;
-      }
+
     }
 
     return results;

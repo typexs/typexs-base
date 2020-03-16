@@ -4,3 +4,6 @@ export const XS_P_$SAVED = '$saved';
 export const XS_P_$ERRORED = '$errored';
 
 
+export type DS_OPERATION = 'find' | 'remove' | 'save' | 'update' | 'aggregate';
+
+

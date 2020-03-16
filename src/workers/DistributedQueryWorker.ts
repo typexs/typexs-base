@@ -14,13 +14,13 @@ import {IQueueProcessor} from '../libs/queue/IQueueProcessor';
 import {AsyncWorkerQueue} from '../libs/queue/AsyncWorkerQueue';
 import {Log} from '../libs/logging/Log';
 import {IFindOptions} from '../libs/storage/framework/IFindOptions';
-import {DistributedQueryEvent} from '../libs/distributed/DistributedQueryEvent';
-import {DistributedSaveEvent} from '../libs/distributed/DistributedSaveEvent';
-import {IDistributedQueryWorkerOptions} from '../libs/distributed/IDistributedQueryWorkerOptions';
+import {DistributedQueryEvent} from '../libs/distributed_storage/DistributedQueryEvent';
+import {DistributedSaveEvent} from '../libs/distributed_storage/DistributedSaveEvent';
+import {IDistributedQueryWorkerOptions} from '../libs/distributed_storage/IDistributedQueryWorkerOptions';
 import {ILoggerApi} from '../libs/logging/ILoggerApi';
-import {DistributedQueryResultsEvent} from '../libs/distributed/DistributedQueryResultsEvent';
-import {DistributedSaveResultsEvent} from '../libs/distributed/DistributedSaveResultsEvent';
-import {__DISTRIBUTED_ID__} from '../libs/distributed/Constants';
+import {DistributedQueryResultsEvent} from '../libs/distributed_storage/DistributedQueryResultsEvent';
+import {DistributedSaveResultsEvent} from '../libs/distributed_storage/DistributedSaveResultsEvent';
+import {__DISTRIBUTED_ID__} from '../libs/distributed_storage/Constants';
 
 
 export interface IQueryWorkload extends IQueueWorkload {
@@ -157,7 +157,7 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
       const failed = entityTypes.map(type => this.isAllowed(event.nodeId, type)).filter(x => !x);
       if (failed.length > 0) {
         const resultsEvent = this.createSaveResultEvent(event);
-        resultsEvent.forbidden = true;
+        resultsEvent.skipping = true;
         resultsEvent.results = {};
         EventBus.postAndForget(resultsEvent);
         return;
@@ -205,7 +205,7 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
 
   createSaveResultEvent(event: DistributedSaveEvent) {
     const resultsEvent = new DistributedSaveResultsEvent();
-    resultsEvent.queryId = event.queryId;
+    resultsEvent.reqEventId = event.id;
     resultsEvent.respId = this.system.node.nodeId;
     resultsEvent.nodeId = this.system.node.nodeId;
     resultsEvent.targetIds = [event.nodeId];
@@ -244,7 +244,7 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
         }));
         resultsEvent.results[entityType] = await storageRef.getController().save(build, o.options);
         this.logger.debug('distributed query worker:  save ' + classRef.name + ' amount of ' + resultsEvent.results[entityType].length +
-          '[qId: ' + resultsEvent.queryId + ']');
+          '[qId: ' + resultsEvent.reqEventId + ']');
       }
     } catch (err) {
       resultsEvent.error = err.message;

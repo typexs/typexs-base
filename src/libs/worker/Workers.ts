@@ -8,7 +8,8 @@ import {IWorker} from './IWorker';
 import {IWorkerInfo} from './IWorkerInfo';
 import {MatchUtils} from '../utils/MatchUtils';
 import {RuntimeLoader} from '../../base/RuntimeLoader';
-import {Injector, Log} from "../..";
+import {Injector} from '../di/Injector';
+import {Log} from '../logging/Log';
 
 
 const DEFAULT_OPTIONS: IWorkerConfig = {access: [{access: 'deny', name: '*'}]};

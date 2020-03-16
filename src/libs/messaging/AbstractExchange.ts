@@ -29,8 +29,15 @@ export abstract class AbstractExchange<REQ extends AbstractEvent, RES extends Ab
 
   }
 
-  prepare() {
+  prepare(opts: any = {}) {
     subscribe(this.getReqClass())(this, 'onRequest');
+  }
+
+  /**
+   * Give possiblity to mark this exchange as disabled
+   */
+  isActive() {
+    return true;
   }
 
 

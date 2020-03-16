@@ -59,7 +59,7 @@ export class FileSystemExchange extends AbstractExchange<FileSystemRequest, File
   async file(opts: IFileOptions): Promise<any[]> {
     const r = new FileSystemRequest(opts);
     const msg = this.create(opts);
-    return await msg.run(r);
+    return await msg.send(r);
   }
 
 

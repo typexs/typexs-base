@@ -3,11 +3,11 @@ import {ISaveOptions} from '../storage/framework/ISaveOptions';
 
 export class DistributedSaveResultsEvent extends AbstractEvent {
 
-  queryId: string;
+  // queryId: string;
 
   options: ISaveOptions;
-  
-  forbidden = false;
+
+  // forbidden = false;
 
   results: { [type: string]: any[] } = {};
 }

@@ -17,7 +17,7 @@ export class ConfigExchange extends AbstractExchange<ConfigRequest, ConfigRespon
     const r = new ConfigRequest();
     r.key = key;
     const msg = this.create(opts);
-    return await msg.run(r);
+    return await msg.send(r);
   }
 
 

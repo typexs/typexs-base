@@ -28,7 +28,7 @@ export class TasksExchange extends AbstractExchange<TasksRequest, TasksResponse>
     req.op = 'logfile';
     req.runnerId = runnerId;
     const msg = this.create(opts);
-    return msg.run(req);
+    return msg.send(req);
   }
 
 
@@ -41,7 +41,7 @@ export class TasksExchange extends AbstractExchange<TasksRequest, TasksResponse>
     const req = new TasksRequest();
     req.op = 'runners';
     const msg = this.create(opts);
-    return msg.run(req);
+    return msg.send(req);
   }
 
   /**

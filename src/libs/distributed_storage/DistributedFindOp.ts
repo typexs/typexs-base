@@ -150,12 +150,6 @@ export class DistributedFindOp<T> extends EventEmitter implements IFindOp<T> {
       throw new Error('no distributed worker found to execute the query.');
     }
 
-    // this.targetIds = [this.system.node.nodeId];
-    // this.system.nodes.forEach(x => {
-    //   if (!x.isBackend) {
-    //     this.targetIds.push(x.nodeId);
-    //   }
-    // });
 
     this.queryEvent.targetIds = this.targetIds;
     if (this.targetIds.length === 0) {

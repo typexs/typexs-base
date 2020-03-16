@@ -1,3 +1,5 @@
+import {ILoggerApi} from '../logging/ILoggerApi';
+
 export interface IMessageOptions {
 
   skipLocal?: boolean;
@@ -7,5 +9,9 @@ export interface IMessageOptions {
   nodeIds?: string[];
 
   filterErrors?: boolean;
+
+  logger?: ILoggerApi;
+
+  timeout?: number;
 
 }

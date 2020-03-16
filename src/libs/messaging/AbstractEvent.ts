@@ -55,6 +55,12 @@ export abstract class AbstractEvent {
    */
   error: Error;
 
+  /**
+   * response exists but shouldn't be ad to results
+   */
+  skipping: boolean = false;
+
+
   constructor() {
     this.id = CryptUtils.shorthash('event-' + (new Date()).getTime() + '' + (AbstractEvent.inc++));
   }

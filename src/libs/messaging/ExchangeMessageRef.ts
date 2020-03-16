@@ -1,19 +1,19 @@
+import * as _ from 'lodash';
 import {AbstractRef, IBuildOptions, IEntityRef, IPropertyRef, XS_TYPE_ENTITY} from 'commons-schema-api/browser';
-import {ClassUtils} from 'commons-base/browser';
+import {ClassUtils, NotSupportedError} from 'commons-base/browser';
 import {AbstractExchange} from './AbstractExchange';
 import {Injector} from '../di/Injector';
 
 
 export class ExchangeMessageRef extends AbstractRef implements IEntityRef {
 
-  private exchange: AbstractExchange<any, any>;
+  private exchange: AbstractExchange<any, any> = null;
 
+  private isActive: boolean;
 
   constructor(fn: Function = null, options: any = null) {
     super(XS_TYPE_ENTITY, ClassUtils.getClassName(fn), fn);
     this.setOptions(options || {});
-    this.exchange = Injector.get(fn);
-    Injector.set(this.name, this.exchange);
   }
 
 
@@ -21,12 +21,42 @@ export class ExchangeMessageRef extends AbstractRef implements IEntityRef {
     return this.exchange;
   }
 
-  build<T>(instance: any, options?: IBuildOptions): T {
-    return undefined;
+
+  async initExchange(opts: any = {}) {
+    if (!_.isUndefined(this.isActive)) {
+      return this.exchange;
+    }
+
+    if (!this.exchange) {
+      const exchange = Injector.get(this.getSourceRef().getClass()) as AbstractExchange<any, any>;
+      try {
+        await exchange.prepare(opts);
+        this.isActive = exchange.isActive();
+      } catch (e) {
+        this.isActive = false;
+      }
+      if (this.isActive) {
+        this.exchange = exchange;
+        Injector.set(this.name, this.exchange);
+      }
+    }
+    return this.exchange;
   }
 
+
+  build<T>(instance: any, options?: IBuildOptions): T {
+    throw new NotSupportedError('create is not supported');
+  }
+
+
   create<T>(): T {
-    return undefined;
+    throw new NotSupportedError('create is not supported');
+  }
+
+
+  reset() {
+    this.exchange = null;
+    Injector.set(this.name, null);
   }
 
   getPropertyRef(name: string): IPropertyRef {
@@ -38,7 +68,7 @@ export class ExchangeMessageRef extends AbstractRef implements IEntityRef {
   }
 
   id(): string {
-    return '';
+    return this.name;
   }
 
 

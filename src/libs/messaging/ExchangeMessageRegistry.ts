@@ -77,7 +77,8 @@ export class ExchangeMessageRegistry implements ILookupRegistry {
 
   findForRequest(x: any) {
     for (const e of this.registry.list(XS_TYPE_ENTITY) as ExchangeMessageRef[]) {
-      if (x instanceof e.getExchange().getReqClass()) {
+      const exchange = e.getExchange();
+      if (exchange && exchange.isActive() && x instanceof e.getExchange().getReqClass()) {
         return e;
       }
     }

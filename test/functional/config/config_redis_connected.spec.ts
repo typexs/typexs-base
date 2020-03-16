@@ -10,8 +10,9 @@ import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
 import {SpawnHandle} from '../SpawnHandle';
 import {System} from '../../../src/libs/system/System';
 import {Injector} from '../../../src/libs/di/Injector';
-import {C_CONFIG, C_KEY_SEPARATOR, Cache} from '../../../src';
 import {ConfigUtils} from '../../../src/libs/utils/ConfigUtils';
+import {C_CONFIG, C_KEY_SEPARATOR} from '../../../src/libs/Constants';
+import {Cache} from '../../../src/libs/cache/Cache';
 
 
 const LOG_EVENT = TestHelper.logEnable(false);

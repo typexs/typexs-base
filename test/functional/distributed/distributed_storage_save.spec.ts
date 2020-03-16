@@ -8,11 +8,11 @@ import {Container} from 'typedi';
 import {TestHelper} from '../TestHelper';
 import {SpawnHandle} from '../SpawnHandle';
 
-import {DistributedStorageEntityController} from '../../../src/libs/distributed/DistributedStorageEntityController';
+import {DistributedStorageEntityController} from '../../../src/libs/distributed_storage/DistributedStorageEntityController';
 import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
 import {DataRow} from './fake_app/entities/DataRow';
-import {__REMOTE_IDS__, XS_P_$ERRORED, XS_P_$SAVED} from '../../../src/libs/distributed/Constants';
-import {IDistributedQueryWorkerOptions} from '../../../src/libs/distributed/IDistributedQueryWorkerOptions';
+import {__REMOTE_IDS__, XS_P_$ERRORED, XS_P_$SAVED} from '../../../src/libs/distributed_storage/Constants';
+import {IDistributedQueryWorkerOptions} from '../../../src/libs/distributed_storage/IDistributedQueryWorkerOptions';
 
 
 const LOG_EVENT = TestHelper.logEnable(false);

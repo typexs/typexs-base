@@ -10,7 +10,7 @@ import {TestHelper} from '../TestHelper';
 import {SpawnHandle} from '../SpawnHandle';
 import {SystemNodeInfo} from '../../../src/entities/SystemNodeInfo';
 
-import {DistributedStorageEntityController} from '../../../src/libs/distributed/DistributedStorageEntityController';
+import {DistributedStorageEntityController} from '../../../src/libs/distributed_storage/DistributedStorageEntityController';
 import {DistributedQueryWorker} from '../../../src/workers/DistributedQueryWorker';
 import {Workers} from '../../../src/libs/worker/Workers';
 import {IWorkerInfo} from '../../../src/libs/worker/IWorkerInfo';

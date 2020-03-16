@@ -9,7 +9,7 @@ import {Bootstrap} from '../../../src/Bootstrap';
 import {Container} from 'typedi';
 import {Config} from 'commons-config';
 import {SystemNodeInfo} from '../../../src/entities/SystemNodeInfo';
-import {DistributedStorageEntityController} from '../../../src/libs/distributed/DistributedStorageEntityController';
+import {DistributedStorageEntityController} from '../../../src/libs/distributed_storage/DistributedStorageEntityController';
 import {XS_P_$COUNT} from '../../../src/libs/Constants';
 
 const LOG_EVENT = TestHelper.logEnable(false);

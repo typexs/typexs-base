@@ -1,4 +1,3 @@
-
 export * from './browser';
 
 // extern exports
@@ -6,7 +5,6 @@ export {Container, Inject, Service} from 'typedi';
 export {Config, IConfigOptions, IConfigData, IFileConfigOptions} from 'commons-config';
 export {ClassesLoader, ModuleRegistry} from 'commons-moduls';
 export {PlatformUtils, FileUtils, ClassLoader} from 'commons-base';
-
 
 
 export * from './api/Tasks.api';
@@ -60,7 +58,6 @@ export * from './libs/messaging/Message';
 export * from './libs/messaging/IMessageOptions';
 
 
-
 export * from './libs/queue/AsyncWorkerQueue';
 export * from './libs/queue/IAsyncQueueOptions';
 export * from './libs/queue/IQueue';
@@ -85,11 +82,21 @@ export * from './libs/storage/StorageEntityController';
 export * from './libs/distributed_storage/IDistributedQueryWorkerOptions';
 export * from './libs/distributed_storage/DistributedStorageEntityController';
 export * from './libs/distributed_storage/DistributedOperationFactory';
-export * from './libs/distributed_storage/DistributedFindOp';
-export * from './libs/distributed_storage/DistributedQueryResultsEvent';
-export * from './libs/distributed_storage/DistributedQueryEvent';
-export * from './libs/distributed_storage/DistributedSaveResultsEvent';
-export * from './libs/distributed_storage/DistributedSaveEvent';
+export * from './libs/distributed_storage/find/DistributedFindOp';
+export * from './libs/distributed_storage/find/DistributedFindRequest';
+export * from './libs/distributed_storage/find/DistributedFindResponse';
+export * from './libs/distributed_storage/save/DistributedSaveOp';
+export * from './libs/distributed_storage/save/DistributedSaveRequest';
+export * from './libs/distributed_storage/save/DistributedSaveResponse';
+export * from './libs/distributed_storage/update/DistributedUpdateOp';
+export * from './libs/distributed_storage/update/DistributedUpdateRequest';
+export * from './libs/distributed_storage/update/DistributedUpdateResponse';
+export * from './libs/distributed_storage/remove/DistributedRemoveOp';
+export * from './libs/distributed_storage/remove/DistributedRemoveRequest';
+export * from './libs/distributed_storage/remove/DistributedRemoveResponse';
+export * from './libs/distributed_storage/aggregate/DistributedAggregateOp';
+export * from './libs/distributed_storage/aggregate/DistributedAggregateRequest';
+export * from './libs/distributed_storage/aggregate/DistributedAggregateResponse';
 
 
 export * from './libs/tasks/NullTaskRef';

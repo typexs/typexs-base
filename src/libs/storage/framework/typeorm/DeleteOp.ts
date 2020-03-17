@@ -116,7 +116,7 @@ export class DeleteOp<T> implements IDeleteOp<T> {
     try {
       this.objects = this.prepare(object);
 
-      const resolveByEntityDef = TypeOrmUtils.resolveByEntityDef(this.objects);
+      const resolveByEntityDef = TypeOrmUtils.resolveByEntityRef(this.objects);
       const entityNames = _.keys(resolveByEntityDef);
 
 

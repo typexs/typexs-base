@@ -1,6 +1,7 @@
 import {Container, ObjectType, ServiceIdentifier, ServiceMetadata, Token} from 'typedi';
 import {MissingProvidedServiceTypeError} from 'typedi/error/MissingProvidedServiceTypeError';
 import {ServiceNotFoundError} from 'typedi/error/ServiceNotFoundError';
+import {ClassType} from "commons-schema-api";
 
 export class Injector {
 
@@ -19,7 +20,7 @@ export class Injector {
     return <T>this.$().set(identifier, x);
   }
 
-  static create<T>(identifier: ServiceIdentifier<T>, service?: ServiceMetadata<any, any> | undefined): T {
+  static create<T>(identifier: ServiceIdentifier<T> | ClassType<T>, service?: ServiceMetadata<any, any> | undefined): T {
     return this.$().create(identifier, service);
   }
 

@@ -62,7 +62,7 @@ export class SaveOp<T> implements ISaveOp<T> {
 
     if (objectsValid) {
       const promises: Promise<any>[] = [];
-      const resolveByEntityDef = TypeOrmUtils.resolveByEntityDef(this.objects);
+      const resolveByEntityDef = TypeOrmUtils.resolveByEntityRef(this.objects);
       const entityNames = _.keys(resolveByEntityDef);
       const connection = await this.controller.connect();
 

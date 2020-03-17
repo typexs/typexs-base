@@ -16,7 +16,7 @@ export class TypeOrmUtils {
     }
   }
 
-  static resolveByEntityDef<T>(objs: T[]) {
+  static resolveByEntityRef<T>(objs: T[]) {
     const resolved: { [entityType: string]: T[] } = {};
     for (const obj of objs) {
       const entityName = this.resolveName(obj);

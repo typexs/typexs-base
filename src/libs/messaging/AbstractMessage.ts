@@ -53,6 +53,7 @@ export abstract class AbstractMessage<REQ extends AbstractEvent, RES extends Abs
         this.target(x);
       });
     }
+    this.options = options;
     this.once('postprocess', this.postProcess.bind(this));
   }
 

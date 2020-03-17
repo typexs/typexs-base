@@ -44,6 +44,7 @@ import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOpt
 import {ICommand} from './libs/commands/ICommand';
 import {LockFactory} from './libs/LockFactory';
 import {Injector} from './libs/di/Injector';
+import {EntityControllerRegistry} from './libs/storage/EntityControllerRegistry';
 
 useContainer(Container);
 
@@ -360,7 +361,9 @@ export class Bootstrap {
     const o_storage: { [name: string]: IStorageOptions } = Config.get(K_STORAGE, CONFIG_NAMESPACE, {});
     const storageNames = _.keys(o_storage);
 
-    // ...
+    const entityControllerRegistry = Injector.create(EntityControllerRegistry);
+    Injector.set(EntityControllerRegistry.NAME, entityControllerRegistry);
+    Injector.set(EntityControllerRegistry, entityControllerRegistry);
 
     const storageRefs = [];
     for (const name of storageNames) {
@@ -398,6 +401,10 @@ export class Bootstrap {
         await storageRef.prepare();
       }
       storageRefs.push(storageRef);
+
+      // register the storage controller
+      entityControllerRegistry.add(storageRef.getController());
+
       Bootstrap.getContainer().set([K_STORAGE, name].join('.'), storageRef);
     }
 

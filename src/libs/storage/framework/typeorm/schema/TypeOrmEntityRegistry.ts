@@ -23,7 +23,7 @@ import {ColumnMetadataArgs} from 'typeorm/browser/metadata-args/ColumnMetadataAr
 import {ValidationMetadata} from 'class-validator/metadata/ValidationMetadata';
 import {getFromContainer, MetadataStorage} from 'class-validator';
 import {MetadataArgsStorage} from 'typeorm/browser/metadata-args/MetadataArgsStorage';
-import {classRefGet} from "../../../Helper";
+import {classRefGet} from '../../../Helper';
 
 
 export class TypeOrmEntityRegistry implements ILookupRegistry {
@@ -189,7 +189,7 @@ export class TypeOrmEntityRegistry implements ILookupRegistry {
     if (entityRef) {
       for (const prop of json.properties) {
         const exists = entityRef.getPropertyRef(prop.name);
-        if (exists) continue;
+        if (exists) { continue; }
         let targetRef = null;
         const propType = _.get(prop, 'ormPropertyType', false);
         if (propType === 'relation') {

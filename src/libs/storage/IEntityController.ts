@@ -1,11 +1,15 @@
 import {ISaveOptions} from './framework/ISaveOptions';
 import {IFindOptions} from './framework/IFindOptions';
-import {ClassType} from 'commons-schema-api/browser';
+import {ClassType, IClassRef, IEntityRef} from 'commons-schema-api/browser';
 import {IUpdateOptions} from './framework/IUpdateOptions';
 import {IAggregateOptions} from './framework/IAggregateOptions';
 import {IDeleteOptions} from './framework/IDeleteOptions';
 
 export interface IEntityController {
+
+  name(): string;
+
+  forClass(cls: ClassType<any> | string | Function | IClassRef): IEntityRef;
 
   findOne<T>(fn: Function | string, conditions: any, options?: IFindOptions): Promise<T>;
 

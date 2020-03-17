@@ -1,3 +1,4 @@
+import * as _ from 'lodash';
 import {StorageRef} from './StorageRef';
 import {ISaveOptions} from './framework/ISaveOptions';
 import {IFindOptions} from './framework/IFindOptions';
@@ -5,15 +6,15 @@ import {SaveOp} from './framework/typeorm/SaveOp';
 import {FindOp} from './framework/typeorm/FindOp';
 import {DeleteOp} from './framework/typeorm/DeleteOp';
 import {Invoker} from '../../base/Invoker';
-import {Container} from 'typedi';
 import {ConnectionWrapper} from './ConnectionWrapper';
 import {IEntityController} from './IEntityController';
-import {ClassType} from 'commons-schema-api';
+import {ClassType, IClassRef, IEntityRef} from 'commons-schema-api';
 import {IUpdateOptions} from './framework/IUpdateOptions';
 import {UpdateOp} from './framework/typeorm/UpdateOp';
 import {IDeleteOptions} from './framework/IDeleteOptions';
 import {IAggregateOptions} from './framework/IAggregateOptions';
 import {AggregateOp} from './framework/typeorm/AggregateOp';
+import {Injector} from '../../libs/di/Injector';
 
 /**
  * TODO Should be renamed to StorageEntityManager
@@ -27,13 +28,11 @@ export class StorageEntityController implements IEntityController {
 
   readonly invoker: Invoker;
 
-  private timeout: NodeJS.Timeout;
-
   connection: ConnectionWrapper;
 
   constructor(ref: StorageRef) {
     this.storageRef = ref;
-    this.invoker = Container.get(Invoker.NAME);
+    this.invoker = Injector.get(Invoker.NAME);
   }
 
   async connect() {
@@ -60,6 +59,16 @@ export class StorageEntityController implements IEntityController {
     }
   }
 
+  name() {
+    return this.storageRef.name;
+  }
+
+  forClass(cls: ClassType<any> | string | Function | IClassRef): IEntityRef {
+    if (this.storageRef.hasEntityClass(cls)) {
+      return this.storageRef.getEntityRef(cls as any);
+    }
+    return null;
+  }
 
   async findOne<T>(fn: Function | string | ClassType<T>, conditions: any = null, options: IFindOptions = {limit: 1}): Promise<T> {
     return this.find<T>(fn, conditions, options).then(r => r.shift());

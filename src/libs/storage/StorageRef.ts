@@ -15,7 +15,7 @@ import {ClassUtils, PlatformUtils, TodoException} from 'commons-base';
 import {AbstractSchemaHandler} from './AbstractSchemaHandler';
 import {BaseUtils} from '../utils/BaseUtils';
 import {StorageEntityController} from './StorageEntityController';
-import {IClassRef, IEntityRef} from 'commons-schema-api';
+import {ClassType, IClassRef, IEntityRef} from 'commons-schema-api';
 import {TypeOrmEntityRegistry} from './framework/typeorm/schema/TypeOrmEntityRegistry';
 import {classRefGet} from './Helper';
 
@@ -83,6 +83,11 @@ export class StorageRef /* extends EventEmitter */ {
     }
     Log.debug(`storage: use ${this.options.type} for storage with options:\n${out} `);
     this.controller = new StorageEntityController(this);
+
+    // register used entities, TODO better way to register with annotation @Entity (from typeorm)
+    this.options.entities.map(type =>
+      this.getEntityRef(type instanceof EntitySchema ? type.options.target : type)
+    );
   }
 
   get name() {
@@ -187,6 +192,8 @@ export class StorageRef /* extends EventEmitter */ {
     if (exists < 0) {
       opts.entities.push(type);
       this.options = _.assign(this.options, opts);
+      // NOTE create an class ref entry to register class usage in registry
+      this.getEntityRef(type instanceof EntitySchema ? type.options.target : type);
     }
 
     if (this._prepared) {
@@ -216,12 +223,12 @@ export class StorageRef /* extends EventEmitter */ {
   }
 
 
-  hasEntityClass(ref: IClassRef | string | Function) {
+  hasEntityClass(ref: IClassRef | string | Function | ClassType<any>) {
     return !!this.getEntityClass(ref);
   }
 
 
-  getEntityClass(ref: IClassRef | string | Function) {
+  getEntityClass(ref: IClassRef | string | Function | ClassType<any>) {
     if (_.isString(ref)) {
       const _ref = _.snakeCase(ref);
       return this.options.entities.find(x => _ref === StorageRef.machineName(x));
@@ -261,7 +268,6 @@ export class StorageRef /* extends EventEmitter */ {
   async prepare(): Promise<void> {
     if (!getConnectionManager().has(this.name)) {
       // todo maybe handle exception?
-
       let c = await getConnectionManager().create(<ConnectionOptions>this.options);
       c = await c.connect();
       await (await this.wrap(c)).close();

@@ -1,18 +1,27 @@
 import {Inject} from 'typedi';
 import {DistributedOperationFactory} from './DistributedOperationFactory';
-import {IDistributedFindOptions} from './IDistributedFindOptions';
-import {IDistributedSaveOptions} from './IDistributedSaveOptions';
+import {IDistributedFindOptions} from './find/IDistributedFindOptions';
+import {IDistributedSaveOptions} from './save/IDistributedSaveOptions';
 import {IEntityController} from '../storage/IEntityController';
-import {ClassType} from 'commons-schema-api';
-import {IUpdateOptions} from '../storage/framework/IUpdateOptions';
-import {IAggregateOptions} from '../storage/framework/IAggregateOptions';
+import {ClassType, IEntityRef} from 'commons-schema-api';
+import {NotSupportedError} from 'commons-base';
+import {IDistributedRemoveOptions} from './remove/IDistributedRemoveOptions';
+import {IDistributedUpdateOptions} from './update/IDistributedUpdateOptions';
+import {IDistributedAggregateOptions} from './aggregate/IDistributedAggregateOptions';
 
 
 export class DistributedStorageEntityController implements IEntityController {
 
-
   @Inject()
   factory: DistributedOperationFactory;
+
+  name(): string {
+    return 'distributed_storage_controller';
+  }
+
+  forClass(cls: ClassType<any> | string | Function): IEntityRef {
+    throw new NotSupportedError('method not supported for this type of controller');
+  }
 
 
   async findOne<T>(fn: Function | string, conditions: any = null, options: IDistributedFindOptions = {limit: 1}): Promise<T> {
@@ -36,16 +45,16 @@ export class DistributedStorageEntityController implements IEntityController {
   remove<T>(object: T): Promise<T>;
   remove<T>(object: T[]): Promise<T[]>;
   remove<T>(cls: ClassType<T>, condition: any): Promise<number>;
-  remove<T>(cls: T | T[] | ClassType<T>, condition?: any): Promise<T | T[]> {
-    throw new Error('Method not implemented.');
+  remove<T>(cls: T | T[] | ClassType<T>, condition?: any, options?: IDistributedRemoveOptions): Promise<number | T | T[]> {
+    return this.factory.createRemoveOp<T>().prepare(this).run(cls, condition, options);
   }
 
-  update<T>(cls: ClassType<T>, condition: any, update: any, options?: IUpdateOptions): Promise<number> {
-    throw new Error('Method not implemented.');
+  update<T>(cls: ClassType<T>, condition: any, update: any, options?: IDistributedUpdateOptions): Promise<number> {
+    return this.factory.createUpdateOp<T>().prepare(this).run(cls, condition, update, options);
   }
 
-  aggregate<T>(baseClass: ClassType<T>, aggregationPipeline: any, options?: IAggregateOptions): Promise<T[]> {
-    throw new Error('Method not implemented.');
+  aggregate<T>(baseClass: ClassType<T>, aggregationPipeline: any, options?: IDistributedAggregateOptions): Promise<T[]> {
+    return this.factory.createAggregateOp<T>().prepare(this).run(baseClass, aggregationPipeline, options);
   }
 
 }

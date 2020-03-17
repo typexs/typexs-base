@@ -18,7 +18,7 @@ import {IDistributedQueryWorkerOptions} from '../../../src/libs/distributed_stor
 const LOG_EVENT = TestHelper.logEnable(false);
 
 
-@suite('functional/distributed/storage_save')
+@suite('functional/distributed_storage/save')
 class DistributedStorageSaveSpec {
 
 

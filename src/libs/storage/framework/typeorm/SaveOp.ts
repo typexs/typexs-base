@@ -62,8 +62,8 @@ export class SaveOp<T> implements ISaveOp<T> {
 
     if (objectsValid) {
       const promises: Promise<any>[] = [];
-      const resolveByEntityDef = TypeOrmUtils.resolveByEntityRef(this.objects);
-      const entityNames = _.keys(resolveByEntityDef);
+      const resolveByEntityRef = TypeOrmUtils.resolveByEntityRef(this.objects);
+      const entityNames = _.keys(resolveByEntityRef);
       const connection = await this.controller.connect();
 
       try {
@@ -72,34 +72,39 @@ export class SaveOp<T> implements ISaveOp<T> {
           for (const entityName of entityNames) {
             const repo = connection.manager.getMongoRepository(entityName);
             const entityDef = TypeOrmEntityRegistry.$().getEntityRefFor(entityName);
-            const propertyDef = entityDef.getPropertyRefs().find(p => p.isIdentifier());
+            const propertyRefs = entityDef.getPropertyRefs().filter(p => p.isIdentifier());
+            if (propertyRefs.length === 0) {
+              throw new Error('no id property found for ' + entityName);
+            }
+            const _idRef = _.remove(propertyRefs, x => x.name === '_id').shift();
+
+            resolveByEntityRef[entityName].forEach((entity: any) => {
+              // if no _id is set then generate one
+              if (!entity._id) {
+                entity._id = propertyRefs.map(x => _.get(entity, x.name)).join('--');
+                if (_.isEmpty(entity._id)) {
+                  throw new Error('no id could be generate for ' + entityName + ' with properties ' + propertyRefs.map(x => x.name).join(', '));
+                }
+              }
+              _.keys(entity).filter(x => /^$/.test(x)).map(x => delete entity[x]);
+            });
+
             if (options.raw) {
               const bulk = repo.initializeOrderedBulkOp();
-              resolveByEntityDef[entityName].forEach((e: any) => {
-                if (!e._id && propertyDef.name !== '_id') {
-                  _.set(e, '_id', _.get(e, propertyDef.name, null));
-                }
+              resolveByEntityRef[entityName].forEach((entity: any) => {
                 // filter command values
-                _.keys(e).filter(x => /^$/.test(x)).map(x => delete e[x]);
-                bulk.find({_id: e._id}).upsert().replaceOne(e);
+                bulk.find({_id: entity._id}).upsert().replaceOne(entity);
               });
               promises.push(bulk.execute());
             } else {
-              resolveByEntityDef[entityName].forEach((entity: any) => {
-                if (!entity._id && propertyDef.name !== '_id') {
-                  _.set(entity, '_id', _.get(entity, propertyDef.name, null));
-                }
-                // filter command values
-                _.keys(entity).filter(x => /^$/.test(x)).map(x => delete entity[x]);
-              });
-
-              const p = repo.save(resolveByEntityDef[entityName]).then((x: any) => {
-                resolveByEntityDef[entityName].forEach((x: any) => {
-                  if (!x._id && propertyDef.name !== '_id') {
-                    _.set(x, '_id', _.get(x, propertyDef.name, null));
-                  }
+              const p = repo.save(resolveByEntityRef[entityName])
+                .then((x: any) => {
+                  resolveByEntityRef[entityName].forEach((entity: any) => {
+                    if (!entity._id) {
+                      entity._id = propertyRefs.map(x => _.get(entity, x.name)).join('--');
+                    }
+                  });
                 });
-              });
               promises.push(p);
             }
           }
@@ -112,14 +117,14 @@ export class SaveOp<T> implements ISaveOp<T> {
 
           if (options.noTransaction) {
             for (const entityName of entityNames) {
-              const p = connection.manager.getRepository(entityName).save(resolveByEntityDef[entityName]);
+              const p = connection.manager.getRepository(entityName).save(resolveByEntityRef[entityName]);
               promises.push(p);
             }
           } else {
             const promise = connection.manager.transaction(async em => {
               const _promises = [];
               for (const entityName of entityNames) {
-                const p = em.getRepository(entityName).save(resolveByEntityDef[entityName]);
+                const p = em.getRepository(entityName).save(resolveByEntityRef[entityName]);
                 _promises.push(p);
               }
               return Promise.all(_promises);

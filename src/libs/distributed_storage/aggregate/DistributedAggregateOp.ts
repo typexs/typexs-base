@@ -8,12 +8,21 @@ import {DistributedAggregateResponse} from './DistributedAggregateResponse';
 import {IDistributedAggregateOptions} from './IDistributedAggregateOptions';
 import {IAggregateOp} from '../../storage/framework/IAggregateOp';
 import {IAggregateOptions} from '../../storage/framework/IAggregateOptions';
+import * as _ from 'lodash';
+import {C_WORKERS} from '../../..';
+import {IWorkerInfo} from '../../worker/IWorkerInfo';
+import {DistributedQueryWorker} from '../../../workers/DistributedQueryWorker';
+import {ClassUtils} from 'commons-base';
+import {__NODE_ID__} from '../Constants';
 
 
 export class DistributedAggregateOp
   extends AbstractMessage<DistributedAggregateRequest, DistributedAggregateResponse>
   implements IAggregateOp {
 
+  protected entityType: Function | ClassType<any> | string;
+
+  protected pipeline: any[];
 
   protected entityControllerRegistry: EntityControllerRegistry;
 
@@ -33,19 +42,67 @@ export class DistributedAggregateOp
   }
 
   async run(entryType: Function | string | ClassType<any>, pipeline: any[], options?: IAggregateOptions): Promise<any[]> {
-    return [];
+    this.entityType = ClassUtils.getClassName(entryType);
+    this.pipeline = pipeline;
+    options = options || {};
+    _.defaults(options, {
+      timeout: 10000
+    });
+    this.options = options;
+    this.timeout = this.options.timeout;
+
+    const req = new DistributedAggregateRequest();
+    req.pipeline = this.pipeline;
+    req.entityType = this.entityType;
+    req.options = this.options;
+
+
+    // also fire self
+    this.targetIds = this.system.getNodesWith(C_WORKERS)
+      .filter(n => n.contexts
+        .find(c => c.context === C_WORKERS).workers
+        .find((w: IWorkerInfo) => w.className === DistributedQueryWorker.name))
+      .map(n => n.nodeId);
+
+    if (this.options.nodeIds) {
+      this.targetIds = _.intersection(this.targetIds, this.options.nodeIds);
+    }
+
+    if (this.targetIds.length === 0) {
+      throw new Error('no distributed worker found to execute the query.');
+    }
+
+    if (this.targetIds.length === 0) {
+      return this.results;
+    }
+
+    await this.send(req);
+
+    return this.results;
   }
 
   doPostProcess(responses: DistributedAggregateResponse[], err?: Error): any {
-    return responses;
+    let count = 0;
+    responses.map(x => {
+      count += x.results.length;
+    });
+
+    this.results = [];
+    for (const res of responses) {
+      for (const r of res.results) {
+        _.set(r, __NODE_ID__, res.nodeId);
+        this.results.push(r);
+      }
+    }
+    return this.results;
   }
 
   getEntityType(): Function | string | ClassType<any> {
-    return undefined;
+    return this.entityType;
   }
 
   getPipeline(): any[] {
-    return [];
+    return this.pipeline;
   }
 
 

@@ -85,9 +85,9 @@ export class StorageRef /* extends EventEmitter */ {
     this.controller = new StorageEntityController(this);
 
     // register used entities, TODO better way to register with annotation @Entity (from typeorm)
-    this.options.entities.map(type =>
-      this.getEntityRef(type instanceof EntitySchema ? type.options.target : type)
-    );
+    this.options.entities.map(type => {
+      this.registerEntityRef(type);
+    });
   }
 
   get name() {
@@ -97,7 +97,6 @@ export class StorageRef /* extends EventEmitter */ {
   get dbType(): string {
     return this.options.type;
   }
-
 
   // if memory then on connection must be permanent
   private singleConnection = false;
@@ -133,6 +132,33 @@ export class StorageRef /* extends EventEmitter */ {
 
   private static machineName(x: string | EntitySchema | Function) {
     return _.snakeCase(this.getClassName(x));
+  }
+
+
+  registerEntityRef(type: string | Function | EntitySchema) {
+    const entityRef = this.getEntityRef(type instanceof EntitySchema ? type.options.target : type);
+    const cls = entityRef.getClassRef().getClass();
+    const columns = getMetadataArgsStorage().filterColumns(cls);
+    if (this.dbType === 'mongodb') {
+      /**
+       * add _id as default objectId field if in entity declaration is only set PrimaryColumn
+       */
+      const idProps = entityRef.getPropertyRefs().filter(x => x.isIdentifier());
+      const idNames = idProps.map(x => x.name);
+      const found = columns.filter(x => x.mode === 'objectId' && idNames.includes(x.propertyName));
+      if (found.length === 0 && !idNames.includes('_id')) {
+        getMetadataArgsStorage().columns.push({
+          mode: 'objectId',
+          propertyName: '_id',
+          target: cls,
+          options: {primary: true, name: '_id'},
+        });
+      }
+
+    } else {
+      _.remove(getMetadataArgsStorage().columns, x =>
+        x.target === cls && x.mode === 'objectId' && x.propertyName === '_id');
+    }
   }
 
 
@@ -193,7 +219,7 @@ export class StorageRef /* extends EventEmitter */ {
       opts.entities.push(type);
       this.options = _.assign(this.options, opts);
       // NOTE create an class ref entry to register class usage in registry
-      this.getEntityRef(type instanceof EntitySchema ? type.options.target : type);
+      this.registerEntityRef(type);
     }
 
     if (this._prepared) {

@@ -23,10 +23,10 @@ export interface IEntityController {
 
   remove<T>(object: T[], options?: IDeleteOptions): Promise<T[]>;
 
-  remove<T>(cls: ClassType<T>, condition: any, options?: IDeleteOptions): Promise<number>;
+  remove<T>(cls: Function | ClassType<T>, condition: any, options?: IDeleteOptions): Promise<number>;
 
-  update<T>(cls: ClassType<T>, condition: any, update: any, options?: IUpdateOptions): Promise<number>;
+  update<T>(cls: Function | ClassType<T>, condition: any, update: any, options?: IUpdateOptions): Promise<number>;
 
-  aggregate<T>(baseClass: ClassType<T>, pipeline: any[], options?: IAggregateOptions): Promise<any[]>;
+  aggregate<T>(baseClass: Function | ClassType<T>, pipeline: any[], options?: IAggregateOptions): Promise<any[]>;
 
 }

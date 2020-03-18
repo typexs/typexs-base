@@ -1,4 +1,5 @@
-import {TEST_MONGO_STORAGE_OPTIONS, TEST_STORAGE_OPTIONS} from '../../config';
+import {TEST_MONGO_STORAGE_OPTIONS} from '../../config';
+import * as _ from 'lodash';
 import {IEventBusConfiguration} from 'commons-eventbus';
 import {Config} from 'commons-config';
 import {ITypexsOptions} from '../../../../src/libs/ITypexsOptions';
@@ -6,15 +7,15 @@ import {Bootstrap} from '../../../../src/Bootstrap';
 
 (async function () {
   const LOG_EVENT = false; //
-
+  const DB_OPTIONS = TEST_MONGO_STORAGE_OPTIONS;
+  _.set(DB_OPTIONS, 'database', 'typexs_remote');
   let bootstrap = Bootstrap
     .setConfigSources([{type: 'system'}])
     .configure(<ITypexsOptions & any>{
-      app: {name: 'fakeapp01', nodeId: 'fakeapp01', path: __dirname},
+      app: {name: 'remote_mongo_app', nodeId: 'remote_mongo_app', path: __dirname},
       logging: {enable: LOG_EVENT, level: 'debug'},
       modules: {paths: [__dirname + '/../../../..']},
-      storage: {default: TEST_STORAGE_OPTIONS},
-      // cache: {bins: {default: 'redis1'}, adapter: {redis1: {type: 'redis', host: '127.0.0.1', port: 6379}}},
+      storage: {default: DB_OPTIONS},
       eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}},
       workers: {access: [{name: 'DistributedQueryWorker', access: 'allow'}]}
     });

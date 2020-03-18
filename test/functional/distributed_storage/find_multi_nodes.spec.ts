@@ -54,6 +54,8 @@ class DistributedQuerySpec {
   async after() {
     if (bootstrap) {
       await bootstrap.shutdown();
+    }
+    if (p) {
       p.shutdown();
       await p.done;
     }

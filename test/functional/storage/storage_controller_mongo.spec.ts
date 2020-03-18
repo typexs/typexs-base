@@ -236,14 +236,17 @@ class StorageControllerMongoSpec {
   async 'remove by conditions'() {
 
     const car1 = new MdbDriver();
+    car1.id = 'car-1';
     car1.firstName = 'Black';
     car1.lastName = 'Yellow';
 
     const car2 = new MdbDriver();
+    car2.id = 'car-2';
     car2.firstName = 'Blue';
     car2.lastName = 'Green';
 
     const car3 = new MdbDriver();
+    car3.id = 'car-3';
     car3.firstName = 'Blue';
     car3.lastName = 'Pink';
 
@@ -266,14 +269,17 @@ class StorageControllerMongoSpec {
   async 'update by conditions'() {
 
     const car1 = new MdbDriver();
+    car1.id = 'car-1';
     car1.firstName = 'Green';
     car1.lastName = 'Yellow';
 
     const car2 = new MdbDriver();
+    car2.id = 'car-2';
     car2.firstName = 'Blue';
     car2.lastName = 'Green';
 
     const car3 = new MdbDriver();
+    car3.id = 'car-3';
     car3.firstName = 'Blue';
     car3.lastName = 'Pink';
 
@@ -295,16 +301,19 @@ class StorageControllerMongoSpec {
   async 'aggregate'() {
 
     const car1 = new MdbPerson();
+    car1.id = 'person-1';
     car1.firstName = 'Green';
     car1.lastName = 'Yellow';
     car1.age = 10;
 
     const car2 = new MdbPerson();
+    car2.id = 'person-2';
     car2.firstName = 'Blue';
     car2.lastName = 'Green';
     car2.age = 20;
 
     const car3 = new MdbPerson();
+    car3.id = 'person-3';
     car3.firstName = 'Blue';
     car3.lastName = 'Pink';
     car3.age = 30;

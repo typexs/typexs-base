@@ -1,9 +1,24 @@
 import * as _ from 'lodash';
 import {InterpolationSupport, Utils} from 'commons-config';
 import {TreeUtils, WalkValues} from 'commons-base/browser';
+import {ClassUtils} from 'commons-base';
 
 
 export class BaseUtils {
+
+
+  static resolveByClassName<T>(objs: T[]) {
+    const resolved: { [entityType: string]: T[] } = {};
+    for (const obj of objs) {
+      const entityName = ClassUtils.getClassName(obj as any);
+      if (!resolved[entityName]) {
+        resolved[entityName] = [];
+      }
+      resolved[entityName].push(obj);
+
+    }
+    return resolved;
+  }
 
 
   static wait(time: number): Promise<any> {

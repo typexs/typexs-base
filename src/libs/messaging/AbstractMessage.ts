@@ -21,7 +21,7 @@ export abstract class AbstractMessage<REQ extends AbstractEvent, RES extends Abs
 
   protected targetIds: string[];
 
-  protected results: any | any[] = [];
+  protected results: any | any[];
 
   protected active = true;
 
@@ -48,8 +48,8 @@ export abstract class AbstractMessage<REQ extends AbstractEvent, RES extends Abs
     this.reqClass = reqClass;
     this.resClass = resClass;
     this.logger = _.get(options, 'logger', Log.getLogger());
-    if (options.nodeIds && _.isArray(options.nodeIds)) {
-      options.nodeIds.forEach(x => {
+    if (options.targetIds && _.isArray(options.targetIds)) {
+      options.targetIds.forEach(x => {
         this.target(x);
       });
     }
@@ -120,9 +120,9 @@ export abstract class AbstractMessage<REQ extends AbstractEvent, RES extends Abs
 
     this.logger.debug('REQ: ' + this.getSystem().node.nodeId + ' => ' + this.request.id + ' ' + this.request.targetIds);
     await EventBus.register(this);
-    await Promise.all([this.ready(), EventBus.postAndForget(this.request)]);
-    // await EventBus.postAndForget(this.req);
-    // await this.ready();
+    const ready = this.ready();
+    await EventBus.postAndForget(this.request);
+    this.results = await ready;
     try {
       await EventBus.unregister(this);
     } catch (e) {

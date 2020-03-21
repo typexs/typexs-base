@@ -140,9 +140,10 @@ export class Message<REQ extends AbstractEvent, RES extends AbstractEvent>
   //
   // }
   doPostProcess(responses: RES[], err?: Error): any {
+    let results: any = null;
     switch (this.options.mode) {
       case 'embed_nodeId':
-        this.results = responses.map(x => {
+        results = responses.map(x => {
           let y: any = null;
           if (x.error) {
             y = new Error(x.error.message);
@@ -155,7 +156,7 @@ export class Message<REQ extends AbstractEvent, RES extends AbstractEvent>
         });
         break;
       case 'map':
-        this.results = {};
+        results = {};
         responses.filter(x => !x.error).map(x => {
           let y: any = null;
           if (x.error) {
@@ -163,14 +164,14 @@ export class Message<REQ extends AbstractEvent, RES extends AbstractEvent>
           } else {
             y = this.factory.handleResponse(x, err);
           }
-          this.results[[x.nodeId, x.instNr].join(':')] = y;
+          results[[x.nodeId, x.instNr].join(':')] = y;
         });
         break;
       case 'raw':
-        this.results = responses;
+        results = responses;
         break;
       default:
-        this.results = responses.map(x => {
+        results = responses.map(x => {
           let y: any = null;
           if (x.error) {
             y = new Error(x.error.message);
@@ -180,7 +181,7 @@ export class Message<REQ extends AbstractEvent, RES extends AbstractEvent>
           return y;
         });
     }
-
+    return results;
   }
 
 

@@ -6,7 +6,11 @@ export interface IMessageOptions {
 
   mode?: 'map' | 'only_value' | 'embed_nodeId' | 'raw';
 
-  nodeIds?: string[];
+  // nodeIds?: string[];
+  /**
+   * used for defining targets to send messages
+   */
+  targetIds?: string[];
 
   filterErrors?: boolean;
 

@@ -126,6 +126,7 @@ class StorageGeneralSpec {
     expect(q).has.length(1);
   }
 
+
   @test
   async 'dynamically add entity class to file db '() {
 

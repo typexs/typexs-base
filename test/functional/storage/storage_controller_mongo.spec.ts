@@ -220,15 +220,12 @@ class StorageControllerMongoSpec {
           {firstName: 'Red', lastName: 'Green', id: 'rec-1', _id: 'rec-1'}]
     });
 
-
-    const remove_car = await controller.remove(car_by_driver);
-    expect(remove_car).to.have.length(1);
-    expect(_.map(remove_car, (d: any) => d.id)).to.deep.eq([undefined]);
+    const removeCount = await controller.remove(car_by_driver);
+    expect(removeCount).to.eq(1);
+    // expect(_.map(removeCount, (d: any) => d.id)).to.deep.eq([undefined]);
 
     const car_by_driver_empty = await controller.find(MdbCar, {'driver.id': car1.id});
     expect(car_by_driver_empty).to.have.length(0);
-
-
   }
 
 

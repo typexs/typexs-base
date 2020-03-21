@@ -12,8 +12,10 @@ import {DistributedStorageEntityController} from '../../../src/libs/distributed_
 import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
 import {DataRow} from './fake_app_mongo/entities/DataRow';
 import * as _ from 'lodash';
-import {C_STORAGE_DEFAULT, Injector, StorageRef} from '../../../src';
 import {__NODE_ID__} from '../../../src/libs/distributed_storage/Constants';
+import {Injector} from '../../../src/libs/di/Injector';
+import {C_STORAGE_DEFAULT} from '../../../src/libs/Constants';
+import {StorageRef} from '../../../src/libs/storage/StorageRef';
 
 
 const LOG_EVENT = TestHelper.logEnable(false);
@@ -22,7 +24,7 @@ let bootstrap: Bootstrap;
 // let p: SpawnHandle;
 
 
-@suite('functional/distributed_storage/remove_on_single_node')
+@suite('functional/distributed_storage/aggregate_single_node')
 class DistributedStorageSaveSpec {
 
 
@@ -70,12 +72,27 @@ class DistributedStorageSaveSpec {
     }
   }
 
-  @test.skip()
+
+  @test
   async 'local'() {
+
+    const controller = Container.get(DistributedStorageEntityController);
+
+    const results = await controller.aggregate(DataRow, [{$match: {someBool: true}}]);
+
+    // console.log(results);
+    const evenIds = results.map(x => {
+      return x.id;
+    });
+
+    expect(evenIds).to.be.deep.eq(_.range(1, 11).map(x => x * 2));
+    const nodeIds = _.uniq(results.map(x => {
+      return x[__NODE_ID__];
+    }));
+    expect(nodeIds).to.be.deep.eq(['system']);
 
 
   }
-
 
 }
 

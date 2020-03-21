@@ -183,16 +183,14 @@ class StorageControllerSqlSpec {
     expect(car_by_driver_inv[1]).to.deep.eq({id: 2, firstName: 'Red', lastName: 'Green'});
 
     // remove driver
-    const remove_driver = await controller.remove(car_by_driver_inv);
-    expect(remove_driver).to.have.length(2);
-    expect(_.map(remove_driver, (d: any) => d.id)).to.deep.eq([undefined, undefined]);
+    const remove_driver_count = await controller.remove(car_by_driver_inv);
+    expect(remove_driver_count).to.be.eq(2);
 
     const car_by_driver_inv_after_remove = await controller.find(DriverSql, {'car.id': 1});
     expect(car_by_driver_inv_after_remove).to.have.length(0);
 
-    const remove_car = await controller.remove(car_by_driver);
-    expect(remove_car).to.have.length(1);
-    expect(_.map(remove_car, (d: any) => d.id)).to.deep.eq([undefined]);
+    const remove_car_count = await controller.remove(car_by_driver);
+    expect(remove_car_count).to.be.eq(1);
 
   }
 

@@ -20,7 +20,6 @@ import {DistributedFindResponse} from '../libs/distributed_storage/find/Distribu
 import {DistributedSaveResponse} from '../libs/distributed_storage/save/DistributedSaveResponse';
 import {__CLASS__, __DISTRIBUTED_ID__, __REGISTRY__, DS_OPERATION} from '../libs/distributed_storage/Constants';
 import {EntityControllerRegistry} from '../libs/storage/EntityControllerRegistry';
-import {AbstractEvent} from '..';
 import {DistributedUpdateResponse} from '../libs/distributed_storage/update/DistributedUpdateResponse';
 import {DistributedRemoveResponse} from '../libs/distributed_storage/remove/DistributedRemoveResponse';
 import {DistributedAggregateResponse} from '../libs/distributed_storage/aggregate/DistributedAggregateResponse';
@@ -28,6 +27,8 @@ import {NotSupportedError} from 'commons-base';
 import {DistributedAggregateRequest} from '../libs/distributed_storage/aggregate/DistributedAggregateRequest';
 import {DistributedUpdateRequest} from '../libs/distributed_storage/update/DistributedUpdateRequest';
 import {DistributedRemoveRequest} from '../libs/distributed_storage/remove/DistributedRemoveRequest';
+import {IUpdateOptions} from '../libs/storage/framework/IUpdateOptions';
+import {AbstractEvent} from '../libs/messaging/AbstractEvent';
 
 
 export interface IQueryWorkload extends IQueueWorkload {
@@ -99,8 +100,6 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
     this.queue = new AsyncWorkerQueue<IQueryWorkload>(this, {...options, logger: this.logger});
     await EventBus.register(this);
     this.logger.debug('waiting for requests ...');
-
-
   }
 
 
@@ -129,96 +128,6 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
     return false;
   }
 
-  // @subscribe(DistributedFindRequest)
-  // onFindRequest(event: DistributedFindRequest) {
-  //   const response = this.createResponse('find', event);
-  //   try {
-  //     // check if its for me
-  //     if (event.targetIds && event.targetIds.indexOf(this.system.node.nodeId) === -1) {
-  //       return;
-  //     }
-  //
-  //     if (!this.isAllowed(event.nodeId, event.entityType)) {
-  //       response.skipping = true;
-  //       response.results = [];
-  //       EventBus.postAndForget(response);
-  //       return;
-  //     }
-  //
-  //     const entityRef = this.entityControllerRegistry.getControllerForClass(event.entityType).forClass(event.entityType);
-  //     if (!entityRef) {
-  //       // no entity ref
-  //       response.error = new Error('entity ref not found');
-  //       response.results = [];
-  //       EventBus.postAndForget(response);
-  //       return;
-  //     }
-  //
-  //     const q: IQueryWorkload = {
-  //       operation: 'find',
-  //       entityRef: entityRef,
-  //       event: event,
-  //       response: response
-  //     };
-  //     this.queue.push(q);
-  //   } catch (err) {
-  //     response.error = err.message;
-  //     response.results = [];
-  //     EventBus.postAndForget(response);
-  //     this.logger.error(err);
-  //   }
-  // }
-  //
-  //
-  // @subscribe(DistributedSaveRequest)
-  // onSaveEvent(event: DistributedSaveRequest) {
-  //   const response = this.createResponse('save', event);
-  //   try {
-  //
-  //     // check if its for me
-  //     if (event.targetIds && event.targetIds.indexOf(this.system.node.nodeId) === -1) {
-  //       return;
-  //     }
-  //
-  //     const entityTypes = _.keys(event.objects);
-  //     const failed = entityTypes.map(type => this.isAllowed(event.nodeId, type)).filter(x => !x);
-  //     if (failed.length > 0) {
-  //       // const resultsEvent = this.createSaveResultEvent(event);
-  //       response.skipping = true;
-  //       response.results = {};
-  //       EventBus.postAndForget(response);
-  //       return;
-  //     }
-  //
-  //
-  //     const entityRefs = {};
-  //     for (const entityType of entityTypes) {
-  //       entityRefs[entityType] = this.entityControllerRegistry.getControllerForClass(entityType).forClass(entityType);
-  //       if (!entityRefs[entityType]) {
-  //         // no entity ref
-  //         // const resultsEvent = this.createResponse("save", event);
-  //         response.error = new Error('entity ref ' + entityType + ' not found');
-  //         response.results = {};
-  //         EventBus.postAndForget(response);
-  //         return;
-  //       }
-  //     }
-  //
-  //     const q: IQueryWorkload = {
-  //       operation: 'save',
-  //       entityRefs: entityRefs,
-  //       event: event,
-  //       response: response
-  //     };
-  //     this.queue.push(q);
-  //   } catch (err) {
-  //     // const resultsEvent = this.createSaveResultEvent(event);
-  //     response.error = err.message;
-  //     response.results = {};
-  //     EventBus.postAndForget(response);
-  //     this.logger.error(err);
-  //   }
-  // }
 
   @subscribe(DistributedAggregateRequest)
   @subscribe(DistributedFindRequest)
@@ -284,10 +193,51 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
       this.queue.push(q);
     } catch (err) {
       response.error = err.message;
-      response.results = [];
       EventBus.postAndForget(response);
       this.logger.error(err);
     }
+  }
+
+
+  async do(workLoad: IQueryWorkload, queue?: AsyncWorkerQueue<any>): Promise<any> {
+    // execute query
+    // workLoad.event.
+    switch (workLoad.operation) {
+      case 'find':
+        await this.doFind(
+          workLoad.response as DistributedFindResponse,
+          workLoad.event as DistributedFindRequest);
+        break;
+      case 'save':
+        await this.doSave(
+          workLoad.response as DistributedSaveResponse,
+          workLoad.event as DistributedSaveRequest);
+        break;
+      case 'aggregate':
+        await this.doAggregate(
+          workLoad.response as DistributedAggregateResponse,
+          workLoad.event as DistributedAggregateRequest);
+        break;
+      case 'update':
+        await this.doUpdate(
+          workLoad.response as DistributedUpdateResponse,
+          workLoad.event as DistributedUpdateRequest);
+        break;
+      case 'remove':
+        await this.doRemove(
+          workLoad.response as DistributedRemoveResponse,
+          workLoad.event as DistributedRemoveRequest);
+        break;
+      default:
+        throw new Error('no operation detected');
+    }
+
+    // clear references
+    _.set(workLoad.event, 'entityRef', null);
+    _.set(workLoad.event, 'entityRefs', null);
+    _.set(workLoad.event, 'entityController', null);
+    _.set(workLoad.event, 'entityControllers', null);
+    return EventBus.postAndForget(workLoad.response);
   }
 
 
@@ -339,6 +289,7 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
     event.entityControllers = entityControllers;
   }
 
+
   onAggregateRequest(event: DistributedAggregateRequest, response: DistributedAggregateResponse) {
     if (_.isEmpty(event.pipeline)) {
       // no entity ref
@@ -367,62 +318,159 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
   }
 
 
-  onUpdateRequest(event: DistributedUpdateRequest, response: DistributedUpdateResponse) {
-
-  }
-
   onRemoveRequest(event: DistributedRemoveRequest, response: DistributedRemoveResponse) {
 
-  }
+    if (event.entityType) {
 
-  async do(workLoad: IQueryWorkload, queue?: AsyncWorkerQueue<any>): Promise<any> {
-    // execute query
-    // workLoad.event.
-    switch (workLoad.operation) {
-      case 'find':
-        await this.doFind(
-          workLoad.response as DistributedFindResponse,
-          workLoad.event as DistributedFindRequest);
-        break;
-      case 'save':
-        await this.doSave(
-          workLoad.response as DistributedSaveResponse,
-          workLoad.event as DistributedSaveRequest);
-        break;
-      case 'aggregate':
-        await this.doAggregate(
-          workLoad.response as DistributedAggregateResponse,
-          workLoad.event as DistributedAggregateRequest);
-        break;
-      case 'update':
-        await this.doUpdate(
-          workLoad.response as DistributedUpdateResponse,
-          workLoad.event as DistributedUpdateRequest);
-        break;
-      case 'remove':
-        await this.doRemove(
-          workLoad.response as DistributedRemoveResponse,
-          workLoad.event as DistributedRemoveRequest);
-        break;
-      default:
-        throw new Error('no operation detected');
+      if (!this.isAllowed(event.nodeId, event.entityType)) {
+        response.skipping = true;
+        response.affected = -1;
+        return;
+      }
+
+      const controller = this.entityControllerRegistry
+        .getControllerForClass(event.entityType,
+          _.get(event.options, 'controllerHint', null));
+
+      const entityRef = controller.forClass(event.entityType);
+      if (!entityRef) {
+        // no entity ref
+        response.error = new Error('entity ref not found');
+        response.affected = -1;
+        return;
+      }
+
+      event.entityRefs = {};
+      event.entityRefs[event.entityType] = entityRef;
+      event.entityControllers[event.entityType] = controller;
+
+    } else if (event.removable) {
+      const entityTypes = _.keys(event.removable);
+      const failed = entityTypes.map(type => this
+        .isAllowed(event.nodeId, type)).filter(x => !x);
+      if (failed.length > 0) {
+        response.skipping = true;
+        response.affected = -1;
+        return;
+      }
+
+      const entityRefs = {};
+      const entityControllers = {};
+      for (const entityType of entityTypes) {
+        entityControllers[entityType] = this.entityControllerRegistry
+          .getControllerForClass(entityType,
+            _.get(event.options, 'controllerHint', null));
+        entityRefs[entityType] = entityControllers[entityType].forClass(entityType);
+        if (!entityRefs[entityType]) {
+          // no entity ref
+          response.error = new Error('entity ref ' + entityType + ' not found');
+          response.affected = -1;
+          return;
+        }
+      }
+      event.entityRefs = entityRefs;
+      event.entityControllers = entityControllers;
     }
-
-    // clear references
-    _.set(workLoad.event, 'entityRef', null);
-    _.set(workLoad.event, 'entityRefs', null);
-    _.set(workLoad.event, 'entityController', null);
-    _.set(workLoad.event, 'entityControllers', null);
-    return EventBus.postAndForget(workLoad.response);
   }
+
 
   async doRemove(response: DistributedRemoveResponse, o: DistributedRemoveRequest) {
+    response.affected = -1;
+    response.results = {};
+    try {
+      response.results = {};
+      if (o.entityType) {
+        const ref = o.entityRefs[o.entityType];
+        const classRef = ref.getClassRef();
+        const entityController = o.entityControllers[o.entityType];
 
+        response.results[o.entityType] = await entityController
+          .remove(classRef.getClass(), o.condition, o.options);
+      } else {
+        for (const entityType of _.keys(o.entityRefs)) {
+          if (_.isEmpty(o.removable[entityType])) {
+            continue;
+          }
+
+          const ref = o.entityRefs[entityType];
+          const classRef = ref.getClassRef();
+          const entityController = o.entityControllers[entityType];
+          const build = o.removable[entityType].map(x => classRef.build(x, {
+            afterBuild: (entityRef, from, to) => {
+              // keep the remote id
+              _.set(to, __DISTRIBUTED_ID__, _.get(from, __DISTRIBUTED_ID__));
+              _.set(to, __CLASS__, classRef.name);
+              _.set(to, __REGISTRY__, _.get(classRef, 'lookupRegistry'));
+            }
+          }));
+          response.results[entityType] = await entityController.remove(build, o.options);
+          this.logger.debug('distributed query worker:  remove ' + classRef.name + ' amount of ' + response.results[entityType].length +
+            '[qId: ' + response.reqEventId + ']');
+        }
+      }
+      response.affected = _.sum(_.keys(response.results).map(x => response.results[x]));
+    } catch (err) {
+      response.error = err.message;
+      this.logger.error(err);
+    }
   }
+
+
+  onUpdateRequest(event: DistributedUpdateRequest, response: DistributedUpdateResponse) {
+    if (!this.isAllowed(event.nodeId, event.entityType)) {
+      response.skipping = true;
+      response.affected = -1;
+      return;
+    }
+
+    const controller = this.entityControllerRegistry
+      .getControllerForClass(event.entityType,
+        _.get(event.options, 'controllerHint', null));
+
+    const entityRef = controller.forClass(event.entityType);
+    if (!entityRef) {
+      // no entity ref
+      response.error = new Error('entity ref not found');
+      response.affected = -1;
+      return;
+    }
+
+    if (_.isEmpty(event.conditions) || _.isEmpty(event.update)) {
+      // no entity ref
+      response.error = new Error('no conditions or update order is missing');
+      response.affected = -1;
+      return;
+    }
+
+    event.entityRef = entityRef;
+    event.entityController = controller;
+  }
+
 
   async doUpdate(response: DistributedUpdateResponse, o: DistributedUpdateRequest) {
+    response.affected = 0;
 
+    try {
+      const classRef = o.entityRef.getClassRef();
+      const entityController = o.entityController;
+      const opts: IUpdateOptions = o.options;
+
+      response.affected = await entityController.update(
+        classRef.getClass(),
+        o.conditions,
+        o.update,
+        opts
+      );
+
+      this.logger.debug('distributed query worker:  affected ' + response.affected +
+        ' entries for ' + classRef.name + '[qId: ' + response.id + ']');
+
+    } catch (err) {
+      response.error = err.message;
+      this.logger.error(err);
+    }
   }
+
 
   async doFind(response: DistributedFindResponse, o: DistributedFindRequest) {
     response.results = [];

@@ -47,7 +47,7 @@ export class DeleteOp<T> implements IDeleteOp<T> {
   }
 
 
-  async run(object: T[] | T | ClassType<T>, conditions: any = null, options: IDeleteOptions = {}): Promise<T[] | T | number> {
+  async run(object: T[] | T | ClassType<T>, conditions: any = null, options: IDeleteOptions = {}): Promise<number> {
     this.removable = object;
     this.conditions = conditions;
     this.options = options;
@@ -113,12 +113,13 @@ export class DeleteOp<T> implements IDeleteOp<T> {
   private async remove(object: T[] | T, options: IDeleteOptions = {}) {
     const isArray = _.isArray(object);
     const connection = await this.controller.connect();
+    let promiseResults: any[][] = null;
+    let affected = -1;
     try {
       this.objects = this.prepare(object);
 
       const resolveByEntityDef = TypeOrmUtils.resolveByEntityRef(this.objects);
       const entityNames = _.keys(resolveByEntityDef);
-
 
       if (this.isMongoDB()) {
         const promises = [];
@@ -126,7 +127,7 @@ export class DeleteOp<T> implements IDeleteOp<T> {
           const p = connection.manager.getMongoRepository(entityName).remove(resolveByEntityDef[entityName]);
           promises.push(p);
         }
-        await Promise.all(promises);
+        promiseResults = await Promise.all(promises);
       } else {
         // start transaction, got to leafs and save
         if (connection.isSingleConnection()) {
@@ -139,9 +140,9 @@ export class DeleteOp<T> implements IDeleteOp<T> {
             const p = connection.manager.getRepository(entityName).remove(resolveByEntityDef[entityName]);
             promises.push(p);
           }
-          await Promise.all(promises);
+          promiseResults = await Promise.all(promises);
         } else {
-          await connection.manager.transaction(async em => {
+          promiseResults = await connection.manager.transaction(async em => {
             const promises = [];
             for (const entityName of entityNames) {
               const p = em.getRepository(entityName).remove(resolveByEntityDef[entityName]);
@@ -151,17 +152,25 @@ export class DeleteOp<T> implements IDeleteOp<T> {
           });
         }
       }
+
+      if (promiseResults) {
+        affected = 0;
+        entityNames.map((value, index) => {
+          affected += promiseResults[index].length;
+        });
+      }
+
     } catch (e) {
       this.error = e;
     } finally {
       await connection.close();
-
     }
 
-    if (!isArray) {
-      return this.objects.shift();
-    }
-    return this.objects;
+    // if (!isArray) {
+    //   return this.objects.shift();
+    // }
+
+    return affected;
 
   }
 

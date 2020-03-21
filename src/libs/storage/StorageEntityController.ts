@@ -86,10 +86,9 @@ export class StorageEntityController implements IEntityController {
   }
 
 
-  async remove<T>(object: T, options?: IDeleteOptions): Promise<T>;
-  async remove<T>(object: T[], options?: IDeleteOptions): Promise<T[]>;
+  async remove<T>(object: T | T[], options?: IDeleteOptions): Promise<number>;
   async remove<T>(object: ClassType<T>, condition: any, options?: IDeleteOptions): Promise<number>;
-  async remove<T>(object: T | T[] | ClassType<T>, condition?: any, options?: IDeleteOptions): Promise<T | T[] | number> {
+  async remove<T>(object: T | T[] | ClassType<T>, condition?: any, options?: IDeleteOptions): Promise<number> {
     return new DeleteOp<T>(this).run(object, condition, options);
 
   }

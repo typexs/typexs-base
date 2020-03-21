@@ -85,9 +85,11 @@ export class StorageRef /* extends EventEmitter */ {
     this.controller = new StorageEntityController(this);
 
     // register used entities, TODO better way to register with annotation @Entity (from typeorm)
-    this.options.entities.map(type => {
-      this.registerEntityRef(type);
-    });
+    if (_.has(this.options, 'entities') && _.isArray(this.options.entities)) {
+      this.options.entities.map(type => {
+        this.registerEntityRef(type);
+      });
+    }
   }
 
   get name() {

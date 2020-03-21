@@ -70,6 +70,9 @@ export class UpdateOp<T> implements IUpdateOp<T> {
     return results;
   }
 
+  /**
+   * when returns -2 then affected is not supported, so update worked but how many records ware changes is not given back
+   */
   private async updateSql(): Promise<number> {
     let affected = -1;
     const connection = await this.controller.connect();
@@ -101,7 +104,7 @@ export class UpdateOp<T> implements IUpdateOp<T> {
           qb.limit(this.options['limit']);
         }
         const r = await qb.execute();
-        affected = r.affected;
+        affected = _.get(r, 'affected', -2);
       }
     } catch (e) {
       this.error = e;

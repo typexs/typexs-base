@@ -13,7 +13,7 @@ import {C_WORKERS} from '../../worker/Constants';
 import {DistributedQueryWorker} from '../../../workers/DistributedQueryWorker';
 import {IWorkerInfo} from '../../worker/IWorkerInfo';
 import {EntityControllerRegistry} from '../../storage/EntityControllerRegistry';
-import {ClassUtils} from 'commons-base';
+import {BaseUtils} from '../../utils/BaseUtils';
 
 
 export class DistributedSaveOp<T>
@@ -36,18 +36,6 @@ export class DistributedSaveOp<T>
   protected entityControllerRegistry: EntityControllerRegistry;
 
 
-  static resolveByClassName<T>(objs: T[]) {
-    const resolved: { [entityType: string]: T[] } = {};
-    for (const obj of objs) {
-      const entityName = ClassUtils.getClassName(obj as any);
-      if (!resolved[entityName]) {
-        resolved[entityName] = [];
-      }
-      resolved[entityName].push(obj);
-
-    }
-    return resolved;
-  }
 
   getOptions(): IDistributedSaveOptions & IMessageOptions {
     return this.options;
@@ -65,7 +53,7 @@ export class DistributedSaveOp<T>
     return this;
   }
 
-  async run(objects: T | T[], options?: IDistributedSaveOptions & IMessageOptions): Promise<T[]> {
+  async run(objects: T | T[], options?: IDistributedSaveOptions): Promise<T[]> {
     this.options = _.defaults(options, {timeout: 10000});
     this.timeout = this.options.timeout;
 
@@ -80,7 +68,7 @@ export class DistributedSaveOp<T>
 
     // create request event
     const req = new DistributedSaveRequest();
-    req.objects = DistributedSaveOp.resolveByClassName(this.objects);
+    req.objects = BaseUtils.resolveByClassName(this.objects);
     req.options = this.options;
 
     // _.keys(req.objects).map(entityType => {
@@ -95,8 +83,8 @@ export class DistributedSaveOp<T>
         .find((w: IWorkerInfo) => w.className === DistributedQueryWorker.name))
       .map(n => n.nodeId);
 
-    if (this.options.nodeIds) {
-      this.targetIds = _.intersection(this.targetIds, this.options.nodeIds);
+    if (this.options.targetIds) {
+      this.targetIds = _.intersection(this.targetIds, this.options.targetIds);
     }
 
     if (this.targetIds.length === 0) {

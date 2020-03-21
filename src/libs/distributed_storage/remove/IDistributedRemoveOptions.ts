@@ -1,10 +1,8 @@
-import {IFindOptions} from '../../storage/framework/IFindOptions';
+import {IDeleteOptions} from '../../storage/framework/IDeleteOptions';
+import {IMessageOptions} from '../../messaging/IMessageOptions';
 
-export interface IDistributedRemoveOptions extends IFindOptions {
-
-  targetIds?: string[];
-
-  timeout?: number;
+export interface IDistributedRemoveOptions extends IDeleteOptions, IMessageOptions {
 
   contollerHint?: { className?: string, name?: string };
+  
 }

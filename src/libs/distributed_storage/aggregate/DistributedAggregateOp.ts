@@ -7,13 +7,12 @@ import {DistributedAggregateRequest} from './DistributedAggregateRequest';
 import {DistributedAggregateResponse} from './DistributedAggregateResponse';
 import {IDistributedAggregateOptions} from './IDistributedAggregateOptions';
 import {IAggregateOp} from '../../storage/framework/IAggregateOp';
-import {IAggregateOptions} from '../../storage/framework/IAggregateOptions';
 import * as _ from 'lodash';
-import {C_WORKERS} from '../../..';
 import {IWorkerInfo} from '../../worker/IWorkerInfo';
 import {DistributedQueryWorker} from '../../../workers/DistributedQueryWorker';
 import {ClassUtils} from 'commons-base';
 import {__NODE_ID__} from '../Constants';
+import {C_WORKERS} from '../../worker/Constants';
 
 
 export class DistributedAggregateOp
@@ -41,7 +40,7 @@ export class DistributedAggregateOp
     return this;
   }
 
-  async run(entryType: Function | string | ClassType<any>, pipeline: any[], options?: IAggregateOptions): Promise<any[]> {
+  async run(entryType: Function | string | ClassType<any>, pipeline: any[], options?: IDistributedAggregateOptions): Promise<any[]> {
     this.entityType = ClassUtils.getClassName(entryType);
     this.pipeline = pipeline;
     options = options || {};
@@ -64,8 +63,8 @@ export class DistributedAggregateOp
         .find((w: IWorkerInfo) => w.className === DistributedQueryWorker.name))
       .map(n => n.nodeId);
 
-    if (this.options.nodeIds) {
-      this.targetIds = _.intersection(this.targetIds, this.options.nodeIds);
+    if (this.options.targetIds) {
+      this.targetIds = _.intersection(this.targetIds, this.options.targetIds);
     }
 
     if (this.targetIds.length === 0) {

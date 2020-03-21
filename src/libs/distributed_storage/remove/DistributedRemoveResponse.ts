@@ -2,11 +2,8 @@ import {AbstractEvent} from '../../messaging/AbstractEvent';
 
 export class DistributedRemoveResponse extends AbstractEvent {
 
-  results: any[] = [];
+  affected: number;
 
-  count: number;
+  results: any;
 
-  limit: number;
-
-  offset: number;
 }

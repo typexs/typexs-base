@@ -7,13 +7,27 @@ import {DistributedRemoveRequest} from './DistributedRemoveRequest';
 import {DistributedRemoveResponse} from './DistributedRemoveResponse';
 import {IDistributedRemoveOptions} from './IDistributedRemoveOptions';
 import {IDeleteOp} from '../../storage/framework/IDeleteOp';
+import * as _ from 'lodash';
+import {IWorkerInfo} from '../../worker/IWorkerInfo';
+import {DistributedQueryWorker} from '../../../workers/DistributedQueryWorker';
+import {__DISTRIBUTED_ID__} from '../Constants';
+import {ClassUtils} from 'commons-base';
+import {C_WORKERS} from '../../worker/Constants';
+import {BaseUtils} from '../../utils/BaseUtils';
 
 
 export class DistributedRemoveOp<T>
   extends AbstractMessage<DistributedRemoveRequest, DistributedRemoveResponse>
   implements IDeleteOp<T> {
 
-  protected findConditions: any;
+  protected removable: T | T[] | ClassType<T>;
+
+
+  protected conditions: any;
+
+  protected isArray: boolean;
+
+  // protected entityTypeOrig: Function | ClassType<T> | string;
 
   protected entityType: Function | ClassType<T> | string;
 
@@ -26,11 +40,11 @@ export class DistributedRemoveOp<T>
   }
 
   getConditions(): any {
-    return null;
+    return this.conditions;
   }
 
-  getRemovable(): T | T[] | ClassType<T> {
-    return null;
+  getRemovable() {
+    return this.removable;
   }
 
   getOptions(): IDistributedRemoveOptions {
@@ -42,12 +56,76 @@ export class DistributedRemoveOp<T>
   }
 
 
-  doPostProcess(responses: DistributedRemoveResponse[], err?: Error): any {
-    return responses;
+  async run(object: T[] | ClassType<T> | T, conditions?: any, options?: IDistributedRemoveOptions): Promise<T[] | number | T> {
+    this.options = options || {};
+    this.removable = object;
+
+    if (_.isFunction(object)) {
+      this.entityType = object;
+      // this.entityTypeOrig = object;
+      this.conditions = conditions;
+    } else {
+      this.isArray = _.isArray(object);
+
+      let inc = 0;
+      const objects = _.isArray(object) ? object : [<T>object];
+      objects.forEach((o: any) => {
+        _.set(o, __DISTRIBUTED_ID__, inc++);
+      });
+
+    }
+
+    _.defaults(this.options, {
+      timeout: 10000
+    });
+    this.timeout = this.options.timeout;
+
+
+    const req = new DistributedRemoveRequest();
+    req.condition = this.conditions;
+    req.options = this.options;
+    if (_.isUndefined(this.entityType)) {
+      req.removable = BaseUtils.resolveByClassName(
+        this.isArray ? <T[]>this.removable : [this.removable]
+      );
+    } else {
+      req.entityType = ClassUtils.getClassName(this.entityType);
+    }
+
+    // also fire self
+    this.targetIds = this.system.getNodesWith(C_WORKERS)
+      .filter(n => n.contexts
+        .find(c => c.context === C_WORKERS).workers
+        .find((w: IWorkerInfo) => w.className === DistributedQueryWorker.name))
+      .map(n => n.nodeId);
+
+    if (this.options.targetIds) {
+      this.targetIds = _.intersection(this.targetIds, this.options.targetIds);
+    }
+
+    if (this.targetIds.length === 0) {
+      throw new Error('no distributed worker found to execute the query.');
+    }
+
+
+    // this.queryEvent.targetIds = this.targetIds;
+    if (this.targetIds.length === 0) {
+      return 0;
+    }
+
+    await this.send(req);
+
+    return this.results;
+
   }
 
-  async run(object: T[] | ClassType<T> | T, conditions?: any, options?: IDistributedRemoveOptions): Promise<T[] | number | T> {
-    return null;
+
+  doPostProcess(responses: DistributedRemoveResponse[], err?: Error): any {
+    const affected = {};
+    for (const res of responses) {
+      affected[res.nodeId] = res.affected;
+    }
+    return affected;
   }
 
 }

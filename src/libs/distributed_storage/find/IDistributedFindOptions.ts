@@ -1,10 +1,7 @@
 import {IFindOptions} from '../../storage/framework/IFindOptions';
+import {IMessageOptions} from '../../messaging/IMessageOptions';
 
-export interface IDistributedFindOptions extends IFindOptions {
-
-  targetIds?: string[];
-
-  timeout?: number;
+export interface IDistributedFindOptions extends IFindOptions, IMessageOptions {
 
   contollerHint?: { className?: string, name?: string };
 }

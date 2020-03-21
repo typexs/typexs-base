@@ -77,8 +77,8 @@ export class DistributedFindOp<T>
         .find((w: IWorkerInfo) => w.className === DistributedQueryWorker.name))
       .map(n => n.nodeId);
 
-    if (this.options.nodeIds) {
-      this.targetIds = _.intersection(this.targetIds, this.options.nodeIds);
+    if (this.options.targetIds) {
+      this.targetIds = _.intersection(this.targetIds, this.options.targetIds);
     }
 
     if (this.targetIds.length === 0) {

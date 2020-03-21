@@ -7,7 +7,11 @@ import {DistributedUpdateRequest} from './DistributedUpdateRequest';
 import {DistributedUpdateResponse} from './DistributedUpdateResponse';
 import {IDistributedUpdateOptions} from './IDistributedUpdateOptions';
 import {IUpdateOp} from '../../storage/framework/IUpdateOp';
-import {IUpdateOptions} from '../../storage/framework/IUpdateOptions';
+import {IWorkerInfo} from '../../worker/IWorkerInfo';
+import {DistributedQueryWorker} from '../../../workers/DistributedQueryWorker';
+import * as _ from 'lodash';
+import {ClassUtils} from 'commons-base';
+import {C_WORKERS} from '../../worker/Constants';
 
 
 export class DistributedUpdateOp<T>
@@ -50,12 +54,55 @@ export class DistributedUpdateOp<T>
     return this.entityType;
   }
 
-  async run(cls: ClassType<T>, condition: any, update: any, options?: IUpdateOptions): Promise<number> {
-    return 0;
+  async run(cls: ClassType<T>, condition: any, update: any, options?: IDistributedUpdateOptions): Promise<number> {
+    this.entityType = cls;
+    this.conditions = condition;
+    this.update = update;
+    this.options = options || {};
+
+    _.defaults(this.options, {
+      timeout: 10000
+    });
+    this.timeout = this.options.timeout;
+
+
+    const req = new DistributedUpdateRequest();
+    req.entityType = ClassUtils.getClassName(this.entityType);
+    req.conditions = this.conditions;
+    req.update = this.update;
+    req.options = this.options;
+
+
+    // also fire self
+    this.targetIds = this.system.getNodesWith(C_WORKERS)
+      .filter(n => n.contexts
+        .find(c => c.context === C_WORKERS).workers
+        .find((w: IWorkerInfo) => w.className === DistributedQueryWorker.name))
+      .map(n => n.nodeId);
+
+    if (this.options.targetIds) {
+      this.targetIds = _.intersection(this.targetIds, this.options.targetIds);
+    }
+
+    if (this.targetIds.length === 0) {
+      throw new Error('no distributed worker found to execute the query.');
+    }
+
+    // this.request.targetIds = this.targetIds;
+    if (this.targetIds.length === 0) {
+      return this.results;
+    }
+    await this.send(req);
+    return this.results;
   }
 
+
   doPostProcess(responses: DistributedUpdateResponse[], err?: Error): any {
-    return responses;
+    const affected = {};
+    for (const res of responses) {
+      affected[res.nodeId] = res.affected;
+    }
+    return affected;
   }
 
 

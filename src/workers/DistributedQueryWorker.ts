@@ -18,7 +18,13 @@ import {IDistributedQueryWorkerOptions} from '../libs/distributed_storage/IDistr
 import {ILoggerApi} from '../libs/logging/ILoggerApi';
 import {DistributedFindResponse} from '../libs/distributed_storage/find/DistributedFindResponse';
 import {DistributedSaveResponse} from '../libs/distributed_storage/save/DistributedSaveResponse';
-import {__CLASS__, __DISTRIBUTED_ID__, __REGISTRY__, DS_OPERATION} from '../libs/distributed_storage/Constants';
+import {
+  __CLASS__,
+  __DISTRIBUTED_ID__,
+  __NODE_ID__,
+  __REGISTRY__,
+  DS_OPERATION
+} from '../libs/distributed_storage/Constants';
 import {EntityControllerRegistry} from '../libs/storage/EntityControllerRegistry';
 import {DistributedUpdateResponse} from '../libs/distributed_storage/update/DistributedUpdateResponse';
 import {DistributedRemoveResponse} from '../libs/distributed_storage/remove/DistributedRemoveResponse';
@@ -488,6 +494,7 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
       response.results.forEach(x => {
         _.set(x, __CLASS__, classRef.name);
         _.set(x, __REGISTRY__, _.get(classRef, 'lookupRegistry'));
+        _.set(x, __NODE_ID__, this.nodeId);
       });
 
       response.count = response.results[XS_P_$COUNT];

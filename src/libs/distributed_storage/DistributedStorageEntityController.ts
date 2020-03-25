@@ -1,3 +1,4 @@
+import * as _ from 'lodash';
 import {Inject} from 'typedi';
 import {DistributedOperationFactory} from './DistributedOperationFactory';
 import {IDistributedFindOptions} from './find/IDistributedFindOptions';
@@ -8,6 +9,7 @@ import {NotSupportedError} from 'commons-base';
 import {IDistributedRemoveOptions} from './remove/IDistributedRemoveOptions';
 import {IDistributedUpdateOptions} from './update/IDistributedUpdateOptions';
 import {IDistributedAggregateOptions} from './aggregate/IDistributedAggregateOptions';
+import {__NODE_ID__} from './Constants';
 
 
 export class DistributedStorageEntityController implements IEntityController {
@@ -24,14 +26,27 @@ export class DistributedStorageEntityController implements IEntityController {
   }
 
 
-  async findOne<T>(fn: Function | string, conditions: any = null, options: IDistributedFindOptions = {limit: 1}): Promise<T> {
-    return this.find<T>(fn, conditions, options).then(r => r.shift());
+  async findOne<T>(fn: ClassType<T> | Function | string,
+                   conditions: any = null,
+                   options: IDistributedFindOptions = {limit: 1}): Promise<T> {
+    options = _.assign(options || {}, {limit: 1});
+    return this.find<T>(fn, conditions, options).then(r => {
+      if (r.length === 0) {
+        return null;
+      }
+
+      if (options.hint) {
+        r = _.filter(r, x => x[__NODE_ID__] === options.hint);
+      }
+      return r.length > 0 ? r.shift() : null;
+    });
   }
 
 
-  async find<T>(fn: Function | string, conditions: any = null, options: IDistributedFindOptions = {limit: 100}): Promise<T[]> {
+  async find<T>(fn: ClassType<T> | Function | string,
+                conditions: any = null,
+                options: IDistributedFindOptions = {limit: 100}): Promise<T[]> {
     return this.factory.createFindOp<T>().prepare(this).run(fn, conditions, options);
-
   }
 
 

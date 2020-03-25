@@ -71,7 +71,7 @@ export class StorageEntityController implements IEntityController {
   }
 
   async findOne<T>(fn: Function | string | ClassType<T>, conditions: any = null, options: IFindOptions = {limit: 1}): Promise<T> {
-    return this.find<T>(fn, conditions, options).then(r => r.shift());
+    return this.find<T>(fn, conditions, options).then(r => r.length > 0 ? r.shift() : null);
   }
 
   async find<T>(fn: Function | string | ClassType<T>, conditions: any = null, options: IFindOptions = {limit: 100}): Promise<T[]> {

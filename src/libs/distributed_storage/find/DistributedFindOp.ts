@@ -13,7 +13,7 @@ import {IDistributedFindOptions} from './IDistributedFindOptions';
 import {AbstractMessage} from '../../messaging/AbstractMessage';
 import {EntityControllerRegistry} from '../../storage/EntityControllerRegistry';
 import {ClassUtils} from 'commons-base';
-import {__CLASS__, __REGISTRY__} from '../Constants';
+import {__CLASS__, __NODE_ID__, __REGISTRY__} from '../Constants';
 
 
 export class DistributedFindOp<T>
@@ -81,23 +81,31 @@ export class DistributedFindOp<T>
       this.targetIds = _.intersection(this.targetIds, this.options.targetIds);
     }
 
+    if (this.options.skipLocal) {
+      _.remove(this.targetIds, x => x === this.getSystem().getNodeId());
+    }
+
     if (this.targetIds.length === 0) {
       throw new Error('no distributed worker found to execute the query.');
     }
 
 
     // this.queryEvent.targetIds = this.targetIds;
-    if (this.targetIds.length === 0) {
-      return this.results;
+    if (this.targetIds.length !== 0) {
+      await this.send(req);
     }
-
-    await this.send(req);
 
     return this.results;
   }
 
 
   doPostProcess(responses: DistributedFindResponse[], err?: Error): any {
+
+    if (this.options.mode === 'raw') {
+      return responses;
+    }
+
+    let results: any = null;
     let count = 0;
     responses.map(x => {
       count += x.count;
@@ -114,7 +122,7 @@ export class DistributedFindOp<T>
     });
 
     if (_.get(this.options, 'raw', false)) {
-      this.results = _.concat([], ...responses.map(x => x.results)).map(x => {
+      results = _.concat([], ...responses.map(x => x.results)).map(x => {
         const classRefName = x[__CLASS__];
         const registry = x[__REGISTRY__];
         const key = [classRefName, registry].join(C_KEY_SEPARATOR);
@@ -124,7 +132,7 @@ export class DistributedFindOp<T>
         return e;
       });
     } else {
-      this.results = _.concat([], ...responses.map(x => x.results))
+      results = _.concat([], ...responses.map(x => x.results))
         .map(r => {
           const classRefName = r[__CLASS__];
           const registry = r[__REGISTRY__];
@@ -144,14 +152,31 @@ export class DistributedFindOp<T>
       _.keys(this.request.options.sort).forEach(k => {
         arr.push([k, this.request.options.sort[k].toUpperCase() === 'ASC' ? 'asc' : 'desc']);
       });
-      _.orderBy(this.results, ...arr);
+      _.orderBy(results, ...arr);
     }
 
-    this.results[XS_P_$COUNT] = count;
-    this.results[XS_P_$LIMIT] = this.request.options.limit;
-    this.results[XS_P_$OFFSET] = this.request.options.offset;
+    if (this.options.mode === 'map') {
+      const mappedResults: any = {};
+      mappedResults[XS_P_$COUNT] = count;
+      mappedResults[XS_P_$LIMIT] = this.request.options.limit;
+      mappedResults[XS_P_$OFFSET] = this.request.options.offset;
+      results.forEach((x: any) => {
+        if (!mappedResults[x[__NODE_ID__]]) {
+          mappedResults[x[__NODE_ID__]] = [];
+          mappedResults[x[__NODE_ID__]][XS_P_$COUNT] = responses.find(x => x.nodeId === x[__NODE_ID__]).count;
+          mappedResults[x[__NODE_ID__]][XS_P_$OFFSET] = responses.find(x => x.nodeId === x[__NODE_ID__]).offset;
+          mappedResults[x[__NODE_ID__]][XS_P_$LIMIT] = responses.find(x => x.nodeId === x[__NODE_ID__]).limit;
+        }
+        mappedResults[x[__NODE_ID__]].push(x);
+      });
+      return mappedResults;
+    }
 
-    return this.results;
+    results[XS_P_$COUNT] = count;
+    results[XS_P_$LIMIT] = this.request.options.limit;
+    results[XS_P_$OFFSET] = this.request.options.offset;
+
+    return results;
   }
 
 }

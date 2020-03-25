@@ -116,6 +116,10 @@ export class System {
     }
   }
 
+  getNodeId() {
+    return this.node.nodeId;
+  }
+
 
   @subscribe(SystemNodeInfo)
   onNodeInfo(nodeInfo: SystemNodeInfo) {

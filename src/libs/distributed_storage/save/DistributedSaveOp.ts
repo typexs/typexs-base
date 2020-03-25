@@ -87,6 +87,10 @@ export class DistributedSaveOp<T>
       this.targetIds = _.intersection(this.targetIds, this.options.targetIds);
     }
 
+    if (this.options.skipLocal) {
+      _.remove(this.targetIds, x => x === this.getSystem().getNodeId());
+    }
+
     if (this.targetIds.length === 0) {
       throw new Error('no distributed worker found to execute the query.');
     }

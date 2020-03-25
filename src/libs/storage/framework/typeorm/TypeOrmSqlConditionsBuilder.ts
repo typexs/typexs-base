@@ -5,23 +5,10 @@ import {IConditionJoin} from '../IConditionJoin';
 import {TypeOrmPropertyRef} from './schema/TypeOrmPropertyRef';
 import {IClassRef, IEntityRef} from 'commons-schema-api/browser';
 import {Brackets, EntityManager, QueryBuilder, SelectQueryBuilder} from 'typeorm';
+import {DateUtils} from 'typeorm/util/DateUtils';
 
 
 export class TypeOrmSqlConditionsBuilder<T> /*extends AbstractSqlConditionsBuilder*/ {
-
-  protected inc = 1;
-
-  baseQueryBuilder: QueryBuilder<T>;
-
-  paramInc: number = 0;
-
-  alias: string;
-
-  entityRef: IEntityRef;
-
-  type: 'update' | 'select' | 'delete' = 'select';
-
-  protected joins: IConditionJoin[] = [];
 
 
   constructor(manager: EntityManager, entityRef: IEntityRef, type: 'update' | 'select' | 'delete', alias: string = null) {
@@ -30,6 +17,7 @@ export class TypeOrmSqlConditionsBuilder<T> /*extends AbstractSqlConditionsBuild
     this.alias = alias;
     this.type = type;
     const repo = manager.getRepository(entityRef.getClassRef().getClass());
+
     if (alias) {
       this.baseQueryBuilder = repo.createQueryBuilder(alias) as QueryBuilder<T>;
     } else {
@@ -46,6 +34,21 @@ export class TypeOrmSqlConditionsBuilder<T> /*extends AbstractSqlConditionsBuild
         break;
     }
   }
+
+
+  protected inc = 1;
+
+  baseQueryBuilder: QueryBuilder<T>;
+
+  paramInc: number = 0;
+
+  alias: string;
+
+  entityRef: IEntityRef;
+
+  type: 'update' | 'select' | 'delete' = 'select';
+
+  protected joins: IConditionJoin[] = [];
 
 
   getQueryBuilder(): QueryBuilder<T> {
@@ -72,7 +75,8 @@ export class TypeOrmSqlConditionsBuilder<T> /*extends AbstractSqlConditionsBuild
         const join: IConditionJoin = {
           alias: this.createAlias(tmp),
           table: tmp.storingName,
-          condition: null
+          condition: null,
+          ref: tmp ? prop.getEntityRef() : null
         };
 
         const conditions: string[] = [];
@@ -171,27 +175,6 @@ export class TypeOrmSqlConditionsBuilder<T> /*extends AbstractSqlConditionsBuild
     }
   }
 
-  //
-  // escape(str: any) {
-  //   if (_.isNull(str)) {
-  //     return 'NULL';
-  //   }
-  //   if (_.isBoolean(str)) {
-  //     return str ? 'TRUE' : 'FALSE';
-  //   }
-  //   str = this.addSlashes(str);
-  //   if (_.isString(str)) {
-  //     str = `'${str}'`;
-  //   }
-  //   return str;
-  // }
-  //
-  // addSlashes(str: any) {
-  //   if (_.isString(str)) {
-  //     str = str.replace(/'/g, '\\\'');
-  //   }
-  //   return str;
-  // }
 
   protected createAlias(tmp: IClassRef) {
     let name = _.snakeCase(tmp.storingName);
@@ -199,23 +182,46 @@ export class TypeOrmSqlConditionsBuilder<T> /*extends AbstractSqlConditionsBuild
     return name;
   }
 
+
   private _erg(op: string, condition: any, key: string = null, value: any = null) {
     const _key = this.lookupKeys(key);
     const p = this.paramName();
     return new Brackets(qb => {
-      qb.where(`${_key} ${op} :${p}`, this.paramValue(p, value));
+      qb.where(`${_key} ${op} :${p}`, this.paramValue(p, value, _key));
     });
   }
+
 
   private paramName() {
     return 'p' + (this.paramInc++);
   }
 
-  private paramValue(p: string, v: any) {
+
+  private paramValue(p: string, v: any, columnName?: string) {
     const q = {};
-    q[p] = v;
+
+    let ref = this.entityRef;
+    if (this.joins.length > 0) {
+      ref = _.last(this.joins).ref;
+    }
+
+    // TODO make this more flexible
+    if (v instanceof Date) {
+      if (ref) {
+        const _columnName = columnName.split('.').pop();
+        const entityMetadata = this.baseQueryBuilder.connection.getMetadata(ref.getClassRef().getClass());
+        const columnMetadata = entityMetadata.columns.find(x => x.propertyName === _columnName);
+        const driver = this.baseQueryBuilder.connection.driver;
+        q[p] = driver.preparePersistentValue(v, columnMetadata);
+      } else {
+        q[p] = DateUtils.mixedDateToDatetimeString(v);
+      }
+    } else {
+      q[p] = v;
+    }
     return q;
   }
+
 
   $eq(condition: any, key: string = null, value: any = null) {
     return this._erg('=', condition, key, value);

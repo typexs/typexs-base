@@ -1,4 +1,8 @@
 version: '3'
+
+networks:
+  txs_base_net: {}
+
 services:
 
   typexs_base_test_mongo:
@@ -7,7 +11,8 @@ services:
     - 127.0.0.1:27017:27017
     volumes:
     - ./local/mongodb:/data/db
-
+    networks:
+    - txs_base_net
 
   typexs_base_test_redis:
     image: redis:5
@@ -15,6 +20,8 @@ services:
       - 127.0.0.1:6379:6379
     volumes:
       - ./local/redis/db1:/data
+    networks:
+    - txs_base_net
 
   typexs_base_test_redis2:
     image: redis:5
@@ -22,3 +29,5 @@ services:
       - 127.0.0.1:6380:6379
     volumes:
       - ./local/redis/db2:/data
+    networks:
+      - txs_base_net

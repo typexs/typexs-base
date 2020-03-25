@@ -1,0 +1,293 @@
+// process.env.SQL_LOG = '1'
+import * as _ from 'lodash';
+import {suite, test} from 'mocha-typescript';
+import {expect} from 'chai';
+import {Bootstrap} from '../../../src/Bootstrap';
+import {Config} from 'commons-config';
+import {TEST_STORAGE_OPTIONS} from '../config';
+import {IEventBusConfiguration} from 'commons-eventbus';
+import {Container} from 'typedi';
+import {TestHelper} from '../TestHelper';
+
+import {DistributedStorageEntityController} from '../../../src/libs/distributed_storage/DistributedStorageEntityController';
+import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
+import {DataRow} from './fake_app/entities/DataRow';
+import {C_STORAGE_DEFAULT, Injector, StorageRef, XS_P_$COUNT} from '../../../src';
+import {IEntityController} from '../../../src/libs/storage/IEntityController';
+import {SpawnHandle} from '../SpawnHandle';
+import {__NODE_ID__} from '../../../src/libs/distributed_storage/Constants';
+
+
+const LOG_EVENT = TestHelper.logEnable(false);
+
+let bootstrap: Bootstrap;
+let controllerRef: IEntityController;
+const p: SpawnHandle[] = [];
+
+@suite('functional/distributed/find_on_remote_node (sql)')
+class DistributedQuerySpec {
+
+
+  static async before() {
+    Bootstrap.reset();
+    Config.clear();
+
+    bootstrap = Bootstrap
+      .setConfigSources([{type: 'system'}])
+      .configure(<ITypexsOptions & any>{
+        app: {name: 'test', nodeId: 'system', path: __dirname + '/fake_app'},
+        logging: {enable: LOG_EVENT, level: 'debug'},
+        modules: {paths: [__dirname + '/../../..']},
+        storage: {default: TEST_STORAGE_OPTIONS},
+        eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}},
+        // CONFIG ADDED
+        // workers: {access: [{name: 'DistributedQueryWorker', access: 'allow'}]}
+      });
+    bootstrap.activateLogger();
+    bootstrap.activateErrorHandling();
+    await bootstrap.prepareRuntime();
+    bootstrap = await bootstrap.activateStorage();
+    bootstrap = await bootstrap.startup();
+
+
+    p[0] = SpawnHandle.do(__dirname + '/fake_app/node.ts').nodeId('remote01').start(LOG_EVENT);
+    await p[0].started;
+
+    // p[1] = SpawnHandle.do(__dirname + '/fake_app/node.ts').nodeId('remote02').start(LOG_EVENT);
+    // await p[1].started;
+
+    await TestHelper.wait(100);
+
+
+    const entries = [];
+    for (let i = 1; i <= 20; i++) {
+      const e = new DataRow();
+      e.id = i;
+      e.someBool = i % 2 === 0;
+      e.someDate = new Date(2020, i % 12, i % 30);
+      e.someNumber = i * 10;
+      e.someString = 'test ' + i;
+      entries.push(e);
+    }
+
+    const storageRef = Injector.get(C_STORAGE_DEFAULT) as StorageRef;
+    controllerRef = storageRef.getController();
+    await controllerRef.save(entries);
+
+  }
+
+
+  static async after() {
+    if (bootstrap) {
+      await bootstrap.shutdown();
+    }
+
+    if (p.length > 0) {
+      p.map(x => x.shutdown());
+      await Promise.all(p.map(x => x.done));
+    }
+
+  }
+
+
+  @test
+  async 'findOne single entity'() {
+    const controller = Container.get(DistributedStorageEntityController);
+    const entity = await controller.findOne(DataRow, {id: 10});
+    expect(entity).to.deep.include({
+      id: 10,
+      someNumber: 100,
+      someString: 'test 10 remote01',
+      someBool: true,
+      __class__: 'DataRow',
+      __nodeId__: 'remote01',
+      __registry__: 'typeorm'
+    });
+  }
+
+
+  @test
+  async 'findOne single entity by target'() {
+    const controller = Container.get(DistributedStorageEntityController);
+    const entity = await controller.findOne(DataRow, {id: 11});
+    expect(entity).to.deep.include({
+      id: 11,
+      someNumber: 110,
+      someString: 'test 11 remote01',
+      someBool: false,
+      __class__: 'DataRow',
+      __nodeId__: 'remote01',
+      __registry__: 'typeorm'
+    });
+
+    expect(entity.someDate).to.be.instanceOf(Date);
+  }
+
+
+  @test
+  async 'find single entity with limit'() {
+    const controller = Container.get(DistributedStorageEntityController);
+    const entities = await controller.find(DataRow, {id: 10}, {limit: 1});
+    expect(entities).to.have.length(1);
+    expect(entities[XS_P_$COUNT]).to.be.eq(1);
+    expect(_.orderBy(entities, [__NODE_ID__])).to.deep.eq([
+      {
+        '__class__': 'DataRow',
+        '__nodeId__': 'remote01',
+        '__registry__': 'typeorm',
+        'id': 10,
+        'someBool': true,
+        'someDate': new Date('2020-11-09T23:00:00.000Z'),
+        'someNumber': 100,
+        'someString': 'test 10 remote01',
+      }
+    ]);
+  }
+
+
+  @test
+  async 'findOne - no results'() {
+    const controller = Container.get(DistributedStorageEntityController);
+    const entity = await controller.findOne(DataRow, {id: 100});
+    expect(entity).to.be.null;
+  }
+
+
+  @test
+  async 'find multiple entries'() {
+    const controller = Container.get(DistributedStorageEntityController);
+    const entities = await controller.find(DataRow, {someBool: true});
+    expect(entities).to.have.length(10);
+    const resolveByNodeId = {};
+    entities.forEach(x => {
+      expect(x.id).to.be.gt(0);
+      expect(x.someBool === true || x.someBool === false).to.be.true;
+      expect(x.someString).to.have.length.gt(4);
+      expect(x.someDate).to.be.instanceOf(Date);
+      if (!resolveByNodeId[x[__NODE_ID__]]) {
+        resolveByNodeId[x[__NODE_ID__]] = 0;
+      }
+      resolveByNodeId[x[__NODE_ID__]]++;
+    });
+    expect(resolveByNodeId).to.be.deep.eq({
+      'remote01': 10
+    });
+  }
+
+
+  @test
+  async 'find multiple entries - no results'() {
+    const controller = Container.get(DistributedStorageEntityController);
+    const entities = await controller.find(DataRow, {id: {$gte: 50}});
+    expect(entities).to.have.length(0);
+  }
+
+
+  @test
+  async 'find multiple entries - by target'() {
+    const controller = Container.get(DistributedStorageEntityController);
+    const entities = await controller.find(DataRow, {id: {$gt: 10}}, {targetIds: ['remote01']});
+    expect(entities).to.have.length(10);
+    entities.forEach(x => {
+      expect(x).to.be.instanceOf(DataRow);
+      expect(x[__NODE_ID__]).to.be.eq('remote01');
+    });
+  }
+
+
+  @test
+  async 'find multiple entries - filter by date'() {
+    const controller = Container.get(DistributedStorageEntityController);
+    const entities = await controller.find(DataRow, {
+      $and: [
+        {someDate: {$ge: new Date('2020-11-08T00:00:00.000Z')}},
+        {someDate: {$le: new Date('2020-11-10T23:00:00.000Z')}}
+      ]
+    });
+    expect(entities).to.have.length(1);
+    entities.forEach(x => {
+      expect(x).to.be.instanceOf(DataRow);
+      const date = new Date('2020-11-09T23:00:00.000Z');
+      expect(x.someDate.toISOString()).to.be.eq(date.toISOString());
+    });
+
+  }
+
+
+  @test
+  async 'find multiple entries - output "map"'() {
+    const controller = Container.get(DistributedStorageEntityController);
+    const entities = await controller.find(DataRow, {someBool: true, id: {$le: 6}}, {mode: 'map'}) as any;
+    expect(entities[XS_P_$COUNT]).to.be.eq(3);
+    expect(entities['remote01'][XS_P_$COUNT]).to.be.eq(3);
+    expect(entities['remote01']).to.be.deep.eq([
+      {
+        '__class__': 'DataRow',
+        '__nodeId__': 'remote01',
+        '__registry__': 'typeorm',
+        'id': 2,
+        'someBool': true,
+        'someDate': new Date('2020-03-01T23:00:00.000Z'),
+        'someNumber': 20,
+        'someString': 'test 2 remote01',
+      },
+      {
+        '__class__': 'DataRow',
+        '__nodeId__': 'remote01',
+        '__registry__': 'typeorm',
+        'id': 4,
+        'someBool': true,
+        'someDate': new Date('2020-05-03T22:00:00.000Z'),
+        'someNumber': 40,
+        'someString': 'test 4 remote01',
+      },
+      {
+        '__class__': 'DataRow',
+        '__nodeId__': 'remote01',
+        '__registry__': 'typeorm',
+        'id': 6,
+        'someBool': true,
+        'someDate': new Date('2020-07-05T22:00:00.000Z'),
+        'someNumber': 60,
+        'someString': 'test 6 remote01'
+      }
+    ]);
+
+  }
+
+  @test
+  async 'find multiple entries - output "only_value"'() {
+    const controller = Container.get(DistributedStorageEntityController);
+    const entities = await controller.find(DataRow, {someBool: true}, {mode: 'only_value'});
+    expect(entities).to.be.have.length(10);
+
+  }
+
+  /**
+   * nodeId are always embedded in the records
+   */
+  @test
+  async 'find multiple entries - output "embed_nodeId"'() {
+    const controller = Container.get(DistributedStorageEntityController);
+    const entities = await controller.find(DataRow, {someBool: true}, {mode: 'embed_nodeId'});
+    expect(entities).to.be.have.length(10);
+    expect(_.uniq(entities.map(x => x[__NODE_ID__])).sort()).to.be.deep.eq(['remote01']);
+  }
+
+
+  /**
+   * Reruns directly the remote responses
+   */
+  @test
+  async 'find multiple entries - output "raw"'() {
+    const controller = Container.get(DistributedStorageEntityController);
+    const responses = await controller.find(DataRow, {someBool: true}, {mode: 'raw'}) as any[];
+    console.log(responses);
+    expect(responses).to.be.have.length(1);
+    expect(responses.find(x => x.nodeId === 'remote01').results).to.be.have.length(10);
+
+
+  }
+
+}
+

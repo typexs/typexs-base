@@ -25,6 +25,11 @@ export class SpawnHandle {
   }
 
 
+  nodeId(nodeId: string) {
+    this.args.push('--nodeId=' + nodeId);
+    return this;
+  }
+
   start(withLog: boolean = false): SpawnHandle {
     if (withLog) {
       this.args.push('--enable_log');

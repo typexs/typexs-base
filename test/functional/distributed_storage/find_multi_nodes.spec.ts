@@ -21,12 +21,11 @@ const LOG_EVENT = TestHelper.logEnable(false);
 let bootstrap: Bootstrap;
 let p: SpawnHandle;
 
-
 @suite('functional/distributed/find_multi_nodes')
 class DistributedQuerySpec {
 
 
-  async before() {
+  static async before() {
     Bootstrap.reset();
     Config.clear();
 
@@ -51,7 +50,7 @@ class DistributedQuerySpec {
     await TestHelper.wait(100);
   }
 
-  async after() {
+  static async after() {
     if (bootstrap) {
       await bootstrap.shutdown();
     }

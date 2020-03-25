@@ -21,9 +21,6 @@ const LOG_EVENT = TestHelper.logEnable(false);
 let bootstrap: Bootstrap;
 let controllerRef: IEntityController;
 
-// let p: SpawnHandle;
-
-
 @suite('functional/distributed_storage/remove_on_single_node')
 class DistributedStorageSaveSpec {
 

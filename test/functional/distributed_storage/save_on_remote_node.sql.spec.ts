@@ -1,0 +1,224 @@
+import * as _ from 'lodash';
+import {suite, test} from 'mocha-typescript';
+import {expect} from 'chai';
+import {Bootstrap} from '../../../src/Bootstrap';
+import {Config} from 'commons-config';
+import {TEST_STORAGE_OPTIONS} from '../config';
+import {IEventBusConfiguration} from 'commons-eventbus';
+import {Container} from 'typedi';
+import {TestHelper} from '../TestHelper';
+import {SpawnHandle} from '../SpawnHandle';
+
+import {DistributedStorageEntityController} from '../../../src/libs/distributed_storage/DistributedStorageEntityController';
+import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
+import {DataRow} from './fake_app/entities/DataRow';
+import {__REMOTE_IDS__, XS_P_$ERRORED, XS_P_$SAVED} from '../../../src/libs/distributed_storage/Constants';
+import {C_STORAGE_DEFAULT, Injector, StorageRef} from '../../../src';
+import {IEntityController} from '../../../src/libs/storage/IEntityController';
+import {inspect} from 'util';
+
+process.env.SQL_LOG = '1';
+
+
+const LOG_EVENT = TestHelper.logEnable(true);
+let bootstrap: Bootstrap;
+let controllerRef: IEntityController;
+const p: SpawnHandle[] = [];
+
+@suite('functional/distributed_storage/save_on_remote_node')
+class DistributedStorageSaveSpec {
+
+
+  static async before() {
+    Bootstrap.reset();
+    Config.clear();
+
+    bootstrap = Bootstrap
+      .setConfigSources([{type: 'system'}])
+      .configure(<ITypexsOptions & any>{
+        app: {name: 'test', nodeId: 'system', path: __dirname + '/fake_app'},
+        logging: {enable: LOG_EVENT, level: 'debug'},
+        modules: {paths: [__dirname + '/../../..']},
+        storage: {default: TEST_STORAGE_OPTIONS},
+        eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}},
+        // workers: {access: [{name: 'DistributedQueryWorker', access: 'allow'}]}
+      });
+    bootstrap.activateLogger();
+    bootstrap.activateErrorHandling();
+    await bootstrap.prepareRuntime();
+    bootstrap = await bootstrap.activateStorage();
+    bootstrap = await bootstrap.startup();
+
+
+    const entries = [];
+    for (let i = 1; i <= 20; i++) {
+      const e = new DataRow();
+      e.id = i;
+      e.someBool = i % 2 === 0;
+      e.someDate = new Date(2020, i % 12, i % 30);
+      e.someNumber = i * 10;
+      e.someString = 'test ' + i;
+      entries.push(e);
+    }
+
+    const storageRef = Injector.get(C_STORAGE_DEFAULT) as StorageRef;
+    controllerRef = storageRef.getController();
+    await controllerRef.save(entries);
+
+    p[0] = SpawnHandle.do(__dirname + '/fake_app/node.ts').nodeId('remote01').start(LOG_EVENT);
+    await p[0].started;
+
+    await TestHelper.wait(100);
+  }
+
+  static async after() {
+    if (bootstrap) {
+      await bootstrap.shutdown();
+
+      if (p.length > 0) {
+        p.map(x => x.shutdown());
+        await Promise.all(p.map(x => x.done));
+      }
+    }
+  }
+
+
+  @test
+  async 'save new entry'() {
+
+    const controller = Container.get(DistributedStorageEntityController);
+
+    const testEntry = new DataRow();
+    testEntry.someString = 'someString';
+    testEntry.someNumber = 123;
+    testEntry.someBool = true;
+    testEntry.someDate = new Date();
+    testEntry.someAny = JSON.stringify({hallo: 'welt'});
+
+    const saved = await controller.save(testEntry);
+    // console.log(inspect(saved, false, 10));
+    const results = await controller.find(DataRow, {});
+
+    expect(saved).to.have.length(1);
+    expect(saved[XS_P_$SAVED]).to.be.eq(1);
+    expect(saved[XS_P_$ERRORED]).to.be.eq(0);
+    expect(saved[0][__REMOTE_IDS__]).to.be.deep.eq({remote01: {id: 21}});
+    expect(results).to.have.length(21);
+    expect(results[0]).to.be.instanceOf(DataRow);
+
+  }
+
+
+  @test
+  async 'save new entries'() {
+    const controller = Container.get(DistributedStorageEntityController);
+
+    const toSave = [];
+    for (let i = 0; i < 10; i++) {
+      const testEntry = new DataRow();
+      testEntry.someString = 'saveMany';
+      testEntry.someNumber = 12345;
+      testEntry.someBool = i % 2 === 0;
+      testEntry.someDate = new Date(2020, i, 1);
+      testEntry.someAny = '';
+      toSave.push(testEntry);
+    }
+
+    const saved = await controller.save(toSave);
+    console.log(inspect(saved, false, 10));
+    const results = await controller.find(DataRow, {someString: 'saveMany'});
+
+    expect(saved).to.have.length(10);
+    expect(saved[XS_P_$SAVED]).to.be.eq(10);
+    expect(saved[XS_P_$ERRORED]).to.be.eq(0);
+    expect(saved[0][__REMOTE_IDS__].remote01.id).to.be.gt(20);
+
+    expect(results).to.have.length(10);
+    expect(results[0]).to.be.instanceOf(DataRow);
+  }
+
+
+  @test
+  async 'save edited entry'() {
+    const controller = Container.get(DistributedStorageEntityController);
+    const results = await controller.find(DataRow, {id: 10});
+    expect(results).to.have.length(1);
+    expect(results[0]).to.be.instanceOf(DataRow);
+
+    const testEntry = _.first(results);
+    testEntry.someString = 'editedString';
+    testEntry.someNumber = 321;
+    testEntry.someBool = true;
+    testEntry.someDate = new Date();
+    testEntry.someAny = JSON.stringify({hallo: 'editedWelt'});
+
+    const saved = await controller.save(testEntry);
+
+    expect(saved).to.have.length(1);
+    expect(saved[XS_P_$SAVED]).to.be.eq(1);
+    expect(saved[XS_P_$ERRORED]).to.be.eq(0);
+    expect(saved[0][__REMOTE_IDS__]).to.be.deep.eq({remote01: {id: 10}});
+
+    const results2 = await controller.find(DataRow, {id: 10});
+    expect(results2).to.have.length(1);
+    const entry = results2.shift();
+    expect(entry).to.be.deep.eq({
+      '__class__': 'DataRow',
+      '__nodeId__': 'remote01',
+      '__registry__': 'typeorm',
+      'id': 10,
+      'someAny': '{"hallo":"editedWelt"}',
+      'someBool': true,
+      'someDate': testEntry.someDate,
+      'someNumber': 321,
+      'someString': 'editedString'
+    });
+  }
+
+
+  @test
+  async 'save edited entries'() {
+    const controller = Container.get(DistributedStorageEntityController);
+    const results = await controller.find(DataRow, {someBool: false, id: {$le: 20}});
+    expect(results).to.have.length(10);
+    results.map(x => expect(x).to.be.instanceOf(DataRow));
+
+    results.forEach((x, index) => {
+      x.someString = 'editedStringMulti';
+      x.someNumber = 456;
+      x.someDate = new Date(2020, 1, index);
+    });
+
+    const saved = await controller.save(results);
+
+    expect(saved).to.have.length(10);
+    expect(saved[XS_P_$SAVED]).to.be.eq(10);
+    expect(saved[XS_P_$ERRORED]).to.be.eq(0);
+    expect(saved[0][__REMOTE_IDS__]).to.be.deep.eq({remote01: {id: 1}});
+
+    const results2 = await controller.find(DataRow, {someBool: false, id: {$le: 20}});
+    expect(results2).to.have.length(10);
+    const entry = _.first(results2);
+    expect(entry).to.be.deep.include({
+      '__class__': 'DataRow',
+      '__nodeId__': 'remote01',
+      '__registry__': 'typeorm',
+      'id': 1,
+      'someBool': false,
+      'someNumber': 456,
+      'someString': 'editedStringMulti'
+    });
+
+    results2.forEach((value, index) => {
+      expect(value.someString).to.be.eq('editedStringMulti');
+    });
+
+  }
+
+  @test.skip
+  async 'catch exceptions'() {
+  }
+
+
+}
+

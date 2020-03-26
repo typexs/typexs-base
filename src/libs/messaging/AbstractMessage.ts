@@ -142,7 +142,11 @@ export abstract class AbstractMessage<REQ extends AbstractEvent, RES extends Abs
     }
 
     try {
-      result = await this.doPostProcess(responses, err);
+      if (this.options.outputMode === 'responses') {
+        result = responses;
+      } else {
+        result = await this.doPostProcess(responses, err);
+      }
     } catch (e) {
       error = e;
     }

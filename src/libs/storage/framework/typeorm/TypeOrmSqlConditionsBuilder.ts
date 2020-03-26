@@ -67,6 +67,10 @@ export class TypeOrmSqlConditionsBuilder<T> /*extends AbstractSqlConditionsBuild
     let rootAlias = this.alias;
     for (const _join of joins) {
       const prop = tmp.getPropertyRef(_join);
+      if (!prop) {
+        throw new Error('condition property "' + _join + '" is not definied');
+      }
+
       if (prop.isReference()) {
         const from = tmp;
         tmp = prop.getTargetRef() ? prop.getTargetRef() : null;

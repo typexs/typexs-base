@@ -163,7 +163,7 @@ export class TasksHelper {
       if (localPossible) {
         const options: any = {
           parallel: 5,
-          dry_mode: _.get(argv, 'dry-mode', false),
+          dry_mode: _.get(argv, 'dry-outputMode', false),
           local: true
         };
 

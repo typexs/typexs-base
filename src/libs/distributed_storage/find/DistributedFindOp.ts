@@ -63,8 +63,14 @@ export class DistributedFindOp<T>
     this.options = options;
     this.timeout = this.options.timeout;
 
-
     const req = new DistributedFindRequest();
+
+    // max fetch limit
+    if ((<IDistributedFindOptions>this.options).limit > 1000) {
+      this.logger.debug(this.getSystem().getNodeId() + '[' + req.id + ']: limited request');
+      (<IDistributedFindOptions>this.options).limit = 1000;
+    }
+
     req.conditions = this.findConditions;
     req.entityType = this.entityType;
     req.options = this.options;
@@ -101,15 +107,21 @@ export class DistributedFindOp<T>
 
   doPostProcess(responses: DistributedFindResponse[], err?: Error): any {
 
-    if (this.options.mode === 'raw') {
-      return responses;
-    }
-
     let results: any = null;
     let count = 0;
+
+    const errors: string[] = [];
     responses.map(x => {
       count += x.count;
+      if (x.error) {
+        errors.push(x.nodeId + ': ' + x.error.message);
+      }
     });
+
+    if (errors.length > 0) {
+      throw new Error(errors.join('\n'));
+    }
+
 
     const classRefs = {};
     _.concat([], ...responses.map(x => x.results)).map(x => {
@@ -155,7 +167,7 @@ export class DistributedFindOp<T>
       _.orderBy(results, ...arr);
     }
 
-    if (this.options.mode === 'map') {
+    if (this.options.outputMode === 'map') {
       const mappedResults: any = {};
       mappedResults[XS_P_$COUNT] = count;
       mappedResults[XS_P_$LIMIT] = this.request.options.limit;

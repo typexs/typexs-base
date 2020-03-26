@@ -36,7 +36,6 @@ export class DistributedSaveOp<T>
   protected entityControllerRegistry: EntityControllerRegistry;
 
 
-
   getOptions(): IDistributedSaveOptions & IMessageOptions {
     return this.options;
   }
@@ -107,13 +106,14 @@ export class DistributedSaveOp<T>
 
 
   doPostProcess(responses: DistributedSaveResponse[], err: Error) {
-    const errors = [];
+    const errors: any[] = [];
     let saved = 0;
     let errored = 0;
     for (const event of responses) {
       if (!_.isEmpty(event.error)) {
-        errors.push(new Error('distributed save error: ' + event.nodeId + ' > ' + event.error));
+        errors.push(event.nodeId + ': ' + event.error.message);
         errored++;
+        continue;
       }
       _.keys(event.results).map(entityType => {
         const obj = _.first(event.results[entityType]);
@@ -137,6 +137,10 @@ export class DistributedSaveOp<T>
           localObject[__REMOTE_IDS__][event.nodeId] = id;
         }
       });
+    }
+
+    if (errors.length > 0) {
+      throw new Error(errors.join('\n'));
     }
 
     this.objects[XS_P_$SAVED] = saved;

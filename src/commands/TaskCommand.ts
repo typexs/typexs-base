@@ -12,9 +12,9 @@ import {Log} from '../libs/logging/Log';
 
 /**
  * Starts a task direct or in a running worker
- * Command: typexs task test [--targetId abc] [--mode worker|local]
+ * Command: typexs task test [--targetId abc] [--outputMode worker|local]
  *
- * mode is per default 'worker' if one exists  else startup local
+ * outputMode is per default 'worker' if one exists  else startup local
  *
  */
 export class TaskCommand implements ICommand {

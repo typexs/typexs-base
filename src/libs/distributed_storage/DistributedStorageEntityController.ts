@@ -57,9 +57,9 @@ export class DistributedStorageEntityController implements IEntityController {
 
   }
 
-  remove<T>(object: T): Promise<T>;
-  remove<T>(object: T[]): Promise<T[]>;
-  remove<T>(cls: ClassType<T>, condition: any): Promise<number>;
+  remove<T>(object: T, options?: IDistributedRemoveOptions): Promise<T>;
+  remove<T>(object: T[], options?: IDistributedRemoveOptions): Promise<T[]>;
+  remove<T>(cls: ClassType<T>, condition: any, options?: IDistributedRemoveOptions): Promise<number>;
   remove<T>(cls: T | T[] | ClassType<T>, condition?: any, options?: IDistributedRemoveOptions): Promise<number | T | T[]> {
     return this.factory.createRemoveOp<T>().prepare(this).run(cls, condition, options);
   }

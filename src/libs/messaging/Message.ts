@@ -93,7 +93,7 @@ export class Message<REQ extends AbstractEvent, RES extends AbstractEvent>
   //   }
   //
   //   try {
-  //     switch (this.options.mode) {
+  //     switch (this.options.outputMode) {
   //       case 'embed_nodeId':
   //         this.results = responses.map(x => {
   //           let y: any = null;
@@ -141,7 +141,7 @@ export class Message<REQ extends AbstractEvent, RES extends AbstractEvent>
   // }
   doPostProcess(responses: RES[], err?: Error): any {
     let results: any = null;
-    switch (this.options.mode) {
+    switch (this.options.outputMode) {
       case 'embed_nodeId':
         results = responses.map(x => {
           let y: any = null;
@@ -167,9 +167,10 @@ export class Message<REQ extends AbstractEvent, RES extends AbstractEvent>
           results[[x.nodeId, x.instNr].join(':')] = y;
         });
         break;
-      case 'raw':
+      case 'responses':
         results = responses;
         break;
+      case 'only_value':
       default:
         results = responses.map(x => {
           let y: any = null;

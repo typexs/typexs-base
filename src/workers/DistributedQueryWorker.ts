@@ -192,6 +192,12 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
       }
 
       if (response.error || response.skipping) {
+        if (response.error instanceof Error) {
+          response.error = {
+            name: response.error.name,
+            message: response.error.message
+          };
+        }
         EventBus.postAndForget(response);
         return;
       }
@@ -255,6 +261,12 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
     }
 
     const controller = this.entityControllerRegistry.getControllerForClass(event.entityType, _.get(event.options, 'controllerHint', null));
+    if (!controller) {
+      response.error = new Error('no entity controller defined to handle type "' + event.entityType + '"');
+      response.results = [];
+      return;
+    }
+
     const entityRef = controller.forClass(event.entityType);
     if (!entityRef) {
       // no entity ref
@@ -282,6 +294,13 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
     for (const entityType of entityTypes) {
       entityControllers[entityType] = this.entityControllerRegistry
         .getControllerForClass(entityType, _.get(event.options, 'controllerHint', null));
+
+      if (!entityControllers[entityType]) {
+        response.error = new Error('no entity controller defined to handle type "' + entityType + '"');
+        response.results = {};
+        return;
+      }
+
       entityRefs[entityType] = entityControllers[entityType].forClass(entityType);
       if (!entityRefs[entityType]) {
         // no entity ref
@@ -311,6 +330,11 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
     }
 
     const controller = this.entityControllerRegistry.getControllerForClass(event.entityType, _.get(event.options, 'controllerHint', null));
+    if (!controller) {
+      response.error = new Error('no entity controller defined to handle type "' + event.entityType + '"');
+      response.results = [];
+      return;
+    }
     const entityRef = controller.forClass(event.entityType);
     if (!entityRef) {
       // no entity ref
@@ -337,7 +361,11 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
       const controller = this.entityControllerRegistry
         .getControllerForClass(event.entityType,
           _.get(event.options, 'controllerHint', null));
-
+      if (!controller) {
+        response.error = new Error('no entity controller defined to handle type "' + event.entityType + '"');
+        response.results = [];
+        return;
+      }
       const entityRef = controller.forClass(event.entityType);
       if (!entityRef) {
         // no entity ref
@@ -347,6 +375,8 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
       }
 
       event.entityRefs = {};
+      event.entityControllers = {};
+
       event.entityRefs[event.entityType] = entityRef;
       event.entityControllers[event.entityType] = controller;
 
@@ -366,6 +396,13 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
         entityControllers[entityType] = this.entityControllerRegistry
           .getControllerForClass(entityType,
             _.get(event.options, 'controllerHint', null));
+
+        if (!entityControllers[entityType]) {
+          response.error = new Error('no entity controller defined to handle type "' + entityType + '"');
+          response.results = {};
+          return;
+        }
+
         entityRefs[entityType] = entityControllers[entityType].forClass(entityType);
         if (!entityRefs[entityType]) {
           // no entity ref
@@ -416,7 +453,7 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
       }
       response.affected = _.sum(_.keys(response.results).map(x => response.results[x]));
     } catch (err) {
-      response.error = err.message;
+      response.error = err;
       this.logger.error(err);
     }
   }
@@ -432,7 +469,11 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
     const controller = this.entityControllerRegistry
       .getControllerForClass(event.entityType,
         _.get(event.options, 'controllerHint', null));
-
+    if (!controller) {
+      response.error = new Error('no entity controller defined to handle type "' + event.entityType + '"');
+      response.affected = -1;
+      return;
+    }
     const entityRef = controller.forClass(event.entityType);
     if (!entityRef) {
       // no entity ref
@@ -472,7 +513,7 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
         ' entries for ' + classRef.name + '[qId: ' + response.id + ']');
 
     } catch (err) {
-      response.error = err.message;
+      response.error = err;
       this.logger.error(err);
     }
   }

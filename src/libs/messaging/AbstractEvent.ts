@@ -53,7 +53,7 @@ export abstract class AbstractEvent {
   /**
    * Error
    */
-  error: Error;
+  error: Error | { message: string, name: string };
 
   /**
    * response exists but shouldn't be ad to results

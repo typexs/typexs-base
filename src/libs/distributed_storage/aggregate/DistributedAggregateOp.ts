@@ -87,18 +87,27 @@ export class DistributedAggregateOp
 
   doPostProcess(responses: DistributedAggregateResponse[], err?: Error): any {
     let count = 0;
+    const errors: string[] = [];
     responses.map(x => {
       count += x.results.length;
+      if (x.error) {
+        errors.push(x.nodeId + ': ' + x.error.message);
+      }
     });
 
-    this.results = [];
+    if (errors.length > 0) {
+      throw new Error(errors.join('\n'));
+    }
+
+
+    const results = [];
     for (const res of responses) {
       for (const r of res.results) {
         _.set(r, __NODE_ID__, res.nodeId);
-        this.results.push(r);
+        results.push(r);
       }
     }
-    return this.results;
+    return results;
   }
 
   getEntityType(): Function | string | ClassType<any> {

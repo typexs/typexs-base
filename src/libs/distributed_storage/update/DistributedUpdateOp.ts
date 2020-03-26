@@ -103,9 +103,16 @@ export class DistributedUpdateOp<T>
 
 
   doPostProcess(responses: DistributedUpdateResponse[], err?: Error): any {
+    const errors: any[] = [];
     const affected = {};
     for (const res of responses) {
       affected[res.nodeId] = res.affected;
+      if (res.error) {
+        errors.push(res.nodeId + ': ' + res.error.message);
+      }
+    }
+    if (errors.length > 0) {
+      throw new Error(errors.join('\n'));
     }
     return affected;
   }

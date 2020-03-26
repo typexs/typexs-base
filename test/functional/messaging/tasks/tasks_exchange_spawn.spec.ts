@@ -85,7 +85,7 @@ class MessagingSpec {
   @test
   async 'get log file path as map from local and remote only'() {
     const exchange = Injector.get(TasksExchange);
-    const results = await exchange.getLogFilePath('abcdef', {filterErrors: true, mode: 'map'});
+    const results = await exchange.getLogFilePath('abcdef', {filterErrors: true, outputMode: 'map'});
     expect(_.keys(results)).to.have.length(2);
     const new2 = {};
     _.keys(results).sort().map(x => {
@@ -120,9 +120,9 @@ class MessagingSpec {
 
 
   @test
-  async 'get log file path with errors raw'() {
+  async 'get log file path with errors - mode "responses"'() {
     const exchange = Injector.get(TasksExchange);
-    const results = await exchange.getLogFilePath('abcdef2', {filterErrors: false, skipLocal: true, mode: 'raw'});
+    const results = await exchange.getLogFilePath('abcdef2', {filterErrors: false, skipLocal: true, outputMode: 'responses'});
     expect(results).to.have.length(1);
     expect(results[0]).to.be.deep.include({
         '__nodeId__': 'remote_fakeapp01',
@@ -145,7 +145,7 @@ class MessagingSpec {
   @test
   async 'get log file path with errors entries'() {
     // const exchange = Injector.get(TasksExchange);
-    // const results = await exchange.getLogFilePath('abcdef2', {filterErrors: false, skipLocal: true, mode: 'raw'});
+    // const results = await exchange.getLogFilePath('abcdef2', {filterErrors: false, skipLocal: true, outputMode: 'raw'});
     // expect(results).to.have.length(1);
     // expect(results[0]).to.be.deep.include({
     //     '__nodeId__': 'remote_fakeapp01',

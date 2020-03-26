@@ -25,7 +25,7 @@ let bootstrap: Bootstrap;
 let controllerRef: IEntityController;
 const p: SpawnHandle[] = [];
 
-@suite('functional/distributed_storage/save_on_remote_node')
+@suite('functional/distributed_storage/save_on_local_node')
 class DistributedStorageSaveSpec {
 
 
@@ -41,7 +41,7 @@ class DistributedStorageSaveSpec {
         modules: {paths: [__dirname + '/../../..']},
         storage: {default: TEST_STORAGE_OPTIONS},
         eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}},
-        // workers: {access: [{name: 'DistributedQueryWorker', access: 'allow'}]}
+        workers: {access: [{name: 'DistributedQueryWorker', access: 'allow'}]}
       });
     bootstrap.activateLogger();
     bootstrap.activateErrorHandling();
@@ -65,8 +65,8 @@ class DistributedStorageSaveSpec {
     controllerRef = storageRef.getController();
     await controllerRef.save(entries);
 
-    p[0] = SpawnHandle.do(__dirname + '/fake_app/node.ts').nodeId('remote01').start(LOG_EVENT);
-    await p[0].started;
+    // p[0] = SpawnHandle.do(__dirname + '/fake_app/node.ts').nodeId('remote01').start(LOG_EVENT);
+    // await p[0].started;
 
     await TestHelper.wait(100);
   }
@@ -102,7 +102,7 @@ class DistributedStorageSaveSpec {
     expect(saved).to.have.length(1);
     expect(saved[XS_P_$SAVED]).to.be.eq(1);
     expect(saved[XS_P_$ERRORED]).to.be.eq(0);
-    expect(saved[0][__REMOTE_IDS__]).to.be.deep.eq({remote01: {id: 21}});
+    expect(saved[0][__REMOTE_IDS__]).to.be.deep.eq({system: {id: 21}});
     expect(results).to.have.length(21);
     expect(results[0]).to.be.instanceOf(DataRow);
 
@@ -131,7 +131,7 @@ class DistributedStorageSaveSpec {
     expect(saved).to.have.length(10);
     expect(saved[XS_P_$SAVED]).to.be.eq(10);
     expect(saved[XS_P_$ERRORED]).to.be.eq(0);
-    expect(saved[0][__REMOTE_IDS__].remote01.id).to.be.gt(20);
+    expect(saved[0][__REMOTE_IDS__].system.id).to.be.gt(20);
 
     expect(results).to.have.length(10);
     expect(results[0]).to.be.instanceOf(DataRow);
@@ -157,14 +157,14 @@ class DistributedStorageSaveSpec {
     expect(saved).to.have.length(1);
     expect(saved[XS_P_$SAVED]).to.be.eq(1);
     expect(saved[XS_P_$ERRORED]).to.be.eq(0);
-    expect(saved[0][__REMOTE_IDS__]).to.be.deep.eq({remote01: {id: 10}});
+    expect(saved[0][__REMOTE_IDS__]).to.be.deep.eq({system: {id: 10}});
 
     const results2 = await controller.find(DataRow, {id: 10});
     expect(results2).to.have.length(1);
     const entry = results2.shift();
     expect(entry).to.be.deep.eq({
       '__class__': 'DataRow',
-      '__nodeId__': 'remote01',
+      '__nodeId__': 'system',
       '__registry__': 'typeorm',
       'id': 10,
       'someAny': '{"hallo":"editedWelt"}',
@@ -194,14 +194,14 @@ class DistributedStorageSaveSpec {
     expect(saved).to.have.length(10);
     expect(saved[XS_P_$SAVED]).to.be.eq(10);
     expect(saved[XS_P_$ERRORED]).to.be.eq(0);
-    expect(saved[0][__REMOTE_IDS__]).to.be.deep.eq({remote01: {id: 1}});
+    expect(saved[0][__REMOTE_IDS__]).to.be.deep.eq({system: {id: 1}});
 
     const results2 = await controller.find(DataRow, {someBool: false, id: {$le: 20}});
     expect(results2).to.have.length(10);
     const entry = _.first(results2);
     expect(entry).to.be.deep.include({
       '__class__': 'DataRow',
-      '__nodeId__': 'remote01',
+      '__nodeId__': 'system',
       '__registry__': 'typeorm',
       'id': 1,
       'someBool': false,
@@ -227,7 +227,7 @@ class DistributedStorageSaveSpec {
       const results = await controller.save(dummy);
       expect(false, 'exception not fired ...').to.be.eq(true);
     } catch (e) {
-      expect(e.message).to.be.eq('remote01: no entity controller defined to handle type "Object"');
+      expect(e.message).to.be.eq('system: no entity controller defined to handle type "Object"');
     }
 
   }
@@ -249,7 +249,7 @@ class DistributedStorageSaveSpec {
       const results = await controller.save(dummy);
       expect(false, 'exception not fired ...').to.be.eq(true);
     } catch (e) {
-      expect(e.message).to.be.eq('remote01: no entity controller defined to handle type "Object"');
+      expect(e.message).to.be.eq('system: no entity controller defined to handle type "Object"');
     }
 
   }

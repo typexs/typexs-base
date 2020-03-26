@@ -120,6 +120,20 @@ class DistributedQuerySpec {
   }
 
 
+  @test
+  async 'catch exceptions - wrong search query'() {
+    const controller = Container.get(DistributedStorageEntityController);
+    try {
+      const results = await controller.find(DataRow, {some_body: false, id: {$le: 20}});
+      expect(false, 'exception not fired ...').to.be.eq(true);
+    } catch (e) {
+      expect(e).to.be.instanceOf(Error);
+      expect(e.message).to.be.eq('system: condition property "some_body" is not definied');
+    }
+
+  }
+
+
   @test.skip
   async 'find multiple entries by Date'() {
     // const controller = Container.get(DistributedStorageEntityController);

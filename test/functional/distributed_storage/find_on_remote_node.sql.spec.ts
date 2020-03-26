@@ -217,7 +217,7 @@ class DistributedQuerySpec {
   @test
   async 'find multiple entries - output "map"'() {
     const controller = Container.get(DistributedStorageEntityController);
-    const entities = await controller.find(DataRow, {someBool: true, id: {$le: 6}}, {mode: 'map'}) as any;
+    const entities = await controller.find(DataRow, {someBool: true, id: {$le: 6}}, {outputMode: 'map'}) as any;
     expect(entities[XS_P_$COUNT]).to.be.eq(3);
     expect(entities['remote01'][XS_P_$COUNT]).to.be.eq(3);
     expect(entities['remote01']).to.be.deep.eq([
@@ -258,7 +258,7 @@ class DistributedQuerySpec {
   @test
   async 'find multiple entries - output "only_value"'() {
     const controller = Container.get(DistributedStorageEntityController);
-    const entities = await controller.find(DataRow, {someBool: true}, {mode: 'only_value'});
+    const entities = await controller.find(DataRow, {someBool: true}, {outputMode: 'only_value'});
     expect(entities).to.be.have.length(10);
 
   }
@@ -269,7 +269,7 @@ class DistributedQuerySpec {
   @test
   async 'find multiple entries - output "embed_nodeId"'() {
     const controller = Container.get(DistributedStorageEntityController);
-    const entities = await controller.find(DataRow, {someBool: true}, {mode: 'embed_nodeId'});
+    const entities = await controller.find(DataRow, {someBool: true}, {outputMode: 'embed_nodeId'});
     expect(entities).to.be.have.length(10);
     expect(_.uniq(entities.map(x => x[__NODE_ID__])).sort()).to.be.deep.eq(['remote01']);
   }
@@ -279,9 +279,9 @@ class DistributedQuerySpec {
    * Reruns directly the remote responses
    */
   @test
-  async 'find multiple entries - output "raw"'() {
+  async 'find multiple entries - output "responses"'() {
     const controller = Container.get(DistributedStorageEntityController);
-    const responses = await controller.find(DataRow, {someBool: true}, {mode: 'raw'}) as any[];
+    const responses = await controller.find(DataRow, {someBool: true}, {outputMode: 'responses'}) as any[];
     console.log(responses);
     expect(responses).to.be.have.length(1);
     expect(responses.find(x => x.nodeId === 'remote01').results).to.be.have.length(10);

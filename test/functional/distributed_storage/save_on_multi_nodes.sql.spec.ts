@@ -12,10 +12,9 @@ import {SpawnHandle} from '../SpawnHandle';
 import {DistributedStorageEntityController} from '../../../src/libs/distributed_storage/DistributedStorageEntityController';
 import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
 import {DataRow} from './fake_app/entities/DataRow';
-import {__REMOTE_IDS__, XS_P_$ERRORED, XS_P_$SAVED} from '../../../src/libs/distributed_storage/Constants';
+import {__NODE_ID__, __REMOTE_IDS__, XS_P_$ERRORED, XS_P_$SAVED} from '../../../src/libs/distributed_storage/Constants';
 import {C_STORAGE_DEFAULT, Injector, StorageRef} from '../../../src';
 import {IEntityController} from '../../../src/libs/storage/IEntityController';
-import {inspect} from 'util';
 
 // process.env.SQL_LOG = '1';
 
@@ -25,7 +24,7 @@ let bootstrap: Bootstrap;
 let controllerRef: IEntityController;
 const p: SpawnHandle[] = [];
 
-@suite('functional/distributed_storage/save_on_remote_node')
+@suite('functional/distributed_storage/save_on_multi_nodes')
 class DistributedStorageSaveSpec {
 
 
@@ -41,7 +40,7 @@ class DistributedStorageSaveSpec {
         modules: {paths: [__dirname + '/../../..']},
         storage: {default: TEST_STORAGE_OPTIONS},
         eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}},
-        // workers: {access: [{name: 'DistributedQueryWorker', access: 'allow'}]}
+        workers: {access: [{name: 'DistributedQueryWorker', access: 'allow'}]}
       });
     bootstrap.activateLogger();
     bootstrap.activateErrorHandling();
@@ -67,6 +66,9 @@ class DistributedStorageSaveSpec {
 
     p[0] = SpawnHandle.do(__dirname + '/fake_app/node.ts').nodeId('remote01').start(LOG_EVENT);
     await p[0].started;
+
+    p[1] = SpawnHandle.do(__dirname + '/fake_app/node.ts').nodeId('remote02').start(LOG_EVENT);
+    await p[1].started;
 
     await TestHelper.wait(100);
   }
@@ -100,10 +102,14 @@ class DistributedStorageSaveSpec {
     const results = await controller.find(DataRow, {});
 
     expect(saved).to.have.length(1);
-    expect(saved[XS_P_$SAVED]).to.be.eq(1);
+    expect(saved[XS_P_$SAVED]).to.be.eq(3);
     expect(saved[XS_P_$ERRORED]).to.be.eq(0);
-    expect(saved[0][__REMOTE_IDS__]).to.be.deep.eq({remote01: {id: 21}});
-    expect(results).to.have.length(21);
+    expect(saved[0][__REMOTE_IDS__]).to.be.deep.eq({
+      remote01: {id: 21},
+      remote02: {id: 21},
+      system: {id: 21}
+    });
+    expect(results).to.have.length(63);
     expect(results[0]).to.be.instanceOf(DataRow);
 
   }
@@ -129,11 +135,11 @@ class DistributedStorageSaveSpec {
     const results = await controller.find(DataRow, {someString: 'saveMany'});
 
     expect(saved).to.have.length(10);
-    expect(saved[XS_P_$SAVED]).to.be.eq(10);
+    expect(saved[XS_P_$SAVED]).to.be.eq(30);
     expect(saved[XS_P_$ERRORED]).to.be.eq(0);
     expect(saved[0][__REMOTE_IDS__].remote01.id).to.be.gt(20);
 
-    expect(results).to.have.length(10);
+    expect(results).to.have.length(30);
     expect(results[0]).to.be.instanceOf(DataRow);
   }
 
@@ -142,7 +148,7 @@ class DistributedStorageSaveSpec {
   async 'save edited entry'() {
     const controller = Container.get(DistributedStorageEntityController);
     const results = await controller.find(DataRow, {id: 10});
-    expect(results).to.have.length(1);
+    expect(results).to.have.length(3);
     expect(results[0]).to.be.instanceOf(DataRow);
 
     const testEntry = _.first(results);
@@ -155,16 +161,16 @@ class DistributedStorageSaveSpec {
     const saved = await controller.save(testEntry);
 
     expect(saved).to.have.length(1);
-    expect(saved[XS_P_$SAVED]).to.be.eq(1);
+    expect(saved[XS_P_$SAVED]).to.be.eq(3);
     expect(saved[XS_P_$ERRORED]).to.be.eq(0);
-    expect(saved[0][__REMOTE_IDS__]).to.be.deep.eq({remote01: {id: 10}});
+    expect(saved[0][__REMOTE_IDS__]).to.be.deep.eq({remote01: {id: 10}, remote02: {id: 10}, system: {id: 10}});
 
     const results2 = await controller.find(DataRow, {id: 10});
-    expect(results2).to.have.length(1);
-    const entry = results2.shift();
+    expect(results2).to.have.length(3);
+    const entry = results2.find(x => x[__NODE_ID__] === 'system');
     expect(entry).to.be.deep.eq({
       '__class__': 'DataRow',
-      '__nodeId__': 'remote01',
+      '__nodeId__': 'system',
       '__registry__': 'typeorm',
       'id': 10,
       'someAny': '{"hallo":"editedWelt"}',
@@ -180,7 +186,7 @@ class DistributedStorageSaveSpec {
   async 'save edited entries'() {
     const controller = Container.get(DistributedStorageEntityController);
     const results = await controller.find(DataRow, {someBool: false, id: {$le: 20}});
-    expect(results).to.have.length(10);
+    expect(results).to.have.length(30);
     results.map(x => expect(x).to.be.instanceOf(DataRow));
 
     results.forEach((x, index) => {
@@ -191,14 +197,14 @@ class DistributedStorageSaveSpec {
 
     const saved = await controller.save(results);
 
-    expect(saved).to.have.length(10);
-    expect(saved[XS_P_$SAVED]).to.be.eq(10);
+    expect(saved).to.have.length(30);
+    expect(saved[XS_P_$SAVED]).to.be.eq(90);
     expect(saved[XS_P_$ERRORED]).to.be.eq(0);
-    expect(saved[0][__REMOTE_IDS__]).to.be.deep.eq({remote01: {id: 1}});
+    expect(saved[0][__REMOTE_IDS__]).to.be.deep.eq({remote01: {id: 1}, remote02: {id: 1}, system: {id: 1}});
 
     const results2 = await controller.find(DataRow, {someBool: false, id: {$le: 20}});
-    expect(results2).to.have.length(10);
-    const entry = _.first(results2);
+    expect(results2).to.have.length(30);
+    const entry = results2.find(x => x[__NODE_ID__] === 'remote01');
     expect(entry).to.be.deep.include({
       '__class__': 'DataRow',
       '__nodeId__': 'remote01',
@@ -215,6 +221,37 @@ class DistributedStorageSaveSpec {
 
   }
 
+
+  @test
+  async 'save new entries on target id'() {
+    const controller = Container.get(DistributedStorageEntityController);
+
+    const toSave = [];
+    for (let i = 0; i < 10; i++) {
+      const testEntry = new DataRow();
+      testEntry.someString = 'saveManyOnTarget';
+      testEntry.someNumber = 1543212345;
+      testEntry.someBool = i % 2 === 0;
+      testEntry.someDate = new Date(2020, i, 1);
+      testEntry.someAny = 'Remote01';
+      toSave.push(testEntry);
+    }
+
+    const saved = await controller.save(toSave, {targetIds: ['remote01']});
+    // console.log(inspect(saved, false, 10));
+    const results = await controller.find(DataRow, {someString: 'saveManyOnTarget'});
+
+    expect(saved).to.have.length(10);
+    expect(saved[XS_P_$SAVED]).to.be.eq(10);
+    expect(saved[XS_P_$ERRORED]).to.be.eq(0);
+    expect(saved[0][__REMOTE_IDS__].remote01.id).to.be.gt(10);
+
+    expect(results).to.have.length(10);
+    expect(_.uniq(results.map(x => x[__NODE_ID__]))).to.be.deep.eq(['remote01']);
+    expect(results[0]).to.be.instanceOf(DataRow);
+  }
+
+
   @test
   async 'catch exceptions - on not existing class'() {
     const controller = Container.get(DistributedStorageEntityController);
@@ -227,7 +264,11 @@ class DistributedStorageSaveSpec {
       const results = await controller.save(dummy);
       expect(false, 'exception not fired ...').to.be.eq(true);
     } catch (e) {
-      expect(e.message).to.be.eq('remote01: no entity controller defined to handle type "Object"');
+      expect(e.message.split('\n').sort()).to.be.deep.eq([
+        'remote01: no entity controller defined to handle type "Object"',
+        'remote02: no entity controller defined to handle type "Object"',
+        'system: no entity controller defined to handle type "Object"',
+      ]);
     }
 
   }
@@ -249,7 +290,11 @@ class DistributedStorageSaveSpec {
       const results = await controller.save(dummy);
       expect(false, 'exception not fired ...').to.be.eq(true);
     } catch (e) {
-      expect(e.message).to.be.eq('remote01: no entity controller defined to handle type "Object"');
+      expect(e.message.split('\n').sort()).to.be.deep.eq([
+        'remote01: no entity controller defined to handle type "Object"',
+        'remote02: no entity controller defined to handle type "Object"',
+        'system: no entity controller defined to handle type "Object"',
+      ]);
     }
 
   }

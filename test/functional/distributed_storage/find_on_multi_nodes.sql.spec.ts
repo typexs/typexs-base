@@ -13,7 +13,7 @@ import {DistributedStorageEntityController} from '../../../src/libs/distributed_
 import {DistributedQueryWorker} from '../../../src/workers/DistributedQueryWorker';
 import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
 import {DataRow} from './fake_app/entities/DataRow';
-import {C_STORAGE_DEFAULT, Injector, StorageRef, XS_P_$COUNT} from '../../../src';
+import {C_STORAGE_DEFAULT, Injector, StorageRef, SystemNodeInfo, XS_P_$COUNT} from '../../../src';
 import {IEntityController} from '../../../src/libs/storage/IEntityController';
 import {SpawnHandle} from '../SpawnHandle';
 import {__NODE_ID__} from '../../../src/libs/distributed_storage/Constants';
@@ -253,7 +253,7 @@ class DistributedQuerySpec {
   @test
   async 'find multiple entries - output "map"'() {
     const controller = Container.get(DistributedStorageEntityController);
-    const entities = await controller.find(DataRow, {someBool: true, id: {$le: 6}}, {mode: 'map'}) as any;
+    const entities = await controller.find(DataRow, {someBool: true, id: {$le: 6}}, {outputMode: 'map'}) as any;
     console.log(entities);
     expect(entities[XS_P_$COUNT]).to.be.eq(9);
     expect(entities['remote01'][XS_P_$COUNT]).to.be.eq(3);
@@ -297,7 +297,7 @@ class DistributedQuerySpec {
   @test
   async 'find multiple entries - output "only_value"'() {
     const controller = Container.get(DistributedStorageEntityController);
-    const entities = await controller.find(DataRow, {someBool: true}, {mode: 'only_value'});
+    const entities = await controller.find(DataRow, {someBool: true}, {outputMode: 'only_value'});
     expect(entities).to.be.have.length(30);
 
   }
@@ -308,24 +308,108 @@ class DistributedQuerySpec {
   @test
   async 'find multiple entries - output "embed_nodeId"'() {
     const controller = Container.get(DistributedStorageEntityController);
-    const entities = await controller.find(DataRow, {someBool: true}, {mode: 'embed_nodeId'});
+    const entities = await controller.find(DataRow, {someBool: true}, {outputMode: 'embed_nodeId'});
     expect(entities).to.be.have.length(30);
     expect(_.uniq(entities.map(x => x[__NODE_ID__])).sort()).to.be.deep.eq(['remote01', 'remote02', 'system']);
   }
 
 
   /**
-   * Reruns directly the remote responses
+   * Reruns directly the remote responses, skips also error handling!
    */
   @test
-  async 'find multiple entries - output "raw"'() {
+  async 'find multiple entries - output "responses"'() {
     const controller = Container.get(DistributedStorageEntityController);
-    const responses = await controller.find(DataRow, {someBool: true}, {mode: 'raw'}) as any[];
+    const responses = await controller.find(DataRow, {someBool: true}, {outputMode: 'responses'}) as any[];
     console.log(responses);
     expect(responses).to.be.have.length(3);
     expect(responses.find(x => x.nodeId === 'remote01').results).to.be.have.length(10);
+  }
 
 
+  @test
+  async 'catch exceptions - wrong search query'() {
+    const controller = Container.get(DistributedStorageEntityController);
+    try {
+      const results = await controller.find(DataRow, {some_body: false, id: {$le: 20}});
+      console.log(results);
+      expect(false, 'exception not fired ...').to.be.eq(true);
+    } catch (e) {
+      expect(e).to.be.instanceOf(Error);
+      expect(e.message.split('\n').sort()).to.be.deep.eq([
+
+        'remote01: condition property "some_body" is not definied',
+        'remote02: condition property "some_body" is not definied',
+        'system: condition property "some_body" is not definied',
+
+      ]);
+    }
+
+  }
+
+
+  @test
+  async 'run query on two nodes'() {
+    const controller = Container.get(DistributedStorageEntityController);
+    const results = await controller.find(SystemNodeInfo);
+
+    expect(results).to.have.length(9);
+    expect(results[0]).to.be.instanceOf(SystemNodeInfo);
+  }
+
+
+  @test
+  async 'run query on two nodes with conditions'() {
+
+    const controller = Container.get(DistributedStorageEntityController);
+    const results = await controller.find(SystemNodeInfo, {nodeId: 'system'});
+
+    expect(results).to.have.length(3);
+    expect(results[XS_P_$COUNT]).to.be.eq(3);
+    expect(_.uniq(results.map((x: any) => x.nodeId))).to.be.deep.eq(['system']);
+    expect(results[0]).to.be.instanceOf(SystemNodeInfo);
+
+  }
+
+
+  @test
+  async 'multiple queries after an other'() {
+
+    const controller = Container.get(DistributedStorageEntityController);
+    const results1 = await controller.find(SystemNodeInfo, {nodeId: 'system'});
+    expect(results1).to.have.length(3);
+    expect(_.map(results1, (x: any) => x.nodeId)).to.contain.members(['system']);
+
+    const results2 = await controller.find(SystemNodeInfo, {nodeId: 'remote01'});
+    expect(results2).to.have.length(3);
+    expect(_.map(results2, (x: any) => x.nodeId)).to.contain.members(['remote01']);
+
+  }
+
+
+  @test
+  async 'find all'() {
+
+    const controller = Container.get(DistributedStorageEntityController);
+    const res = await controller.find(SystemNodeInfo);
+
+    expect(res).to.not.be.null;
+    expect(res).to.have.length(9);
+    expect(res[XS_P_$COUNT]).to.be.eq(9);
+    expect(res.map((x: any) => x.nodeId)).to.contain.members(['remote01', 'remote02', 'system']);
+  }
+
+
+  @test
+  async 'find with conditions'() {
+    const controller = Container.get(DistributedStorageEntityController);
+    const res = await controller.find(SystemNodeInfo, {nodeId: 'system'});
+
+    expect(res).to.not.be.null;
+    expect(res).to.have.length(3);
+    expect(res[XS_P_$COUNT]).to.be.eq(3);
+    expect(res.map((x: any) => x.nodeId)).to.contain.members(['system']);
+    expect(res.map((x: any) => x.nodeId)).to.not.contain.members(['remote02']);
   }
 
 }

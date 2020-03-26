@@ -472,7 +472,7 @@ class TasksWorkerSpec {
 
   @test
   async 'run job remote over task command'() {
-    // typexs task test [--targetId abc] [--mode worker|local /* default is worker if on exists else startup local*/]
+    // typexs task test [--targetId abc] [--outputMode worker|local /* default is worker if on exists else startup local*/]
 
     const handle = SpawnHandle.do(__dirname + '/fake_app/node_task_worker.ts').start(LOG_EVENT);
     await handle.started;

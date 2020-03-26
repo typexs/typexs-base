@@ -8,20 +8,20 @@ import {TestHelper} from '../TestHelper';
 
 import {DistributedStorageEntityController} from '../../../src/libs/distributed_storage/DistributedStorageEntityController';
 import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
-import {DataRow} from './fake_app_mongo/entities/DataRow';
 import {IEntityController} from '../../../src/libs/storage/IEntityController';
+import {DataRow} from './fake_app/entities/DataRow';
 import {Injector} from '../../../src/libs/di/Injector';
 import {C_STORAGE_DEFAULT} from '../../../src/libs/Constants';
 import {StorageRef} from '../../../src/libs/storage/StorageRef';
+import {SpawnHandle} from '../SpawnHandle';
 
 
 const LOG_EVENT = TestHelper.logEnable(false);
-
 let bootstrap: Bootstrap;
-// let p: SpawnHandle;
 let controllerRef: IEntityController;
+const p: SpawnHandle[] = [];
 
-@suite('functional/distributed_storage/update_on_local_node')
+@suite('functional/distributed_storage/remove_on_multi_nodes')
 class DistributedStorageSaveSpec {
 
 
@@ -57,62 +57,81 @@ class DistributedStorageSaveSpec {
       e.someDate = new Date(2020, i % 12, i % 30);
       e.someNumber = i * 10;
       e.someString = 'test ' + i;
-      e.someAny = ['test ' + i, 'test ' + (i * 2)];
       entries.push(e);
     }
 
-    await storageRef.getController().save(entries);
+    await controllerRef.save(entries);
+
+
+    p[0] = SpawnHandle.do(__dirname + '/fake_app/node.ts').nodeId('remote01').start(LOG_EVENT);
+    await p[0].started;
+
+    p[1] = SpawnHandle.do(__dirname + '/fake_app/node.ts').nodeId('remote02').start(LOG_EVENT);
+    await p[1].started;
+
+    await TestHelper.wait(100);
   }
 
   static async after() {
     if (bootstrap) {
       await bootstrap.shutdown();
+
+      if (p.length > 0) {
+        p.map(x => x.shutdown());
+        await Promise.all(p.map(x => x.done));
+      }
     }
   }
 
 
   @test
-  async 'update single entity'() {
-    const controller = Injector.get(DistributedStorageEntityController);
-    const results = await controller.update(DataRow, {id: 10}, {$set: {someString: 'Hallo welt'}});
-    // console.log(results);
-    // -2 means sqlite doesn't support affected rows info
-    expect(results).to.be.deep.eq({system: -2});
-    const entry = await controllerRef.findOne(DataRow, {id: 10});
-    expect(entry.someString).to.be.deep.eq('Hallo welt');
-  }
-
-  @test
-  async 'update multiple entities'() {
-    const controller = Injector.get(DistributedStorageEntityController);
-    const results = await controller.update(DataRow, {someBool: false}, {$set: {someString: 'Hallo welt setted by update'}});
-    // console.log(results);
-    // -2 means sqlite doesn't support affected rows info
-    expect(results).to.be.deep.eq({system: -2});
-    const entry = await controllerRef.findOne(DataRow, {someBool: false});
-    expect(entry.someString).to.be.deep.eq('Hallo welt setted by update');
+  async 'remove single entity'() {
+    const entry = await controllerRef.find(DataRow, {id: 10}, {limit: 10});
+    const controller = Injector.get(DistributedStorageEntityController) as IEntityController;
+    const results = await controller.remove(entry);
+    expect(results).to.be.deep.eq({remote02: 1, remote01: 1, system: 1});
   }
 
 
   @test
-  async 'catch exception - wrong update query'() {
+  async 'remove by conditions'() {
+    const controller = Injector.get(DistributedStorageEntityController) as IEntityController;
+    const results = await controller.remove(DataRow, {someBool: false});
+    // is not supported
+    expect(results).to.be.deep.eq({remote01: -2, remote02: -2, system: -2});
+
+    const entries = await controller.find(DataRow, {someBool: false}, {limit: 50});
+    expect(entries).to.have.length(0);
+  }
+
+
+  @test
+  async 'remove by conditions - on explicit target id'() {
+    const controller = Injector.get(DistributedStorageEntityController);
+    let entries = await controller.find(DataRow, {id: {$in: [14, 16]}}, {limit: 50});
+    expect(entries).to.have.length(6);
+
+    const results = await controller.remove(DataRow, {id: {$in: [14, 16]}}, {targetIds: ['remote01']});
+    // is not supported
+    expect(results).to.be.deep.eq({remote01: -2});
+
+    entries = await controller.find(DataRow, {id: {$in: [14, 16]}}, {limit: 50});
+    expect(entries).to.have.length(4);
+  }
+
+
+  @test
+  async 'catch exception - wrong conditions'() {
     const controller = Injector.get(DistributedStorageEntityController);
     try {
-      const results = await controller.update(DataRow, {id: 10}, {$set: {some_String: 'Hallo welt'}});
+      const results = await controller.remove(DataRow, {some_Bool: false});
       expect(false, 'exception not fired ...').to.be.eq(true);
     } catch (e) {
-      expect(e.message).to.be.eq('system: No entity column "some_String" was found.');
-    }
-  }
-
-  @test
-  async 'catch exception - wrong condition query'() {
-    const controller = Injector.get(DistributedStorageEntityController);
-    try {
-      const results = await controller.update(DataRow, {ids: 10}, {$set: {someString: 'Hallo welt'}});
-      expect(false, 'exception not fired ...').to.be.eq(true);
-    } catch (e) {
-      expect(e.message).to.be.eq('system: SQLITE_ERROR: no such column: ids');
+      expect(e.message.split('\n').sort()).to.be.deep.eq([
+        'remote01: SQLITE_ERROR: no such column: some_Bool',
+        'remote02: SQLITE_ERROR: no such column: some_Bool',
+        'system: SQLITE_ERROR: no such column: some_Bool',
+      ]);
     }
   }
 

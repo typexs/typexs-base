@@ -13,15 +13,16 @@ import {IEntityController} from '../../../src/libs/storage/IEntityController';
 import {Injector} from '../../../src/libs/di/Injector';
 import {C_STORAGE_DEFAULT} from '../../../src/libs/Constants';
 import {StorageRef} from '../../../src/libs/storage/StorageRef';
+import {SpawnHandle} from '../SpawnHandle';
+
 
 
 const LOG_EVENT = TestHelper.logEnable(false);
-
 let bootstrap: Bootstrap;
-// let p: SpawnHandle;
 let controllerRef: IEntityController;
+const p: SpawnHandle[] = [];
 
-@suite('functional/distributed_storage/update_on_local_node')
+@suite('functional/distributed_storage/update_on_remote_node')
 class DistributedStorageSaveSpec {
 
 
@@ -38,7 +39,7 @@ class DistributedStorageSaveSpec {
         modules: {paths: [__dirname + '/../../..']},
         storage: {default: DB_OPTIONS},
         eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}},
-        workers: {access: [{name: 'DistributedQueryWorker', access: 'allow'}]}
+        // workers: {access: [{name: 'DistributedQueryWorker', access: 'allow'}]}
       });
     bootstrap.activateLogger();
     bootstrap.activateErrorHandling();
@@ -62,11 +63,22 @@ class DistributedStorageSaveSpec {
     }
 
     await storageRef.getController().save(entries);
+
+
+    p[0] = SpawnHandle.do(__dirname + '/fake_app/node.ts').nodeId('remote01').start(LOG_EVENT);
+    await p[0].started;
+
+    await TestHelper.wait(100);
   }
 
   static async after() {
     if (bootstrap) {
       await bootstrap.shutdown();
+
+      if (p.length > 0) {
+        p.map(x => x.shutdown());
+        await Promise.all(p.map(x => x.done));
+      }
     }
   }
 
@@ -77,8 +89,8 @@ class DistributedStorageSaveSpec {
     const results = await controller.update(DataRow, {id: 10}, {$set: {someString: 'Hallo welt'}});
     // console.log(results);
     // -2 means sqlite doesn't support affected rows info
-    expect(results).to.be.deep.eq({system: -2});
-    const entry = await controllerRef.findOne(DataRow, {id: 10});
+    expect(results).to.be.deep.eq({remote01: -2});
+    const entry = await controller.findOne(DataRow, {id: 10});
     expect(entry.someString).to.be.deep.eq('Hallo welt');
   }
 
@@ -88,8 +100,8 @@ class DistributedStorageSaveSpec {
     const results = await controller.update(DataRow, {someBool: false}, {$set: {someString: 'Hallo welt setted by update'}});
     // console.log(results);
     // -2 means sqlite doesn't support affected rows info
-    expect(results).to.be.deep.eq({system: -2});
-    const entry = await controllerRef.findOne(DataRow, {someBool: false});
+    expect(results).to.be.deep.eq({remote01: -2});
+    const entry = await controller.findOne(DataRow, {someBool: false});
     expect(entry.someString).to.be.deep.eq('Hallo welt setted by update');
   }
 
@@ -101,7 +113,7 @@ class DistributedStorageSaveSpec {
       const results = await controller.update(DataRow, {id: 10}, {$set: {some_String: 'Hallo welt'}});
       expect(false, 'exception not fired ...').to.be.eq(true);
     } catch (e) {
-      expect(e.message).to.be.eq('system: No entity column "some_String" was found.');
+      expect(e.message).to.be.eq('remote01: No entity column "some_String" was found.');
     }
   }
 
@@ -112,7 +124,7 @@ class DistributedStorageSaveSpec {
       const results = await controller.update(DataRow, {ids: 10}, {$set: {someString: 'Hallo welt'}});
       expect(false, 'exception not fired ...').to.be.eq(true);
     } catch (e) {
-      expect(e.message).to.be.eq('system: SQLITE_ERROR: no such column: ids');
+      expect(e.message).to.be.eq('remote01: SQLITE_ERROR: no such column: ids');
     }
   }
 

@@ -4,7 +4,6 @@ import {Bootstrap} from '../../../src/Bootstrap';
 import {Config} from 'commons-config';
 import {TEST_STORAGE_OPTIONS} from '../config';
 import {IEventBusConfiguration} from 'commons-eventbus';
-import {Container} from 'typedi';
 import {TestHelper} from '../TestHelper';
 
 import {DistributedStorageEntityController} from '../../../src/libs/distributed_storage/DistributedStorageEntityController';
@@ -73,12 +72,34 @@ class DistributedStorageSaveSpec {
   @test
   async 'remove single entity'() {
     const entry = await controllerRef.find(DataRow, {id: 10}, {limit: 10});
-    const controller = Container.get(DistributedStorageEntityController) as IEntityController;
+    const controller = Injector.get(DistributedStorageEntityController) as IEntityController;
     const results = await controller.remove(entry);
-    console.log(results);
     expect(results).to.be.deep.eq({system: 1});
   }
 
+
+  @test
+  async 'remove by conditions'() {
+    const controller = Injector.get(DistributedStorageEntityController) as IEntityController;
+    const results = await controller.remove(DataRow, {someBool: false});
+    // is not supported
+    expect(results).to.be.deep.eq({system: -2});
+
+    const entries = await controller.find(DataRow, {someBool: false}, {limit: 50});
+    expect(entries).to.have.length(0);
+  }
+
+
+  @test
+  async 'catch exception - wrong conditions'() {
+    const controller = Injector.get(DistributedStorageEntityController);
+    try {
+      const results = await controller.remove(DataRow, {some_Bool: false});
+      expect(false, 'exception not fired ...').to.be.eq(true);
+    } catch (e) {
+      expect(e.message).to.be.eq('system: SQLITE_ERROR: no such column: some_Bool');
+    }
+  }
 
 }
 

@@ -70,13 +70,13 @@ class StorageControllerSqlSpec {
     param[2].maxSpeed = 200;
     param[2].ps = 280;
     param[2].year = 1980;
-    param[2].production = new Date(1981, 1, 1);
+    param[2].production = new Date(1981, 1, 2);
 
     param[3].doors = 3;
     param[3].maxSpeed = 140;
     param[3].ps = 130;
     param[3].year = 1985;
-    param[3].production = new Date(1980, 2, 1);
+    param[3].production = new Date(1980, 2, 2);
 
     param[4].doors = 3;
     param[4].maxSpeed = 170;
@@ -202,10 +202,10 @@ class StorageControllerSqlSpec {
         'month': '04'
       },
       {
-        'month': '01'
+        'month': '02'
       },
       {
-        'month': '02'
+        'month': '03'
       },
       {
         'month': '09'
@@ -227,10 +227,10 @@ class StorageControllerSqlSpec {
         'day': '09'
       },
       {
-        'day': '31'
+        'day': '01'
       },
       {
-        'day': '29'
+        'day': '01'
       },
       {
         'day': '21'
@@ -313,7 +313,7 @@ class StorageControllerSqlSpec {
         count: {$count: '*'}
       }
     }]);
-     // console.log(aggr);
+    // console.log(aggr);
     expect(aggr).to.have.length(1);
     expect(aggr).to.be.deep.eq([{count: 5}]);
     expect(aggr[XS_P_$COUNT]).to.be.eq(1);
@@ -512,8 +512,8 @@ class StorageControllerSqlSpec {
     expect(aggr[XS_P_$COUNT]).to.be.eq(5);
     expect(aggr).to.be.deep.eq([
       {date: '1979-12-04'},
-      {date: '1980-02-29'},
-      {date: '1981-01-31'},
+      {date: '1980-03-01'},
+      {date: '1981-02-01'},
       {date: '1983-09-21'},
       {date: '1989-04-09'},
     ]);
@@ -529,8 +529,8 @@ class StorageControllerSqlSpec {
     expect(aggr[XS_P_$LIMIT]).to.be.eq(0);
     expect(aggr[XS_P_$COUNT]).to.be.eq(5);
     expect(aggr).to.be.deep.eq([
-      {month: '01'},
       {month: '02'},
+      {month: '03'},
       {month: '04'},
       {month: '09'},
       {month: '12'}
@@ -555,8 +555,8 @@ class StorageControllerSqlSpec {
     expect(aggr[XS_P_$LIMIT]).to.be.eq(0);
     expect(aggr[XS_P_$COUNT]).to.be.eq(3);
     expect(aggr).to.be.deep.eq([
-      {month: '01'},
       {month: '02'},
+      {month: '03'},
       {month: '09'},
     ]);
   }
@@ -582,7 +582,6 @@ class StorageControllerSqlSpec {
     expect(aggr).to.be.deep.eq([{byYear: 1979, count: 2}]);
     expect(aggr[XS_P_$COUNT]).to.be.eq(1);
   }
-
 
 
   @test.skip

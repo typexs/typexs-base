@@ -192,24 +192,28 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
       }
 
       if (response.error || response.skipping) {
-        if (response.error instanceof Error) {
-          response.error = {
-            name: response.error.name,
-            message: response.error.message
-          };
-        }
+        this.handleError(response);
         EventBus.postAndForget(response);
         return;
       }
 
       this.queue.push(q);
     } catch (err) {
-      response.error = err.message;
+      response.error = err;
+      this.handleError(response);
       EventBus.postAndForget(response);
       this.logger.error(err);
     }
   }
 
+  handleError(response: any) {
+    if (response.error instanceof Error) {
+      response.error = {
+        name: response.error.name,
+        message: response.error.message
+      };
+    }
+  }
 
   async do(workLoad: IQueryWorkload, queue?: AsyncWorkerQueue<any>): Promise<any> {
     // execute query
@@ -245,6 +249,7 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
     }
 
     // clear references
+    this.handleError(workLoad.response);
     _.set(workLoad.event, 'entityRef', null);
     _.set(workLoad.event, 'entityRefs', null);
     _.set(workLoad.event, 'entityController', null);
@@ -544,7 +549,7 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
       this.logger.debug('distributed query worker:  found ' + response.count +
         ' entries for ' + classRef.name + '[qId: ' + response.id + ']');
     } catch (err) {
-      response.error = err.message;
+      response.error = err;
       this.logger.error(err);
     }
   }
@@ -572,7 +577,7 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
           '[qId: ' + response.reqEventId + ']');
       }
     } catch (err) {
-      response.error = err.message;
+      response.error = err;
       this.logger.error(err);
     }
 
@@ -590,7 +595,7 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
       this.logger.debug('distributed query worker: aggregate  ' + classRef.name + ' amount of ' + response.results.length +
         '[qId: ' + response.reqEventId + ']');
     } catch (err) {
-      response.error = err.message;
+      response.error = err;
       this.logger.error(err);
     }
 

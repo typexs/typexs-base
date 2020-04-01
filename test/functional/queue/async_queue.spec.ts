@@ -53,7 +53,7 @@ class AsyncQueueTests {
     await q.await();
     expect(q.amount()).to.eq(0);
   }
-  
+
 
   @test
   async enqueueMultipleWorkloadAndWaitUntilAllDone() {

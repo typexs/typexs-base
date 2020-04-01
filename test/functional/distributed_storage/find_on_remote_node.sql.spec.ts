@@ -137,7 +137,7 @@ class DistributedQuerySpec {
         '__registry__': 'typeorm',
         'id': 10,
         'someBool': true,
-        'someDate': new Date('2020-11-09T23:00:00.000Z'),
+        'someDate': new Date(2020, 10, 10),
         'someNumber': 100,
         'someString': 'test 10 remote01',
       }
@@ -200,14 +200,14 @@ class DistributedQuerySpec {
     const controller = Container.get(DistributedStorageEntityController);
     const entities = await controller.find(DataRow, {
       $and: [
-        {someDate: {$ge: new Date('2020-11-08T00:00:00.000Z')}},
-        {someDate: {$le: new Date('2020-11-10T23:00:00.000Z')}}
+        {someDate: {$ge: new Date(2020, 10, 8)}},
+        {someDate: {$le: new Date(2020, 10, 10)}}
       ]
     });
     expect(entities).to.have.length(1);
     entities.forEach(x => {
       expect(x).to.be.instanceOf(DataRow);
-      const date = new Date('2020-11-09T23:00:00.000Z');
+      const date = new Date(2020, 10, 10);
       expect(x.someDate.toISOString()).to.be.eq(date.toISOString());
     });
 
@@ -227,7 +227,7 @@ class DistributedQuerySpec {
         '__registry__': 'typeorm',
         'id': 2,
         'someBool': true,
-        'someDate': new Date('2020-03-01T23:00:00.000Z'),
+        'someDate': new Date(2020, 1, 31),
         'someNumber': 20,
         'someString': 'test 2 remote01',
       },
@@ -237,7 +237,7 @@ class DistributedQuerySpec {
         '__registry__': 'typeorm',
         'id': 4,
         'someBool': true,
-        'someDate': new Date('2020-05-03T22:00:00.000Z'),
+        'someDate': new Date(2020, 4, 4),
         'someNumber': 40,
         'someString': 'test 4 remote01',
       },
@@ -247,7 +247,7 @@ class DistributedQuerySpec {
         '__registry__': 'typeorm',
         'id': 6,
         'someBool': true,
-        'someDate': new Date('2020-07-05T22:00:00.000Z'),
+        'someDate': new Date(2020, 6, 6),
         'someNumber': 60,
         'someString': 'test 6 remote01'
       }

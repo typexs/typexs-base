@@ -17,6 +17,10 @@ export class MongoDbSchemaHandler extends AbstractSchemaHandler {
 
   }
 
+  initOnceByType() {
+
+  }
+
   async getCollectionNames(): Promise<string[]> {
     const c = await this.storageRef.connect();
     const cursor = this.getDB(c).listCollections(null);

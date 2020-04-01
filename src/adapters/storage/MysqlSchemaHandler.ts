@@ -1,31 +1,36 @@
-import {AbstractSchemaHandler} from "../../libs/storage/AbstractSchemaHandler";
-import * as _ from "lodash";
-import {MysqlConnectionOptions} from "typeorm/driver/mysql/MysqlConnectionOptions";
-import {IDBType} from "../../libs/storage/IDBType";
-import {JS_DATA_TYPES} from "commons-schema-api/browser";
+import {AbstractSchemaHandler} from '../../libs/storage/AbstractSchemaHandler';
+import * as _ from 'lodash';
+import {MysqlConnectionOptions} from 'typeorm/driver/mysql/MysqlConnectionOptions';
+import {IDBType} from '../../libs/storage/IDBType';
+import {JS_DATA_TYPES} from 'commons-schema-api/browser';
 
 
 export class MysqlSchemaHandler extends AbstractSchemaHandler {
 
   type: string = 'mysql';
 
+  initOnceByType() {
+    super.initOnceByType();
+  }
+
+
   async getCollectionNames(): Promise<string[]> {
-    let c = await this.storageRef.connect();
-    let database = (<MysqlConnectionOptions>this.storageRef.getOptions()).database;
-    let q = await c.manager.query('SELECT table_name FROM information_schema.tables WHERE table_schema=\'' + database + '\';');
+    const c = await this.storageRef.connect();
+    const database = (<MysqlConnectionOptions>this.storageRef.getOptions()).database;
+    const q = await c.manager.query('SELECT table_name FROM information_schema.tables WHERE table_schema=\'' + database + '\';');
     return _.map(q, x => x.table_name);
   }
 
 
   translateToStorageType(jsType: string, length: number = null): IDBType {
-    let type: IDBType = {
+    const type: IDBType = {
       type: null,
       variant: null,
       sourceType: null,
       length: length
     };
 
-    let split = jsType.split(':');
+    const split = jsType.split(':');
     type.sourceType = <JS_DATA_TYPES>split.shift();
     if (split.length > 0) {
       type.variant = split.shift();
@@ -35,7 +40,7 @@ export class MysqlSchemaHandler extends AbstractSchemaHandler {
       case 'string':
         type.type = 'text';
         if (type.length && type.length > 0) {
-          type.type = 'varchar'
+          type.type = 'varchar';
         }
         break;
       case 'text':
@@ -55,7 +60,7 @@ export class MysqlSchemaHandler extends AbstractSchemaHandler {
         break;
       case 'date':
         type.type = 'date';
-        if(type.variant){
+        if (type.variant) {
           type.type = 'datetime';
         }
         break;

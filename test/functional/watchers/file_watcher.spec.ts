@@ -96,9 +96,7 @@ class FileWatcherSpec {
     });
 
     await fileWatcher.start().should.not.eventually.be.rejected;
-
     await fileWatcher.stop().should.not.eventually.be.rejected;
-
     await fileWatcher.stop().should.eventually.be.rejected;
   }
 

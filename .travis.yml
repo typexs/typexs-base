@@ -25,6 +25,7 @@ before_script:
   - sudo /etc/init.d/postgresql stop
 
 before_install:
+  - export TZ=Europe/Berlin
   - npm install -g nyc
   - npm install -g codecov
   - sudo rm /usr/local/bin/docker-compose

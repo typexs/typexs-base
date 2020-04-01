@@ -2,7 +2,7 @@ import {expect} from 'chai';
 import {suite, test} from 'mocha-typescript';
 import {Bootstrap} from '../../../src/Bootstrap';
 import {Config} from 'commons-config';
-import {TEST_MONGO_STORAGE_OPTIONS} from '../config';
+import {TEST_MONGO_STORAGE_OPTIONS, TEST_STORAGE_OPTIONS} from '../config';
 import {IEventBusConfiguration} from 'commons-eventbus';
 import {Container} from 'typedi';
 import {TestHelper} from '../TestHelper';
@@ -24,15 +24,15 @@ let bootstrap: Bootstrap;
 // let p: SpawnHandle;
 
 
-@suite('functional/distributed_storage/aggregate_on_local_node (mongo)')
+@suite('functional/distributed_storage/aggregate_on_local_node (sql)')
 class DistributedStorageSaveSpec {
 
 
   static async before() {
     Bootstrap.reset();
     Config.clear();
-    const DB_OPTIONS = TEST_MONGO_STORAGE_OPTIONS;
-    _.set(DB_OPTIONS, 'database', 'typexs_local');
+    const DB_OPTIONS = TEST_STORAGE_OPTIONS;
+    // _.set(DB_OPTIONS, 'database', 'typexs_local');
     bootstrap = Bootstrap
       .setConfigSources([{type: 'system'}])
       .configure(<ITypexsOptions & any>{

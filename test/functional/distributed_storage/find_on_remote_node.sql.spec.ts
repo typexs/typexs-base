@@ -282,7 +282,7 @@ class DistributedQuerySpec {
   async 'find multiple entries - output "responses"'() {
     const controller = Container.get(DistributedStorageEntityController);
     const responses = await controller.find(DataRow, {someBool: true}, {outputMode: 'responses'}) as any[];
-    console.log(responses);
+    // console.log(responses);
     expect(responses).to.be.have.length(1);
     expect(responses.find(x => x.nodeId === 'remote01').results).to.be.have.length(10);
 

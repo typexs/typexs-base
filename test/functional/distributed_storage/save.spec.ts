@@ -130,6 +130,7 @@ class DistributedStorageSaveSpec {
 
     const p = SpawnHandle.do(__dirname + '/fake_app/node.ts').start(LOG_EVENT);
     await p.started;
+    await TestHelper.wait(100);
 
     const controller = Container.get(DistributedStorageEntityController);
 
@@ -151,8 +152,8 @@ class DistributedStorageSaveSpec {
 
     expect(saved[XS_P_$SAVED]).to.be.eq(1);
     expect(saved[XS_P_$ERRORED]).to.be.eq(0);
-    expect(saved[0][__REMOTE_IDS__]).to.be.deep.eq({fakeapp01: {id: 1}});
-    expect(results).to.have.length(1);
+    expect(saved[0][__REMOTE_IDS__]).to.be.deep.eq({fakeapp01: {id: 21}});
+    expect(results).to.have.length(21);
     expect(results[0]).to.be.instanceOf(DataRow);
 
   }

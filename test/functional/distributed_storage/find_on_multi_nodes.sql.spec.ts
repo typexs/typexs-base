@@ -25,7 +25,7 @@ let bootstrap: Bootstrap;
 let controllerRef: IEntityController;
 const p: SpawnHandle[] = [];
 
-@suite('functional/distributed/find_single_on_multiple_nodes (sql)')
+@suite('functional/distributed/find_on_multiple_nodes (sql)')
 class DistributedQuerySpec {
 
 
@@ -52,12 +52,10 @@ class DistributedQuerySpec {
 
 
     p[0] = SpawnHandle.do(__dirname + '/fake_app/node.ts').nodeId('remote01').start(LOG_EVENT);
-    await p[0].started;
 
     p[1] = SpawnHandle.do(__dirname + '/fake_app/node.ts').nodeId('remote02').start(LOG_EVENT);
-    await p[1].started;
+    await Promise.all([p[0].started, p[1].started]);
 
-    await TestHelper.wait(100);
 
 
     const entries = [];
@@ -74,6 +72,8 @@ class DistributedQuerySpec {
     const storageRef = Injector.get(C_STORAGE_DEFAULT) as StorageRef;
     controllerRef = storageRef.getController();
     await controllerRef.save(entries);
+
+    await TestHelper.wait(100);
 
   }
 
@@ -95,7 +95,7 @@ class DistributedQuerySpec {
   async 'findOne single entity'() {
     const controller = Container.get(DistributedStorageEntityController);
     const entity = await controller.findOne(DataRow, {id: 10}, {hint: 'remote02'});
-    console.log(entity);
+    // console.log(entity);
     expect(entity).to.deep.include({
       id: 10,
       someNumber: 100,
@@ -112,7 +112,7 @@ class DistributedQuerySpec {
   async 'findOne single entity by target'() {
     const controller = Container.get(DistributedStorageEntityController);
     const entity = await controller.findOne(DataRow, {id: 11}, {targetIds: ['remote01']});
-    console.log(entity);
+    // console.log(entity);
     expect(entity).to.deep.include({
       id: 11,
       someNumber: 110,
@@ -254,7 +254,7 @@ class DistributedQuerySpec {
   async 'find multiple entries - output "map"'() {
     const controller = Container.get(DistributedStorageEntityController);
     const entities = await controller.find(DataRow, {someBool: true, id: {$le: 6}}, {outputMode: 'map'}) as any;
-    console.log(entities);
+    // console.log(entities);
     expect(entities[XS_P_$COUNT]).to.be.eq(9);
     expect(entities['remote01'][XS_P_$COUNT]).to.be.eq(3);
     expect(entities['remote02'][XS_P_$COUNT]).to.be.eq(3);
@@ -321,7 +321,7 @@ class DistributedQuerySpec {
   async 'find multiple entries - output "responses"'() {
     const controller = Container.get(DistributedStorageEntityController);
     const responses = await controller.find(DataRow, {someBool: true}, {outputMode: 'responses'}) as any[];
-    console.log(responses);
+    // console.log(responses);
     expect(responses).to.be.have.length(3);
     expect(responses.find(x => x.nodeId === 'remote01').results).to.be.have.length(10);
   }
@@ -332,7 +332,7 @@ class DistributedQuerySpec {
     const controller = Container.get(DistributedStorageEntityController);
     try {
       const results = await controller.find(DataRow, {some_body: false, id: {$le: 20}});
-      console.log(results);
+      // console.log(results);
       expect(false, 'exception not fired ...').to.be.eq(true);
     } catch (e) {
       expect(e).to.be.instanceOf(Error);

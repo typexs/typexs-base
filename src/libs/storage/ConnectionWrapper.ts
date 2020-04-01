@@ -9,9 +9,9 @@ export class ConnectionWrapper {
 
 
   constructor(s: StorageRef, conn?: Connection) {
-    this.storage = s;
+    this.storageRef = s;
     this._connection = conn;
-    this.name = this.storage.name;
+    this.name = this.storageRef.name;
 
   }
 
@@ -42,9 +42,13 @@ export class ConnectionWrapper {
 
   private name: string = null;
 
-  storage: StorageRef;
+  storageRef: StorageRef;
 
   _connection: Connection;
+
+  getStorageRef() {
+    return this.storageRef;
+  }
 
 
   usageInc() {
@@ -93,12 +97,12 @@ export class ConnectionWrapper {
 
 
   isSingleConnection(): boolean {
-    return this.storage.isSingleConnection();
+    return this.storageRef.isSingleConnection();
   }
 
 
   isOnlyMemory(): boolean {
-    return this.storage.isOnlyMemory();
+    return this.storageRef.isOnlyMemory();
   }
 
 
@@ -130,7 +134,7 @@ export class ConnectionWrapper {
     if (rest <= 0) {
       await this.lock.acquire();
       try {
-        await this.storage.remove(this);
+        await this.storageRef.remove(this);
       } catch (err) {
         Log.error(err);
       } finally {

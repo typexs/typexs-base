@@ -1,4 +1,3 @@
-import * as _ from 'lodash';
 import {StorageRef} from './StorageRef';
 import {ISaveOptions} from './framework/ISaveOptions';
 import {IFindOptions} from './framework/IFindOptions';
@@ -57,6 +56,13 @@ export class StorageEntityController implements IEntityController {
         this.connection = null;
       }
     }
+  }
+
+  /**
+   * Returns the reference to handled storage
+   */
+  getStorageRef() {
+    return this.storageRef;
   }
 
   name() {

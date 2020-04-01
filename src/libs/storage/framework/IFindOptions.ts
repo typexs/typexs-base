@@ -3,5 +3,5 @@ export interface IFindOptions {
   limit?: number;
   offset?: number;
   timeout?: number;
-  sort?: { [key: string]: 'asc' | 'desc' }
+  sort?: { [key: string]: 'asc' | 'desc' };
 }

@@ -31,7 +31,9 @@ export class Storage {
     if (_.has(this.schemaHandler, options.type)) {
       type = options.type;
     }
-    ref.setSchemaHandler(Reflect.construct(this.schemaHandler[type], [ref]));
+    const schemaHandler = Reflect.construct(this.schemaHandler[type], [ref]);
+    schemaHandler.prepare();
+    ref.setSchemaHandler(schemaHandler);
     this.refs[name] = ref;
     return ref;
   }

@@ -79,9 +79,9 @@ export class FindOp<T> implements IFindOp<T> {
       // const repo = connection.manager.getRepository(entityType);
       // const qb = repo.createQueryBuilder() as SelectQueryBuilder<T>;
       let qb: SelectQueryBuilder<T> = null;
-      const entityDef = TypeOrmEntityRegistry.$().getEntityRefFor(entityType);
+      const entityRef = TypeOrmEntityRegistry.$().getEntityRefFor(entityType);
       if (findConditions) {
-        const builder = new TypeOrmSqlConditionsBuilder<T>(connection.manager, entityDef, 'select');
+        const builder = new TypeOrmSqlConditionsBuilder<T>(connection.manager, entityRef, this.controller.getStorageRef(), 'select');
         const where = builder.build(findConditions);
         qb = builder.getQueryBuilder() as SelectQueryBuilder<T>;
         // builder.getJoins().forEach(join => {
@@ -103,7 +103,7 @@ export class FindOp<T> implements IFindOp<T> {
       }
 
       if (_.isNull(this.options.sort)) {
-        entityDef.getPropertyRefs().filter(x => x.isIdentifier()).forEach(x => {
+        entityRef.getPropertyRefs().filter(x => x.isIdentifier()).forEach(x => {
           qb.addOrderBy(qb.alias + '.' + x.storingName, 'ASC');
         });
       } else {

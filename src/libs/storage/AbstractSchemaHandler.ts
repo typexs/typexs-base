@@ -4,17 +4,63 @@ import {IDBType} from './IDBType';
 import {JS_DATA_TYPES} from 'commons-schema-api/browser';
 import {ICollection} from './ICollection';
 import {ICollectionProperty} from './ICollectionProperty';
+import {NotSupportedError} from 'commons-base/browser';
 
 
 export abstract class AbstractSchemaHandler {
+
+  constructor(ref?: StorageRef) {
+    this.storageRef = ref;
+  }
+
+  static types: string[] = [];
+
+  static operations: { [type: string]: { [op: string]: (...args: any[]) => string } } = {};
 
   readonly type: string;
 
   readonly storageRef: StorageRef;
 
-  constructor(ref?: StorageRef) {
-    this.storageRef = ref;
+  prepare() {
+    if (!AbstractSchemaHandler.types.includes(this.type)) {
+      AbstractSchemaHandler.types.push(this.type);
+      this.initOnceByType();
+    }
   }
+
+  initOnceByType() {
+    this.registerOperationHandle('year', (field: string) => {
+      return 'YEAR(' + field + ')';
+    });
+    this.registerOperationHandle('month', (field: string) => {
+      return 'MONTH(' + field + ')';
+    });
+    this.registerOperationHandle('day', (field: string) => {
+      return 'DAY(' + field + ')';
+    });
+    this.registerOperationHandle('sum', (field: string) => {
+      return 'SUM(' + field + ')';
+    });
+    this.registerOperationHandle('count', (field: string) => {
+      return 'COUNT(' + field + ')';
+    });
+    this.registerOperationHandle('min', (field: string) => {
+      return 'MIN(' + field + ')';
+    });
+    this.registerOperationHandle('max', (field: string) => {
+      return 'MAX(' + field + ')';
+    });
+    this.registerOperationHandle('avg', (field: string) => {
+      return 'AVG(' + field + ')';
+    });
+    this.registerOperationHandle('date', (field: string) => {
+      return 'DATE(' + field + ')';
+    });
+    this.registerOperationHandle('timestamp', (field: string) => {
+      return 'TIMESTAMP(' + field + ')';
+    });
+  }
+
 
   abstract getCollectionNames(): Promise<string[]>;
 
@@ -22,6 +68,19 @@ export abstract class AbstractSchemaHandler {
     const c = await this.storageRef.connect();
     return await c.manager.connection.createQueryRunner().getTable(name);
   }
+
+  escape(name: string, quote: boolean = true) {
+    if (_.isString(name)) {
+      if (quote) {
+        return '\'' + name.replace(/'/, '\'\'') + '\'';
+      } else {
+        return name.replace(/'/, '\'\'');
+      }
+    }
+    return name;
+
+  }
+
 
   async getCollections(names: string[]): Promise<ICollection[]> {
     const c = await this.storageRef.connect();
@@ -139,9 +198,24 @@ export abstract class AbstractSchemaHandler {
       case 'json':
         type.type = 'text';
         break;
-
     }
     return type;
+  }
+
+
+  registerOperationHandle(name: string, op: (...args: any[]) => string) {
+    if (!AbstractSchemaHandler.operations[this.type]) {
+      AbstractSchemaHandler.operations[this.type] = {};
+    }
+    AbstractSchemaHandler.operations[this.type][name.toLowerCase()] = op;
+  }
+
+  getOperationHandle(name: string): (...args: any[]) => string {
+    if (AbstractSchemaHandler.operations[this.type][name.toLowerCase()]) {
+      return AbstractSchemaHandler.operations[this.type][name.toLowerCase()];
+    } else {
+      throw new NotSupportedError('sql operation not defined ' + name.toLowerCase());
+    }
   }
 
 }

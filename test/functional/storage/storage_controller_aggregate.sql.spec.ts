@@ -1,4 +1,4 @@
-process.env.SQL_LOG = '1';
+// process.env.SQL_LOG = '1';
 
 import * as path from 'path';
 import {suite, test} from 'mocha-typescript';

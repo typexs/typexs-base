@@ -30,8 +30,6 @@ import {C_STORAGE_DEFAULT, Injector, StorageRef} from '../../../../src';
   await bootstrap.prepareRuntime();
   bootstrap = await bootstrap.activateStorage();
   bootstrap = await bootstrap.startup();
-  process.send('startup');
-
 
   const entries = [];
   for (let i = 1; i <= 20; i++) {
@@ -48,6 +46,7 @@ import {C_STORAGE_DEFAULT, Injector, StorageRef} from '../../../../src';
   const controllerRef = storageRef.getController();
   await controllerRef.save(entries);
 
+  process.send('startup');
 
   const timeout = parseInt(Config.get('argv.timeout', 20000), 0);
   const t = setTimeout(async () => {

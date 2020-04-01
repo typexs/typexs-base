@@ -52,10 +52,10 @@ class DistributedQuerySpec {
 
 
     p[0] = SpawnHandle.do(__dirname + '/fake_app/node.ts').nodeId('remote01').start(LOG_EVENT);
+    await p[0].started;
 
     p[1] = SpawnHandle.do(__dirname + '/fake_app/node.ts').nodeId('remote02').start(LOG_EVENT);
-    await Promise.all([p[0].started, p[1].started]);
-
+    await p[1].started;
 
     const entries = [];
     for (let i = 1; i <= 20; i++) {

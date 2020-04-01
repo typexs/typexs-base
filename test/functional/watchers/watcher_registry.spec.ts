@@ -10,7 +10,7 @@ import {TEST_STORAGE_OPTIONS} from '../config';
 import Sandbox = ChaiSpies.Sandbox;
 import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
 
-@suite('functional/watchers/WatcherRegistry', slow(5000), timeout(10000))
+@suite('functional/watchers/watcher_registry', slow(5000), timeout(10000))
 class WatcherRegistrySpec {
   static bootstrap: Bootstrap;
   static sandbox: Sandbox;

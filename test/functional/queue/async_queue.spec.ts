@@ -34,7 +34,7 @@ class Processor implements IQueueProcessor<Workload> {
 }
 
 
-@suite('Async queue')
+@suite('functional/queue/async')
 class AsyncQueueTests {
 
 

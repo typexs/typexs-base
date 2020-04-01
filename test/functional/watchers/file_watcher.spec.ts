@@ -15,7 +15,7 @@ async function sleep(duration: number): Promise<void> {
   });
 }
 
-@suite('functional/watchers/FileWatcher', slow(5000), timeout(10000))
+@suite('functional/watchers/file_watcher', slow(5000), timeout(10000))
 class FileWatcherSpec {
   static sandbox: Sandbox;
 

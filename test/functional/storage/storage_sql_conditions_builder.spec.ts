@@ -3,10 +3,8 @@ import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 
 import {Bootstrap} from '../../../src/Bootstrap';
-import {Config} from 'commons-config';
 import {TypeOrmSqlConditionsBuilder} from '../../../src/libs/storage/framework/typeorm/TypeOrmSqlConditionsBuilder';
 import {TypeOrmEntityRegistry} from '../../../src/libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry';
-import {TestHelper} from '../TestHelper';
 import {SelectQueryBuilder} from 'typeorm';
 
 let bootstrap: Bootstrap;
@@ -18,9 +16,9 @@ class StorageSqlConditionsBuilderSpec {
 
 
   static async before() {
-    TestHelper.typeOrmReset();
-    Bootstrap.reset();
-    Config.clear();
+    // TestHelper.typeOrmReset();
+    // Bootstrap.reset();
+    // Config.clear();
     const appdir = path.join(__dirname, 'fake_app_conditions');
     bootstrap = await Bootstrap
       .configure({
@@ -46,9 +44,12 @@ class StorageSqlConditionsBuilderSpec {
   }
 
 
-  static after() {
-    Bootstrap.reset();
-    Config.clear();
+  static async after() {
+    if (bootstrap) {
+      await bootstrap.shutdown();
+      await bootstrap.getStorage().shutdown();
+
+    }
   }
 
 
@@ -285,6 +286,28 @@ class StorageSqlConditionsBuilderSpec {
     );
   }
 
+
+  @test
+  async 'build conditions for having mode'() {
+    const ref = bootstrap.getStorage().get();
+    const connection = await ref.connect();
+    const sql = new TypeOrmSqlConditionsBuilder(connection.manager, TypeOrmEntityRegistry.$().getEntityRefFor(DriverCond), ref, 'select', 'driver');
+    sql.setMode('having');
+    (sql.getQueryBuilder() as SelectQueryBuilder<any>).select('SUM(id)', 'soneHavingField');
+    (sql.getQueryBuilder() as SelectQueryBuilder<any>).addSelect('firstName');
+    (sql.getQueryBuilder() as SelectQueryBuilder<any>).addGroupBy('firstName');
+    const having = sql.build({soneHavingField: {$gt: 0}});
+    having.whereFactory(sql.getQueryBuilder());
+    const query2 = sql.baseQueryBuilder.getQueryAndParameters();
+    await connection.close();
+    expect(query2).to.deep.eq(
+      [
+        'SELECT SUM(id) AS "soneHavingField", firstName FROM "driver_cond" "driver" GROUP BY firstName HAVING soneHavingField > ?',
+        [0]
+      ]
+    );
+  }
+
   @test.skip
   async 'build join conditions for one-to-one typeorm relation'() {
 
@@ -309,8 +332,9 @@ class StorageSqlConditionsBuilderSpec {
 
 
 async function getQuery(condition: any, type: Function, alias: string) {
-  const connection = await bootstrap.getStorage().get().connect();
-  const sql = new TypeOrmSqlConditionsBuilder(connection.manager, TypeOrmEntityRegistry.$().getEntityRefFor(type), 'select', alias);
+  const ref = bootstrap.getStorage().get();
+  const connection = await ref.connect();
+  const sql = new TypeOrmSqlConditionsBuilder(connection.manager, TypeOrmEntityRegistry.$().getEntityRefFor(type), ref, 'select', alias);
   const where = sql.build(condition);
   (sql.getQueryBuilder() as SelectQueryBuilder<any>).where(where);
   const query2 = sql.baseQueryBuilder.getQueryAndParameters();

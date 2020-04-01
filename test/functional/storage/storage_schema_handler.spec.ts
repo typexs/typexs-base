@@ -54,6 +54,8 @@ class GeneralSpec {
     expect(tables).to.have.length(6);
     expect(tableNames).to.have.members(_.map(tables, _q => _q.name));
 
+    await bootstrap.shutdown()
+    await bootstrap.getStorage().shutdown();
   }
 
 

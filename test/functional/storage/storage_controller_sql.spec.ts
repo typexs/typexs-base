@@ -1,4 +1,3 @@
-import * as _ from 'lodash';
 import * as path from 'path';
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
@@ -15,6 +14,7 @@ let storageRef: StorageRef;
 
 let CarSql: ClassType<any> = null;
 let DriverSql: ClassType<any> = null;
+let CarParam: ClassType<any> = null;
 let controller: StorageEntityController = null;
 
 @suite('functional/storage/controller_sql')
@@ -28,6 +28,7 @@ class StorageControllerSqlSpec {
 
     CarSql = require('./fake_app_sql/entities/CarSql').CarSql;
     DriverSql = require('./fake_app_sql/entities/DriverSql').DriverSql;
+    CarParam = require('./fake_app_sql/entities/CarParam').CarParam;
 
     const appdir = path.join(__dirname, 'fake_app_sql');
     bootstrap = await Bootstrap
@@ -48,6 +49,8 @@ class StorageControllerSqlSpec {
     storageRef.addEntityType(CarSql);
     storageRef.addEntityType(DriverSql);
     controller = storageRef.getController();
+
+
   }
 
 
@@ -248,6 +251,63 @@ class StorageControllerSqlSpec {
     const driver_found_rest = await controller.find(DriverSql, {firstName: 'Black'});
     expect(driver_found_rest).to.have.length(2);
   }
+
+
+  // @test
+  // async 'aggregate - pipeline'() {
+  //   const param: any[] = [new CarParam(), new CarParam(), new CarParam(), new CarParam(), new CarParam()];
+  //   param[0].doors = 4;
+  //   param[0].maxSpeed = 100;
+  //   param[0].ps = 140;
+  //   param[0].year = 1979;
+  //   param[1].doors = 2;
+  //   param[1].maxSpeed = 120;
+  //   param[1].ps = 180;
+  //   param[1].year = 1979;
+  //   param[2].doors = 2;
+  //   param[2].maxSpeed = 200;
+  //   param[2].ps = 280;
+  //   param[2].year = 1980;
+  //   param[3].doors = 3;
+  //   param[3].maxSpeed = 140;
+  //   param[3].ps = 130;
+  //   param[3].year = 1985;
+  //   param[4].doors = 3;
+  //   param[4].maxSpeed = 170;
+  //   param[4].ps = 130;
+  //   param[4].year = 1989;
+  //   await controller.save(param);
+  //
+  //   const aggr = await controller.aggregate(CarParam, [{$match: {doors: {$le: 2}}}]);
+  //   expect(aggr).to.have.length(2);
+  //   expect(aggr[XS_P_$COUNT]).to.have.length(2);
+  //   expect(aggr.map(x => x.id)).to.be.deep.eq([2, 3]);
+  //
+  //
+  //   console.log(aggr);
+  // }
+
+
+  @test.skip
+  async 'exception handling - update'() {
+
+  }
+
+  @test.skip
+  async 'exception handling - remove'() {
+
+  }
+
+  @test.skip
+  async 'exception handling - find'() {
+
+  }
+
+  @test.skip
+  async 'exception handling - save'() {
+
+  }
+
 
 }
 

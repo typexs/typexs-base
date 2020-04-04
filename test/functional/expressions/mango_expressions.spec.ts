@@ -6,19 +6,26 @@ import {Match} from '../../../src/libs/expressions/operators/stage/Match';
 import {IMangoWalker} from '../../../src/libs/expressions/IMangoWalker';
 import {PAst} from '../../../src/libs/expressions/ast/PAst';
 import {And} from '../../../src/libs/expressions/operators/logic/And';
-import {ClassUtils} from 'commons-base';
 import {AbstractCompare} from '../../../src/libs/expressions/operators/compare/AbstractCompare';
 import {Or} from '../../../src/libs/expressions/operators/logic/Or';
 import {PValue} from '../../../src/libs/expressions/ast/PValue';
+import {Project} from '../../../src/libs/expressions/operators/stage/Project';
+import {Not} from '../../../src/libs/expressions/operators/logic/Not';
 
 const visitor = new class implements IMangoWalker {
-  onValue(ast: PAst): any {
+  onValue(ast: PValue): any {
     // console.log('onValue ' + ClassUtils.getClassName(ast as any) + ' ' + ast.key);
-    return {};
+    const isProject = ast.backwardCall(x => x instanceof Project);
+    if (isProject) {
+      return ast.value + '_projected';
+    } else {
+      return ast.value;
+    }
+
   }
 
 
-  onOperator(ast: PAst): any {
+  onOperator(ast: PAst, value: any): any {
     // console.log('onOperator ' + ClassUtils.getClassName(ast as any) + ' ' + ast.key);
     if (ast instanceof AbstractCompare) {
       return ast.key + ' ' + ast.op + ' ' + (<PValue>ast.value).value;
@@ -37,6 +44,8 @@ const visitor = new class implements IMangoWalker {
       return {and: res};
     } else if (ast instanceof Or) {
       return {or: res};
+    } else if (ast instanceof Not) {
+      return 'not ' + res;
     }
     return res;
   }
@@ -72,13 +81,38 @@ class InjectSpec {
   async '$match'() {
     const exp = new MangoExpression({$match: {test: {$lt: 1}}});
     const matchExp = exp.getKey('$match');
-    // console.log(inspect(matchExp, false, 10));
+    console.log(inspect(exp, false, 10));
 
     const result = matchExp.visit(visitor);
     // console.log(result);
     expect(matchExp).to.be.instanceOf(Match);
     expect(result).to.be.deep.eq({test: 'test < 1'});
   }
+
+  @test
+  async '$match query without command - $lt'() {
+    const exp = new MangoExpression({test: {$lt: 1}});
+    console.log(inspect(exp, false, 10));
+    const result = exp.visit(visitor);
+    expect(result).to.be.deep.eq({test: 'test < 1'});
+  }
+
+  @test
+  async '$match query without command - $eq'() {
+    const exp = new MangoExpression({test: {$eq: 1}});
+    console.log(inspect(exp, false, 10));
+    const result = exp.visit(visitor);
+    expect(result).to.be.deep.eq({test: 'test = 1'});
+  }
+
+  @test
+  async '$match query without command - $eq (indirect)'() {
+    const exp = new MangoExpression({test: 1});
+    console.log(inspect(exp, false, 10));
+    const result = exp.visit(visitor);
+    expect(result).to.be.deep.eq({test: 'test = 1'});
+  }
+
 
   @test
   async '$match in array'() {
@@ -102,7 +136,24 @@ class InjectSpec {
     const result = matchExp.visit(visitor);
     // console.log(inspect(result, false, 10));
     expect(matchExp).to.be.instanceOf(And);
-    expect(result).to.be.deep.eq({ and: [ { test: 'test < 1' }, { hallo: 'hallo = welt' } ] });
+    expect(result).to.be.deep.eq({and: [{test: 'test < 1'}, {hallo: 'hallo = welt'}]});
+  }
+
+
+  @test
+  async '$project - with field enabled)'() {
+    const exp = new MangoExpression({$project: {test: 1}});
+    // console.log(inspect(exp, false, 10));
+    const result = exp.visit(visitor);
+    expect(result).to.be.deep.eq({test: 'test_projected'});
+  }
+
+  @test
+  async 'use chained operators'() {
+    const exp = new MangoExpression({field: {$not: {$eq: 1}}});
+    // console.log(inspect(exp, false, 10));
+    const result = exp.visit(visitor);
+    expect(result).to.be.deep.eq({field: 'not field = 1'});
   }
 
 }

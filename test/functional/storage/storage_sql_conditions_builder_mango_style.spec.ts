@@ -60,7 +60,7 @@ class StorageSqlConditionsBuilderMangoSpec {
   async 'condition $eq'() {
     const query2 = await getMangoQuery({'name': 1}, CarCondMango, 'car');
     expect(query2).to.deep.eq([
-      'SELECT "car"."id" AS "car_id", "car"."name" AS "car_name" FROM "car_cond_mango" "car" WHERE ("car"."name" = ?)',
+      'SELECT "car"."id" AS "car_id", "car"."name" AS "car_name" FROM "car_cond_mango" "car" WHERE "car"."name" = ?',
       [
         1
       ]
@@ -72,7 +72,7 @@ class StorageSqlConditionsBuilderMangoSpec {
   async 'condition $lt'() {
     const query2 = await getMangoQuery({'id': {$lt: 1}}, CarCondMango, 'car');
     expect(query2).to.deep.eq([
-      'SELECT "car"."id" AS "car_id", "car"."name" AS "car_name" FROM "car_cond_mango" "car" WHERE ("car"."id" < ?)',
+      'SELECT "car"."id" AS "car_id", "car"."name" AS "car_name" FROM "car_cond_mango" "car" WHERE "car"."id" < ?',
       [
         1
       ]
@@ -83,7 +83,7 @@ class StorageSqlConditionsBuilderMangoSpec {
   async 'condition $le'() {
     const query2 = await getMangoQuery({'id': {$le: 1}}, CarCondMango, 'car');
     expect(query2).to.deep.eq([
-      'SELECT "car"."id" AS "car_id", "car"."name" AS "car_name" FROM "car_cond_mango" "car" WHERE ("car"."id" <= ?)',
+      'SELECT "car"."id" AS "car_id", "car"."name" AS "car_name" FROM "car_cond_mango" "car" WHERE "car"."id" <= ?',
       [
         1
       ]
@@ -94,7 +94,7 @@ class StorageSqlConditionsBuilderMangoSpec {
   async 'condition $ge'() {
     const query2 = await getMangoQuery({'id': {$ge: 1}}, CarCondMango, 'car');
     expect(query2).to.deep.eq([
-      'SELECT "car"."id" AS "car_id", "car"."name" AS "car_name" FROM "car_cond_mango" "car" WHERE ("car"."id" >= ?)',
+      'SELECT "car"."id" AS "car_id", "car"."name" AS "car_name" FROM "car_cond_mango" "car" WHERE "car"."id" >= ?',
       [
         1
       ]
@@ -106,7 +106,7 @@ class StorageSqlConditionsBuilderMangoSpec {
   async 'condition $gt'() {
     const query2 = await getMangoQuery({'id': {$gt: 1}}, CarCondMango, 'car');
     expect(query2).to.deep.eq([
-      'SELECT "car"."id" AS "car_id", "car"."name" AS "car_name" FROM "car_cond_mango" "car" WHERE ("car"."id" > ?)',
+      'SELECT "car"."id" AS "car_id", "car"."name" AS "car_name" FROM "car_cond_mango" "car" WHERE "car"."id" > ?',
       [
         1
       ]
@@ -117,7 +117,7 @@ class StorageSqlConditionsBuilderMangoSpec {
   async 'condition $in'() {
     const query2 = await getMangoQuery({'id': {$in: [1, 2, 3]}}, CarCondMango, 'car');
     expect(query2).to.deep.eq([
-      'SELECT "car"."id" AS "car_id", "car"."name" AS "car_name" FROM "car_cond_mango" "car" WHERE ("car"."id" IN (?, ?, ?))',
+      'SELECT "car"."id" AS "car_id", "car"."name" AS "car_name" FROM "car_cond_mango" "car" WHERE "car"."id" IN (?, ?, ?)',
 
       [1, 2, 3]
 
@@ -128,7 +128,7 @@ class StorageSqlConditionsBuilderMangoSpec {
   async 'condition $isNull'() {
     const query2 = await getMangoQuery({'name': {$isNull: 1}}, CarCondMango, 'car');
     expect(query2).to.deep.eq([
-      'SELECT "car"."id" AS "car_id", "car"."name" AS "car_name" FROM "car_cond_mango" "car" WHERE ("car"."name" IS NULL)',
+      'SELECT "car"."id" AS "car_id", "car"."name" AS "car_name" FROM "car_cond_mango" "car" WHERE "car"."name" IS NULL',
       []
     ]);
   }
@@ -138,7 +138,7 @@ class StorageSqlConditionsBuilderMangoSpec {
 
     const query2 = await getMangoQuery({'name': {$isNotNull: 1}}, CarCondMango, 'car');
     expect(query2).to.deep.eq([
-      'SELECT "car"."id" AS "car_id", "car"."name" AS "car_name" FROM "car_cond_mango" "car" WHERE ("car"."name" IS NOT NULL)',
+      'SELECT "car"."id" AS "car_id", "car"."name" AS "car_name" FROM "car_cond_mango" "car" WHERE "car"."name" IS NOT NULL',
       []
     ]);
   }
@@ -149,7 +149,7 @@ class StorageSqlConditionsBuilderMangoSpec {
     const query2 = await getMangoQuery({'$or': [{name: 'test'}, {id: 12}]}, CarCondMango, 'car');
     expect(query2).to.deep.eq([
       'SELECT "car"."id" AS "car_id", "car"."name" AS "car_name" FROM "car_cond_mango" "car" WHERE ' +
-      '(("car"."name" = ?) OR ("car"."id" = ?))',
+      '("car"."name" = ?) OR ("car"."id" = ?)',
       [
         'test',
         12
@@ -163,7 +163,7 @@ class StorageSqlConditionsBuilderMangoSpec {
     const query2 = await getMangoQuery({'$and': [{name: 'test'}, {id: 12}]}, CarCondMango, 'car');
     expect(query2).to.deep.eq([
       'SELECT "car"."id" AS "car_id", "car"."name" AS "car_name" FROM "car_cond_mango" "car" WHERE ' +
-      '(("car"."name" = ?) AND ("car"."id" = ?))',
+      '("car"."name" = ?) AND ("car"."id" = ?)',
       [
         'test',
         12
@@ -176,9 +176,8 @@ class StorageSqlConditionsBuilderMangoSpec {
   async 'build join conditions for one-to-many typeorm relation'() {
     const query = await getMangoQuery({'driver.id': 1}, CarCondMango, 'car');
     expect(query).to.deep.eq([
-
       'SELECT "car"."id" AS "car_id", "car"."name" AS "car_name" FROM "car_cond_mango" "car" LEFT JOIN "driver_cond_mango" "driver_cond_mango_1" ON ' +
-      'driver_cond_mango_1.carId = "car"."id" WHERE ("driver_cond_mango_1"."id" = ?)',
+      'driver_cond_mango_1.carId = "car"."id" WHERE "driver_cond_mango_1"."id" = ?',
       [
         1
       ]
@@ -193,7 +192,7 @@ class StorageSqlConditionsBuilderMangoSpec {
       [
         'SELECT "driver"."id" AS "driver_id", "driver"."firstName" AS "driver_firstName", ' +
         '"driver"."lastName" AS "driver_lastName", "driver"."carId" AS "driver_carId" FROM "driver_cond_mango" "driver" ' +
-        'LEFT JOIN "car_cond_mango" "car_cond_mango_1" ON "car_cond_mango_1"."id" = driver.carId WHERE ("car_cond_mango_1"."id" = ?)',
+        'LEFT JOIN "car_cond_mango" "car_cond_mango_1" ON "car_cond_mango_1"."id" = driver.carId WHERE "car_cond_mango_1"."id" = ?',
         [
           1
         ]
@@ -209,7 +208,7 @@ class StorageSqlConditionsBuilderMangoSpec {
       [
         'SELECT "driver"."id" AS "driver_id", "driver"."firstName" AS "driver_firstName", "driver"."lastName" AS "driver_lastName", ' +
         '"driver"."carId" AS "driver_carId" FROM "driver_cond_mango" "driver" ' +
-        'LEFT JOIN "car_cond_mango" "car_cond_mango_1" ON "car_cond_mango_1"."id" = driver.carId WHERE ("car_cond_mango_1"."id" = ?)',
+        'LEFT JOIN "car_cond_mango" "car_cond_mango_1" ON "car_cond_mango_1"."id" = driver.carId WHERE "car_cond_mango_1"."id" = ?',
         [
           null
         ]
@@ -225,7 +224,7 @@ class StorageSqlConditionsBuilderMangoSpec {
       [
         'SELECT "driver"."id" AS "driver_id", "driver"."firstName" AS "driver_firstName", "driver"."lastName" AS "driver_lastName", ' +
         '"driver"."carId" AS "driver_carId" FROM "driver_cond_mango" "driver" ' +
-        'LEFT JOIN "car_cond_mango" "car_cond_mango_1" ON "car_cond_mango_1"."id" = driver.carId WHERE ("car_cond_mango_1"."id" <> ?)',
+        'LEFT JOIN "car_cond_mango" "car_cond_mango_1" ON "car_cond_mango_1"."id" = driver.carId WHERE "car_cond_mango_1"."id" <> ?',
         [
           null
         ]
@@ -241,7 +240,7 @@ class StorageSqlConditionsBuilderMangoSpec {
       [
         'SELECT "driver"."id" AS "driver_id", "driver"."firstName" AS "driver_firstName", "driver"."lastName" AS "driver_lastName", ' +
         '"driver"."carId" AS "driver_carId" FROM "driver_cond_mango" "driver" ' +
-        'LEFT JOIN "car_cond_mango" "car_cond_mango_1" ON "car_cond_mango_1"."id" = driver.carId WHERE ("car_cond_mango_1"."id" IS NULL)',
+        'LEFT JOIN "car_cond_mango" "car_cond_mango_1" ON "car_cond_mango_1"."id" = driver.carId WHERE "car_cond_mango_1"."id" IS NULL',
         []
       ]
     );
@@ -256,7 +255,7 @@ class StorageSqlConditionsBuilderMangoSpec {
       [
         'SELECT "driver"."id" AS "driver_id", "driver"."firstName" AS "driver_firstName", "driver"."lastName" AS "driver_lastName", ' +
         '"driver"."carId" AS "driver_carId" FROM "driver_cond_mango" "driver" ' +
-        'LEFT JOIN "car_cond_mango" "car_cond_mango_1" ON "car_cond_mango_1"."id" = driver.carId WHERE ("car_cond_mango_1"."id" IS NOT NULL)',
+        'LEFT JOIN "car_cond_mango" "car_cond_mango_1" ON "car_cond_mango_1"."id" = driver.carId WHERE "car_cond_mango_1"."id" IS NOT NULL',
         []
       ]
     );
@@ -270,7 +269,7 @@ class StorageSqlConditionsBuilderMangoSpec {
       [
         'SELECT "driver"."id" AS "driver_id", "driver"."firstName" AS "driver_firstName", "driver"."lastName" AS "driver_lastName", ' +
         '"driver"."carId" AS "driver_carId" FROM "driver_cond_mango" "driver" ' +
-        'LEFT JOIN "car_cond_mango" "car_cond_mango_1" ON "car_cond_mango_1"."id" = driver.carId WHERE ("car_cond_mango_1"."id" = ?)',
+        'LEFT JOIN "car_cond_mango" "car_cond_mango_1" ON "car_cond_mango_1"."id" = driver.carId WHERE "car_cond_mango_1"."id" = ?',
         [true]
       ]
     );
@@ -284,10 +283,20 @@ class StorageSqlConditionsBuilderMangoSpec {
       [
         'SELECT "driver"."id" AS "driver_id", "driver"."firstName" AS "driver_firstName", "driver"."lastName" AS "driver_lastName", ' +
         '"driver"."carId" AS "driver_carId" FROM "driver_cond_mango" "driver" ' +
-        'LEFT JOIN "car_cond_mango" "car_cond_mango_1" ON "car_cond_mango_1"."id" = driver.carId WHERE ("car_cond_mango_1"."id" = ?)',
+        'LEFT JOIN "car_cond_mango" "car_cond_mango_1" ON "car_cond_mango_1"."id" = driver.carId WHERE "car_cond_mango_1"."id" = ?',
         [false]
       ]
     );
+  }
+
+  @test
+  async 'build chained conditions with $not and $eq'() {
+    const query = await getMangoQuery({'id': {$not: {$eq: 1}}}, DriverCondMango, 'driver');
+    expect(query[0]).to.deep.eq(
+        'SELECT "driver"."id" AS "driver_id", "driver"."firstName" AS "driver_firstName", "driver"."lastName" AS "driver_lastName", ' +
+        '"driver"."carId" AS "driver_carId" FROM "driver_cond_mango" "driver" WHERE NOT ("driver"."id" = ?)',
+    );
+    expect(query[1]).to.deep.eq([1]);
   }
 
 
@@ -303,8 +312,8 @@ class StorageSqlConditionsBuilderMangoSpec {
     (sql.getQueryBuilder() as SelectQueryBuilder<any>).select('SUM(id)', 'soneHavingField');
     (sql.getQueryBuilder() as SelectQueryBuilder<any>).addSelect('firstName');
     (sql.getQueryBuilder() as SelectQueryBuilder<any>).addGroupBy('firstName');
-    const having = sql.build({soneHavingField: {$gt: 0}});
-    having.whereFactory(sql.getQueryBuilder());
+    sql.build({soneHavingField: {$gt: 0}});
+    // having.whereFactory(sql.getQueryBuilder());
     const query2 = sql.baseQueryBuilder.getQueryAndParameters();
     await connection.close();
     expect(query2).to.deep.eq(
@@ -345,7 +354,7 @@ async function getMangoQuery(condition: any, type: Function, alias: string) {
   const exp = new MangoExpression(condition).getRoot();
   // console.log(inspect(exp, false, 10 ));
   const where = sql.build(exp);
-  (sql.getQueryBuilder() as SelectQueryBuilder<any>).where(where);
+  // (sql.getQueryBuilder() as SelectQueryBuilder<any>).where(where);
   const query2 = sql.baseQueryBuilder.getQueryAndParameters();
   await connection.close();
   return query2;

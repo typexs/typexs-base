@@ -584,6 +584,22 @@ class StorageControllerSqlSpec {
   }
 
 
+  @test
+  async 'aggregate - pipeline - $project chain operator'() {
+    const aggr = await controller.aggregate(CarParam, [
+      {
+        $project: {
+          nr: {$sum: {$multiply: ['$doors', '$ps']}}
+        }
+      }
+    ]);
+    // console.log(aggr);
+    expect(aggr).to.have.length(1);
+    expect(aggr).to.be.deep.eq([{nr: 2260}]);
+    expect(aggr[XS_P_$COUNT]).to.be.eq(1);
+  }
+
+
   @test.skip
   async 'exception handling - aggregate'() {
 

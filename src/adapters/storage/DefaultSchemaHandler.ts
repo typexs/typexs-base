@@ -1,6 +1,6 @@
-import {AbstractSchemaHandler} from "../../libs/storage/AbstractSchemaHandler";
-import {NotYetImplementedError} from "commons-base";
-import {ICollection} from "../../libs/storage/ICollection";
+import {AbstractSchemaHandler} from '../../libs/storage/AbstractSchemaHandler';
+import {NotYetImplementedError} from 'commons-base';
+import {ICollection} from '../../libs/storage/ICollection';
 
 
 

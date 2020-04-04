@@ -36,6 +36,9 @@ import {Limit} from './stage/Limit';
 import {Skip} from './stage/Skip';
 import {Sort} from './stage/Sort';
 import {Date} from './date/Date';
+import {Context} from '../ast/Context';
+import {Not} from './logic/Not';
+import {Multiply} from './arithmetic/Multiply';
 
 export class Operators {
   static operators: { [k: string]: Function } = {};
@@ -44,9 +47,9 @@ export class Operators {
     Operators.operators[name] = opertor;
   }
 
-  static create(name: string, e: MangoExpression, p?: PAst, k?: string | number) {
+  static create(name: string, e: MangoExpression, p?: PAst, ctxt?: Context) {
     if (this.operators[name]) {
-      return Reflect.construct(this.operators[name], [e, p, k]);
+      return Reflect.construct(this.operators[name], [e, p, ctxt]);
     } else {
       throw new Error(`no such operator ${name} defined`);
     }
@@ -58,6 +61,7 @@ export class Operators {
  */
 Operators.install(And.NAME, And);
 Operators.install(Or.NAME, Or);
+Operators.install(Not.NAME, Not);
 
 /*
  *  Stage operators
@@ -85,6 +89,7 @@ Operators.install(Min.NAME, Min);
 Operators.install(Max.NAME, Max);
 Operators.install(Avg.NAME, Avg);
 Operators.install(Count.NAME, Count);
+Operators.install(Multiply.NAME, Multiply);
 
 /*
  *  Compare operators

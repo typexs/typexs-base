@@ -4,7 +4,7 @@ import {RelationMetadataArgs} from 'typeorm/browser/metadata-args/RelationMetada
 import {IConditionJoin} from '../IConditionJoin';
 import {TypeOrmPropertyRef} from './schema/TypeOrmPropertyRef';
 import {IClassRef, IEntityRef} from 'commons-schema-api/browser';
-import {Brackets, EntityManager, QueryBuilder, SelectQueryBuilder} from 'typeorm';
+import {EntityManager, QueryBuilder, SelectQueryBuilder} from 'typeorm';
 import {DateUtils} from 'typeorm/util/DateUtils';
 import {PAst} from '../../../expressions/ast/PAst';
 import {IMangoWalker} from '../../../expressions/IMangoWalker';
@@ -14,6 +14,21 @@ import {AbstractCompare} from '../../../expressions/operators/compare/AbstractCo
 import {PValue} from '../../../expressions/ast/PValue';
 import {StorageRef} from '../../../../libs/storage/StorageRef';
 import {AbstractSchemaHandler} from '../../AbstractSchemaHandler';
+import {Not} from '../../../expressions/operators/logic/Not';
+import {MangoExpression} from '../../../expressions/MangoExpression';
+
+
+export interface ISqlParam {
+  /**
+   * sql query
+   */
+  q: string;
+
+  /**
+   * parameters
+   */
+  p?: any;
+}
 
 /**
  * TODO Ugly build style make this better
@@ -168,7 +183,6 @@ export class TypeOrmSqlConditionsBuilder<T> implements IMangoWalker {
           this.baseQueryBuilder.leftJoin(join.table, join.alias, join.condition);
         }
 
-
       } else {
         names.push(prop.name);
       }
@@ -176,63 +190,47 @@ export class TypeOrmSqlConditionsBuilder<T> implements IMangoWalker {
     return names.join('.');
   }
 
-  private buildMango(condition: PAst) {
+
+  private buildMango(condition: PAst, apply: boolean = true): ISqlParam {
     if (_.isEmpty(condition)) {
       return null;
     }
-    const brackets = condition.visit(this);
-    return this.asBracket(brackets);
+    let brackets = condition.visit(this);
+
+    if (_.isArray(brackets)) {
+      if (brackets.length > 1) {
+        brackets = this.buildQueryObject(brackets, 'AND');
+      } else {
+        brackets = brackets.shift();
+      }
+    }
+
+    if (_.isEmpty(brackets)) {
+      return null;
+    }
+
+    if (apply) {
+      const qb = (<SelectQueryBuilder<any>>this.baseQueryBuilder);
+      if (this.mode === 'having') {
+        qb.having(brackets.q, brackets.p);
+      } else {
+        qb.where(brackets.q, brackets.p);
+      }
+    }
+    return brackets;
   }
 
 
-  build(condition: any, k: string = null) {
+  build(condition: any, k: string = null): ISqlParam {
     if (_.isEmpty(condition)) {
       return null;
     }
 
-    if (condition instanceof PAst) {
-      return this.buildMango(condition);
+    if (!(condition instanceof PAst)) {
+      condition = new MangoExpression(condition).getRoot();
     }
 
-    // tslint:disable-next-line:no-shadowed-variable
-    let control: any = _.keys(condition).filter(k => k.startsWith('$'));
-    if (!_.isEmpty(control)) {
-      control = control.shift();
-      if (this[control]) {
-        return this[control](condition, k, condition[control]);
-      } else {
-        throw new NotYetImplementedError();
-      }
-    } else if (_.isArray(condition)) {
-      return this.$or({'$or': condition}, k);
-    } else {
-      // tslint:disable-next-line:no-shadowed-variable
-      const brackets = _.keys(condition)
-        .map(k => {
-          if (_.isPlainObject(condition[k])) {
-            return this.build(condition[k], k);
-          }
-          // const key = this.lookupKeys(k);
-          const value = condition[k];
-          if (_.isString(value) || _.isNumber(value) || _.isDate(value) || _.isBoolean(value) || _.isNull(value)) {
-            return this.$eq('$eq', k, value);
-          } else {
-            throw new Error(`SQL.build not a plain type ${k} = ${JSON.stringify(value)} (${typeof value})`);
-            // return null;
-          }
-
-        })
-        .filter(c => !_.isNull(c)) as Brackets[];
-
-      if (brackets.length > 1) {
-        return new Brackets(qb => {
-          brackets.map(x => qb.andWhere(x as Brackets));
-        });
-      } else {
-        return brackets.shift();
-      }
-
-    }
+    return this.buildMango(condition);
   }
 
 
@@ -243,31 +241,35 @@ export class TypeOrmSqlConditionsBuilder<T> implements IMangoWalker {
   }
 
 
-  private _erg(op: string, key: string = null, value: any = null) {
+  private _erg2(op: string, key: string = null, value?: any): ISqlParam {
     const _key = this.lookupKeys(key);
-    const p = this.paramName();
-    return new Brackets(qb => {
-      if (this.mode === 'having') {
-        (<SelectQueryBuilder<any>>qb).having(`${_key} ${op} :${p}`, this.paramValue(p, value, _key));
+    if (!_.isUndefined(value)) {
+      const p = this.paramName();
+      if (_.isArray(value)) {
+        return {
+          q: `${_key} ${op} (:...${p})`,
+          p: this.paramValue(p, value, _key)
+        };
       } else {
-        qb.where(`${_key} ${op} :${p}`, this.paramValue(p, value, _key));
+        return {
+          q: `${_key} ${op} :${p}`,
+          p: this.paramValue(p, value, _key)
+        };
       }
-    });
+    } else {
+      return {
+        q: `${_key} ${op}`
+      };
+    }
   }
+
 
   private handleOperation(op: string, key: string = null, value: any = null) {
     const handle = this.handler.getOperationHandle(op.toLowerCase());
     const _key = this.lookupKeys(key);
-    // const p = this.paramName();
-    return new Brackets(qb => {
-      const syntax = handle(_key, value);
-      if (this.mode === 'having') {
-        (<SelectQueryBuilder<any>>qb).having(syntax);
-      } else {
-        qb.where(syntax);
-      }
-    });
+    return handle(_key, value);
   }
+
 
   private paramName() {
     return 'p' + (this.paramInc++);
@@ -300,143 +302,23 @@ export class TypeOrmSqlConditionsBuilder<T> implements IMangoWalker {
   }
 
 
-  $eq(condition: any, key: string = null, value: any = null) {
-    return this._erg('=', key, value);
-  }
-
-
-  $isNull(condition: any, key: string = null, value: any = null) {
-    const _key = this.lookupKeys(key);
-    return new Brackets(qb => {
-      if (this.mode === 'having') {
-        (<SelectQueryBuilder<any>>qb).having(`${_key} IS NULL`);
-      } else {
-        qb.where(`${_key} IS NULL`);
-      }
-    });
-  }
-
-  $isNotNull(condition: any, key: string = null, value: any = null) {
-    const _key = this.lookupKeys(key);
-    return new Brackets(qb => {
-      if (this.mode === 'having') {
-        (<SelectQueryBuilder<any>>qb).having(`${_key} IS NOT NULL`);
-      } else {
-        qb.where(`${_key} IS NOT NULL`);
-      }
-    });
-  }
-
-  $ne(condition: any, key: string = null, value: any = null) {
-    return this._erg('<>', key, value);
-  }
-
-
-  $lt(condition: any, key: string = null, value: any = null) {
-    return this._erg('<', key, value);
-  }
-
-  $lte(condition: any, key: string = null, value: any = null) {
-    return this.$le(condition, key, value);
-  }
-
-  $le(condition: any, key: string = null, value: any = null) {
-    return this._erg('<=', key, value);
-  }
-
-  $gt(condition: any, key: string = null, value: any = null) {
-    return this._erg('>', key, value);
-  }
-
-  $gte(condition: any, key: string = null, value: any = null) {
-    return this.$ge(condition, key, value);
-  }
-
-  $ge(condition: any, key: string = null, value: any = null) {
-    return this._erg('>=', key, value);
-  }
-
-  $like(condition: any, key: string = null, value: any = null) {
-    return this._erg('LIKE', key, value.replace(/%/g, '%%').replace(/\*/g, '%'));
-  }
-
-// TODO
-  $regex(condition: any, key: string = null, value: any = null) {
-    return this.handleOperation('regex', key, value);
-  }
-
-
-
-  $in(condition: any, key: string = null, value: any = null) {
-    const _key = this.lookupKeys(key);
-    const p = this.paramName();
-    return new Brackets(qb => {
-      if (this.mode === 'having') {
-        (<SelectQueryBuilder<any>>qb).having(`${_key} IN (:...${p})`, this.paramValue(p, value));
-      } else {
-        qb.where(`${_key} IN (:...${p})`, this.paramValue(p, value));
-      }
-    });
-  }
-
-  $nin(condition: any, key: string = null, value: any = null) {
-    const _key = this.lookupKeys(key);
-    const p = this.paramName();
-    return new Brackets(qb => {
-      if (this.mode === 'having') {
-        (<SelectQueryBuilder<any>>qb).having(`${_key} NOT IN (:...${p})`, this.paramValue(p, value));
-      } else {
-        qb.where(`${_key} NOT IN (:...${p})`, this.paramValue(p, value));
-      }
-    });
-  }
-
-  // TODO
-  $not(condition: any, key: string = null, value: any = null) {
-    // return this.handleOperation('regex', key, value);
-  }
-
-  $and(condition: any, key: string = null) {
-    return new Brackets(qb => {
-      _.map(condition['$and'], c => {
-        if (this.mode === 'having') {
-          return (<SelectQueryBuilder<any>>qb).andHaving(this.build(c, null));
-        } else {
-          return qb.andWhere(this.build(c, null));
-        }
-      });
-    });
-  }
-
-
-  $or(condition: any, key: string = null) {
-    return new Brackets(qb => {
-      _.map(condition['$or'], c => {
-        if (this.mode === 'having') {
-          return (<SelectQueryBuilder<any>>qb).orHaving(this.build(c, null));
-        } else {
-          return qb.orWhere(this.build(c, null));
-        }
-      });
-    });
-  }
-
   visitArray(ast: PAst): any[] {
     return [];
   }
 
+
   leaveArray(brackets: any[], ast: PAst) {
     return brackets;
-
   }
+
 
   visitObject(ast: PAst) {
     return {};
   }
 
+
   leaveObject(res: any, ast: PAst) {
-    // return _.values(res);
-    return this.asBracket(_.values(res));
+    return this.buildQueryObject(_.values(res), 'AND');
   }
 
 
@@ -458,53 +340,120 @@ export class TypeOrmSqlConditionsBuilder<T> implements IMangoWalker {
     return null;
   }
 
+
   visitOperator(ast: PAst): any {
     return {};
   }
 
+
   leaveOperator(res: any, ast: PAst) {
-    if (ast instanceof And) {
-      return new Brackets(qb => {
-        _.map(res, c => {
-          if (this.mode === 'having') {
-            return (<SelectQueryBuilder<any>>qb).andHaving(c);
-          } else {
-            return qb.andWhere(c);
-          }
-        });
-      });
-    } else if (ast instanceof Or) {
-      return new Brackets(qb => {
-        _.map(res, c => {
-          if (this.mode === 'having') {
-            return (<SelectQueryBuilder<any>>qb).orHaving(c);
-          } else {
-            return qb.orWhere(c);
-          }
-        });
-      });
+    if (ast instanceof And || ast instanceof Or) {
+      const op = ast.name.toUpperCase();
+      return this.buildQueryObject(res, op);
+    } else if (ast instanceof Not) {
+      res.q = 'NOT (' + res.q + ')';
     }
     return res;
   }
 
 
-  asBracket(brackets: any) {
-    if (_.isArray(brackets)) {
-      if (brackets.length === 1) {
-        return _.first(brackets);
-      } else if (brackets.length > 1) {
-        return new Brackets(qb => {
-          _.map(brackets, c => {
-            if (this.mode === 'having') {
-              return (<SelectQueryBuilder<any>>qb).andHaving(c);
-            } else {
-              return qb.andWhere(c);
-            }
-          });
-        });
+  private buildQueryObject(res: ISqlParam[], op: string): ISqlParam {
+    const param = {};
+    const parts: string[] = [];
+    res.map((x: any) => {
+      parts.push(x.q);
+      if (x.p) {
+        _.assign(param, x.p);
       }
+    });
+    if (parts.length > 1) {
+      return {
+        q: '(' + parts.join(') ' + op + ' (') + ')',
+        p: param
+      };
     }
-    return brackets;
-
+    return {
+      q: parts.shift(),
+      p: param
+    };
   }
+
+
+  $eq(condition: any, key: string = null, value: any = null) {
+    return this._erg2('=', key, value);
+  }
+
+
+  $isNull(condition: any, key: string = null, value: any = null) {
+    return this._erg2('IS NULL', key);
+  }
+
+
+  $isNotNull(condition: any, key: string = null, value: any = null) {
+    return this._erg2('IS NOT NULL', key);
+  }
+
+
+  $ne(condition: any, key: string = null, value: any = null) {
+    return this._erg2('<>', key, value);
+  }
+
+
+  $lt(condition: any, key: string = null, value: any = null) {
+    return this._erg2('<', key, value);
+  }
+
+
+  $lte(condition: any, key: string = null, value: any = null) {
+    return this.$le(condition, key, value);
+  }
+
+
+  $le(condition: any, key: string = null, value: any = null) {
+    return this._erg2('<=', key, value);
+  }
+
+
+  $gt(condition: any, key: string = null, value: any = null) {
+    return this._erg2('>', key, value);
+  }
+
+
+  $gte(condition: any, key: string = null, value: any = null) {
+    return this.$ge(condition, key, value);
+  }
+
+
+  $ge(condition: any, key: string = null, value: any = null) {
+    return this._erg2('>=', key, value);
+  }
+
+
+  $like(condition: any, key: string = null, value: any = null) {
+    return this._erg2('LIKE', key, value.replace(/%/g, '%%').replace(/\*/g, '%'));
+  }
+
+
+// TODO
+  $regex(condition: any, key: string = null, value: any = null) {
+    return this.handleOperation('regex', key, value);
+  }
+
+
+  $in(condition: any, key: string = null, value: any = null) {
+    return this._erg2('IN', key, value);
+  }
+
+
+  $nin(condition: any, key: string = null, value: any = null) {
+    return this._erg2('NOT IN', key, value);
+  }
+
+
+  // TODO
+  $not(condition: any, key: string = null, value: any = null) {
+    return this._erg2('NOT', key, value);
+  }
+
+
 }

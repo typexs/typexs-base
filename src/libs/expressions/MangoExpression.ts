@@ -6,13 +6,18 @@ import {PArray} from './ast/PArray';
 import {PObject} from './ast/PObject';
 import {Operators} from './operators/Operators';
 import {IMangoWalker} from './IMangoWalker';
+import {Context} from './ast/Context';
+import {AUTO_EQUAL_CONV_SUPPORT} from './Constants';
 
 export class MangoExpression {
 
   readonly root: PAst = null;
 
   constructor(def: any) {
-    this.root = this.interprete(def);
+    // default change object assignment to value
+    const ctxt = new Context();
+    ctxt.set(AUTO_EQUAL_CONV_SUPPORT, true);
+    this.root = this.interprete(def, null, ctxt);
   }
 
   getKey(key: string) {
@@ -23,35 +28,51 @@ export class MangoExpression {
     return this.root;
   }
 
-  interprete(def: any, p?: PAst, sourceKey?: string | number) {
+
+  interprete(def: any, p?: PAst, ctxt?: Context) {
+    const context = ctxt ? ctxt : new Context();
+    if (p) {
+      context.key = ctxt.key;
+      context.merge(p.context);
+    }
+    // context.key = sourceKey ? sourceKey : undefined;
+    let result: PAst = null;
     if (_.isString(def) ||
       _.isNumber(def) ||
-      _.isDate(def) || _.isNull(def) ||
+      _.isDate(def) ||
+      _.isNull(def) ||
       _.isBoolean(def)) {
       const isRef = _.isString(def) && def.match(/^\$(.+)/);
       if (isRef) {
-        return new ValueRef(this, isRef[1], p, sourceKey);
+
+        result = new ValueRef(this, isRef[1], p, context);
       } else {
-        return new Value(this, def, p, sourceKey);
+        result = new Value(this, def, p, context);
       }
     } else if (_.isArray(def)) {
-      return new PArray(this, def, p, sourceKey);
+      result = new PArray(this, def, p, context);
     } else if (_.isObjectLike(def)) {
       const k = _.keys(def);
       if (k.length === 1 && /^\$/.test(k[0])) {
         const operatorKey = k[0];
         const follow = def[operatorKey];
         const operatorKey1 = operatorKey.replace(/^\$/, '');
-        const operator = Operators.create(operatorKey1, this, p, sourceKey);
+        const operator = Operators.create(operatorKey1, this, p, context);
         if (!operator.validate(follow)) {
           throw new Error(`operator ${operatorKey} has no valid definition ${JSON.stringify(def)}`);
         }
-        return operator;
+        result = operator;
       } else {
-        return new PObject(this, def, p, sourceKey);
+        result = new PObject(this, def, p, context);
       }
     }
-    throw new Error(`not yet implemented for ${def}`);
+
+    if (!result) {
+      throw new Error(`not yet implemented for ${def}`);
+    }
+
+    return result;
+
   }
 
 

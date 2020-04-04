@@ -1,14 +1,15 @@
 import {PAst} from './PAst';
 import {MangoExpression} from '../MangoExpression';
 import {IMangoWalker, IMangoWalkerControl} from '../IMangoWalker';
+import {Context} from './Context';
 
 export class PArray extends PAst {
 
   items: PAst[] = [];
 
 
-  constructor(e: MangoExpression, kv: any[], p?: PAst, k?: string | number) {
-    super(e, p, k);
+  constructor(e: MangoExpression, kv: any[], p?: PAst, ctxt?: Context) {
+    super(e, p, ctxt);
     this.interprete(kv);
   }
 
@@ -35,7 +36,9 @@ export class PArray extends PAst {
 
   interprete(kv: any) {
     for (let i = 0; i < kv.length; i++) {
-      this.items[i] = this.base.interprete(kv[i], this, i);
+      const ctxt = new Context();
+      ctxt.key = i;
+      this.items[i] = this.base.interprete(kv[i], this, ctxt);
     }
   }
 

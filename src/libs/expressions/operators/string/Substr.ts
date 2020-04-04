@@ -1,6 +1,7 @@
 import * as _ from 'lodash';
 import {AbstractOperator} from '../AbstractOperator';
 import {PAst} from '../../ast/PAst';
+import {Context} from '../../ast/Context';
 
 export class Substr extends AbstractOperator {
 
@@ -18,7 +19,7 @@ export class Substr extends AbstractOperator {
 
       const v = def.shift();
       if (_.isString(v)) {
-        this.value = this.base.interprete(v, this, this.key);
+        this.value = this.base.interprete(v, this, new Context(this.key));
       }
 
       if (!this.value) {

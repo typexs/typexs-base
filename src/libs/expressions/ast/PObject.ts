@@ -4,10 +4,9 @@ import {ValueRef} from './ValueRef';
 import {Unset} from './Unset';
 import {MangoExpression} from '../MangoExpression';
 import {IMangoWalker, IMangoWalkerControl} from '../IMangoWalker';
-import {Project} from '../operators/stage/Project';
 import {Equal} from '../operators/compare/Equal';
-import {Group} from '../operators/stage/Group';
-import {Sort} from '../operators/stage/Sort';
+import {Context} from './Context';
+import {AUTO_EQUAL_CONV_SUPPORT, NUMBER_PROJECT_SUPPORT} from '../Constants';
 
 export class PObject extends PAst {
 
@@ -16,8 +15,8 @@ export class PObject extends PAst {
   _keys: string[];
 
 
-  constructor(e: MangoExpression, kv: any, p?: PAst, k?: string | number) {
-    super(e, p, k);
+  constructor(e: MangoExpression, kv: any, p?: PAst, ctxt?: Context) {
+    super(e, p, ctxt);
     this.interprete(kv);
   }
 
@@ -63,35 +62,41 @@ export class PObject extends PAst {
 
   interprete(kv: any) {
     this._keys = _.keys(kv);
-    const inprojection =
-      !!this.testBackward(x =>
-        x instanceof Project
-      );
 
-    const inGroup = !!this.testBackward(y => y instanceof Group);
+    const autoEqualSupport = !!this.context.get(AUTO_EQUAL_CONV_SUPPORT);
+    const numberProjectSupport = !!this.context.get(NUMBER_PROJECT_SUPPORT);
 
-    const skipping =
-      !!this.testBackward(x =>
-        (x.key === '_id' && inGroup) || x instanceof Sort
-      ) || (this.key === '_id' && inGroup);
+    // const inprojection =
+    //   !!this.backwardCall(x =>
+    //     x instanceof Project
+    //   );
+    //
+    // const inGroup = !!this.backwardCall(y => y instanceof Group);
+    //
+    // const skipping =
+    //   !!this.backwardCall(x =>
+    //     (x.key === '_id' && inGroup) || x instanceof Sort
+    //   ) || (this.key === '_id' && inGroup);
+
 
     for (const k of this._keys) {
+      const ctxt = new Context(k);
       const v = kv[k];
-      if (inprojection || skipping || (k === '_id' && inGroup)) {
-        if (inprojection && _.isNumber(v) && (v === 1 || v === 0)) {
+      if (!autoEqualSupport) {
+        if (numberProjectSupport && _.isNumber(v) && (v === 1 || v === 0)) {
           if (v === 1) {
-            this.children[k] = new ValueRef(this.base, k, this, k);
+            this.children[k] = new ValueRef(this.base, k, this, ctxt);
           } else {
-            this.children[k] = new Unset(this.base, k, this, k);
+            this.children[k] = new Unset(this.base, k, this, ctxt);
           }
         } else {
-          this.children[k] = this.base.interprete(v, this, k);
+          this.children[k] = this.base.interprete(v, this, ctxt);
         }
       } else {
         if (_.isObjectLike(v) || _.isArray(v)) {
-          this.children[k] = this.base.interprete(v, this, k);
+          this.children[k] = this.base.interprete(v, this, ctxt);
         } else {
-          const eq = new Equal(this.base, this, k);
+          const eq = new Equal(this.base, this, ctxt);
           this.children[k] = eq;
           eq.validate(v);
         }

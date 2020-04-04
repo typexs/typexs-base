@@ -59,6 +59,9 @@ export abstract class AbstractSchemaHandler {
     this.registerOperationHandle('timestamp', (field: string) => {
       return 'TIMESTAMP(' + field + ')';
     });
+    this.registerOperationHandle('multiply', (fieldsValues: string[]) => {
+      return fieldsValues.join(' * ');
+    });
   }
 
 

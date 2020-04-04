@@ -1,6 +1,7 @@
 import {PAst} from '../ast/PAst';
 import {MangoExpression} from '../MangoExpression';
 import {IMangoWalker} from '../IMangoWalker';
+import {Context} from '../ast/Context';
 
 export abstract class AbstractOperator extends PAst {
 
@@ -8,8 +9,8 @@ export abstract class AbstractOperator extends PAst {
 
   value: PAst;
 
-  constructor(e: MangoExpression, p?: PAst, k?: string) {
-    super(e, p, k);
+  constructor(e: MangoExpression, p?: PAst, ctxt?: Context) {
+    super(e, p, ctxt);
   }
 
   getKey(key: string): PAst {
@@ -20,9 +21,9 @@ export abstract class AbstractOperator extends PAst {
   }
 
 
-
   validate(def: any): boolean {
-    this.value = this.base.interprete(def, this, this.key);
+    const ctxt = new Context(this.key);
+    this.value = this.base.interprete(def, this, ctxt);
     return true;
   }
 

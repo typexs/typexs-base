@@ -1,4 +1,10 @@
+
+*STILL WIP*
+
+
 ## Storage
+
+
 
 
 ### Configuration
@@ -8,6 +14,37 @@
 ```
 storage:
   default:
+
+
     # extends by an existing storage schema
     extends: string | string[]
 ```
+
+
+
+### Quering
+
+
+M(a|o)ngo Expressions are used to query or run aggregation on
+the underlying datasource. The quering syntax orientates mostly
+on mongo query languange. But will also be converted for SQL backends.
+
+The conversion to sql for typeorm datasources is processed
+by ``TypeOrmSqlConditionBuilder``.
+
+
+#### Matching operations
+
+
+
+*$eq* - Equal
+
+```
+{field: 'value'}
+
+# or
+
+{field: {$eq: 'value'}}
+```
+
+

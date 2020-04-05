@@ -170,5 +170,15 @@ class InjectSpec {
     expect(result).to.be.deep.eq({field: 'not field = 1'});
   }
 
+
+  @test
+  async 'use multiple expressions on same key field => {and chain}'() {
+    const exp = new MangoExpression({field: {$not: {$eq: 1}}});
+    // console.log(inspect(exp, false, 10));
+    const result = exp.visit(visitor);
+    expect(result).to.be.deep.eq({field: 'not field = 1'});
+  }
+
+
 }
 

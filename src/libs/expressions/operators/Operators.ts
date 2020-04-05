@@ -62,6 +62,8 @@ export class Operators {
 Operators.install(And.NAME, And);
 Operators.install(Or.NAME, Or);
 Operators.install(Not.NAME, Not);
+// TODO $nor
+
 
 /*
  *  Stage operators
@@ -80,6 +82,7 @@ Operators.install(Year.NAME, Year);
 Operators.install(Month.NAME, Month);
 Operators.install(Day.NAME, Day);
 Operators.install(Date.NAME, Date);
+// TODO $dateToString
 
 /*
  *  Arithmetic operators
@@ -90,34 +93,44 @@ Operators.install(Max.NAME, Max);
 Operators.install(Avg.NAME, Avg);
 Operators.install(Count.NAME, Count);
 Operators.install(Multiply.NAME, Multiply);
+// TODO $add
+// TODO $subtract
 
 /*
  *  Compare operators
  */
 Operators.install(LessThen.NAME, LessThen);
 Operators.install(LessThenEqual.NAME, LessThenEqual);
+// backward compatibility
+Operators.install('lte', LessThenEqual);
 Operators.install(Equal.NAME, Equal);
 Operators.install(GreaterThen.NAME, GreaterThen);
 Operators.install(GreaterThenEqual.NAME, GreaterThenEqual);
+// backward compatibility
+Operators.install('gte', GreaterThenEqual);
 Operators.install(In.NAME, In);
 Operators.install(IsNotNull.NAME, IsNotNull);
 Operators.install(IsNull.NAME, IsNull);
+// sql special, cause no eqivalnet in mongo
 Operators.install(Like.NAME, Like);
 Operators.install(NotEqual.NAME, NotEqual);
 Operators.install(NotIn.NAME, NotIn);
+// TODO $regex
+
+
 
 /*
  *  String operators
  */
-Operators.install(Substr.NAME, Substr);
-Operators.install(ToUpper.NAME, ToUpper);
-Operators.install(ToLower.NAME, ToLower);
-Operators.install(ToInt.NAME, ToInt);
-Operators.install(ToFloat.NAME, ToFloat);
+// Operators.install(Substr.NAME, Substr);
+// Operators.install(ToUpper.NAME, ToUpper);
+// Operators.install(ToLower.NAME, ToLower);
+// Operators.install(ToInt.NAME, ToInt);
+// Operators.install(ToFloat.NAME, ToFloat);
 
 /*
  *  Array operators
  */
-Operators.install(Map.NAME, Map);
-Operators.install(First.NAME, First);
-Operators.install(Last.NAME, Last);
+// Operators.install(Map.NAME, Map);
+// Operators.install(First.NAME, First);
+// Operators.install(Last.NAME, Last);

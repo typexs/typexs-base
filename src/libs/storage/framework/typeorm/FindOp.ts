@@ -82,12 +82,8 @@ export class FindOp<T> implements IFindOp<T> {
       const entityRef = TypeOrmEntityRegistry.$().getEntityRefFor(entityType);
       if (findConditions) {
         const builder = new TypeOrmSqlConditionsBuilder<T>(connection.manager, entityRef, this.controller.getStorageRef(), 'select');
-        const where = builder.build(findConditions);
+        builder.build(findConditions);
         qb = builder.getQueryBuilder() as SelectQueryBuilder<T>;
-        // builder.getJoins().forEach(join => {
-        //   qb.leftJoin(join.table, join.alias, join.condition);
-        // });
-        qb.where(where);
       } else {
         qb = connection.manager.getRepository(entityType).createQueryBuilder() as SelectQueryBuilder<T>;
       }

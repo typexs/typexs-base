@@ -87,13 +87,15 @@ export class DeleteOp<T> implements IDeleteOp<T> {
         if (options.noTransaction) {
           const x = new TypeOrmSqlConditionsBuilder(connection.manager, entityRef, this.controller.getStorageRef(), 'delete');
           const qb = x.getQueryBuilder() as DeleteQueryBuilder<any>;
-          const result = await qb.where(x.build(condition)).execute();
+          x.build(condition);
+          const result = await qb/*.where(x.build(condition))*/.execute();
           count = result.affected ? result.affected : -2;
         } else {
           await connection.manager.transaction(async em => {
             const x = new TypeOrmSqlConditionsBuilder(em, entityRef, this.controller.getStorageRef(), 'delete');
             const qb = x.getQueryBuilder() as DeleteQueryBuilder<any>;
-            const result = await qb.where(x.build(condition)).execute();
+            x.build(condition);
+            const result = await qb.execute();
             // depends by db type
             count = result.affected ? result.affected : -2;
             return result.affected;

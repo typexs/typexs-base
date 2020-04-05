@@ -11,6 +11,7 @@ import {Or} from '../../../src/libs/expressions/operators/logic/Or';
 import {PValue} from '../../../src/libs/expressions/ast/PValue';
 import {Project} from '../../../src/libs/expressions/operators/stage/Project';
 import {Not} from '../../../src/libs/expressions/operators/logic/Not';
+import {PObject} from '../../../src/libs/expressions/ast/PObject';
 
 const visitor = new class implements IMangoWalker {
   onValue(ast: PValue): any {
@@ -81,7 +82,7 @@ class InjectSpec {
   async '$match'() {
     const exp = new MangoExpression({$match: {test: {$lt: 1}}});
     const matchExp = exp.getKey('$match');
-    console.log(inspect(exp, false, 10));
+    // console.log(inspect(exp, false, 10));
 
     const result = matchExp.visit(visitor);
     // console.log(result);
@@ -90,9 +91,22 @@ class InjectSpec {
   }
 
   @test
+  async 'single query'() {
+    const exp = new MangoExpression({id: 1});
+    // const matchExp = exp.getKey('$match');
+    // console.log(inspect(exp, false, 10));
+
+    const result = exp.getRoot().visit(visitor);
+    // console.log(result);
+    expect(exp.getRoot()).to.be.instanceOf(PObject);
+    expect(result).to.be.deep.eq({id: 'id = 1'});
+  }
+
+
+  @test
   async '$match query without command - $lt'() {
     const exp = new MangoExpression({test: {$lt: 1}});
-    console.log(inspect(exp, false, 10));
+    // console.log(inspect(exp, false, 10));
     const result = exp.visit(visitor);
     expect(result).to.be.deep.eq({test: 'test < 1'});
   }
@@ -100,7 +114,7 @@ class InjectSpec {
   @test
   async '$match query without command - $eq'() {
     const exp = new MangoExpression({test: {$eq: 1}});
-    console.log(inspect(exp, false, 10));
+    // console.log(inspect(exp, false, 10));
     const result = exp.visit(visitor);
     expect(result).to.be.deep.eq({test: 'test = 1'});
   }
@@ -108,7 +122,7 @@ class InjectSpec {
   @test
   async '$match query without command - $eq (indirect)'() {
     const exp = new MangoExpression({test: 1});
-    console.log(inspect(exp, false, 10));
+    // console.log(inspect(exp, false, 10));
     const result = exp.visit(visitor);
     expect(result).to.be.deep.eq({test: 'test = 1'});
   }

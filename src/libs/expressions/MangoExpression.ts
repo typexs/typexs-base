@@ -44,7 +44,6 @@ export class MangoExpression {
       _.isBoolean(def)) {
       const isRef = _.isString(def) && def.match(/^\$(.+)/);
       if (isRef) {
-
         result = new ValueRef(this, isRef[1], p, context);
       } else {
         result = new Value(this, def, p, context);
@@ -53,12 +52,13 @@ export class MangoExpression {
       result = new PArray(this, def, p, context);
     } else if (_.isObjectLike(def)) {
       const k = _.keys(def);
+      // TODO make multiple $operators work
       if (k.length === 1 && /^\$/.test(k[0])) {
         const operatorKey = k[0];
         const follow = def[operatorKey];
         const operatorKey1 = operatorKey.replace(/^\$/, '');
         const operator = Operators.create(operatorKey1, this, p, context);
-        if (!operator.validate(follow)) {
+        if (!operator.validate(follow, def)) {
           throw new Error(`operator ${operatorKey} has no valid definition ${JSON.stringify(def)}`);
         }
         result = operator;

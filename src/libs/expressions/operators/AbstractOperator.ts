@@ -21,7 +21,7 @@ export abstract class AbstractOperator extends PAst {
   }
 
 
-  validate(def: any): boolean {
+  validate(def: any, full?: any): boolean {
     const ctxt = new Context(this.key);
     this.value = this.base.interprete(def, this, ctxt);
     return true;

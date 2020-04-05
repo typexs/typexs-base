@@ -39,6 +39,7 @@ import {Date} from './date/Date';
 import {Context} from '../ast/Context';
 import {Not} from './logic/Not';
 import {Multiply} from './arithmetic/Multiply';
+import {Regex} from './string/Regex';
 
 export class Operators {
   static operators: { [k: string]: Function } = {};
@@ -122,6 +123,7 @@ Operators.install(NotIn.NAME, NotIn);
 /*
  *  String operators
  */
+Operators.install(Regex.NAME, Regex);
 // Operators.install(Substr.NAME, Substr);
 // Operators.install(ToUpper.NAME, ToUpper);
 // Operators.install(ToLower.NAME, ToLower);

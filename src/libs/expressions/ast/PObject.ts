@@ -66,19 +66,6 @@ export class PObject extends PAst {
     const autoEqualSupport = !!this.context.get(AUTO_EQUAL_CONV_SUPPORT);
     const numberProjectSupport = !!this.context.get(NUMBER_PROJECT_SUPPORT);
 
-    // const inprojection =
-    //   !!this.backwardCall(x =>
-    //     x instanceof Project
-    //   );
-    //
-    // const inGroup = !!this.backwardCall(y => y instanceof Group);
-    //
-    // const skipping =
-    //   !!this.backwardCall(x =>
-    //     (x.key === '_id' && inGroup) || x instanceof Sort
-    //   ) || (this.key === '_id' && inGroup);
-
-
     for (const k of this._keys) {
       const ctxt = new Context(k);
       const v = kv[k];

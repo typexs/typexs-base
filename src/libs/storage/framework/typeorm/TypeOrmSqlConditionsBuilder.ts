@@ -433,8 +433,6 @@ export class TypeOrmSqlConditionsBuilder<T> implements IMangoWalker {
     return this._erg2('LIKE', key, value.replace(/%/g, '%%').replace(/\*/g, '%'));
   }
 
-
-// TODO
   $regex(condition: any, key: string = null, value: any = null) {
     return this.handleOperation('regex', key, value);
   }

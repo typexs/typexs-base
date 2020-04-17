@@ -50,3 +50,21 @@ must be a possibility to exclude special folders.
 
 Find other way to invoke gulp task from different modules
 
+**@ISSUE {counter:issue} 20200417** +
+
+Spin-off modules:
+
+* task
+* distributed_storage
+* storage
+
+**@ISSUE {counter:issue} 20200417** +
+
+* storage: query regex support
+* distributed: mongo
+
+**@ISSUE {counter:issue} 20200417** +
+
+* TaskFuture wait for results or errors
+* TaskHelper add option to select one worker
+

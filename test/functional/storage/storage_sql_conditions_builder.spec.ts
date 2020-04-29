@@ -11,7 +11,7 @@ let bootstrap: Bootstrap;
 let CarCond: any = null;
 let DriverCond: any = null;
 
-@suite('functional/storage/storage_sql_conditions_builder')
+@suite('functional/storage/sql_conditions_builder (sqlite)')
 class StorageSqlConditionsBuilderSpec {
 
 
@@ -98,6 +98,17 @@ class StorageSqlConditionsBuilderSpec {
     ]);
   }
 
+  @test
+  async 'condition $regex'() {
+    const query2 = await getQuery({'name': {$regex: /hallo/}}, CarCond, 'car');
+    expect(query2).to.deep.eq([
+      'SELECT "car"."id" AS "car_id", "car"."name" AS "car_name" ' +
+      'FROM "car_cond" "car" WHERE "car"."name" REGEXP ?',
+      [
+        'hallo'
+      ]
+    ]);
+  }
 
   @test
   async 'condition $gt'() {

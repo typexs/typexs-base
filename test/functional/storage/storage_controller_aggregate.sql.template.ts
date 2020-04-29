@@ -1,7 +1,7 @@
 // process.env.SQL_LOG = '1';
 
 import * as path from 'path';
-import {suite, test} from 'mocha-typescript';
+import {test} from 'mocha-typescript';
 import {expect} from 'chai';
 
 import {Bootstrap} from '../../../src/Bootstrap';
@@ -19,11 +19,10 @@ let DriverSql: ClassType<any> = null;
 let CarParam: ClassType<any> = null;
 let controller: StorageEntityController = null;
 
-@suite('functional/storage/controller_aggregate_sql')
-class StorageControllerSqlSpec {
+export class StorageAcontrollerAggregateSqlTemplate {
 
 
-  static async before() {
+  static async initBefore() {
     // TestHelper.typeOrmReset();
     Bootstrap.reset();
     Config.clear();
@@ -88,11 +87,9 @@ class StorageControllerSqlSpec {
   }
 
 
-  static async after() {
+  static async initAfter() {
     if (bootstrap) {
       await bootstrap.shutdown();
-      // await bootstrap.getStorage().shutdown();
-      // await bootstrap.getStorage().shutdown();
     }
   }
 
@@ -135,6 +132,7 @@ class StorageControllerSqlSpec {
       {doors: 3}
     ]);
   }
+
 
   @test
   async 'aggregate - pipeline - $project (field with alias)'() {

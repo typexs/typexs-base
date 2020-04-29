@@ -31,3 +31,17 @@ services:
       - ./local/redis/db2:/data
     networks:
       - txs_base_net
+
+  typexs_base_test_psql:
+    image: postgres:11
+    ports:
+      - 127.0.0.1:5432:5432
+    networks:
+      - txs_base_net
+
+  typexs_base_test_mysql:
+    image: mysql:5
+    ports:
+      - 127.0.0.1:3306:3306
+    networks:
+      - txs_base_net

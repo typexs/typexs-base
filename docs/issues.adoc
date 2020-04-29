@@ -61,10 +61,11 @@ Spin-off modules:
 **@ISSUE {counter:issue} 20200417** +
 
 * storage: query regex support
+* storage-controller: save stream push new records on the fly
 * distributed: mongo
 
 **@ISSUE {counter:issue} 20200417** +
 
 * TaskFuture wait for results or errors
-* TaskHelper add option to select one worker
+* TaskHelper add option to select only one worker (maybe random selection)
 

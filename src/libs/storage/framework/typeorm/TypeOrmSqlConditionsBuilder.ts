@@ -16,6 +16,7 @@ import {StorageRef} from '../../../../libs/storage/StorageRef';
 import {AbstractSchemaHandler} from '../../AbstractSchemaHandler';
 import {Not} from '../../../expressions/operators/logic/Not';
 import {MangoExpression} from '../../../expressions/MangoExpression';
+import {MultiArgs} from '../../../expressions/ast/MultiArgs';
 
 
 export interface ISqlParam {
@@ -241,33 +242,61 @@ export class TypeOrmSqlConditionsBuilder<T> implements IMangoWalker {
   }
 
 
-  private _erg2(op: string, key: string = null, value?: any): ISqlParam {
-    const _key = this.lookupKeys(key);
-    if (!_.isUndefined(value)) {
-      const p = this.paramName();
-      if (_.isArray(value)) {
-        return {
-          q: `${_key} ${op} (:...${p})`,
-          p: this.paramValue(p, value, _key)
-        };
-      } else {
-        return {
-          q: `${_key} ${op} :${p}`,
-          p: this.paramValue(p, value, _key)
-        };
-      }
-    } else {
-      return {
-        q: `${_key} ${op}`
-      };
-    }
-  }
+  // private _erg2(op: string, key: string = null, value?: any): ISqlParam {
+  //   const _key = this.lookupKeys(key);
+  //   if (!_.isUndefined(value)) {
+  //     const p = this.paramName();
+  //     if (_.isArray(value)) {
+  //       return {
+  //         q: `${_key} ${op} (:...${p})`,
+  //         p: this.paramValue(p, value, _key)
+  //       };
+  //     } else {
+  //       return {
+  //         q: `${_key} ${op} :${p}`,
+  //         p: this.paramValue(p, value, _key)
+  //       };
+  //     }
+  //   } else {
+  //     return {
+  //       q: `${_key} ${op}`
+  //     };
+  //   }
+  // }
 
 
   private handleOperation(op: string, key: string = null, value: any = null) {
     const handle = this.handler.getOperationHandle(op.toLowerCase());
     const _key = this.lookupKeys(key);
-    return handle(_key, value);
+    if (!_.isUndefined(value)) {
+      const p = this.paramName();
+      if (_.isArray(value)) {
+        return {
+          q: handle(_key, ':...' + p), // `${_key} ${op} (:...${p})`,
+          p: this.paramValue(p, value, _key)
+        };
+      } else if (value instanceof MultiArgs) {
+        const paramNames = value.args.map(x => this.paramName());
+        const p = {};
+        for (let i = 0; i < value.args.length; i++) {
+          _.assign(p, this.paramValue(paramNames[i], value.args[i], _key));
+        }
+        return {
+          q: handle(_key, ...paramNames.map(x => ':' + x)),
+          p: p
+        };
+      } else {
+        return {
+          q: handle(_key, ':' + p),
+          p: this.paramValue(p, value, _key)
+        };
+      }
+    } else {
+      return {
+        q: handle(_key)
+      };
+    }
+    return null;
   }
 
 
@@ -332,10 +361,7 @@ export class TypeOrmSqlConditionsBuilder<T> implements IMangoWalker {
 
   onOperator(ast: PAst, valueRes: any): any {
     if (ast instanceof AbstractCompare) {
-      const method = '$' + ast.name;
-      if (this[method]) {
-        return this[method](null, ast.key, valueRes);
-      }
+      return this.handleOperation(ast.name, ast.key as string, valueRes);
     }
     return null;
   }
@@ -378,80 +404,80 @@ export class TypeOrmSqlConditionsBuilder<T> implements IMangoWalker {
     };
   }
 
-
-  $eq(condition: any, key: string = null, value: any = null) {
-    return this._erg2('=', key, value);
-  }
-
-
-  $isNull(condition: any, key: string = null, value: any = null) {
-    return this._erg2('IS NULL', key);
-  }
-
-
-  $isNotNull(condition: any, key: string = null, value: any = null) {
-    return this._erg2('IS NOT NULL', key);
-  }
-
-
-  $ne(condition: any, key: string = null, value: any = null) {
-    return this._erg2('<>', key, value);
-  }
-
-
-  $lt(condition: any, key: string = null, value: any = null) {
-    return this._erg2('<', key, value);
-  }
-
-
-  $lte(condition: any, key: string = null, value: any = null) {
-    return this.$le(condition, key, value);
-  }
-
-
-  $le(condition: any, key: string = null, value: any = null) {
-    return this._erg2('<=', key, value);
-  }
-
-
-  $gt(condition: any, key: string = null, value: any = null) {
-    return this._erg2('>', key, value);
-  }
-
-
-  $gte(condition: any, key: string = null, value: any = null) {
-    return this.$ge(condition, key, value);
-  }
-
-
-  $ge(condition: any, key: string = null, value: any = null) {
-    return this._erg2('>=', key, value);
-  }
-
-
-  $like(condition: any, key: string = null, value: any = null) {
-    return this._erg2('LIKE', key, value.replace(/%/g, '%%').replace(/\*/g, '%'));
-  }
-
-  $regex(condition: any, key: string = null, value: any = null) {
-    return this.handleOperation('regex', key, value);
-  }
-
-
-  $in(condition: any, key: string = null, value: any = null) {
-    return this._erg2('IN', key, value);
-  }
-
-
-  $nin(condition: any, key: string = null, value: any = null) {
-    return this._erg2('NOT IN', key, value);
-  }
-
-
-  // TODO
-  $not(condition: any, key: string = null, value: any = null) {
-    return this._erg2('NOT', key, value);
-  }
+  //
+  // $eq(condition: any, key: string = null, value: any = null) {
+  //   return this._erg2('=', key, value);
+  // }
+  //
+  //
+  // $isNull(condition: any, key: string = null, value: any = null) {
+  //   return this._erg2('IS NULL', key);
+  // }
+  //
+  //
+  // $isNotNull(condition: any, key: string = null, value: any = null) {
+  //   return this._erg2('IS NOT NULL', key);
+  // }
+  //
+  //
+  // $ne(condition: any, key: string = null, value: any = null) {
+  //   return this._erg2('<>', key, value);
+  // }
+  //
+  //
+  // $lt(condition: any, key: string = null, value: any = null) {
+  //   return this._erg2('<', key, value);
+  // }
+  //
+  //
+  // $lte(condition: any, key: string = null, value: any = null) {
+  //   return this.$le(condition, key, value);
+  // }
+  //
+  //
+  // $le(condition: any, key: string = null, value: any = null) {
+  //   return this._erg2('<=', key, value);
+  // }
+  //
+  //
+  // $gt(condition: any, key: string = null, value: any = null) {
+  //   return this._erg2('>', key, value);
+  // }
+  //
+  //
+  // $gte(condition: any, key: string = null, value: any = null) {
+  //   return this.$ge(condition, key, value);
+  // }
+  //
+  //
+  // $ge(condition: any, key: string = null, value: any = null) {
+  //   return this._erg2('>=', key, value);
+  // }
+  //
+  //
+  // $like(condition: any, key: string = null, value: any = null) {
+  //   return this._erg2('LIKE', key, value.replace(/%/g, '%%').replace(/\*/g, '%'));
+  // }
+  //
+  // $regex(condition: any, key: string = null, value: any = null) {
+  //   return this.handleOperation('regex', key, value);
+  // }
+  //
+  //
+  // $in(condition: any, key: string = null, value: any = null) {
+  //   return this._erg2('IN', key, value);
+  // }
+  //
+  //
+  // $nin(condition: any, key: string = null, value: any = null) {
+  //   return this._erg2('NOT IN', key, value);
+  // }
+  //
+  //
+  // // TODO
+  // $not(condition: any, key: string = null, value: any = null) {
+  //   return this._erg2('NOT', key, value);
+  // }
 
 
 }

@@ -1,5 +1,6 @@
 import {AbstractSchemaHandler} from '../../libs/storage/AbstractSchemaHandler';
 import * as _ from 'lodash';
+import {NotYetImplementedError} from 'commons-base/browser';
 
 
 export class SqliteSchemaHandler extends AbstractSchemaHandler {
@@ -8,24 +9,33 @@ export class SqliteSchemaHandler extends AbstractSchemaHandler {
 
   initOnceByType() {
     super.initOnceByType();
-    this.registerOperationHandle('year', (field: string) => {
-      return 'strftime(\'%Y\', ' + field + ')';
+
+    const fn = {
+
+      year: (field: string) => 'strftime(\'%Y\', ' + field + ')',
+      month: (field: string) => 'strftime(\'%m\', ' + field + ')',
+      day: (field: string) => 'strftime(\'%d\', ' + field + ')',
+      date: (field: string) => 'strftime(\'%Y-%m-%d\', ' + field + ')',
+      timestamp: (field: string) => 'strftime(\'%s\', ' + field + ')',
+      regex: (k: string, field: string | RegExp, options: string) => {
+        if (_.isString(field)) {
+          return k + ' REGEXP ' + field;
+        } else if (_.isRegExp(field)) {
+          return k + ' REGEXP ' + field.source;
+        } else {
+          throw new NotYetImplementedError('regex for ' + k + ' with value ' + field);
+        }
+
+      },
+      dateToString:
+        (field: string, format: string = '%Y-%m-%d %H:%M:%S' /* +, timezone: any, onNull: any */) =>
+          'strftime(\'' + format + '\', ' + field + ')',
+    };
+
+    _.keys(fn).forEach(x => {
+      this.registerOperationHandle(x, fn[x]);
     });
-    this.registerOperationHandle('month', (field: string) => {
-      return 'strftime(\'%m\', ' + field + ')';
-    });
-    this.registerOperationHandle('day', (field: string) => {
-      return 'strftime(\'%d\', ' + field + ')';
-    });
-    this.registerOperationHandle('date', (field: string) => {
-      return 'strftime(\'%Y-%m-%d\', ' + field + ')';
-    });
-    this.registerOperationHandle('timestamp', (field: string) => {
-      return 'strftime(\'%s\', ' + field + ')';
-    });
-    this.registerOperationHandle('regex', (key: string, value: RegExp | string) => {
-      return key + ' REGEXP '+ value ;
-    });
+
   }
 
   async getCollectionNames(): Promise<string[]> {

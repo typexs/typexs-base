@@ -2,6 +2,7 @@ import {AbstractSchemaHandler} from '../../libs/storage/AbstractSchemaHandler';
 import * as _ from 'lodash';
 import {IDBType} from '../../libs/storage/IDBType';
 import {JS_DATA_TYPES} from 'commons-schema-api/browser';
+import {NotYetImplementedError} from 'commons-base/browser';
 
 
 export class PostgresSchemaHandler extends AbstractSchemaHandler {
@@ -23,6 +24,33 @@ export class PostgresSchemaHandler extends AbstractSchemaHandler {
 
     this.registerOperationHandle('timestamp', (field: string) => {
       return 'EXTRACT(EPOCH FROM ' + field + ')';
+    });
+
+
+    const fn = {
+
+      year: (field: string) => 'EXTRACT(YEAR FROM ' + field + ')',
+      month: (field: string) => 'EXTRACT(MONTH FROM ' + field + ')',
+      day: (field: string) => 'EXTRACT(DAY FROM ' + field + ')',
+      date: (field: string) => 'TO_CHAR(' + field + ', \'YYYY-MM-DDTHH24:MI:SS.MS\')',
+      timestamp: (field: string) => 'EXTRACT(EPOCH FROM ' + field + ')',
+      regex: (k: string, field: string | RegExp, options: string) => {
+        if (_.isString(field)) {
+          return k + ' ~ ' + field;
+        } else if (_.isRegExp(field)) {
+          return k + ' ~ ' + field.source;
+        } else {
+          throw new NotYetImplementedError('regex for ' + k + ' with value ' + field);
+        }
+
+      },
+      dateToString:
+        (field: string, format: string = '%Y-%m-%d %H:%M:%S' /* +, timezone: any, onNull: any */) =>
+          'strftime(\'' + format + '\', ' + field + ')',
+    };
+
+    _.keys(fn).forEach(x => {
+      this.registerOperationHandle(x, fn[x]);
     });
 
 

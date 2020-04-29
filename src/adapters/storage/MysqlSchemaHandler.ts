@@ -3,6 +3,7 @@ import * as _ from 'lodash';
 import {MysqlConnectionOptions} from 'typeorm/driver/mysql/MysqlConnectionOptions';
 import {IDBType} from '../../libs/storage/IDBType';
 import {JS_DATA_TYPES} from 'commons-schema-api/browser';
+import {NotYetImplementedError} from 'commons-base/browser';
 
 
 export class MysqlSchemaHandler extends AbstractSchemaHandler {
@@ -11,6 +12,27 @@ export class MysqlSchemaHandler extends AbstractSchemaHandler {
 
   initOnceByType() {
     super.initOnceByType();
+
+    const fn = {
+      regex: (k: string, field: string | RegExp, options: string) => {
+        if (_.isString(field)) {
+          return k + ' REGEXP ' + field;
+        } else if (_.isRegExp(field)) {
+          return k + ' REGEXP ' + field.source;
+        } else {
+          throw new NotYetImplementedError('regex for ' + k + ' with value ' + field);
+        }
+
+      },
+      dateToString:
+        (field: string, format: string = '%Y-%m-%d %H:%M:%S' /* +, timezone: any, onNull: any */) =>
+          'strftime(\'' + format + '\', ' + field + ')',
+    };
+
+    _.keys(fn).forEach(x => {
+      this.registerOperationHandle(x, fn[x]);
+    });
+
   }
 
 

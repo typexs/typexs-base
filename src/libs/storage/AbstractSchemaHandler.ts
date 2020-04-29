@@ -29,39 +29,60 @@ export abstract class AbstractSchemaHandler {
   }
 
   initOnceByType() {
-    this.registerOperationHandle('year', (field: string) => {
-      return 'YEAR(' + field + ')';
+
+    const fn = {
+      eq: (k: string, v: any) => k + ' = ' + v,
+      ne: (k: string, v: any) => k + ' <> ' + v,
+      lt: (k: string, v: any) => k + ' < ' + v,
+      lte: (k: string, v: any) => k + ' <= ' + v,
+      le: (k: string, v: any) => k + ' <= ' + v,
+      gt: (k: string, v: any) => k + ' > ' + v,
+      gte: (k: string, v: any) => k + ' >= ' + v,
+      ge: (k: string, v: any) => k + ' >= ' + v,
+      like: (k: string, v: any) => k + ' LIKE ' + v.replace(/%/g, '%%').replace(/\*/g, '%'),
+      not: (v: any) => 'NOT ' + v,
+      isNull: (k: string) => k + ' IS NULL',
+      isNotNull: (k: string) => k + ' IS NOT NULL',
+      regex: (k: string, field: string | RegExp) => {
+        throw new NotSupportedError('regex operation not supported');
+      },
+      in: (k: string, v: string | any[]) => {
+        if (_.isArray(v)) {
+          return k + ' IN (' + v.join(', ') + ')';
+        } else {
+          return k + ' IN (' + v + ')';
+        }
+      },
+      nin: (k: string, v: string | any[]) => {
+        if (_.isArray(v)) {
+          return k + ' NOT IN (' + v.join(', ') + ')';
+        } else {
+          return k + ' NOT IN (' + v + ')';
+        }
+      },
+      year: (field: string) => 'YEAR(' + field + ')',
+      month: (field: string) => 'MONTH(' + field + ')',
+      day: (field: string) => 'DAY(' + field + ')',
+      sum: (field: string) => 'SUM(' + field + ')',
+      count: (field: string) => 'COUNT(' + field + ')',
+      min: (field: string) => 'MIN(' + field + ')',
+      max: (field: string) => 'MAX(' + field + ')',
+      avg: (field: string) => 'AVG(' + field + ')',
+      date: (field: string) => 'DATE(' + field + ')',
+      timestamp: (field: string) => 'TIMESTAMP(' + field + ')',
+      add: (fieldsValues: string[]) => fieldsValues.join(' + '),
+      subtract: (fieldsValues: string[]) => fieldsValues.join(' - '),
+      multiply: (fieldsValues: string[]) => fieldsValues.join(' * '),
+      divide: (fieldsValues: string[]) => fieldsValues.join(' / '),
+      dateToString: (field: string, format: string, timezone: any, onNull: any) => {
+        throw new NotSupportedError('dateToString operation not supported');
+      },
+    };
+
+    _.keys(fn).forEach(x => {
+      this.registerOperationHandle(x, fn[x]);
     });
-    this.registerOperationHandle('month', (field: string) => {
-      return 'MONTH(' + field + ')';
-    });
-    this.registerOperationHandle('day', (field: string) => {
-      return 'DAY(' + field + ')';
-    });
-    this.registerOperationHandle('sum', (field: string) => {
-      return 'SUM(' + field + ')';
-    });
-    this.registerOperationHandle('count', (field: string) => {
-      return 'COUNT(' + field + ')';
-    });
-    this.registerOperationHandle('min', (field: string) => {
-      return 'MIN(' + field + ')';
-    });
-    this.registerOperationHandle('max', (field: string) => {
-      return 'MAX(' + field + ')';
-    });
-    this.registerOperationHandle('avg', (field: string) => {
-      return 'AVG(' + field + ')';
-    });
-    this.registerOperationHandle('date', (field: string) => {
-      return 'DATE(' + field + ')';
-    });
-    this.registerOperationHandle('timestamp', (field: string) => {
-      return 'TIMESTAMP(' + field + ')';
-    });
-    this.registerOperationHandle('multiply', (fieldsValues: string[]) => {
-      return fieldsValues.join(' * ');
-    });
+
   }
 
 

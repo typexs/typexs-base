@@ -12,7 +12,7 @@ import {RuntimeLoader} from '../../base/RuntimeLoader';
 import {Tasks} from './Tasks';
 import {Log} from '../logging/Log';
 import {TaskRunner} from './TaskRunner';
-import {TaskRunnerRegistry} from "./TaskRunnerRegistry";
+import {TaskRunnerRegistry} from './TaskRunnerRegistry';
 
 
 export class TasksHelper {

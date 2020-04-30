@@ -20,10 +20,10 @@ import {ClassUtils, NotYetImplementedError} from 'commons-base/browser';
 import {TypeOrmPropertyRef} from './TypeOrmPropertyRef';
 import {RelationMetadataArgs} from 'typeorm/browser/metadata-args/RelationMetadataArgs';
 import {ColumnMetadataArgs} from 'typeorm/browser/metadata-args/ColumnMetadataArgs';
-import {ValidationMetadata} from 'class-validator/metadata/ValidationMetadata';
 import {getFromContainer, MetadataStorage} from 'class-validator';
 import {MetadataArgsStorage} from 'typeorm/browser/metadata-args/MetadataArgsStorage';
 import {classRefGet} from '../../../Helper';
+import {ValidationMetadata} from '../../../../class-validator/ValidationMetadata';
 
 
 export class TypeOrmEntityRegistry implements ILookupRegistry {
@@ -247,7 +247,7 @@ export class TypeOrmEntityRegistry implements ILookupRegistry {
             const _m = _.clone(m);
             _m.target = classRef.getClass();
             const vma = new ValidationMetadata(_m);
-            getFromContainer(MetadataStorage).addValidationMetadata(vma);
+            getFromContainer(MetadataStorage).addValidationMetadata(vma as any);
           });
         }
       }

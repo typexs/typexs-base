@@ -13,6 +13,7 @@ import {DataRow} from './fake_app/entities/DataRow';
 import {Injector} from '../../../src/libs/di/Injector';
 import {C_STORAGE_DEFAULT} from '../../../src/libs/Constants';
 import {StorageRef} from '../../../src/libs/storage/StorageRef';
+import {generateSqlDataRows} from './helper';
 
 
 const LOG_EVENT = TestHelper.logEnable(false);
@@ -47,18 +48,7 @@ class DistributedStorageSaveSpec {
 
     const storageRef = Injector.get(C_STORAGE_DEFAULT) as StorageRef;
     controllerRef = storageRef.getController();
-
-    const entries = [];
-    for (let i = 1; i <= 20; i++) {
-      const e = new DataRow();
-      e.id = i;
-      e.someBool = i % 2 === 0;
-      e.someDate = new Date(2020, i % 12, i % 30);
-      e.someNumber = i * 10;
-      e.someString = 'test ' + i;
-      entries.push(e);
-    }
-
+    const entries = generateSqlDataRows();
     await controllerRef.save(entries);
   }
 

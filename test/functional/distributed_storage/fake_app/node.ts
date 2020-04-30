@@ -5,6 +5,7 @@ import {ITypexsOptions} from '../../../../src/libs/ITypexsOptions';
 import {Bootstrap} from '../../../../src/Bootstrap';
 import {DataRow} from './entities/DataRow';
 import {C_STORAGE_DEFAULT, Injector, StorageRef} from '../../../../src';
+import {generateSqlDataRows} from '../helper';
 
 (async function () {
   const LOG_EVENT = !!process.argv.find(x => x === '--enable_log');
@@ -31,16 +32,7 @@ import {C_STORAGE_DEFAULT, Injector, StorageRef} from '../../../../src';
   bootstrap = await bootstrap.activateStorage();
   bootstrap = await bootstrap.startup();
 
-  const entries = [];
-  for (let i = 1; i <= 20; i++) {
-    const e = new DataRow();
-    e.id = i;
-    e.someBool = i % 2 === 0;
-    e.someDate = new Date(2020, i % 12, i % 30);
-    e.someNumber = i * 10;
-    e.someString = 'test ' + i + ' ' + NODEID;
-    entries.push(e);
-  }
+  const entries = generateSqlDataRows();
 
   const storageRef = Injector.get(C_STORAGE_DEFAULT) as StorageRef;
   const controllerRef = storageRef.getController();

@@ -12,6 +12,9 @@ export class DataRow {
   @Column()
   someString: string;
 
+  @Column({nullable: true})
+  someFlag: string;
+
   @Column()
   someBool: boolean;
 

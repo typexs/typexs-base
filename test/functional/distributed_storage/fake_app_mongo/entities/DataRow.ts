@@ -13,6 +13,9 @@ export class DataRow {
   someString: string;
 
   @Column()
+  someFlag: string;
+
+  @Column()
   someBool: boolean;
 
   @Column()

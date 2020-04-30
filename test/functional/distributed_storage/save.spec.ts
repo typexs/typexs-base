@@ -130,7 +130,7 @@ class DistributedStorageSaveSpec {
 
     const p = SpawnHandle.do(__dirname + '/fake_app/node.ts').start(LOG_EVENT);
     await p.started;
-    await TestHelper.wait(100);
+    await TestHelper.wait(500);
 
     const controller = Container.get(DistributedStorageEntityController);
 

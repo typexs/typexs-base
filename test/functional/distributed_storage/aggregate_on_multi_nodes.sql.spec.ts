@@ -9,12 +9,13 @@ import {TestHelper} from '../TestHelper';
 
 import {DistributedStorageEntityController} from '../../../src/libs/distributed_storage/DistributedStorageEntityController';
 import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
-import {DataRow} from './fake_app_mongo/entities/DataRow';
+import {DataRow} from './fake_app/entities/DataRow';
 import * as _ from 'lodash';
 import {__NODE_ID__} from '../../../src/libs/distributed_storage/Constants';
 import {Injector} from '../../../src/libs/di/Injector';
 import {C_STORAGE_DEFAULT} from '../../../src/libs/Constants';
 import {StorageRef} from '../../../src/libs/storage/StorageRef';
+import {SpawnHandle} from '../SpawnHandle';
 import {generateSqlDataRows} from './helper';
 
 
@@ -23,9 +24,10 @@ const LOG_EVENT = TestHelper.logEnable(false);
 let bootstrap: Bootstrap;
 
 // let p: SpawnHandle;
+const p: SpawnHandle[] = [];
 
 
-@suite('functional/distributed_storage/aggregate_on_local_node (sql)')
+@suite('functional/distributed_storage/aggregate_on_multi_nodes (sql)')
 class DistributedStorageSaveSpec {
 
 
@@ -52,14 +54,27 @@ class DistributedStorageSaveSpec {
 
     const storageRef = Injector.get(C_STORAGE_DEFAULT) as StorageRef;
 
-    const entries = generateSqlDataRows();
+    p[0] = SpawnHandle.do(__dirname + '/fake_app/node.ts').nodeId('remote01').start(LOG_EVENT);
+    await p[0].started;
 
+    p[1] = SpawnHandle.do(__dirname + '/fake_app/node.ts').nodeId('remote02').start(LOG_EVENT);
+    await p[1].started;
+
+    await TestHelper.wait(500);
+
+    const entries = generateSqlDataRows();
     await storageRef.getController().save(entries);
   }
 
   static async after() {
     if (bootstrap) {
       await bootstrap.shutdown();
+
+      if (p.length > 0) {
+        p.map(x => x.shutdown());
+        await Promise.all(p.map(x => x.done));
+      }
+
     }
   }
 
@@ -67,18 +82,19 @@ class DistributedStorageSaveSpec {
   @test
   async 'simple match aggregation'() {
     const controller = Container.get(DistributedStorageEntityController);
-    const results = await controller.aggregate(DataRow, [{$match: {someBool: true}}]);
-
+    let results = await controller.aggregate(DataRow, [{$match: {someBool: true}}]);
+    expect(results).to.have.length(30);
+    results = _.orderBy(results, [__NODE_ID__]);
     // console.log(results);
     const evenIds = results.map(x => {
       return x.id;
     });
 
-    expect(evenIds).to.be.deep.eq(_.range(1, 11).map(x => x * 2));
+    expect(evenIds).to.be.deep.eq(_.concat(_.range(1, 11).map(x => x * 2), _.range(1, 11).map(x => x * 2), _.range(1, 11).map(x => x * 2)));
     const nodeIds = _.uniq(results.map(x => {
       return x[__NODE_ID__];
     }));
-    expect(nodeIds).to.be.deep.eq(['system']);
+    expect(nodeIds).to.be.deep.eq(['remote01', 'remote02', 'system']);
 
   }
 
@@ -86,21 +102,44 @@ class DistributedStorageSaveSpec {
   @test
   async 'match and group aggregation'() {
     const controller = Container.get(DistributedStorageEntityController);
-    const results = await controller.aggregate(DataRow, [
+    let results = await controller.aggregate(DataRow, [
       {$match: {someBool: true}},
       {$group: {_id: null, sum: {$sum: 1}}}
     ]) as any[];
 
-    // console.log(results);
-    expect(results).to.have.length(1);
-    expect(results[0]).to.be.deep.eq({sum: 10, __nodeId__: 'system'});
+
+    expect(results).to.have.length(3);
+    results = _.orderBy(results, [__NODE_ID__]);
+    expect(results[0]).to.be.deep.eq({sum: 10, __nodeId__: 'remote01'});
+    expect(results[1]).to.be.deep.eq({sum: 10, __nodeId__: 'remote02'});
+    expect(results[2]).to.be.deep.eq({sum: 10, __nodeId__: 'system'});
 
     const nodeIds = _.uniq(results.map(x => {
       return x[__NODE_ID__];
     }));
-    expect(nodeIds).to.be.deep.eq(['system']);
+    expect(nodeIds).to.be.deep.eq(['remote01', 'remote02', 'system']);
+
   }
 
+
+  @test
+  async 'match and group aggregation on targeted node'() {
+    const controller = Container.get(DistributedStorageEntityController);
+    let results = await controller.aggregate(DataRow, [
+      {$match: {someBool: true}},
+      {$group: {_id: null, sum: {$sum: 1}}}
+    ], {targetIds: ['remote02']}) as any[];
+
+
+    expect(results).to.have.length(1);
+    results = _.orderBy(results, [__NODE_ID__]);
+    expect(results[0]).to.be.deep.eq({sum: 10, __nodeId__: 'remote02'});
+
+    const nodeIds = _.uniq(results.map(x => {
+      return x[__NODE_ID__];
+    }));
+    expect(nodeIds).to.be.deep.eq(['remote02']);
+  }
 
   @test
   async 'match and group by key aggregation'() {
@@ -110,9 +149,15 @@ class DistributedStorageSaveSpec {
       {$group: {_id: 'someFlag', sum: {$sum: 1}}}
     ]) as any[];
 
-    expect(results).to.have.length(3);
+    expect(results).to.have.length(9);
     results = _.orderBy(results, [__NODE_ID__, 'someFlag']);
     expect(results).to.be.deep.eq([
+      {someFlag: '0', sum: 3, __nodeId__: 'remote01'},
+      {someFlag: '10', sum: 3, __nodeId__: 'remote01'},
+      {someFlag: '20', sum: 4, __nodeId__: 'remote01'},
+      {someFlag: '0', sum: 3, __nodeId__: 'remote02'},
+      {someFlag: '10', sum: 3, __nodeId__: 'remote02'},
+      {someFlag: '20', sum: 4, __nodeId__: 'remote02'},
       {someFlag: '0', sum: 3, __nodeId__: 'system'},
       {someFlag: '10', sum: 3, __nodeId__: 'system'},
       {someFlag: '20', sum: 4, __nodeId__: 'system'}
@@ -121,27 +166,26 @@ class DistributedStorageSaveSpec {
     const nodeIds = _.uniq(results.map(x => {
       return x[__NODE_ID__];
     }));
-    expect(nodeIds).to.be.deep.eq(['system']);
+    expect(nodeIds).to.be.deep.eq(['remote01', 'remote02', 'system']);
   }
 
 
   @test
   async 'limit and offset'() {
     const controller = Container.get(DistributedStorageEntityController);
-    const results = await controller.aggregate(DataRow, [
+    let results = await controller.aggregate(DataRow, [
       {$group: {_id: 'someFlag', sum: {$sum: 1}}},
       {$skip: 1},
       {$limit: 1}
     ]) as any[];
-
-    // console.log(results);
-    expect(results).to.have.length(1);
-    expect(results[0]).to.be.deep.eq({sum: 7, someFlag: '10', __nodeId__: 'system'});
+    results = _.orderBy(results, [__NODE_ID__, 'someFlag']);
+    expect(results).to.have.length(3);
+    expect(results[0]).to.be.deep.eq({someFlag: '10', sum: 7, __nodeId__: 'remote01'});
 
     const nodeIds = _.uniq(results.map(x => {
       return x[__NODE_ID__];
     }));
-    expect(nodeIds).to.be.deep.eq(['system']);
+    expect(nodeIds).to.be.deep.eq(['remote01', 'remote02', 'system']);
   }
 
 
@@ -155,10 +199,13 @@ class DistributedStorageSaveSpec {
       expect(false, 'exception not fired ...').to.be.eq(true);
     } catch (e) {
       expect(e).to.be.instanceOf(Error);
-      expect(e.message).to.be.eq('system: SQLITE_ERROR: no such column: aggr.do_not_exists');
+      expect(e.message.split('\n').sort()).to.be.deep.eq([
+        'remote01: SQLITE_ERROR: no such column: aggr.do_not_exists',
+        'remote02: SQLITE_ERROR: no such column: aggr.do_not_exists',
+        'system: SQLITE_ERROR: no such column: aggr.do_not_exists'
+      ]);
     }
   }
-
 
 }
 

@@ -15,6 +15,7 @@ import {DataRow} from './fake_app/entities/DataRow';
 import {__NODE_ID__, __REMOTE_IDS__, XS_P_$ERRORED, XS_P_$SAVED} from '../../../src/libs/distributed_storage/Constants';
 import {C_STORAGE_DEFAULT, Injector, StorageRef} from '../../../src';
 import {IEntityController} from '../../../src/libs/storage/IEntityController';
+import {generateSqlDataRows} from './helper';
 
 // process.env.SQL_LOG = '1';
 
@@ -48,18 +49,7 @@ class DistributedStorageSaveSpec {
     bootstrap = await bootstrap.activateStorage();
     bootstrap = await bootstrap.startup();
 
-
-    const entries = [];
-    for (let i = 1; i <= 20; i++) {
-      const e = new DataRow();
-      e.id = i;
-      e.someBool = i % 2 === 0;
-      e.someDate = new Date(2020, i % 12, i % 30);
-      e.someNumber = i * 10;
-      e.someString = 'test ' + i;
-      entries.push(e);
-    }
-
+    const entries = generateSqlDataRows();
     const storageRef = Injector.get(C_STORAGE_DEFAULT) as StorageRef;
     controllerRef = storageRef.getController();
     await controllerRef.save(entries);
@@ -70,7 +60,7 @@ class DistributedStorageSaveSpec {
     p[1] = SpawnHandle.do(__dirname + '/fake_app/node.ts').nodeId('remote02').start(LOG_EVENT);
     await p[1].started;
 
-    await TestHelper.wait(100);
+    await TestHelper.wait(500);
   }
 
   static async after() {
@@ -176,6 +166,7 @@ class DistributedStorageSaveSpec {
       'someAny': '{"hallo":"editedWelt"}',
       'someBool': true,
       'someDate': testEntry.someDate,
+      'someFlag': '10',
       'someNumber': 321,
       'someString': 'editedString'
     });

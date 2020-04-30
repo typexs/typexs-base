@@ -13,6 +13,7 @@ import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
 import {DataRow} from './fake_app/entities/DataRow';
 import {C_STORAGE_DEFAULT, Injector, StorageRef, XS_P_$COUNT} from '../../../src';
 import {IEntityController} from '../../../src/libs/storage/IEntityController';
+import {generateSqlDataRows} from './helper';
 
 
 const LOG_EVENT = TestHelper.logEnable(false);
@@ -45,17 +46,7 @@ class DistributedQuerySpec {
     await bootstrap.prepareRuntime();
     bootstrap = await bootstrap.activateStorage();
     bootstrap = await bootstrap.startup();
-
-    const entries = [];
-    for (let i = 1; i <= 20; i++) {
-      const e = new DataRow();
-      e.id = i;
-      e.someBool = i % 2 === 0;
-      e.someDate = new Date(2020, i % 12, i % 30);
-      e.someNumber = i * 10;
-      e.someString = 'test ' + i;
-      entries.push(e);
-    }
+    const entries = generateSqlDataRows();
 
     const storageRef = Injector.get(C_STORAGE_DEFAULT) as StorageRef;
     controllerRef = storageRef.getController();
@@ -119,6 +110,19 @@ class DistributedQuerySpec {
     expect(entities).to.have.length(10);
   }
 
+  @test
+  async 'find multiple entries by Date'() {
+    const date = new Date(2020, 6, 10);
+    const controller = Container.get(DistributedStorageEntityController);
+    const entities = await controller.find(DataRow, {someDate: {$ge: date}});
+    expect(entities).to.not.be.null;
+    expect(entities).to.have.length(8);
+    entities.forEach(e => {
+      expect(e.someDate).to.be.gte(date);
+    });
+
+  }
+
 
   @test
   async 'catch exceptions - wrong search query'() {
@@ -133,13 +137,6 @@ class DistributedQuerySpec {
 
   }
 
-
-  @test.skip
-  async 'find multiple entries by Date'() {
-    // const controller = Container.get(DistributedStorageEntityController);
-    // const entity = await controller.find(DataRow, {someBool: true});
-    // expect(entity).to.be.null;
-  }
 
 }
 

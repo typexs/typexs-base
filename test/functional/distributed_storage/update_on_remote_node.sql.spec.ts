@@ -14,6 +14,7 @@ import {Injector} from '../../../src/libs/di/Injector';
 import {C_STORAGE_DEFAULT} from '../../../src/libs/Constants';
 import {StorageRef} from '../../../src/libs/storage/StorageRef';
 import {SpawnHandle} from '../SpawnHandle';
+import {generateSqlDataRows} from './helper';
 
 
 
@@ -49,18 +50,7 @@ class DistributedStorageSaveSpec {
 
     const storageRef = Injector.get(C_STORAGE_DEFAULT) as StorageRef;
     controllerRef = storageRef.getController();
-
-    const entries = [];
-    for (let i = 1; i <= 20; i++) {
-      const e = new DataRow();
-      e.id = i;
-      e.someBool = i % 2 === 0;
-      e.someDate = new Date(2020, i % 12, i % 30);
-      e.someNumber = i * 10;
-      e.someString = 'test ' + i;
-      e.someAny = ['test ' + i, 'test ' + (i * 2)];
-      entries.push(e);
-    }
+    const entries = generateSqlDataRows();
 
     await storageRef.getController().save(entries);
 
@@ -68,7 +58,7 @@ class DistributedStorageSaveSpec {
     p[0] = SpawnHandle.do(__dirname + '/fake_app/node.ts').nodeId('remote01').start(LOG_EVENT);
     await p[0].started;
 
-    await TestHelper.wait(100);
+    await TestHelper.wait(500);
   }
 
   static async after() {

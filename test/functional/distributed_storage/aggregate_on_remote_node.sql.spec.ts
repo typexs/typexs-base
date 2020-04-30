@@ -9,12 +9,13 @@ import {TestHelper} from '../TestHelper';
 
 import {DistributedStorageEntityController} from '../../../src/libs/distributed_storage/DistributedStorageEntityController';
 import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
-import {DataRow} from './fake_app_mongo/entities/DataRow';
+import {DataRow} from './fake_app/entities/DataRow';
 import * as _ from 'lodash';
 import {__NODE_ID__} from '../../../src/libs/distributed_storage/Constants';
 import {Injector} from '../../../src/libs/di/Injector';
 import {C_STORAGE_DEFAULT} from '../../../src/libs/Constants';
 import {StorageRef} from '../../../src/libs/storage/StorageRef';
+import {SpawnHandle} from '../SpawnHandle';
 import {generateSqlDataRows} from './helper';
 
 
@@ -23,9 +24,10 @@ const LOG_EVENT = TestHelper.logEnable(false);
 let bootstrap: Bootstrap;
 
 // let p: SpawnHandle;
+const p: SpawnHandle[] = [];
 
 
-@suite('functional/distributed_storage/aggregate_on_local_node (sql)')
+@suite('functional/distributed_storage/aggregate_on_remote_node (sql)')
 class DistributedStorageSaveSpec {
 
 
@@ -42,7 +44,7 @@ class DistributedStorageSaveSpec {
         modules: {paths: [__dirname + '/../../..']},
         storage: {default: DB_OPTIONS},
         eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}},
-        workers: {access: [{name: 'DistributedQueryWorker', access: 'allow'}]}
+        // workers: {access: [{name: 'DistributedQueryWorker', access: 'allow'}]}
       });
     bootstrap.activateLogger();
     bootstrap.activateErrorHandling();
@@ -52,14 +54,27 @@ class DistributedStorageSaveSpec {
 
     const storageRef = Injector.get(C_STORAGE_DEFAULT) as StorageRef;
 
-    const entries = generateSqlDataRows();
+    p[0] = SpawnHandle.do(__dirname + '/fake_app/node.ts').nodeId('remote01').start(LOG_EVENT);
+    await p[0].started;
 
+    // p[1] = SpawnHandle.do(__dirname + '/fake_app/node.ts').nodeId('remote02').start(LOG_EVENT);
+    // await p[1].started;
+
+    await TestHelper.wait(500);
+
+    const entries = generateSqlDataRows();
     await storageRef.getController().save(entries);
   }
 
   static async after() {
     if (bootstrap) {
       await bootstrap.shutdown();
+
+      if (p.length > 0) {
+        p.map(x => x.shutdown());
+        await Promise.all(p.map(x => x.done));
+      }
+
     }
   }
 
@@ -67,8 +82,9 @@ class DistributedStorageSaveSpec {
   @test
   async 'simple match aggregation'() {
     const controller = Container.get(DistributedStorageEntityController);
-    const results = await controller.aggregate(DataRow, [{$match: {someBool: true}}]);
-
+    let results = await controller.aggregate(DataRow, [{$match: {someBool: true}}]);
+    expect(results).to.have.length(10);
+    results = _.orderBy(results, [__NODE_ID__]);
     // console.log(results);
     const evenIds = results.map(x => {
       return x.id;
@@ -78,7 +94,7 @@ class DistributedStorageSaveSpec {
     const nodeIds = _.uniq(results.map(x => {
       return x[__NODE_ID__];
     }));
-    expect(nodeIds).to.be.deep.eq(['system']);
+    expect(nodeIds).to.be.deep.eq(['remote01']);
 
   }
 
@@ -86,21 +102,22 @@ class DistributedStorageSaveSpec {
   @test
   async 'match and group aggregation'() {
     const controller = Container.get(DistributedStorageEntityController);
-    const results = await controller.aggregate(DataRow, [
+    let results = await controller.aggregate(DataRow, [
       {$match: {someBool: true}},
       {$group: {_id: null, sum: {$sum: 1}}}
     ]) as any[];
 
-    // console.log(results);
+
     expect(results).to.have.length(1);
-    expect(results[0]).to.be.deep.eq({sum: 10, __nodeId__: 'system'});
+    results = _.orderBy(results, [__NODE_ID__]);
+    expect(results[0]).to.be.deep.eq({sum: 10, __nodeId__: 'remote01'});
 
     const nodeIds = _.uniq(results.map(x => {
       return x[__NODE_ID__];
     }));
-    expect(nodeIds).to.be.deep.eq(['system']);
-  }
+    expect(nodeIds).to.be.deep.eq(['remote01']);
 
+  }
 
   @test
   async 'match and group by key aggregation'() {
@@ -113,15 +130,15 @@ class DistributedStorageSaveSpec {
     expect(results).to.have.length(3);
     results = _.orderBy(results, [__NODE_ID__, 'someFlag']);
     expect(results).to.be.deep.eq([
-      {someFlag: '0', sum: 3, __nodeId__: 'system'},
-      {someFlag: '10', sum: 3, __nodeId__: 'system'},
-      {someFlag: '20', sum: 4, __nodeId__: 'system'}
+      {someFlag: '0', sum: 3, __nodeId__: 'remote01'},
+      {someFlag: '10', sum: 3, __nodeId__: 'remote01'},
+      {someFlag: '20', sum: 4, __nodeId__: 'remote01'}
     ]);
 
     const nodeIds = _.uniq(results.map(x => {
       return x[__NODE_ID__];
     }));
-    expect(nodeIds).to.be.deep.eq(['system']);
+    expect(nodeIds).to.be.deep.eq(['remote01']);
   }
 
 
@@ -134,14 +151,13 @@ class DistributedStorageSaveSpec {
       {$limit: 1}
     ]) as any[];
 
-    // console.log(results);
     expect(results).to.have.length(1);
-    expect(results[0]).to.be.deep.eq({sum: 7, someFlag: '10', __nodeId__: 'system'});
+    expect(results[0]).to.be.deep.eq({someFlag: '10', sum: 7, __nodeId__: 'remote01'});
 
     const nodeIds = _.uniq(results.map(x => {
       return x[__NODE_ID__];
     }));
-    expect(nodeIds).to.be.deep.eq(['system']);
+    expect(nodeIds).to.be.deep.eq(['remote01']);
   }
 
 
@@ -155,10 +171,9 @@ class DistributedStorageSaveSpec {
       expect(false, 'exception not fired ...').to.be.eq(true);
     } catch (e) {
       expect(e).to.be.instanceOf(Error);
-      expect(e.message).to.be.eq('system: SQLITE_ERROR: no such column: aggr.do_not_exists');
+      expect(e.message).to.be.eq('remote01: SQLITE_ERROR: no such column: aggr.do_not_exists');
     }
   }
-
 
 }
 

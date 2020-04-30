@@ -16,6 +16,7 @@ import {C_STORAGE_DEFAULT, Injector, StorageRef, XS_P_$COUNT} from '../../../src
 import {IEntityController} from '../../../src/libs/storage/IEntityController';
 import {SpawnHandle} from '../SpawnHandle';
 import {__NODE_ID__} from '../../../src/libs/distributed_storage/Constants';
+import {generateSqlDataRows} from './helper';
 
 
 const LOG_EVENT = TestHelper.logEnable(false);
@@ -42,6 +43,7 @@ class DistributedQuerySpec {
         eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}},
         // CONFIG ADDED
         // workers: {access: [{name: 'DistributedQueryWorker', access: 'allow'}]}
+        // workers: {access: [{name: 'DistributedQueryWorker', access: 'allow'}]}
       });
     bootstrap.activateLogger();
     bootstrap.activateErrorHandling();
@@ -56,19 +58,9 @@ class DistributedQuerySpec {
     // p[1] = SpawnHandle.do(__dirname + '/fake_app/node.ts').nodeId('remote02').start(LOG_EVENT);
     // await p[1].started;
 
-    await TestHelper.wait(100);
+    await TestHelper.wait(500);
 
-
-    const entries = [];
-    for (let i = 1; i <= 20; i++) {
-      const e = new DataRow();
-      e.id = i;
-      e.someBool = i % 2 === 0;
-      e.someDate = new Date(2020, i % 12, i % 30);
-      e.someNumber = i * 10;
-      e.someString = 'test ' + i;
-      entries.push(e);
-    }
+    const entries = generateSqlDataRows();
 
     const storageRef = Injector.get(C_STORAGE_DEFAULT) as StorageRef;
     controllerRef = storageRef.getController();
@@ -97,7 +89,7 @@ class DistributedQuerySpec {
     expect(entity).to.deep.include({
       id: 10,
       someNumber: 100,
-      someString: 'test 10 remote01',
+      someString: 'test 10',
       someBool: true,
       __class__: 'DataRow',
       __nodeId__: 'remote01',
@@ -113,7 +105,7 @@ class DistributedQuerySpec {
     expect(entity).to.deep.include({
       id: 11,
       someNumber: 110,
-      someString: 'test 11 remote01',
+      someString: 'test 11',
       someBool: false,
       __class__: 'DataRow',
       __nodeId__: 'remote01',
@@ -139,7 +131,8 @@ class DistributedQuerySpec {
         'someBool': true,
         'someDate': new Date(2020, 10, 10),
         'someNumber': 100,
-        'someString': 'test 10 remote01',
+        'someString': 'test 10',
+        'someFlag': '10',
       }
     ]);
   }
@@ -227,9 +220,10 @@ class DistributedQuerySpec {
         '__registry__': 'typeorm',
         'id': 2,
         'someBool': true,
+        'someFlag': '20',
         'someDate': new Date(2020, 1, 31),
         'someNumber': 20,
-        'someString': 'test 2 remote01',
+        'someString': 'test 2',
       },
       {
         '__class__': 'DataRow',
@@ -237,9 +231,10 @@ class DistributedQuerySpec {
         '__registry__': 'typeorm',
         'id': 4,
         'someBool': true,
+        'someFlag': '10',
         'someDate': new Date(2020, 4, 4),
         'someNumber': 40,
-        'someString': 'test 4 remote01',
+        'someString': 'test 4',
       },
       {
         '__class__': 'DataRow',
@@ -247,9 +242,10 @@ class DistributedQuerySpec {
         '__registry__': 'typeorm',
         'id': 6,
         'someBool': true,
+        'someFlag': '0',
         'someDate': new Date(2020, 6, 6),
         'someNumber': 60,
-        'someString': 'test 6 remote01'
+        'someString': 'test 6'
       }
     ]);
 

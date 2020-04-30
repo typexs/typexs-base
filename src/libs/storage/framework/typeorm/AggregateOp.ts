@@ -1,29 +1,33 @@
 import {StorageEntityController} from '../../StorageEntityController';
 import {ClassType, IEntityRef} from 'commons-schema-api';
 import {TypeOrmEntityRegistry} from './schema/TypeOrmEntityRegistry';
-import {NotSupportedError, NotYetImplementedError, TreeUtils} from 'commons-base';
+import {NotSupportedError, TreeUtils} from 'commons-base';
 import * as _ from 'lodash';
 import {IAggregateOp} from '../IAggregateOp';
 import {IAggregateOptions} from '../IAggregateOptions';
 import {StorageApi} from '../../../../api/Storage.api';
 import {SelectQueryBuilder} from 'typeorm';
 import {XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '../../../Constants';
-import {IMangoWalker, IMangoWalkerControl} from '../../../expressions/IMangoWalker';
-import {PAst} from '../../../expressions/ast/PAst';
-import {MangoExpression} from '../../../expressions/MangoExpression';
-import {Match} from '../../../expressions/operators/stage/Match';
 import {ISqlParam, TypeOrmSqlConditionsBuilder} from './TypeOrmSqlConditionsBuilder';
-import {Project} from '../../../expressions/operators/stage/Project';
-import {ValueRef} from '../../../expressions/ast/ValueRef';
-import {AbstractOperator} from '../../../expressions/operators/AbstractOperator';
-import {Value} from '../../../expressions/ast/Value';
-import {Group, GROUP_ID} from '../../../expressions/operators/stage/Group';
-import {PValue} from '../../../expressions/ast/PValue';
-import {Sort} from '../../../expressions/operators/stage/Sort';
-import {Skip} from '../../../expressions/operators/stage/Skip';
-import {Limit} from '../../../expressions/operators/stage/Limit';
-import {PObject} from '../../../expressions/ast/PObject';
-import {Count} from '../../../expressions/operators/arithmetic/Count';
+import {
+  AbstractOperator,
+  Count,
+  Group,
+  GROUP_ID,
+  IMangoWalker,
+  IMangoWalkerControl,
+  Limit,
+  MangoExpression,
+  Match,
+  PAst,
+  PObject,
+  Project,
+  PValue,
+  Skip,
+  Sort,
+  Value,
+  ValueRef
+} from '@allgemein/mango-expressions';
 
 
 export interface ISqlAggregateParam {
@@ -331,7 +335,8 @@ export class AggregateOp<T> implements IAggregateOp, IMangoWalker {
        * $project: {'year': {$year: '$dateField'}}
        *
        */
-      const insideOperator = ast.parent instanceof AbstractOperator && !(ast.parent instanceof Project);
+      const insideOperator = ast.parent instanceof AbstractOperator &&
+        !(ast.parent instanceof Project);
       const handler = this.controller.storageRef.getSchemaHandler();
       if (!insideOperator) {
         if (_.isString(valueRes)) {

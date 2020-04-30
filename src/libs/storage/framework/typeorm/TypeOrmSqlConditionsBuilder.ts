@@ -6,17 +6,17 @@ import {TypeOrmPropertyRef} from './schema/TypeOrmPropertyRef';
 import {IClassRef, IEntityRef} from 'commons-schema-api/browser';
 import {EntityManager, QueryBuilder, SelectQueryBuilder} from 'typeorm';
 import {DateUtils} from 'typeorm/util/DateUtils';
-import {PAst} from '../../../expressions/ast/PAst';
-import {IMangoWalker} from '../../../expressions/IMangoWalker';
-import {And} from '../../../expressions/operators/logic/And';
-import {Or} from '../../../expressions/operators/logic/Or';
-import {AbstractCompare} from '../../../expressions/operators/compare/AbstractCompare';
-import {PValue} from '../../../expressions/ast/PValue';
 import {StorageRef} from '../../../../libs/storage/StorageRef';
 import {AbstractSchemaHandler} from '../../AbstractSchemaHandler';
-import {Not} from '../../../expressions/operators/logic/Not';
-import {MangoExpression} from '../../../expressions/MangoExpression';
-import {MultiArgs} from '../../../expressions/ast/MultiArgs';
+import {
+  AbstractCompare,
+  And,
+  IMangoWalker,
+  MangoExpression,
+  MultiArgs, Not, Or,
+  PAst,
+  PValue
+} from '@allgemein/mango-expressions';
 
 
 export interface ISqlParam {
@@ -403,81 +403,6 @@ export class TypeOrmSqlConditionsBuilder<T> implements IMangoWalker {
       p: param
     };
   }
-
-  //
-  // $eq(condition: any, key: string = null, value: any = null) {
-  //   return this._erg2('=', key, value);
-  // }
-  //
-  //
-  // $isNull(condition: any, key: string = null, value: any = null) {
-  //   return this._erg2('IS NULL', key);
-  // }
-  //
-  //
-  // $isNotNull(condition: any, key: string = null, value: any = null) {
-  //   return this._erg2('IS NOT NULL', key);
-  // }
-  //
-  //
-  // $ne(condition: any, key: string = null, value: any = null) {
-  //   return this._erg2('<>', key, value);
-  // }
-  //
-  //
-  // $lt(condition: any, key: string = null, value: any = null) {
-  //   return this._erg2('<', key, value);
-  // }
-  //
-  //
-  // $lte(condition: any, key: string = null, value: any = null) {
-  //   return this.$le(condition, key, value);
-  // }
-  //
-  //
-  // $le(condition: any, key: string = null, value: any = null) {
-  //   return this._erg2('<=', key, value);
-  // }
-  //
-  //
-  // $gt(condition: any, key: string = null, value: any = null) {
-  //   return this._erg2('>', key, value);
-  // }
-  //
-  //
-  // $gte(condition: any, key: string = null, value: any = null) {
-  //   return this.$ge(condition, key, value);
-  // }
-  //
-  //
-  // $ge(condition: any, key: string = null, value: any = null) {
-  //   return this._erg2('>=', key, value);
-  // }
-  //
-  //
-  // $like(condition: any, key: string = null, value: any = null) {
-  //   return this._erg2('LIKE', key, value.replace(/%/g, '%%').replace(/\*/g, '%'));
-  // }
-  //
-  // $regex(condition: any, key: string = null, value: any = null) {
-  //   return this.handleOperation('regex', key, value);
-  // }
-  //
-  //
-  // $in(condition: any, key: string = null, value: any = null) {
-  //   return this._erg2('IN', key, value);
-  // }
-  //
-  //
-  // $nin(condition: any, key: string = null, value: any = null) {
-  //   return this._erg2('NOT IN', key, value);
-  // }
-  //
-  //
-  // // TODO
-  // $not(condition: any, key: string = null, value: any = null) {
-  //   return this._erg2('NOT', key, value);
-  // }
 
 
 }

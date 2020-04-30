@@ -9,8 +9,6 @@ services:
     image: mongo:4
     ports:
     - 127.0.0.1:27017:27017
-    volumes:
-    - ./local/mongodb:/data/db
     networks:
     - txs_base_net
 
@@ -18,8 +16,6 @@ services:
     image: redis:5
     ports:
       - 127.0.0.1:6379:6379
-    volumes:
-      - ./local/redis/db1:/data
     networks:
     - txs_base_net
 
@@ -27,8 +23,6 @@ services:
     image: redis:5
     ports:
       - 127.0.0.1:6380:6379
-    volumes:
-      - ./local/redis/db2:/data
     networks:
       - txs_base_net
 

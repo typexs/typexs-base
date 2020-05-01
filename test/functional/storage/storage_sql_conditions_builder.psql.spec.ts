@@ -6,6 +6,7 @@ import {Bootstrap} from '../../../src/Bootstrap';
 import {TypeOrmSqlConditionsBuilder} from '../../../src/libs/storage/framework/typeorm/TypeOrmSqlConditionsBuilder';
 import {TypeOrmEntityRegistry} from '../../../src/libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry';
 import {SelectQueryBuilder} from 'typeorm';
+import {Config} from 'commons-config';
 
 let bootstrap: Bootstrap;
 let CarCond: any = null;
@@ -17,8 +18,8 @@ class StorageSqlConditionsBuilderSpec {
 
   static async before() {
     // TestHelper.typeOrmReset();
-    // Bootstrap.reset();
-    // Config.clear();
+    Bootstrap.reset();
+    Config.clear();
     const appdir = path.join(__dirname, 'fake_app_conditions');
     bootstrap = await Bootstrap
       .configure({

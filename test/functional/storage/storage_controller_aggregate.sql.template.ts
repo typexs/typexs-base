@@ -96,6 +96,7 @@ export class StorageAcontrollerAggregateSqlTemplate {
   static async initAfter() {
     if (bootstrap) {
       await bootstrap.shutdown();
+      await bootstrap.getStorage().shutdown();
     }
   }
 

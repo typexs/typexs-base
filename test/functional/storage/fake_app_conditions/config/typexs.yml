@@ -4,10 +4,10 @@ app:
 
 
 
-storage:
-  default:
-    synchronize: true
-    type: sqlite
-    database: ':memory:'
+#storage:
+#  default:
+#    synchronize: true
+#    type: sqlite
+#    database: ':memory:'
 #    logging: all
 #    logger: simple-console

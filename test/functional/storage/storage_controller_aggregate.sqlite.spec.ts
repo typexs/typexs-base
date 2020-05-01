@@ -12,11 +12,21 @@ import {StorageAcontrollerAggregateSqlTemplate} from './storage_controller_aggre
 // let controller: StorageEntityController = null;
 
 @suite('functional/storage/controller_aggregate_sql (sqlite)')
-class StorageControllerSqlSpec extends StorageAcontrollerAggregateSqlTemplate {
+class StorageControllerAggregateSqliteSpec extends StorageAcontrollerAggregateSqlTemplate {
 
   static async before() {
     await StorageAcontrollerAggregateSqlTemplate
-      .initBefore();
+      .initBefore(
+        StorageControllerAggregateSqliteSpec,
+        {
+          storage: {
+            default: {
+              synchronize: true,
+              type: 'sqlite',
+              database: ':memory:'
+            }
+          }
+        });
   }
 
   static async after() {

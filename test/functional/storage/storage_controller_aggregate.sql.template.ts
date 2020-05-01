@@ -1,5 +1,5 @@
 // process.env.SQL_LOG = '1';
-
+import * as _ from 'lodash';
 import * as path from 'path';
 import {test} from 'mocha-typescript';
 import {expect} from 'chai';
@@ -22,7 +22,7 @@ let controller: StorageEntityController = null;
 export class StorageAcontrollerAggregateSqlTemplate {
 
 
-  static async initBefore() {
+  static async initBefore(klass: any, config: any = {}) {
     // TestHelper.typeOrmReset();
     Bootstrap.reset();
     Config.clear();
@@ -30,17 +30,19 @@ export class StorageAcontrollerAggregateSqlTemplate {
     CarSql = require('./fake_app_sql/entities/CarSql').CarSql;
     DriverSql = require('./fake_app_sql/entities/DriverSql').DriverSql;
     CarParam = require('./fake_app_sql/entities/CarParam').CarParam;
-
     const appdir = path.join(__dirname, 'fake_app_sql');
+
+    const _cfg = _.merge({
+      app: {
+        path: appdir
+      },
+      modules: {
+        paths: [__dirname + '/../../..']
+      }
+    }, config);
+
     bootstrap = await Bootstrap
-      .configure({
-        app: {
-          path: appdir
-        },
-        modules: {
-          paths: [__dirname + '/../../..']
-        }
-      })
+      .configure(_cfg)
       .prepareRuntime();
 
     bootstrap = await bootstrap.activateStorage();
@@ -51,6 +53,10 @@ export class StorageAcontrollerAggregateSqlTemplate {
     storageRef.addEntityType(DriverSql);
     storageRef.addEntityType(CarParam);
     controller = storageRef.getController();
+
+    if (klass['cleanup']) {
+      await klass['cleanup'](controller.getStorageRef());
+    }
 
     const param: any[] = [new CarParam(), new CarParam(), new CarParam(), new CarParam(), new CarParam()];
     param[0].doors = 4;
@@ -165,48 +171,48 @@ export class StorageAcontrollerAggregateSqlTemplate {
 
   @test
   async 'aggregate - pipeline - $project (with $year operator)'() {
-    const aggr = await controller.aggregate(CarParam, [{$project: {year: {$year: '$production'}}}]);
+    const aggr = await controller.aggregate(CarParam, [{$project: {year: {$year: '$production'}}}], {autoParseNumbers: true});
     expect(aggr).to.have.length(5);
     expect(aggr[XS_P_$COUNT]).to.be.eq(5);
     expect(aggr).to.be.deep.eq([
       {
-        'year': '1979'
+        'year': 1979
       },
       {
-        'year': '1989'
+        'year': 1989
       },
       {
-        'year': '1981'
+        'year': 1981
       },
       {
-        'year': '1980'
+        'year': 1980
       },
       {
-        'year': '1983'
+        'year': 1983
       }
     ]);
   }
 
   @test
   async 'aggregate - pipeline - $project (with $month operator)'() {
-    const aggr = await controller.aggregate(CarParam, [{$project: {month: {$month: '$production'}}}]);
+    const aggr = await controller.aggregate(CarParam, [{$project: {month: {$month: '$production'}}}], {autoParseNumbers: true});
     expect(aggr).to.have.length(5);
     expect(aggr[XS_P_$COUNT]).to.be.eq(5);
     expect(aggr).to.be.deep.eq([
       {
-        'month': '12'
+        'month': 12
       },
       {
-        'month': '04'
+        'month': 4
       },
       {
-        'month': '02'
+        'month': 2
       },
       {
-        'month': '03'
+        'month': 3
       },
       {
-        'month': '09'
+        'month': 9
       }
     ]);
   }
@@ -214,24 +220,24 @@ export class StorageAcontrollerAggregateSqlTemplate {
 
   @test
   async 'aggregate - pipeline - $project (with $day operator)'() {
-    const aggr = await controller.aggregate(CarParam, [{$project: {day: {$day: '$production'}}}]);
+    const aggr = await controller.aggregate(CarParam, [{$project: {day: {$day: '$production'}}}], {autoParseNumbers: true});
     expect(aggr).to.have.length(5);
     expect(aggr[XS_P_$COUNT]).to.be.eq(5);
     expect(aggr).to.be.deep.eq([
       {
-        'day': '04'
+        'day': 5
       },
       {
-        'day': '09'
+        'day': 10
       },
       {
-        'day': '01'
+        'day': 2
       },
       {
-        'day': '01'
+        'day': 2
       },
       {
-        'day': '21'
+        'day': 22
       }
     ]);
   }
@@ -251,9 +257,18 @@ export class StorageAcontrollerAggregateSqlTemplate {
 
   @test
   async 'aggregate - pipeline - $group'() {
-    const aggr = await controller.aggregate(CarParam, [{$group: {_id: '$year', count: {$sum: 1}}}]);
+    const aggr = await controller.aggregate(CarParam, [{$group: {_id: '$year', count: {$sum: 1}}}], {
+      sort: {
+        year: 'asc',
+        count: 'asc'
+      }
+    });
     // console.log(aggr);
     expect(aggr).to.have.length(4);
+
+    aggr.map(x => {
+      x.count = parseInt(x.count, 0);
+    });
 
     expect(aggr).to.be.deep.eq([
       {year: 1979, count: 2},
@@ -267,9 +282,17 @@ export class StorageAcontrollerAggregateSqlTemplate {
 
   @test
   async 'aggregate - pipeline - $group (as list) with $sum'() {
-    const aggr = await controller.aggregate(CarParam, [{$group: {_id: ['$year', '$ps'], count: {$sum: 1}}}]);
+    const aggr = await controller.aggregate(CarParam, [{
+      $group: {
+        _id: ['$year', '$ps'],
+        count: {$sum: 1}
+      }
+    }], {sort: {year: 'asc', ps: 'asc'}});
     // console.log(aggr);
     expect(aggr).to.have.length(5);
+    aggr.map(x => {
+      x.count = parseInt(x.count, 0);
+    });
 
     expect(aggr).to.be.deep.eq([
       {year: 1979, ps: 140, count: 1},
@@ -289,9 +312,14 @@ export class StorageAcontrollerAggregateSqlTemplate {
         _id: {yearAlias: '$year', doorsAlias: '$doors'},
         count: {$sum: 1}
       }
-    }]);
+    }], {sort: {year: 'asc', doors: 'asc'}});
     // console.log(aggr);
     expect(aggr).to.have.length(5);
+
+    aggr.map(x => {
+      x.count = parseInt(x.count, 0);
+    });
+
 
     expect(aggr).to.be.deep.eq([
       {yearAlias: 1979, doorsAlias: 2, count: 1},
@@ -311,6 +339,11 @@ export class StorageAcontrollerAggregateSqlTemplate {
         count: {$count: '*'}
       }
     }]);
+    aggr.map(x => {
+      x.count = parseInt(x.count, 0);
+    });
+
+
     // console.log(aggr);
     expect(aggr).to.have.length(1);
     expect(aggr).to.be.deep.eq([{count: 5}]);
@@ -328,7 +361,7 @@ export class StorageAcontrollerAggregateSqlTemplate {
         count: {$count: '$year'},
         avg: {$avg: '$year'},
       }
-    }]);
+    }], {autoParseNumbers: true});
     // console.log(aggr);
     expect(aggr).to.have.length(1);
     expect(aggr).to.be.deep.eq([{min: 1979, max: 1989, sum: 9912, count: 5, avg: 1982.4}]);
@@ -338,7 +371,7 @@ export class StorageAcontrollerAggregateSqlTemplate {
 
   @test
   async 'aggregate - pipeline - $group with $max, $min, $sum, $avg, $count'() {
-    const aggr = await controller.aggregate(CarParam, [{
+    let aggr = await controller.aggregate(CarParam, [{
       $group: {
         _id: {doors: '$doors'},
         countPS: {$count: '$ps'},
@@ -347,18 +380,11 @@ export class StorageAcontrollerAggregateSqlTemplate {
         minSpeed: {$min: '$maxSpeed'},
         maxSpeed: {$max: '$maxSpeed'}
       }
-    }]);
+    }], {autoParseNumbers: true});
     // console.log(aggr);
+    aggr = _.orderBy(aggr, ['avgPS']);
     expect(aggr).to.have.length(3);
     expect(aggr).to.be.deep.eq([
-      {
-        doors: 2,
-        countPS: 2,
-        sumPS: 460,
-        avgPS: 230,
-        minSpeed: 120,
-        maxSpeed: 200
-      },
       {
         doors: 3,
         countPS: 2,
@@ -374,7 +400,15 @@ export class StorageAcontrollerAggregateSqlTemplate {
         avgPS: 140,
         minSpeed: 100,
         maxSpeed: 100
-      }
+      },
+      {
+        doors: 2,
+        countPS: 2,
+        sumPS: 460,
+        avgPS: 230,
+        minSpeed: 120,
+        maxSpeed: 200
+      },
     ]);
   }
 
@@ -455,14 +489,14 @@ export class StorageAcontrollerAggregateSqlTemplate {
     const aggr = await controller.aggregate(CarParam, [
       {$group: {_id: {doors: '$doors', year: '$year'}}},
       {$limit: 2}
-    ]);
+    ], {sort: {year: 'asc', doors: 'asc'}});
     // console.log(aggr);
     expect(aggr).to.have.length(2);
     expect(aggr[XS_P_$LIMIT]).to.be.eq(2);
     expect(aggr[XS_P_$COUNT]).to.be.eq(5);
     expect(aggr).to.be.deep.eq([
       {year: 1979, doors: 2},
-      {year: 1980, doors: 2}
+      {year: 1979, doors: 4}
     ]);
   }
 
@@ -471,15 +505,19 @@ export class StorageAcontrollerAggregateSqlTemplate {
   async 'aggregate - pipeline - $group + $skip'() {
     const aggr = await controller.aggregate(CarParam, [
       {$group: {_id: {doors: '$doors', year: '$year'}}},
+      {$limit: 10}, // needed for mysql
       {$skip: 2}
-    ]);
+    ], {sort: {year: 'asc'}});
     expect(aggr).to.have.length(3);
-    expect(aggr[XS_P_$LIMIT]).to.be.eq(0);
+    expect(aggr[XS_P_$LIMIT]).to.be.eq(10);
     expect(aggr[XS_P_$COUNT]).to.be.eq(5);
     expect(aggr).to.be.deep.eq([
+      {
+        doors: 2,
+        year: 1980
+      },
       {year: 1985, doors: 3},
-      {year: 1989, doors: 3},
-      {year: 1979, doors: 4}
+      {year: 1989, doors: 3}
     ]);
   }
 
@@ -489,56 +527,62 @@ export class StorageAcontrollerAggregateSqlTemplate {
       {$group: {_id: {doors: '$doors', year: '$year'}}},
       {$skip: 2},
       {$limit: 2}
-    ]);
+    ], {sort: {year: 'asc'}});
     expect(aggr).to.have.length(2);
     expect(aggr[XS_P_$LIMIT]).to.be.eq(2);
     expect(aggr[XS_P_$COUNT]).to.be.eq(5);
     expect(aggr).to.be.deep.eq([
+      {
+        doors: 2,
+        year: 1980
+      },
       {year: 1985, doors: 3},
-      {year: 1989, doors: 3}
     ]);
   }
 
 
   @test
   async 'aggregate - pipeline - $group by $date'() {
-    const aggr = await controller.aggregate(CarParam, [
+    let aggr = await controller.aggregate(CarParam, [
       {$group: {_id: {date: {$date: '$production'}}}}
     ]);
+
     expect(aggr).to.have.length(5);
     expect(aggr[XS_P_$LIMIT]).to.be.eq(0);
     expect(aggr[XS_P_$COUNT]).to.be.eq(5);
+    aggr = _.orderBy(aggr, ['date']);
     expect(aggr).to.be.deep.eq([
-      {date: '1979-12-04'},
-      {date: '1980-03-01'},
-      {date: '1981-02-01'},
-      {date: '1983-09-21'},
-      {date: '1989-04-09'},
+      {date: '1979-12-05'},
+      {date: '1980-03-02'},
+      {date: '1981-02-02'},
+      {date: '1983-09-22'},
+      {date: '1989-04-10'},
     ]);
   }
 
 
   @test
   async 'aggregate - pipeline - $group by $month'() {
-    const aggr = await controller.aggregate(CarParam, [
+    let aggr = await controller.aggregate(CarParam, [
       {$group: {_id: {month: {$month: '$production'}}}}
-    ]);
+    ], {autoParseNumbers: true});
     expect(aggr).to.have.length(5);
     expect(aggr[XS_P_$LIMIT]).to.be.eq(0);
     expect(aggr[XS_P_$COUNT]).to.be.eq(5);
+    aggr = _.orderBy(aggr, ['month']);
     expect(aggr).to.be.deep.eq([
-      {month: '02'},
-      {month: '03'},
-      {month: '04'},
-      {month: '09'},
-      {month: '12'}
+      {month: 2},
+      {month: 3},
+      {month: 4},
+      {month: 9},
+      {month: 12}
     ]);
   }
 
 
   @test
   async 'aggregate - pipeline - $group between $dates'() {
-    const aggr = await controller.aggregate(CarParam, [
+    let aggr = await controller.aggregate(CarParam, [
       {
         $match: {
           $and: [
@@ -548,20 +592,26 @@ export class StorageAcontrollerAggregateSqlTemplate {
         }
       },
       {$group: {_id: {month: {$month: '$production'}}}}
-    ]);
+    ], {autoParseNumbers: true});
     expect(aggr).to.have.length(3);
     expect(aggr[XS_P_$LIMIT]).to.be.eq(0);
     expect(aggr[XS_P_$COUNT]).to.be.eq(3);
+    aggr = _.orderBy(aggr, ['month']);
     expect(aggr).to.be.deep.eq([
-      {month: '02'},
-      {month: '03'},
-      {month: '09'},
+      {month: 2},
+      {month: 3},
+      {month: 9},
     ]);
   }
 
 
   @test
   async 'aggregate - pipeline - $group + $match'() {
+    // not suported in postres
+    if (controller.getStorageRef().dbType === 'postgres') {
+      return;
+    }
+
     const aggr = await controller.aggregate(CarParam, [
       {
         $group: {
@@ -574,7 +624,7 @@ export class StorageAcontrollerAggregateSqlTemplate {
           count: {$ge: 2}
         }
       }
-    ]);
+    ], {autoParseNumbers: true});
     // console.log(aggr);
     expect(aggr).to.have.length(1);
     expect(aggr).to.be.deep.eq([{byYear: 1979, count: 2}]);
@@ -590,7 +640,7 @@ export class StorageAcontrollerAggregateSqlTemplate {
           nr: {$sum: {$multiply: ['$doors', '$ps']}}
         }
       }
-    ]);
+    ], {autoParseNumbers: true});
     // console.log(aggr);
     expect(aggr).to.have.length(1);
     expect(aggr).to.be.deep.eq([{nr: 2260}]);

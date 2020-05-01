@@ -12,11 +12,11 @@ export class SqliteSchemaHandler extends AbstractSchemaHandler {
 
     const fn = {
 
-      year: (field: string) => 'strftime(\'%Y\', ' + field + ')',
-      month: (field: string) => 'strftime(\'%m\', ' + field + ')',
-      day: (field: string) => 'strftime(\'%d\', ' + field + ')',
-      date: (field: string) => 'strftime(\'%Y-%m-%d\', ' + field + ')',
-      timestamp: (field: string) => 'strftime(\'%s\', ' + field + ')',
+      year: (field: string) => 'cast(strftime(\'%Y\', ' + field + ', \'localtime\') as integer)',
+      month: (field: string) => 'cast(strftime(\'%m\', ' + field + ', \'localtime\') as integer)',
+      day: (field: string) => 'cast(strftime(\'%d\', ' + field + ', \'localtime\') as integer)',
+      date: (field: string) => 'strftime(\'%Y-%m-%d\', ' + field + ', \'localtime\')',
+      timestamp: (field: string) => 'cast(strftime(\'%s\', ' + field + ', \'localtime\') as integer)',
       regex: (k: string, field: string | RegExp, options: string) => {
         if (_.isString(field)) {
           return k + ' REGEXP ' + field;
@@ -29,7 +29,7 @@ export class SqliteSchemaHandler extends AbstractSchemaHandler {
       },
       dateToString:
         (field: string, format: string = '%Y-%m-%d %H:%M:%S' /* +, timezone: any, onNull: any */) =>
-          'strftime(\'' + format + '\', ' + field + ')',
+          'strftime(\'' + format + '\', ' + field + ', \'localtime\')',
     };
 
     _.keys(fn).forEach(x => {

@@ -20,4 +20,10 @@ export interface IAggregateOptions {
    * disable the count query
    */
   disableCount?: boolean;
+
+
+  /**
+   * enable auto parse of numbers
+   */
+  autoParseNumbers?: boolean;
 }

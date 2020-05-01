@@ -32,7 +32,9 @@ export class PostgresSchemaHandler extends AbstractSchemaHandler {
       year: (field: string) => 'EXTRACT(YEAR FROM ' + field + ')',
       month: (field: string) => 'EXTRACT(MONTH FROM ' + field + ')',
       day: (field: string) => 'EXTRACT(DAY FROM ' + field + ')',
-      date: (field: string) => 'TO_CHAR(' + field + ', \'YYYY-MM-DDTHH24:MI:SS.MS\')',
+
+      // sum: (field: string) => 'SUM(' + field + '::bigint)',
+      date: (field: string) => 'TO_CHAR(' + field + ', \'YYYY-MM-DD\')',
       timestamp: (field: string) => 'EXTRACT(EPOCH FROM ' + field + ')',
       regex: (k: string, field: string | RegExp, options: string) => {
         if (_.isString(field)) {
@@ -42,7 +44,6 @@ export class PostgresSchemaHandler extends AbstractSchemaHandler {
         } else {
           throw new NotYetImplementedError('regex for ' + k + ' with value ' + field);
         }
-
       },
       dateToString:
         (field: string, format: string = '%Y-%m-%d %H:%M:%S' /* +, timezone: any, onNull: any */) =>

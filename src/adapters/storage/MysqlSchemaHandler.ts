@@ -24,6 +24,7 @@ export class MysqlSchemaHandler extends AbstractSchemaHandler {
         }
 
       },
+      date: (field: string) => 'DATE_FORMAT(' + field + ',\'%Y-%m-%d\')',
       dateToString:
         (field: string, format: string = '%Y-%m-%d %H:%M:%S' /* +, timezone: any, onNull: any */) =>
           'strftime(\'' + format + '\', ' + field + ')',

@@ -163,9 +163,16 @@ export class AggregateOp<T> implements IAggregateOp, IMangoWalker {
         try {
           const sql = this.queryBuilder.getQueryAndParameters();
           const countQb = await repo.query(
-            'SELECT COUNT( * ) as cnt FROM ( ' + sql[0] + ' )', sql[1]
+            'SELECT COUNT( * ) as cnt FROM ( ' + sql[0] + ' ) as countQuery', sql[1]
           );
-          count = countQb.shift()['cnt'];
+          if (countQb.length === 1) {
+            const cntValue = countQb.shift()['cnt'];
+            if (/\d+/.test(cntValue)) {
+              count = parseInt(cntValue, 0);
+            } else {
+              count = -2;
+            }
+          }
         } catch (e) {
           count = -2;
         }
@@ -182,8 +189,15 @@ export class AggregateOp<T> implements IAggregateOp, IMangoWalker {
       }
 
       if (this.sort) {
+        const nullSupport = this.controller.getStorageRef().dbType === 'postgres';
         _.keys(this.sort).forEach(k => {
-          this.queryBuilder.addOrderBy(k, this.sort[k] === 'asc' ? 'ASC' : 'DESC', this.sort[k] === 'asc' ? 'NULLS FIRST' : 'NULLS LAST');
+          if (nullSupport) {
+            this.queryBuilder.addOrderBy(k, this.sort[k] === 'asc' ? 'ASC' : 'DESC',
+              this.sort[k] === 'asc' ? 'NULLS FIRST' : 'NULLS LAST'
+            );
+          } else {
+            this.queryBuilder.addOrderBy(k, this.sort[k] === 'asc' ? 'ASC' : 'DESC');
+          }
         });
       }
 
@@ -193,11 +207,23 @@ export class AggregateOp<T> implements IAggregateOp, IMangoWalker {
       } else {
         const _results = await this.queryBuilder.getRawMany();
         // remove aliases
+        const autoParseNumbers = _.get(this.options, 'autoParseNumbers', false);
         for (const res of _results) {
           const newRes: any = {};
           _.keys(res).forEach(k => {
             const newKey = k.replace(this.alias + '_', '');
-            newRes[newKey] = res[k];
+            let v = res[k];
+
+            if (autoParseNumbers) {
+              if (_.isString(v)) {
+                if (/^\d+$/.test(v)) {
+                  v = parseInt(v, 0);
+                } else if (/^\d+\.\d+$/.test(v)) {
+                  v = parseFloat(v);
+                }
+              }
+            }
+            newRes[newKey] = v;
           });
           results.push(newRes);
         }

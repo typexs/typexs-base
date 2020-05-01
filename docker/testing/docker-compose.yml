@@ -8,16 +8,16 @@ services:
   typexs_base_test_mongo:
     image: mongo:4
     ports:
-    - 127.0.0.1:27017:27017
+      - 127.0.0.1:27017:27017
     networks:
-    - txs_base_net
+      - txs_base_net
 
   typexs_base_test_redis:
     image: redis:5
     ports:
       - 127.0.0.1:6379:6379
     networks:
-    - txs_base_net
+      - txs_base_net
 
   typexs_base_test_redis2:
     image: redis:5
@@ -30,6 +30,11 @@ services:
     image: postgres:11
     ports:
       - 127.0.0.1:5432:5432
+    environment:
+      POSTGRES_DATABASES: txsbase
+      POSTGRES_USER: txsbase
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_PASSWORD:
     networks:
       - txs_base_net
 
@@ -37,5 +42,10 @@ services:
     image: mysql:5
     ports:
       - 127.0.0.1:3306:3306
+    environment:
+      MYSQL_DATABASE: txsbase
+      MYSQL_USER: txsbase
+      MYSQL_ROOT_PASSWORD: txsbase
+      MYSQL_PASSWORD: txsbase
     networks:
       - txs_base_net

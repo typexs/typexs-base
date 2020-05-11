@@ -15,7 +15,7 @@ import {TestHelper} from '../TestHelper';
 import {SpawnHandle} from '../SpawnHandle';
 import {TaskCommand} from '../../../src/commands/TaskCommand';
 import {SimpleTaskWithLog} from './tasks/SimpleTaskWithLog';
-import {TaskExecutionRequestFactory} from '../../../src/libs/tasks/worker/TaskExecutionRequestFactory';
+import {TaskRequestFactory} from '../../../src/libs/tasks/worker/TaskRequestFactory';
 import {TaskMonitorWorker} from '../../../src/workers/TaskMonitorWorker';
 import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
 import {Tasks} from '../../../src/libs/tasks/Tasks';
@@ -198,8 +198,8 @@ class TasksWorkerSpec {
     const tasks: Tasks = Container.get(Tasks.NAME);
     const ref = tasks.addTask(SimpleWorkerTask);
 
-    const execReq = Container.get(TaskExecutionRequestFactory).createRequest();
-    const results = await execReq.run([ref.name]);
+    const execReq = Container.get(TaskRequestFactory).executeRequest();
+    const results = await execReq.create([ref.name]).run();
     await TestHelper.waitFor(() => events.length >= 4, 100);
 
     // ---- finished
@@ -563,12 +563,11 @@ class TasksWorkerSpec {
     const l = new T2();
     await EventBus.register(l);
 
-
     const tasks: Tasks = Container.get(Tasks.NAME);
     const ref = tasks.addTask(SimpleTaskWithLog);
 
-    const execReq = Container.get(TaskExecutionRequestFactory).createRequest();
-    const results = await execReq.run([ref.name]);
+    const execReq = Container.get(TaskRequestFactory).executeRequest();
+    const results = await execReq.create([ref.name]).run();
     await TestHelper.waitFor(() => !!events.find(x => x.state === 'stopped'));
 
     await (Container.get(TaskMonitorWorker) as TaskMonitorWorker).queue.await();

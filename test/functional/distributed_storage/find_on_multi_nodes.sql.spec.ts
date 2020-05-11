@@ -41,7 +41,12 @@ class DistributedQuerySpec {
         logging: {enable: LOG_EVENT, level: 'debug'},
         modules: {paths: [__dirname + '/../../..']},
         storage: {default: TEST_STORAGE_OPTIONS},
-        eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}},
+        eventbus: {
+          default: <IEventBusConfiguration>{
+            adapter: 'redis',
+            extra: {host: '127.0.0.1', port: 6379}
+          }
+        },
         // CONFIG ADDED
         workers: {access: [{name: 'DistributedQueryWorker', access: 'allow'}]}
       });

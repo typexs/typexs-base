@@ -10,15 +10,30 @@ export interface ITaskRunnerOptions {
   /**
    * NodeId of task execution caller
    */
-  nodeId: string;
+  nodeId?: string;
 
   /**
    * Target IDs (NodeId's were task should be executed)
    */
-  targetIds: string[];
+  targetIds?: string[];
 
   /**
    * Is a local execution
    */
-  local: boolean;
+  local?: boolean;
+
+  /**
+   * skip throw error when required parameter found
+   */
+  skipRequiredThrow?: boolean;
+
+  /**
+   * Number of parallel starting tasks if dependencies exist.
+   */
+  parallel?: number;
+
+  /**
+   * DEPRECATED, for testing reasons allows running in test mode
+   */
+  dryMode?: boolean;
 }

@@ -5,7 +5,7 @@ import {ClassLoader, PlatformUtils} from 'commons-base';
 import {Config} from 'commons-config';
 import {ITaskRunnerOptions} from './ITaskRunnerOptions';
 import {Container} from 'typedi';
-import {TaskExecutionRequestFactory} from './worker/TaskExecutionRequestFactory';
+import {TaskRequestFactory} from './worker/TaskRequestFactory';
 import {ITaskExec} from './ITaskExec';
 import {K_CLS_TASKS, TASK_RUNNER_SPEC} from './Constants';
 import {RuntimeLoader} from '../../base/RuntimeLoader';
@@ -108,6 +108,26 @@ export class TasksHelper {
     return taskSpec.map(x => _.isString(x) ? x : x.name);
   }
 
+
+  static extractOptions(argv: ITaskExec) {
+    const keys: string[] = [
+      'executionConcurrency', 'skipRequiredThrow', 'skipTargetCheck',
+      'targetId', 'targetIds', 'isLocal', 'waitForRemoteResults',
+      'remote', 'executeOnMultipleNodes',
+      'randomRemoteNodeSelection', 'timeout'
+    ];
+
+    const options = {};
+    keys.map(x => {
+      if (!_.isUndefined(argv[x])) {
+        options[x] = argv[x];
+        delete argv[x];
+      }
+    });
+    return options;
+
+  }
+
   /**
    * Helper analysing parameters and executes local or remote execution
    *
@@ -120,16 +140,17 @@ export class TasksHelper {
       throw new Error('no task definition found');
     }
 
+    const options: ITaskExec = this.extractOptions(argv);
     const taskNames = this.getTaskNames(taskSpec);
     const tasksReg: Tasks = Container.get(Tasks.NAME);
     const tasks = tasksReg.getTasks(taskNames);
-    const targetId = _.get(argv, 'targetId', null);
-    let isLocal = _.get(argv, 'isLocal', true);
-    const isRemote = _.get(argv, 'remote', false);
-    const skipTargetCheck = _.get(argv, 'skipTargetCheck', false);
+    const targetId = _.get(options, 'targetId', null);
+    let isLocal = _.get(options, 'isLocal', true);
+    const isRemote = _.get(options, 'remote', false);
+    const skipTargetCheck = _.get(options, 'skipTargetCheck', false);
 
-    if (argv.executionConcurrency) {
-      if (argv.executionConcurrency !== 0) {
+    if (options.executionConcurrency) {
+      if (options.executionConcurrency !== 0) {
         const registry = Container.get(TaskRunnerRegistry.NAME) as TaskRunnerRegistry;
         const counts = registry.getTaskCounts(taskNames);
         if (!_.isEmpty(counts)) {
@@ -151,17 +172,20 @@ export class TasksHelper {
     const localPossible = _.uniq(taskNames).length === tasks.length;
     if (!isLocal) {
       Log.debug('task command: before request fire');
-      const execReq = Container.get(TaskExecutionRequestFactory).createRequest();
-      const results = await execReq.run(taskSpec, argv, {
-        targetIds: targetId ? [targetId] : [],
-        skipTargetCheck: skipTargetCheck
-      });
+      const execReq = Container.get(TaskRequestFactory).executeRequest();
+      const results = await execReq.create(
+        taskSpec,
+        argv,
+        {
+          targetIds: targetId ? [targetId] : [],
+          skipTargetCheck: skipTargetCheck
+        }).run();
       Log.debug('task command: event enqueue results', results);
       return results;
     } else if (isLocal) {
 
       if (localPossible) {
-        const options: any = {
+        const runnerOptions: any = {
           parallel: 5,
           dry_mode: _.get(argv, 'dry-outputMode', false),
           local: true
@@ -194,7 +218,7 @@ export class TasksHelper {
           }
         }
 
-        const runner = TasksHelper.runner(tasksReg, taskSpec, options);
+        const runner = TasksHelper.runner(tasksReg, taskSpec, runnerOptions);
         for (const p in parameters) {
           if (parameters.hasOwnProperty(p)) {
             await runner.setIncoming(p, parameters[p]);

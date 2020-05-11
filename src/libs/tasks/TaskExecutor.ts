@@ -1,10 +1,223 @@
-export class TaskExecutor {
+import {Inject} from 'typedi';
+import {Tasks} from './Tasks';
+import {TaskRunnerRegistry} from './TaskRunnerRegistry';
+import {TASK_RUNNER_SPEC} from './Constants';
+import {ITaskExec} from './ITaskExec';
+import * as _ from 'lodash';
+import {ILoggerApi} from '../../libs/logging/ILoggerApi';
+import {Log} from '../../libs/logging/Log';
+import {TaskRequestFactory} from './worker/TaskRequestFactory';
+import {TasksHelper} from './TasksHelper';
+import {EventEmitter} from 'events';
+import {ITaskRunnerOptions} from './ITaskRunnerOptions';
+import {TaskEvent} from './worker/TaskEvent';
+import {EventBus, subscribe, unsubscribe} from 'commons-eventbus';
+import {TaskFuture} from './worker/execute/TaskFuture';
+import {ITaskRunnerResult} from './ITaskRunnerResult';
 
-  executeLocally() {
+/**
+ * Class controlling local or remote tasks execution.
+ *
+ * Initialize by
+ * ```
+ * const executor = Injector.create(TaskExecutor);
+ * ```
+ *
+ * Tasks can be called by name or by task specs.
+ *
+ */
 
+const DEFAULT_TASK_EXEC: ITaskExec = {
+  skipTargetCheck: false,
+  executionConcurrency: null,
+  skipRequiredThrow: false,
+  targetId: null,
+  targetIds: null,
+  isLocal: true,
+  remote: false,
+  executeOnMultipleNodes: 1,
+  randomRemoteNodeSelection: true,
+  waitForRemoteResults: true,
+  timeout: 5000
+};
+
+const TASK_PREFIX = 'task_done_';
+
+// TODO Arguments from incoming!!!
+export class TaskExecutor extends EventEmitter {
+
+  private options: ITaskExec;
+
+  private params: any;
+
+  private spec: TASK_RUNNER_SPEC[];
+
+  private taskNames: string[];
+
+  private targetIds: string[];
+
+
+  @Inject(Tasks.NAME)
+  tasks: Tasks;
+
+  @Inject(TaskRunnerRegistry.NAME)
+  taskRunnerRegistry: TaskRunnerRegistry;
+
+  @Inject(() => TaskRequestFactory)
+  requestFactory: TaskRequestFactory;
+
+  constructor() {
+    super();
   }
 
-  executeOnWorker() {
+  logger: ILoggerApi = Log.getLoggerFor(TaskExecutor);
 
+  setOptions(options: ITaskExec) {
+    this.options = options || {skipTargetCheck: false};
+    _.defaults(this.options, DEFAULT_TASK_EXEC);
+  }
+
+  /**
+   * Initialize the task executor
+   *
+   * @param taskSpec
+   * @param _argv
+   */
+  create(taskSpec: TASK_RUNNER_SPEC[], param: any = {}, _argv: ITaskExec) {
+    // check nodes for tasks
+    if (!_.isArray(taskSpec) || _.isEmpty(taskSpec)) {
+      throw new Error('no task definition found');
+    }
+    this.params = param;
+
+    this.spec = taskSpec;
+    this.setOptions(_argv);
+
+    this.taskNames = TasksHelper.getTaskNames(taskSpec);
+
+    if (this.options.executionConcurrency) {
+      if (this.options.executionConcurrency !== 0) {
+        const counts = this.taskRunnerRegistry.getTaskCounts(this.taskNames);
+        if (!_.isEmpty(counts)) {
+          const max = _.max(_.values(counts));
+          if (max >= this.options.executionConcurrency) {
+            this.logger.warn(
+              `task command: ` +
+              `maximal concurrent process of ${this.taskNames} reached (${max} < ${this.options.executionConcurrency}).`);
+          }
+        }
+      }
+    }
+
+    if (this.options.targetId && !this.options.remote) {
+      this.targetIds = [this.options.targetId];
+      this.options.isLocal = false;
+      this.options.remote = true;
+    } else if (this.options.targetIds && !this.options.remote) {
+      this.targetIds = this.options.targetIds;
+      this.options.remote = true;
+      this.options.isLocal = false;
+    } else if (this.options.remote) {
+      this.options.isLocal = false;
+    } else {
+      this.options.remote = false;
+      this.options.isLocal = true;
+    }
+
+
+    return this;
+  }
+
+
+  async run(asFuture: boolean = false): Promise<ITaskRunnerResult | ITaskRunnerResult[] | TaskFuture> {
+    if (!this.options.isLocal) {
+      return this.executeOnWorker(asFuture);
+    } else {
+      return this.executeLocally();
+    }
+  }
+
+  /**
+   * Task will be executed locally
+   */
+  async executeLocally() {
+    const tasks = this.tasks.getTasks(this.taskNames);
+    const localPossible = _.uniq(this.taskNames).length === tasks.length;
+
+    if (localPossible) {
+      const options: ITaskRunnerOptions = {
+        parallel: 5,
+        dryMode: _.get(this.options, 'dry-outputMode', false),
+        local: true,
+      };
+
+      // add parameters
+      const parameters: any = {};
+      _.keys(this.params).map(k => {
+        if (!/^_/.test(k)) {
+          parameters[_.snakeCase(k)] = this.options[k];
+        }
+      });
+
+      const runner = TasksHelper.runner(this.tasks, this.spec, options);
+      for (const p in parameters) {
+        if (parameters.hasOwnProperty(p)) {
+          await runner.setIncoming(p, parameters[p]);
+        }
+      }
+      return runner.run();
+    } else {
+      this.logger.error('There are no tasks: ' + this.spec.join(', '));
+    }
+    return null;
+  }
+
+
+  async executeOnWorker(asFuture: boolean = false) {
+    this.logger.debug(this.taskNames + 'before request fire');
+    let execReq = this.requestFactory.executeRequest();
+    execReq = execReq.create(
+      this.spec,
+      this.params,
+      {
+        targetIds: this.targetIds,
+        skipTargetCheck: this.options.skipTargetCheck,
+        timeout: this.options.timeout
+      });
+    let future: TaskFuture = null;
+    if (this.options.waitForRemoteResults) {
+      future = await execReq.future();
+    }
+
+    const enqueueEvents = await execReq.run();
+    if (enqueueEvents.length === 0) {
+      // ERROR!!! NO RESPONSE
+      throw new Error('no enqueue responses arrived');
+    }
+
+    if (future) {
+      if (asFuture) {
+        return future;
+      }
+      return future.await();
+    }
+    return null;
+  }
+
+
+  async register() {
+    if (this.options.waitForRemoteResults) {
+      subscribe(TaskEvent)(this, 'onTaskEvent');
+      await EventBus.register(this);
+    }
+  }
+
+  async unregister() {
+    try {
+      await EventBus.unregister(this);
+      unsubscribe(this, TaskEvent, 'onTaskEvent');
+    } catch (e) {
+
+    }
   }
 }

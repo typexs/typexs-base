@@ -79,46 +79,28 @@ export abstract class AbstractMessage<REQ extends AbstractEvent, RES extends Abs
   }
 
 
-  // async run(...args: any[]) {
-  //   this.start = new Date();
-  //
-  //   // ....
-  //
-  //
-  //   // register as bus
-  //   await EventBus.register(this);
-  //   Log.debug('fire query event with id: ' + this.saveEvent.queryId + ' to targets ' + this.targetIds.join(', '));
-  //
-  //   try {
-  //     this.start = new Date();
-  //     await Promise.all([this.ready(), EventBus.postAndForget(this.saveEvent)]);
-  //   } catch (err) {
-  //     Log.error(err);
-  //   }
-  //
-  //   await EventBus.unregister(this);
-  //   this.removeAllListeners();
-  // }
-
-  beforeRun?(req: REQ): void {
+  beforeSend?(req: REQ): void {
   }
+
 
   async send(req: REQ): Promise<any[]> {
     this.start = new Date();
     if (_.isEmpty(this.targetIds) && this.nodeIds.length === 0) {
       this.targetIds = this.getSystem().nodes.map(n => n.nodeId);
     }
-
-    if (this.beforeRun) {
-      await this.beforeRun(req);
-    }
-
     this.request = req || Reflect.construct(this.getReqClass(), []);
     this.request.nodeId = this.getSystem().node.nodeId;
     this.request.targetIds = _.uniq(this.targetIds);
+
+    if (this.beforeSend) {
+      await this.beforeSend(this.request);
+    }
+
     subscribe(this.getResClass())(this, 'onResults');
 
-    this.logger.debug('REQ: ' + this.getSystem().node.nodeId + ' => ' + this.request.id + ' ' + this.request.targetIds);
+    this.logger.debug('REQ: ' +
+      this.getSystem().node.nodeId + ' => ' +
+      this.request.id + ' ' + this.request.targetIds);
     await EventBus.register(this);
     const ready = this.ready();
     await EventBus.postAndForget(this.request);
@@ -155,12 +137,26 @@ export abstract class AbstractMessage<REQ extends AbstractEvent, RES extends Abs
   }
 
 
+  /**
+   * Overrideable method to additionaly check if response is valid.
+   *
+   * If false the response will be ignored in onResults.
+   *
+   * @param res
+   */
+  requestCheck(res: RES) {
+    return true;
+  }
+
+
   onResults(res: RES) {
     if (!this.active) {
       return;
     }
 
-    this.logger.debug('RES: ' + this.getSystem().node.nodeId + ' => ' + this.request.id + ' ' + res.reqEventId);
+    this.logger.debug('RES: ' +
+      this.request.id + ' ' + res.respId + '=>' + res.id +
+      ' [reqId=' + res.reqEventId + ']');
 
     // has query req
     if (!this.request || res.reqEventId !== this.request.id) {
@@ -176,6 +172,11 @@ export abstract class AbstractMessage<REQ extends AbstractEvent, RES extends Abs
     if (this.targetIds.indexOf(res.nodeId) === -1) {
       return;
     }
+
+    if (!this.requestCheck(res)) {
+      return;
+    }
+
     _.remove(this.targetIds, x => x === res.nodeId);
 
     res['__nodeId__'] = res.nodeId;
@@ -225,40 +226,6 @@ export abstract class AbstractMessage<REQ extends AbstractEvent, RES extends Abs
 
     });
   }
-
-  //
-  //
-  // ready() {
-  //   return new Promise((resolve, reject) => {
-  //     const t = setTimeout(() => {
-  //       this.emit('postprocess', new Error('timeout error [' + this.timeout +
-  //         '] after duration of ' + (Date.now() - this.start.getTime()) + 'ms'));
-  //       clearTimeout(t);
-  //     }, this.timeout);
-  //
-  //     this.once('finished', (err: Error | Error[], data: any) => {
-  //       clearTimeout(t);
-  //       this.logger.debug('finished duration=' + (this.stop.getTime() - this.start.getTime()) + 'ms');
-  //
-  //
-  //       if (!_.isEmpty(err)) {
-  //         if (_.isArray(err)) {
-  //           this.logger.error(...err);
-  //         } else {
-  //           this.logger.error(err);
-  //         }
-  //         if (!_.isEmpty(data)) {
-  //           resolve(data);
-  //         } else {
-  //           reject(err);
-  //         }
-  //       } else {
-  //         resolve(data);
-  //       }
-  //     });
-  //
-  //   });
-  // }
 
 
 }

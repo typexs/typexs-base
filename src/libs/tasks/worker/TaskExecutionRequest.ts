@@ -21,7 +21,7 @@ export class TaskExecutionRequest extends EventEmitter {
 
   private tasks: Tasks;
 
-  private timeout = 5000;
+  private timeout = 10000;
 
   private event: TaskEvent;
 
@@ -43,8 +43,11 @@ export class TaskExecutionRequest extends EventEmitter {
 
   async run(taskSpec: TASK_RUNNER_SPEC[],
             parameters: any = {},
-            options: ITaskExecutionRequestOptions = {targetIds: [], skipTargetCheck: false}): Promise<TaskEvent[]> {
+            options: ITaskExecutionRequestOptions = {
+              targetIds: [], skipTargetCheck: false
+            }): Promise<TaskEvent[]> {
 
+    this.timeout = _.get(options, 'timeout', 10000);
 
     if (!options.skipTargetCheck) {
       const workerIds = _.concat([], [this.system.node], this.system.nodes)
@@ -87,7 +90,7 @@ export class TaskExecutionRequest extends EventEmitter {
 
 
     await EventBus.register(this);
-    Log.debug('fire execution result: ', this.event);
+    Log.debug('fire execution result ' + this.event.nodeId + '->' + this.event.id);
     let _err: Error = null;
     try {
       await Promise.all([this.ready(), EventBus.postAndForget(this.event)]);

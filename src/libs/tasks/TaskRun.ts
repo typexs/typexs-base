@@ -92,15 +92,48 @@ export class TaskRun {
   }
 
 
+  validateRequiredParameters() {
+    const props = this.taskRef().getIncomings();
+    if (props.length > 0) {
+      for (const p of props) {
+        if (!_.has(this.incomings, p.storingName) && !_.has(this.incomings, p.name)) {
+
+          if (p.isOptional()) {
+            const msg = this.taskRef().name + ' optional parameter "' + p.name + '" not found.';
+            this.$runner.getLogger().warn(msg);
+          } else {
+            const msg = this.taskRef().name + ' required parameter "' + p.name + '" not found.';
+            if (this.$runner.$options.skipRequiredThrow) {
+              this.$runner.getLogger().warn(msg);
+            } else {
+              //
+              throw new Error(msg);
+            }
+          }
+        }
+      }
+    }
+  }
+
+
   async start(done: (err: Error, res: any) => void, incoming: { [k: string]: any }) {
+
+
+    incoming = _.clone(incoming) || {};
+    _.assign(incoming, this.incomings); // Overwrite with initial incomings
+    this.incomings = incoming;
+
+    try {
+      this.validateRequiredParameters();
+    } catch (e) {
+      done(e, null);
+      return;
+    }
 
     this.status.running = true;
     this.status.start = new Date();
     this.$runner.api().onStart(this);
 
-    incoming = _.clone(incoming) || {};
-    _.assign(incoming, this.incomings); // Overwrite with initial incomings
-    this.incomings = incoming;
 
     if (this.$runner.$dry_mode) {
       this.$wrapper.logger().debug('dry taskRef start: ' + this.taskRef().name);

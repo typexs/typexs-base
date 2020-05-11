@@ -56,7 +56,7 @@ export class Injector {
       return service.value;
     }
 
-    // if named service was requested and its instance was not found plus there is not type to know what to initialize,
+    // if named service was requested and its instance was not found plus there is not type to know what to create,
     // this means service was not pre-registered and we throw an exception
     if ((!service || !service.type) &&
       (!service || !service.factory) &&

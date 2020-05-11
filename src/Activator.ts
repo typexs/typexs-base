@@ -27,7 +27,7 @@ export class Activator implements IActivator {
 
 
     //    const system = new System();
-//    system.initialize(Bootstrap.getNodeId());
+//    system.create(Bootstrap.getNodeId());
 //    Container.set(System.NAME, system);
 
     /**

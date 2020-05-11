@@ -41,7 +41,7 @@ export class Message<REQ extends AbstractEvent, RES extends AbstractEvent>
     // this.once('postprocess', this.postProcess.bind(this));
   }
 
-  async beforeRun(req: REQ) {
+  async beforeSend(req: REQ) {
     if (_.isUndefined(this.options.skipLocal) ||
       !_.get(this.options, 'skipLocal', false)) {
       const localResponse = await this.factory.getResponse(req);

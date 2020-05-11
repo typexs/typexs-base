@@ -99,11 +99,11 @@ export class TaskRunner extends EventEmitter {
 
   constructor(registry: Tasks, names: TASK_RUNNER_SPEC[], options: ITaskRunnerOptions = null) {
     super();
-
+    const nodeId = options.nodeId ? options.nodeId : Bootstrap.getNodeId();
     this.$options = options || <any>{};
     _.defaults(this.$options, {
-      nodeId: Bootstrap.getNodeId(),
-      targetIds: [Bootstrap.getNodeId()]
+      nodeId: nodeId,
+      targetIds: [nodeId]
     });
     this.invoker = Container.get(Invoker.NAME);
 
@@ -116,7 +116,7 @@ export class TaskRunner extends EventEmitter {
     this.$registry = registry;
     this.$parallel = this.$options['parallel'] || 5;
     // this.$inital = names;
-    this.$dry_mode = this.$options['dry_mode'] || false;
+    this.$dry_mode = this.$options['dryMode'] || false;
 
 
     this.todoNrs = [];
@@ -246,7 +246,9 @@ export class TaskRunner extends EventEmitter {
   resolveDeps(task_names: TASK_RUNNER_SPEC[], parent?: TaskRun, variant?: 'subs' | 'deps') {
     for (let i = 0; i < task_names.length; i++) {
       const name = task_names[i];
-      const taskRun = _.isString(name) ? this.createTaskRun(name) : this.createTaskRun(name.name, name.incomings);
+      const taskRun = _.isString(name) ?
+        this.createTaskRun(name) :
+        this.createTaskRun(name.name, name.incomings);
 
       if (parent) {
         if (variant === 'deps') {
@@ -479,7 +481,7 @@ export class TaskRunner extends EventEmitter {
     const status: ITaskRunnerResult = {
       id: this.id,
       state: this.state,
-      nodeId: this.$options.nodeId,
+      nodeId: Bootstrap.getNodeId(),
       targetIds: this.$options.targetIds,
       start: this.$start,
       stop: this.$stop,

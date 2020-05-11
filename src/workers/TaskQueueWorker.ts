@@ -118,7 +118,7 @@ export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker 
         }), 10);
     }
 
-    this.logger.debug('enqueue task event:', event);
+    this.logger.debug('enqueue task event: ' + event.nodeId + '=>' + event.id);
     return this.fireState(event);
   }
 
@@ -187,11 +187,14 @@ export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker 
 
   fireState(e: TaskEvent): TaskEvent {
     const _e = _.cloneDeep(e);
+    _e.reqEventId = e.id;
+    _e.respId = this.nodeId;
+    _e.nodeId = this.nodeId;
+    _e.targetIds = [e.nodeId];
     _e.topic === 'log' ? _e.data = null : _e.log = null;
     EventBus.postAndForget(_e);
     return _e;
   }
-
 
 
   statistic(): IWorkerStatisitic {

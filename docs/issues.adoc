@@ -46,9 +46,6 @@ must be a possibility to exclude special folders.
 
 
 
-**@ISSUE {counter:issue} 20180607** +
-
-Find other way to invoke gulp task from different modules
 
 **@ISSUE {counter:issue} 20200417** +
 
@@ -60,7 +57,6 @@ Spin-off modules:
 
 **@ISSUE {counter:issue} 20200417** +
 
-* storage: query regex support
 * storage-controller: save stream push new records on the fly
 * distributed: mongo
 

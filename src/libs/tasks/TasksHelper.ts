@@ -6,13 +6,16 @@ import {Config} from 'commons-config';
 import {ITaskRunnerOptions} from './ITaskRunnerOptions';
 import {Container} from 'typedi';
 import {TaskRequestFactory} from './worker/TaskRequestFactory';
-import {ITaskExec} from './ITaskExec';
+import {ITaskExectorOptions} from './ITaskExectorOptions';
 import {K_CLS_TASKS, TASK_RUNNER_SPEC} from './Constants';
 import {RuntimeLoader} from '../../base/RuntimeLoader';
 import {Tasks} from './Tasks';
 import {Log} from '../logging/Log';
 import {TaskRunner} from './TaskRunner';
 import {TaskRunnerRegistry} from './TaskRunnerRegistry';
+import {IWorkerInfo} from '../worker/IWorkerInfo';
+import {TaskQueueWorker} from '../../workers/TaskQueueWorker';
+import {System} from '../..';
 
 
 export class TasksHelper {
@@ -109,7 +112,7 @@ export class TasksHelper {
   }
 
 
-  static extractOptions(argv: ITaskExec) {
+  static extractOptions(argv: ITaskExectorOptions) {
     const keys: string[] = [
       'executionConcurrency', 'skipRequiredThrow', 'skipTargetCheck',
       'targetId', 'targetIds', 'isLocal', 'waitForRemoteResults',
@@ -134,13 +137,13 @@ export class TasksHelper {
    * @param taskSpec
    * @param argv
    */
-  static async exec(taskSpec: TASK_RUNNER_SPEC[], argv: ITaskExec) {
+  static async exec(taskSpec: TASK_RUNNER_SPEC[], argv: ITaskExectorOptions) {
     // check nodes for tasks
     if (!_.isArray(taskSpec) || _.isEmpty(taskSpec)) {
       throw new Error('no task definition found');
     }
 
-    const options: ITaskExec = this.extractOptions(argv);
+    const options: ITaskExectorOptions = this.extractOptions(argv);
     const taskNames = this.getTaskNames(taskSpec);
     const tasksReg: Tasks = Container.get(Tasks.NAME);
     const tasks = tasksReg.getTasks(taskNames);
@@ -152,7 +155,7 @@ export class TasksHelper {
     if (options.executionConcurrency) {
       if (options.executionConcurrency !== 0) {
         const registry = Container.get(TaskRunnerRegistry.NAME) as TaskRunnerRegistry;
-        const counts = registry.getTaskCounts(taskNames);
+        const counts = registry.getLocalTaskCounts(taskNames);
         if (!_.isEmpty(counts)) {
           const max = _.max(_.values(counts));
           if (max >= argv.executionConcurrency) {
@@ -236,5 +239,18 @@ export class TasksHelper {
     }
     return null;
   }
+
+
+
+
+  static getWorkerNodes(system: System) {
+    return _.concat([], [system.node], system.nodes)
+      .filter(n => {
+        const x = _.find(n.contexts, c => c.context === 'workers');
+        return _.get(x, 'workers', []).find((y: IWorkerInfo) => y.className === TaskQueueWorker.NAME);
+      }).map(x => x.nodeId);
+
+  }
+
 
 }

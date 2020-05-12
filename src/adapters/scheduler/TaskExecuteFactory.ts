@@ -3,16 +3,16 @@ import {Schedule} from '../../libs/schedule/Schedule';
 import {IScheduleFactory} from '../../libs/schedule/IScheduleFactory';
 import {IScheduleDef} from '../../libs/schedule/IScheduleDef';
 import {TasksHelper} from '../../libs/tasks/TasksHelper';
-import {ITaskExec} from '../../libs/tasks/ITaskExec';
+import {ITaskExectorOptions} from '../../libs/tasks/ITaskExectorOptions';
 import {TASK_RUNNER_SPEC} from '../../libs/tasks/Constants';
 
-export interface ITaskSchedule extends ITaskExec {
+export interface ITaskSchedule extends ITaskExectorOptions {
   name: string | string[];
 }
 
 export class TaskExecuteFactory implements IScheduleFactory {
 
-  create(taskNames: TASK_RUNNER_SPEC[], params: ITaskExec = {skipTargetCheck: false, executionConcurrency: 1}) {
+  create(taskNames: TASK_RUNNER_SPEC[], params: ITaskExectorOptions = {skipTargetCheck: false, executionConcurrency: 1}) {
     return async function () {
       return TasksHelper.exec(taskNames, params);
     };

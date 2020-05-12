@@ -3,17 +3,65 @@
  */
 import * as _ from 'lodash';
 import {TaskRunner} from './TaskRunner';
-import {TASKRUN_STATE_FINISHED} from './Constants';
+import {TASK_RUNNER_SPEC, TASKRUN_STATE_FINISHED} from './Constants';
 import {Counters} from '../helper/Counters';
+import {ITaskRunnerOptions} from './ITaskRunnerOptions';
+import {Tasks} from './Tasks';
+import {Inject} from 'typedi';
+import {TaskRunnerEvent} from './TaskRunnerEvent';
+import {EventBus, subscribe} from 'commons-eventbus';
+import {ITaskRunnerStatus} from './ITaskRunnerStatus';
+import {SystemNodeInfo} from '../../entities/SystemNodeInfo';
+import {Log} from '../../libs/logging/Log';
 
 /**
  * Node specific registry for TaskRunner which is initalized as singleton in Activator.
  */
 export class TaskRunnerRegistry {
 
-  static NAME = TaskRunnerRegistry.name;
+  public static NAME = TaskRunnerRegistry.name;
 
-  private runners: TaskRunner[] = [];
+  @Inject(Tasks.NAME)
+  tasks: Tasks;
+
+  private localTaskRunner: TaskRunner[] = [];
+
+  private globalTaskRunner: ITaskRunnerStatus[] = [];
+
+
+  async prepare() {
+    await EventBus.register(this);
+  }
+
+  async shutdown() {
+    await EventBus.unregister(this);
+  }
+
+  @subscribe(TaskRunnerEvent)
+  onTaskRunnerEvent(event: TaskRunnerEvent) {
+    Log.debug('task runner event: ' + event.state + ' ' + event.id + ' ' + event.nodeId);
+    if (['stopped', 'errored', 'request_error'].includes(event.state)) {
+      _.remove(this.globalTaskRunner, x => x.id === event.id);
+    } else {
+      const found = this.globalTaskRunner.find(x => x.id === event.id);
+      if (found) {
+        _.assign(found, event);
+      } else {
+        this.globalTaskRunner.push(event);
+      }
+    }
+  }
+
+  /**
+   * Called by TaskSystemExtension
+   *
+   * @param nodeInfo
+   */
+  onNodeUpdate(nodeInfo: SystemNodeInfo) {
+    if (nodeInfo.state === 'register' || nodeInfo.state === 'unregister') {
+      _.remove(this.globalTaskRunner, x => x.nodeId === nodeInfo.nodeId);
+    }
+  }
 
 
   /**
@@ -21,12 +69,25 @@ export class TaskRunnerRegistry {
    */
   addRunner(runner: TaskRunner) {
     const runnerNr = runner.nr;
-    if (!this.runners.find(x => x.nr === runnerNr)) {
-      this.runners.push(runner);
+    if (!this.localTaskRunner.find(x => x.nr === runnerNr)) {
+      this.localTaskRunner.push(runner);
       runner.once(TASKRUN_STATE_FINISHED, () => {
-        _.remove(this.runners, x => x.nr === runnerNr);
+        _.remove(this.localTaskRunner, x => x.nr === runnerNr);
       });
     }
+  }
+
+  /**
+   * Create new runner
+   *
+   * @param names
+   * @param options
+   */
+  createNewRunner(names: TASK_RUNNER_SPEC[], options: ITaskRunnerOptions = null) {
+    options.skipRegistryAddition = true;
+    const runner = new TaskRunner(this.tasks, names, options);
+    this.addRunner(runner);
+    return runner;
   }
 
 
@@ -45,31 +106,47 @@ export class TaskRunnerRegistry {
   /**
    * Returns the currently running runnerIds with the taskNames
    */
-  getRunningTasks(): { id: string, taskNames: string[] }[] {
-    const results: { id: string, taskNames: string[] }[] = [];
-    this.runners.forEach(x => {
-      results.push({id: x.id, taskNames: x.getTaskNames()});
-    });
-    return results;
+  getRunningTasks(): ITaskRunnerStatus[] {
+    return _.cloneDeep(this.globalTaskRunner);
   }
 
-
-  getTaskCounts(taskNames: string | string[]) {
+  /**
+   * Count local active tasks
+   *
+   * @param taskNames
+   */
+  getLocalTaskCounts(taskNames: string | string[]) {
     if (_.isString(taskNames)) {
       taskNames = [taskNames];
     }
-    const stats = new Counters();
-    this.runners.forEach(x => {
-      x.getTaskNames().filter(y => taskNames.includes(y)).forEach(y => stats.get(y).inc());
+    const counters = new Counters();
+    this.localTaskRunner.forEach(x => {
+      x.getTaskNames().filter(y => taskNames.includes(y)).forEach(y => counters.get(y).inc());
     });
-    return stats.asObject();
+    return counters.asObject();
+  }
+
+  /**
+   * Count local active tasks
+   *
+   * @param taskNames
+   */
+  getGlobalTaskCounts(taskNames: string | string[]) {
+    if (_.isString(taskNames)) {
+      taskNames = [taskNames];
+    }
+    const counters = new Counters();
+    this.globalTaskRunner.forEach(x => {
+      x.taskNames.filter(y => taskNames.includes(y)).forEach(y => counters.get(y).inc());
+    });
+    return counters.asObject();
   }
 
   /**
    * Return the runners variable
    */
   getRunners() {
-    return this.runners;
+    return this.localTaskRunner;
   }
 
 

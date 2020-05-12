@@ -10,7 +10,7 @@ import {IMessageOptions} from '../../../libs/messaging/IMessageOptions';
 
 export class TasksExchange extends AbstractExchange<TasksRequest, TasksResponse> {
 
-  @Inject(TaskRunnerRegistry.NAME)
+  @Inject('TaskRunnerRegistry')
   runnerRegistry: TaskRunnerRegistry;
 
   constructor() {

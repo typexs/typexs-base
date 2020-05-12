@@ -11,8 +11,9 @@ import {WatcherRegistry} from './libs/watchers/WatcherRegistry';
 import {C_WORKERS} from './libs/worker/Constants';
 import {Workers} from './libs/worker/Workers';
 import {TaskRunnerRegistry} from './libs/tasks/TaskRunnerRegistry';
-import {ExchangeMessageRegistry} from "./libs/messaging/ExchangeMessageRegistry";
-import {C_EXCHANGE_MESSAGE} from "./libs/messaging/Constants";
+import {ExchangeMessageRegistry} from './libs/messaging/ExchangeMessageRegistry';
+import {C_EXCHANGE_MESSAGE} from './libs/messaging/Constants';
+import {Injector} from './libs/di/Injector';
 
 export class Activator implements IActivator {
 
@@ -39,7 +40,8 @@ export class Activator implements IActivator {
       tasks.setConfig(cfg);
     }
     Container.set(Tasks.NAME, tasks);
-    Container.set(TaskRunnerRegistry.NAME, new TaskRunnerRegistry());
+    const taskRunnerRegistry = Injector.create(TaskRunnerRegistry);
+    Container.set(TaskRunnerRegistry.NAME, taskRunnerRegistry);
 
 
     // Schedule init

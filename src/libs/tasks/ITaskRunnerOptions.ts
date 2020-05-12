@@ -8,9 +8,14 @@ export interface ITaskRunnerOptions {
   id?: string;
 
   /**
-   * NodeId of task execution caller
+   * NodeId of task execution runner
    */
   nodeId?: string;
+
+  /**
+   * NodeId of task execution caller
+   */
+  callerId?: string;
 
   /**
    * Target IDs (NodeId's were task should be executed)
@@ -36,4 +41,10 @@ export interface ITaskRunnerOptions {
    * DEPRECATED, for testing reasons allows running in test mode
    */
   dryMode?: boolean;
+
+
+  /**
+   * Ignore add to task runner registry, cause maybe already appended
+   */
+  skipRegistryAddition?: boolean;
 }

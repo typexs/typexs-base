@@ -6,8 +6,6 @@ import {TASK_RUNNER_SPEC} from '../../Constants';
 import {ITaskExecutionRequestOptions} from '../ITaskExecutionRequestOptions';
 import {TaskRef} from '../../TaskRef';
 import {TasksHelper} from '../../TasksHelper';
-import {IWorkerInfo} from '../../../worker/IWorkerInfo';
-import {TaskQueueWorker} from '../../../../workers/TaskQueueWorker';
 import {System} from '../../../../libs/system/System';
 import {TaskFuture} from './TaskFuture';
 
@@ -28,16 +26,6 @@ export class TaskExecutionExchange extends AbstractMessage<TaskEvent, TaskEvent>
   }
 
 
-  getWorkerNodes() {
-    return _.concat([], [this.system.node], this.system.nodes)
-      .filter(n => {
-        const x = _.find(n.contexts, c => c.context === 'workers');
-        return _.get(x, 'workers', []).find((y: IWorkerInfo) => y.className === TaskQueueWorker.NAME);
-      }).map(x => x.nodeId);
-
-  }
-
-
   create(taskSpec: TASK_RUNNER_SPEC[],
          parameters: any = {},
          options: ITaskExecutionRequestOptions = {
@@ -52,20 +40,41 @@ export class TaskExecutionExchange extends AbstractMessage<TaskEvent, TaskEvent>
       this.passingTaskStates.push('enqueue');
     }
 
-    if (!options.skipTargetCheck) {
-      const workerIds = this.getWorkerNodes();
+    let workerNodes = null;
+    if (!options.targetIds || !_.isArray(options.targetIds)) {
+      workerNodes = TasksHelper.getWorkerNodes(this.system);
+      let onNodes = options.executeOnMultipleNodes ? options.executeOnMultipleNodes : 1;
 
-      const possibleTargetIds: string[][] = [workerIds];
+      let nodesForSelection = _.clone(workerNodes);
+
+      if (options.randomWorkerSelection) {
+        nodesForSelection = _.shuffle(nodesForSelection);
+      }
+      this.targetIds = [];
+      while (nodesForSelection.length > 0 && onNodes > 0) {
+        onNodes--;
+        this.targetIds.push(nodesForSelection.shift());
+      }
+    }
+
+    if (!options.skipTargetCheck) {
+      if (!workerNodes) {
+        workerNodes = TasksHelper.getWorkerNodes(this.system);
+      }
+
+      const possibleTargetIds: string[][] = [workerNodes];
       const tasks: TaskRef[] = this.tasks.getTasks(TasksHelper.getTaskNames(taskSpec));
       for (const taskRef of tasks) {
         possibleTargetIds.push(taskRef.nodeIds);
       }
 
-      if (options.targetIds.length === 0) {
-        // get intersection of nodeIds
-        this.targetIds = _.intersection(...possibleTargetIds);
-      } else {
-        this.targetIds = _.intersection(options.targetIds, ...possibleTargetIds);
+      if (options.targetIds && _.isArray(options.targetIds)) {
+        if (options.targetIds.length === 0) {
+          // get intersection of nodeIds
+          this.targetIds = _.intersection(...possibleTargetIds);
+        } else {
+          this.targetIds = _.intersection(options.targetIds, ...possibleTargetIds);
+        }
       }
 
       if (this.targetIds.length === 0) {
@@ -73,7 +82,9 @@ export class TaskExecutionExchange extends AbstractMessage<TaskEvent, TaskEvent>
       }
 
     } else {
-      this.targetIds = options.targetIds;
+      if (!this.targetIds && options.targetIds) {
+        this.targetIds = options.targetIds;
+      }
     }
 
     this.event = new TaskEvent();

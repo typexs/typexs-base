@@ -30,6 +30,8 @@ import {ITaskRunnerOptions} from './ITaskRunnerOptions';
 import {CryptUtils} from 'commons-base/browser';
 import {TasksApi} from '../../api/Tasks.api';
 import {TaskRunnerRegistry} from './TaskRunnerRegistry';
+import {TaskRunnerEvent} from './TaskRunnerEvent';
+import {EventBus} from 'commons-eventbus';
 
 /**
  * Container for single or multiple task execution
@@ -49,6 +51,8 @@ export class TaskRunner extends EventEmitter {
   nr: number = TaskRunner.taskRunnerId++;
 
   id: string;
+
+  event: TaskRunnerEvent;
 
   taskNrs = 0;
 
@@ -101,9 +105,10 @@ export class TaskRunner extends EventEmitter {
     super();
     const nodeId = options.nodeId ? options.nodeId : Bootstrap.getNodeId();
     this.$options = options || <any>{};
-    _.defaults(this.$options, {
+    _.defaults(this.$options, <ITaskRunnerOptions>{
       nodeId: nodeId,
-      targetIds: [nodeId]
+      targetIds: [nodeId],
+      skipRegistryAddition: false
     });
     this.invoker = Container.get(Invoker.NAME);
 
@@ -169,14 +174,47 @@ export class TaskRunner extends EventEmitter {
     this.on(TASKRUN_STATE_RUN, this.taskRun.bind(this));
     this.on(TASKRUN_STATE_DONE, this.taskDone.bind(this));
 
+
     this.state = 'started';
 
-    try {
-      const registry: TaskRunnerRegistry = Container.get(TaskRunnerRegistry.NAME);
-      registry.addRunner(this);
-    } catch (e) {
-      this.getLogger().debug(`couldn't locally register task nr=${this.nr} id=${this.id}`);
+    // For compatibility reasons
+    if (!this.$options.skipRegistryAddition) {
+      try {
+        const registry: TaskRunnerRegistry = Container.get(TaskRunnerRegistry.NAME);
+        registry.addRunner(this);
+      } catch (e) {
+        this.getLogger().debug(`couldn't locally register task nr=${this.nr} id=${this.id}`);
+      }
     }
+
+    this.fireStateEvent();
+  }
+
+
+  fireStateEvent() {
+    if (!this.event) {
+      this.event = new TaskRunnerEvent();
+      this.event.id = this.id;
+      this.event.nr = this.nr;
+      this.event.nodeId = Bootstrap.getNodeId();
+    }
+
+    this.event.state = this.state;
+    this.event.started = this.$start;
+    this.event.stopped = this.$stop;
+    this.event.taskNames = this.$tasks.map(x => x.getTaskName());
+    this.event.running = this.$tasks.filter(x => this.runningNrs.includes(x.nr)).map(x => x.getTaskName());
+    this.event.finished = this.$tasks.filter(x => this.doneNrs.includes(x.nr)).map(x => x.getTaskName());
+
+    const event = _.clone(this.event);
+    setTimeout(async () => {
+      try {
+        await EventBus.postAndForget(event);
+      } catch (e) {
+        Log.error(e);
+      }
+    }, 0);
+
   }
 
 
@@ -371,6 +409,7 @@ export class TaskRunner extends EventEmitter {
       }
     });
 
+    this.fireStateEvent();
     taskRun.start(doneCallback, incoming);
     self.emit(TASKRUN_STATE_NEXT);
   }
@@ -403,6 +442,7 @@ export class TaskRunner extends EventEmitter {
       taskRun.error(err);
     }
 
+    this.fireStateEvent();
     this.emit(TASKRUN_STATE_NEXT);
   }
 
@@ -467,6 +507,7 @@ export class TaskRunner extends EventEmitter {
     }
     this.taskLogger.close();
     this.writeStream.end();
+    this.fireStateEvent();
     this.emit(TASKRUN_STATE_FINISH_PROMISE, status);
   }
 

@@ -25,12 +25,16 @@ import {WatcherRegistry} from './libs/watchers/WatcherRegistry';
 import {Workers} from './libs/worker/Workers';
 import {ExchangeMessageRegistry} from './libs/messaging/ExchangeMessageRegistry';
 import {ConfigUtils} from './libs/utils/ConfigUtils';
+import {TaskRunnerRegistry} from './libs/tasks/TaskRunnerRegistry';
 
 
 export class Startup implements IBootstrap, IShutdown {
 
   @Inject(Tasks.NAME)
   tasks: Tasks;
+
+  @Inject(TaskRunnerRegistry.NAME)
+  taskRunnerRegistry: TaskRunnerRegistry;
 
   @Inject(Cache.NAME)
   cache: Cache;
@@ -62,9 +66,29 @@ export class Startup implements IBootstrap, IShutdown {
     }
   }
 
+  private eventbus() {
+    const bus: { [name: string]: IEventBusConfiguration } = Config.get(C_EVENTBUS, false);
+    if (bus) {
+      for (const name in bus) {
+        if (bus.hasOwnProperty(name)) {
+          const busCfg: IEventBusConfiguration = bus[name];
+          busCfg.name = name;
+          const x = EventBus.$().addConfiguration(busCfg);
+        }
+      }
+    }
+  }
+
   async bootstrap(): Promise<void> {
+    /**
+     * Initialize bus first
+     */
+    this.eventbus();
+
     TasksHelper.prepare(this.tasks, this.loader);
     await this.workers.prepare(this.loader);
+    await this.taskRunnerRegistry.prepare();
+
 
     for (const cls of this.loader.getClasses(K_CLS_CACHE_ADAPTER)) {
       await this.cache.register(<any>cls);
@@ -73,17 +97,6 @@ export class Startup implements IBootstrap, IShutdown {
     await this.cache.configure(this.system.node.nodeId, cache);
     await this.cache.set([C_CONFIG, this.system.node.nodeId].join(C_KEY_SEPARATOR), ConfigUtils.clone());
 
-    const bus: { [name: string]: IEventBusConfiguration } = Config.get(C_EVENTBUS, false);
-    if (bus) {
-      for (const name in bus) {
-        if (bus.hasOwnProperty(name)) {
-          const busCfg: IEventBusConfiguration = bus[name];
-          busCfg.name = name;
-          const x = EventBus.$().addConfiguration(busCfg);
-          // console.log(x);
-        }
-      }
-    }
 
     for (const cls of this.loader.getClasses(K_CLS_EXCHANGE_MESSAGE)) {
       await this.exchangeMessages.add(<any>cls);
@@ -95,6 +108,7 @@ export class Startup implements IBootstrap, IShutdown {
 
 
   async ready() {
+
     await this.workers.startup();
 
     // TODO start schedules only on a worker node!
@@ -122,7 +136,7 @@ export class Startup implements IBootstrap, IShutdown {
    * - watchers
    */
   async shutdown() {
-
+    await this.taskRunnerRegistry.shutdown();
     const nodes = this.system
       .getAllNodes()
       .filter(x => x.nodeId === this.system.node.nodeId);

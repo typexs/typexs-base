@@ -2,7 +2,7 @@ import {Inject} from 'typedi';
 import {Tasks} from './Tasks';
 import {TaskRunnerRegistry} from './TaskRunnerRegistry';
 import {TASK_RUNNER_SPEC} from './Constants';
-import {ITaskExec} from './ITaskExec';
+import {ITaskExectorOptions} from './ITaskExectorOptions';
 import * as _ from 'lodash';
 import {ILoggerApi} from '../../libs/logging/ILoggerApi';
 import {Log} from '../../libs/logging/Log';
@@ -27,7 +27,7 @@ import {ITaskRunnerResult} from './ITaskRunnerResult';
  *
  */
 
-const DEFAULT_TASK_EXEC: ITaskExec = {
+const DEFAULT_TASK_EXEC: ITaskExectorOptions = {
   skipTargetCheck: false,
   executionConcurrency: null,
   skipRequiredThrow: false,
@@ -46,7 +46,9 @@ const TASK_PREFIX = 'task_done_';
 // TODO Arguments from incoming!!!
 export class TaskExecutor extends EventEmitter {
 
-  private options: ITaskExec;
+  private executeable: boolean = true;
+
+  private options: ITaskExectorOptions;
 
   private params: any;
 
@@ -72,9 +74,16 @@ export class TaskExecutor extends EventEmitter {
 
   logger: ILoggerApi = Log.getLoggerFor(TaskExecutor);
 
-  setOptions(options: ITaskExec) {
+  setOptions(options: ITaskExectorOptions) {
     this.options = options || {skipTargetCheck: false};
     _.defaults(this.options, DEFAULT_TASK_EXEC);
+  }
+
+  /**
+   * Executeable
+   */
+  isExecuteable() {
+    return this.executeable;
   }
 
   /**
@@ -83,7 +92,7 @@ export class TaskExecutor extends EventEmitter {
    * @param taskSpec
    * @param _argv
    */
-  create(taskSpec: TASK_RUNNER_SPEC[], param: any = {}, _argv: ITaskExec) {
+  create(taskSpec: TASK_RUNNER_SPEC[], param: any = {}, _argv: ITaskExectorOptions) {
     // check nodes for tasks
     if (!_.isArray(taskSpec) || _.isEmpty(taskSpec)) {
       throw new Error('no task definition found');
@@ -95,19 +104,6 @@ export class TaskExecutor extends EventEmitter {
 
     this.taskNames = TasksHelper.getTaskNames(taskSpec);
 
-    if (this.options.executionConcurrency) {
-      if (this.options.executionConcurrency !== 0) {
-        const counts = this.taskRunnerRegistry.getTaskCounts(this.taskNames);
-        if (!_.isEmpty(counts)) {
-          const max = _.max(_.values(counts));
-          if (max >= this.options.executionConcurrency) {
-            this.logger.warn(
-              `task command: ` +
-              `maximal concurrent process of ${this.taskNames} reached (${max} < ${this.options.executionConcurrency}).`);
-          }
-        }
-      }
-    }
 
     if (this.options.targetId && !this.options.remote) {
       this.targetIds = [this.options.targetId];
@@ -125,11 +121,33 @@ export class TaskExecutor extends EventEmitter {
     }
 
 
+    if (this.options.executionConcurrency) {
+      if (this.options.executionConcurrency !== 0) {
+
+        const counts = this.options.isLocal ?
+          this.taskRunnerRegistry.getLocalTaskCounts(this.taskNames) :
+          this.taskRunnerRegistry.getGlobalTaskCounts(this.taskNames)
+        ;
+        if (!_.isEmpty(counts)) {
+          const max = _.max(_.values(counts));
+          if (max >= this.options.executionConcurrency) {
+            this.logger.warn(
+              `task command: ` +
+              `maximal concurrent process of ${this.taskNames} reached (${max} < ${this.options.executionConcurrency}).`);
+            this.executeable = false;
+          }
+        }
+      }
+    }
+
     return this;
   }
 
 
   async run(asFuture: boolean = false): Promise<ITaskRunnerResult | ITaskRunnerResult[] | TaskFuture> {
+    if (!this.executeable) {
+      return null;
+    }
     if (!this.options.isLocal) {
       return this.executeOnWorker(asFuture);
     } else {
@@ -176,21 +194,22 @@ export class TaskExecutor extends EventEmitter {
   async executeOnWorker(asFuture: boolean = false) {
     this.logger.debug(this.taskNames + 'before request fire');
     let execReq = this.requestFactory.executeRequest();
+    const options = _.clone(this.options);
+    if (this.targetIds) {
+      options.targetIds = this.targetIds;
+    }
     execReq = execReq.create(
       this.spec,
       this.params,
-      {
-        targetIds: this.targetIds,
-        skipTargetCheck: this.options.skipTargetCheck,
-        timeout: this.options.timeout
-      });
+      options
+    );
     let future: TaskFuture = null;
     if (this.options.waitForRemoteResults) {
       future = await execReq.future();
     }
 
     const enqueueEvents = await execReq.run();
-    if (enqueueEvents.length === 0) {
+    if (enqueueEvents && enqueueEvents.length === 0) {
       // ERROR!!! NO RESPONSE
       throw new Error('no enqueue responses arrived');
     }

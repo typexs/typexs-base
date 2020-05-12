@@ -132,7 +132,8 @@ export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker 
       workLoad.names,
       {
         id: e.id,
-        nodeId: e.nodeId,
+        callerId: e.nodeId,
+        nodeId: this.nodeId,
         targetIds: e.targetIds,
         local: false
       });

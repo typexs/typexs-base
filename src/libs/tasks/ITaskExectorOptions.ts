@@ -1,9 +1,11 @@
 /**
  * Base data necessary for task execution
  */
-export interface ITaskExec {
+import {ITaskExecutionRequestOptions} from './worker/ITaskExecutionRequestOptions';
+
+export interface ITaskExectorOptions extends ITaskExecutionRequestOptions {
   /**
-   * how many task with same names can runn parallel
+   * how many task with same names can run parallel on a node
    */
   executionConcurrency?: number;
 
@@ -13,19 +15,9 @@ export interface ITaskExec {
   skipRequiredThrow?: boolean;
 
   /**
-   * skip checking if target exists in network
-   */
-  skipTargetCheck?: boolean;
-
-  /**
    * targetId mean the nodeId were the task must be executed
    */
   targetId?: string;
-
-  /**
-   * targetIds mean the nodeId's were the task must be executed
-   */
-  targetIds?: string[];
 
   /**
    * should task be executed locally, means on node calling the task
@@ -44,20 +36,7 @@ export interface ITaskExec {
    */
   remote?: boolean;
 
-  /**
-   * should task be executed remotely on a number of nodes
-   */
-  executeOnMultipleNodes?: number;
 
-  /**
-   * should task be executed remotely means all other nodes
-   */
-  randomRemoteNodeSelection?: boolean;
-
-  /**
-   * Timeout for worker request
-   */
-  timeout?: number;
 
   /**
    * Other values like parameters for the task

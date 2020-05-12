@@ -9,6 +9,7 @@ import {C_TASKS} from '../libs/tasks/Constants';
 import {ITaskInfo} from '../libs/tasks/ITaskInfo';
 import {SystemNodeInfo} from '../entities/SystemNodeInfo';
 import {Tasks} from '../libs/tasks/Tasks';
+import {TaskRunnerRegistry} from '..';
 
 @UseAPI(SystemApi)
 export class TasksSystemExtension implements ISystemApi {
@@ -16,6 +17,9 @@ export class TasksSystemExtension implements ISystemApi {
   @Inject(Tasks.NAME)
   tasks: Tasks;
 
+
+  @Inject('TaskRunnerRegistry')
+  tasksRunnerRegistry: TaskRunnerRegistry;
 
   getNodeInfos(): INodeInfo | INodeInfo[] {
     const infos = this.tasks.infos();
@@ -40,6 +44,8 @@ export class TasksSystemExtension implements ISystemApi {
         });
       }
     }
+
+    this.tasksRunnerRegistry.onNodeUpdate(x);
   }
 
 
@@ -58,6 +64,8 @@ export class TasksSystemExtension implements ISystemApi {
         });
       }
     }
+
+    this.tasksRunnerRegistry.onNodeUpdate(x);
   }
 
 }

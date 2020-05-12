@@ -1,6 +1,5 @@
-
-import {K_CLS_USE_API} from "../libs/Constants";
-import {MetaArgs} from "commons-base/browser";
+import {K_CLS_USE_API} from '../libs/Constants';
+import {MetaArgs} from 'commons-base/browser';
 
 interface ApiProviderEntry {
   target: Function;
@@ -13,5 +12,5 @@ export function UseAPI(api: Function) {
       target: o,
       api: api
     });
-  }
+  };
 }

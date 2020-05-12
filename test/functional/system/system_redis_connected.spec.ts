@@ -4,7 +4,7 @@ import {expect} from 'chai';
 import {Bootstrap} from '../../../src/Bootstrap';
 import {Config} from 'commons-config';
 import {TEST_STORAGE_OPTIONS} from '../config';
-import {IEventBusConfiguration} from 'commons-eventbus';
+import {IEventBusConfiguration} from 'commons-eventbus/browser';
 import {Container} from 'typedi';
 import {System} from '../../../src/libs/system/System';
 import {SystemApi} from '../../../src/api/System.api';
@@ -104,7 +104,7 @@ class SystemRedisConnectedSpec {
 
     const p = SpawnHandle.do(__dirname + '/fake_app/node.ts').start(LOG_EVENT);
     await p.started;
-    // await TestHelper.wait(200);
+    await TestHelper.wait(200);
     let remoteNode = remoteNodes.shift();
     expect(remoteNode.nodeId).to.be.eq('fakeapp01');
     expect(remoteNode.state).to.be.eq('register');

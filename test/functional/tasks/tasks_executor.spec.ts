@@ -13,7 +13,7 @@ import {ITaskRunnerResult} from '../../../src/libs/tasks/ITaskRunnerResult';
 import {TaskEvent} from '../../../src/libs/tasks/worker/TaskEvent';
 
 
-const LOG_EVENT = TestHelper.logEnable(false);
+const LOG_EVENT = TestHelper.logEnable(true);
 
 let bootstrap: Bootstrap;
 const p: SpawnHandle[] = [];
@@ -91,6 +91,7 @@ class TasksSpec {
     expect(x.result).to.be.eq('test');
   }
 
+
   @test
   async 'remote task execution on single node (with results and targetId)'() {
     const executor = Injector.create(TaskExecutor);
@@ -142,7 +143,6 @@ class TasksSpec {
   @test
   async 'remote task execution on single node by task execution exchange with future'() {
     const factory = Injector.get(TaskRequestFactory);
-
     const exchange = factory.executeRequest();
     // exchange.
     const message = await exchange.create([
@@ -172,5 +172,210 @@ class TasksSpec {
   }
 
 
-}
+  @test
+  async 'remote task on multiple nodes (on 3 nodes)'() {
+    const executor = Injector.create(TaskExecutor);
+    const data = await executor
+      .create(
+        ['simple_task_promise'],
+        {},
+        {
+          waitForRemoteResults: true,
+          remote: true,
+          executeOnMultipleNodes: 3,
+          skipTargetCheck: true,
+        })
+      .run() as ITaskRunnerResult[];
 
+    expect(data).to.have.length(3);
+    const nodeIds = data.map(x => x.nodeId).sort();
+    expect(nodeIds).to.be.deep.eq(['remote01', 'remote02', 'system_0']);
+
+    for (const entry of data) {
+      expect(entry.results).to.not.be.empty;
+      const x = entry.results.find(
+        (x: any) => x.name === _.snakeCase('SimpleTaskPromise'));
+      expect(x.name).to.be.eq(_.snakeCase('SimpleTaskPromise'));
+      expect(x.result).to.be.eq('test');
+    }
+  }
+
+  @test
+  async 'remote task on random nodes'() {
+    const executor = Injector.create(TaskExecutor);
+    const data = await executor
+      .create(
+        ['simple_task_promise'],
+        {},
+        {
+          waitForRemoteResults: true,
+          remote: true,
+          randomWorkerSelection: true,
+          skipTargetCheck: true,
+        })
+      .run() as ITaskRunnerResult[];
+
+    expect(data).to.have.length(1);
+    const nodeId = data[0].nodeId;
+    expect(nodeId).to.be.oneOf(['system_0', 'remote01', 'remote02']);
+
+    for (const entry of data) {
+      expect(entry.results).to.not.be.empty;
+      const x = entry.results.find(
+        (x: any) => x.name === _.snakeCase('SimpleTaskPromise'));
+      expect(x.name).to.be.eq(_.snakeCase('SimpleTaskPromise'));
+      expect(x.result).to.be.eq('test');
+    }
+
+  }
+
+
+  @test
+  async 'concurrency on same node'() {
+    const executor1 = Injector.create(TaskExecutor);
+    const executor2 = Injector.create(TaskExecutor);
+    const running1 = executor1
+      .create(
+        ['simple_task_running'],
+        {},
+        {
+          executionConcurrency: 1,
+          waitForRemoteResults: true,
+          targetId: 'system_0',
+          skipTargetCheck: true,
+        })
+      .run();
+
+    await TestHelper.wait(500);
+
+    const running2 = executor2
+      .create(
+        ['simple_task_running'],
+        {},
+        {
+          executionConcurrency: 1,
+          waitForRemoteResults: true,
+          targetId: 'system_0',
+          skipTargetCheck: true,
+        })
+      .run();
+
+    const results = await Promise.all([
+      running1,
+      running2
+    ]);
+
+    expect(executor1.isExecuteable()).to.be.true;
+    expect(executor2.isExecuteable()).to.be.false;
+    expect(results).to.have.length(2);
+    // console.log(results);
+    expect((<any>results[0][0]).state).to.be.eq('stopped');
+    expect((<any>results[1])).to.be.null;
+  }
+
+
+  @test
+  async 'concurrency on local node'() {
+    const executor1 = Injector.create(TaskExecutor);
+    const executor2 = Injector.create(TaskExecutor);
+    const running1 = executor1
+      .create(
+        ['simple_task_running'],
+        {},
+        {
+          executionConcurrency: 1,
+          isLocal: true,
+          skipTargetCheck: true,
+        })
+      .run();
+
+    await TestHelper.wait(500);
+
+    const running2 = executor2
+      .create(
+        ['simple_task_running'],
+        {},
+        {
+          executionConcurrency: 1,
+          isLocal: true,
+          skipTargetCheck: true,
+        })
+      .run();
+
+    const results = await Promise.all([
+      running1,
+      running2
+    ]);
+
+    expect(executor1.isExecuteable()).to.be.true;
+    expect(executor2.isExecuteable()).to.be.false;
+    expect(results).to.have.length(2);
+    console.log(results);
+    expect((<any>results[0]).state).to.be.eq('stopped');
+    expect((<any>results[1])).to.be.null;
+  }
+
+
+  @test
+  async 'concurrency on different nodes'() {
+    const executor1 = Injector.create(TaskExecutor);
+    const executor2 = Injector.create(TaskExecutor);
+    const running1 = executor1
+      .create(
+        ['simple_task_running'],
+        {},
+        {
+          executionConcurrency: 1,
+          waitForRemoteResults: true,
+          targetId: 'remote01',
+          skipTargetCheck: true,
+        })
+      .run();
+
+    await TestHelper.wait(500);
+
+    const running2 = executor2
+      .create(
+        ['simple_task_running'],
+        {},
+        {
+          executionConcurrency: 1,
+          waitForRemoteResults: true,
+          targetId: 'remote02',
+          skipTargetCheck: true,
+        })
+      .run();
+
+    const results = await Promise.all([
+      running1,
+      running2
+    ]);
+
+    expect(executor1.isExecuteable()).to.be.true;
+    expect(executor2.isExecuteable()).to.be.false;
+    expect(results).to.have.length(2);
+    // console.log(results);
+    expect((<any>results[0][0]).state).to.be.eq('stopped');
+    expect((<any>results[1])).to.be.null;
+  }
+
+
+  @test.skip
+  async 'remote task on own node'() {
+
+
+  }
+
+  @test.skip
+  async 'handling exception during task execution'() {
+
+  }
+
+  @test.skip
+  async 'check incoming + outgoing'() {
+
+
+  }
+
+
+}

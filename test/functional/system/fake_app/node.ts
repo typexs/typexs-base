@@ -5,12 +5,18 @@ import {Bootstrap} from '../../../../src/Bootstrap';
 import {ITypexsOptions} from '../../../../src/libs/ITypexsOptions';
 
 (async function () {
-  const LOG_EVENT = false; //
+  const LOG_EVENT = !!process.argv.find(x => x === '--enable_log');
+  let NODEID = process.argv.find(x => x.startsWith('--nodeId='));
+  if (NODEID) {
+    NODEID = NODEID.split('=').pop();
+  } else {
+    NODEID = 'fakeapp01';
+  }
   let bootstrap = Bootstrap
     .setConfigSources([{type: 'system'}])
     .configure(<ITypexsOptions & any>{
-      app: {name: 'fakeapp01', nodeId: 'fakeapp01', path: __dirname},
-      logging: {enable: LOG_EVENT, level: 'debug'},
+      app: {name: NODEID, nodeId: NODEID, path: __dirname},
+      logging: {enable: LOG_EVENT, level: 'debug', loggers: [{name: '*', level: 'debug'}]},
       modules: {paths: [__dirname + '/../../../..']},
       storage: {default: TEST_STORAGE_OPTIONS},
       // cache: {bins: {default: 'redis1'}, adapter: {redis1: {type: 'redis', host: '127.0.0.1', port: 6379}}},

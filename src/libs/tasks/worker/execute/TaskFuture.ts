@@ -55,16 +55,22 @@ export class TaskFuture extends EventEmitter {
         this.emit('future_event', event);
       }
       this.targetState[event.respId] = event.state;
-      if (event.state === 'stopped' || event.state === 'errored') {
-        this.targetResults[event.respId] = event.data;
+      if (event.state === 'stopped' || event.state === 'errored' || event.state === 'request_error') {
+        if (event.data) {
+          this.targetResults[event.respId] = event.data;
+        }
       }
 
       if (this.isFinished()) {
-        await this.unregister();
-        this.finished = true;
-        this.emit(future_finished);
+        await this.close();
       }
     }
+  }
+
+  async close() {
+    await this.unregister();
+    this.finished = true;
+    this.emit(future_finished);
   }
 
   await(timeout: number = 0): Promise<ITaskRunnerResult[]> {

@@ -14,6 +14,7 @@ import {TaskEvent} from './worker/TaskEvent';
 import {EventBus, subscribe, unsubscribe} from 'commons-eventbus';
 import {TaskFuture} from './worker/execute/TaskFuture';
 import {ITaskRunnerResult} from './ITaskRunnerResult';
+import {IError} from '../exceptions/IError';
 
 /**
  * Class controlling local or remote tasks execution.
@@ -144,7 +145,7 @@ export class TaskExecutor extends EventEmitter {
   }
 
 
-  async run(asFuture: boolean = false): Promise<ITaskRunnerResult | ITaskRunnerResult[] | TaskFuture> {
+  async run(asFuture: boolean = false): Promise<ITaskRunnerResult | ITaskRunnerResult[] | TaskFuture | TaskEvent[]> {
     if (!this.executeable) {
       return null;
     }
@@ -192,7 +193,7 @@ export class TaskExecutor extends EventEmitter {
 
 
   async executeOnWorker(asFuture: boolean = false) {
-    this.logger.debug(this.taskNames + 'before request fire');
+    this.logger.debug(this.taskNames + ' before request fire');
     let execReq = this.requestFactory.executeRequest();
     const options = _.clone(this.options);
     if (this.targetIds) {
@@ -212,6 +213,15 @@ export class TaskExecutor extends EventEmitter {
     if (enqueueEvents && enqueueEvents.length === 0) {
       // ERROR!!! NO RESPONSE
       throw new Error('no enqueue responses arrived');
+    } else if (enqueueEvents && enqueueEvents.length > 0) {
+      if (enqueueEvents[0].state === 'request_error') {
+        if (_.isArray(enqueueEvents[0].errors) && enqueueEvents[0].errors.length > 0) {
+          await future.close();
+          enqueueEvents[0].errors.forEach((x: IError) => {
+            throw new Error(x.message + '' + (x.data ? ' data: ' + JSON.stringify(x.data) : ''));
+          });
+        }
+      }
     }
 
     if (future) {
@@ -220,7 +230,7 @@ export class TaskExecutor extends EventEmitter {
       }
       return future.await();
     }
-    return null;
+    return enqueueEvents;
   }
 
 

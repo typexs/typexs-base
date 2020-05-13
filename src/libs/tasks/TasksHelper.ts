@@ -134,6 +134,23 @@ export class TasksHelper {
   /**
    * Helper analysing parameters and executes local or remote execution
    *
+   * @Deprecated use TaskExecutor instead
+   *
+   * ```
+   * const executor = Injector.create(TaskExecutor);
+   * const running = await executor1
+   *   .create(
+   *      ['simple_task_running'],
+   *      {},
+   *      {
+   *        executionConcurrency: 1,
+   *        waitForRemoteResults: true,
+   *        targetId: 'system_0',
+   *        skipTargetCheck: true,
+   *      })
+   *   .run();
+   * ```
+   *
    * @param taskSpec
    * @param argv
    */
@@ -158,8 +175,8 @@ export class TasksHelper {
         const counts = registry.getLocalTaskCounts(taskNames);
         if (!_.isEmpty(counts)) {
           const max = _.max(_.values(counts));
-          if (max >= argv.executionConcurrency) {
-            Log.warn(`task command: maximal concurrent process of ${taskNames} reached (${max} < ${argv.executionConcurrency}). `);
+          if (max >= options.executionConcurrency) {
+            Log.warn(`task command: maximal concurrent process of ${taskNames} reached (${max} < ${options.executionConcurrency}). `);
             return null;
           }
         }
@@ -239,8 +256,6 @@ export class TasksHelper {
     }
     return null;
   }
-
-
 
 
   static getWorkerNodes(system: System) {

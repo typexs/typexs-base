@@ -94,6 +94,18 @@ export class TaskRunnerRegistry {
   /**
    * Check if tasks with name or names are running
    */
+  hasRunnerForTasks(taskNames: string | string[]) {
+    if (_.isString(taskNames)) {
+      taskNames = [taskNames];
+    }
+    const intersect = _.intersection(taskNames, _.concat([], ...this.localTaskRunner.map(x => x.getTaskNames())));
+    return intersect.length === taskNames.length;
+  }
+
+
+  /**
+   * Check if tasks with name or names are running
+   */
   hasRunningTasks(taskNames: string | string[]) {
     if (_.isString(taskNames)) {
       taskNames = [taskNames];

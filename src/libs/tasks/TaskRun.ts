@@ -3,7 +3,7 @@ import {TaskRef} from './TaskRef';
 import {TaskRuntimeContainer} from './TaskRuntimeContainer';
 import {TaskRunner} from './TaskRunner';
 import {TaskExchangeRef} from './TaskExchangeRef';
-import {NotSupportedError} from 'commons-base';
+import {ClassUtils, NotSupportedError} from 'commons-base';
 import {ITaskRunResult} from './ITaskRunResult';
 import {TaskState} from './TaskState';
 
@@ -251,6 +251,16 @@ export class TaskRun {
 
   stats() {
     const stats: ITaskRunResult = _.clone(this.status);
+    if (stats.error && stats.error instanceof Error) {
+      const stacks = stats.error.stack ? stats.error.stack.split('\n') : [];
+      let idxStop = stacks.findIndex(x => /at TaskRun/.test(x));
+      idxStop = idxStop > 0 ? idxStop : 10;
+      stats.error = {
+        message: stats.error.message,
+        className: ClassUtils.getClassName(stats.error as any),
+        stack: stats.error.stack.split('\n').filter((value, index) => index < idxStop)
+      };
+    }
     return _.merge(stats, this.$wrapper.stats());
   }
 

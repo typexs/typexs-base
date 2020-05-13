@@ -1,3 +1,5 @@
+import {IError} from '../exceptions/IError';
+
 export interface ITaskRunResult {
 
   tasksId: string;
@@ -24,7 +26,7 @@ export interface ITaskRunResult {
 
   result: any;
 
-  error: Error;
+  error: Error | IError;
 
   has_error: boolean;
 

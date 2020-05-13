@@ -103,7 +103,7 @@ export class TaskRunner extends EventEmitter {
 
   constructor(registry: Tasks, names: TASK_RUNNER_SPEC[], options: ITaskRunnerOptions = null) {
     super();
-    const nodeId = options.nodeId ? options.nodeId : Bootstrap.getNodeId();
+    const nodeId = options && options.nodeId ? options.nodeId : Bootstrap.getNodeId();
     this.$options = options || <any>{};
     _.defaults(this.$options, <ITaskRunnerOptions>{
       nodeId: nodeId,

@@ -13,7 +13,7 @@ import {ITaskRunnerResult} from '../../../src/libs/tasks/ITaskRunnerResult';
 import {TaskEvent} from '../../../src/libs/tasks/worker/TaskEvent';
 
 
-const LOG_EVENT = TestHelper.logEnable(true);
+const LOG_EVENT = TestHelper.logEnable(false);
 
 let bootstrap: Bootstrap;
 const p: SpawnHandle[] = [];
@@ -89,6 +89,82 @@ class TasksSpec {
       (x: any) => x.name === _.snakeCase('SimpleTaskPromise'));
     expect(x.name).to.be.eq(_.snakeCase('SimpleTaskPromise'));
     expect(x.result).to.be.eq('test');
+  }
+
+
+  @test
+  async 'remote task on own node'() {
+    const executor1 = Injector.create(TaskExecutor);
+    const data = await executor1
+      .create(
+        [
+          'simple_task_promise'
+        ],
+        {},
+        {
+          targetId: 'system_0',
+          skipTargetCheck: true,
+        })
+      .run() as ITaskRunnerResult[];
+
+    expect(data).to.have.length(1);
+    const entry = data.shift();
+    expect(entry.results).to.not.be.empty;
+    const x = entry.results.find(
+      (x: any) => x.name === _.snakeCase('SimpleTaskPromise'));
+    expect(x.name).to.be.eq(_.snakeCase('SimpleTaskPromise'));
+    expect(x.result).to.be.eq('test');
+  }
+
+
+  @test
+  async 'remote task without results'() {
+    const executor1 = Injector.create(TaskExecutor);
+    const data = await executor1
+      .create(
+        [
+          'simple_task_promise'
+        ],
+        {},
+        {
+          waitForRemoteResults: false,
+          targetId: 'system_0',
+          skipTargetCheck: true,
+        })
+      .run() as TaskEvent[];
+
+    expect(data).to.have.length(1);
+    const entry = data.shift();
+    expect(entry.state).to.be.eq('enqueue');
+    expect(entry.topic).to.be.eq('data');
+    expect(entry.nodeId).to.be.eq('system_0');
+    expect(entry.respId).to.be.eq('system_0');
+  }
+
+
+  @test
+  async 'remote task on not existing node'() {
+    const executor1 = Injector.create(TaskExecutor);
+    let error = null;
+    try {
+
+      const data = await executor1
+        .create(
+          [
+            'simple_task_promise'
+          ],
+          {},
+          {
+            targetId: 'not_there',
+            skipTargetCheck: true,
+          })
+        .run() as ITaskRunnerResult[];
+      expect(true).to.be.false;
+    } catch (e) {
+      error = e;
+    }
+    expect(error.message).to.be.eq('no enqueue responses arrived');
+
   }
 
 
@@ -246,7 +322,7 @@ class TasksSpec {
         })
       .run();
 
-    await TestHelper.wait(500);
+    await TestHelper.wait(1000);
 
     const running2 = executor2
       .create(
@@ -310,7 +386,6 @@ class TasksSpec {
     expect(executor1.isExecuteable()).to.be.true;
     expect(executor2.isExecuteable()).to.be.false;
     expect(results).to.have.length(2);
-    console.log(results);
     expect((<any>results[0]).state).to.be.eq('stopped');
     expect((<any>results[1])).to.be.null;
   }
@@ -360,22 +435,109 @@ class TasksSpec {
   }
 
 
-  @test.skip
-  async 'remote task on own node'() {
+  @test
+  async 'handling remote exception during task execution'() {
+    const executor1 = Injector.create(TaskExecutor);
+    const data = await executor1
+      .create(
+        [
+          'simple_task_exception_running'
+        ],
+        {},
+        {
+          remote: true,
+          skipTargetCheck: true,
+        })
+      .run() as ITaskRunnerResult[];
 
+    expect(data).to.have.length(1);
+    const entry = data.shift();
+    const data1 = entry.results.shift();
+    expect(data1).to.be.deep.include({
+      has_error: true,
+    });
 
+    expect(data1.error).to.be.deep.include({
+      message: 'test error',
+      className: 'Error'
+    });
+    expect(data1.error.stack).to.have.length.gte(3);
   }
 
-  @test.skip
-  async 'handling exception during task execution'() {
 
+  @test
+  async 'handling local exception during task execution'() {
+    const executor1 = Injector.create(TaskExecutor);
+    const entry = await executor1
+      .create(
+        [
+          'simple_task_exception_running'
+        ],
+        {},
+        {
+          isLocal: true,
+        })
+      .run() as ITaskRunnerResult;
+
+    const data1 = entry.results.shift();
+    expect(data1).to.be.deep.include({
+      has_error: true,
+    });
+
+    expect(data1.error).to.be.deep.include({
+      message: 'test error',
+      className: 'Error'
+    });
+    expect(data1.error.stack).to.have.length.gte(3);
   }
 
-  @test.skip
+  @test
   async 'check incoming + outgoing'() {
+    const executor1 = Injector.create(TaskExecutor);
+    const entry = await executor1
+      .create(
+        [
+          'simple_in_out_task'
+        ],
+        {income: 'hallo welt '},
+        {
+          targetId: 'remote01',
+          skipTargetCheck: true
+        })
+      .run() as ITaskRunnerResult[];
 
+    expect(entry).to.have.length(1);
+    const data = entry.shift();
+    expect(data.results).to.have.length(1);
+    expect(data.results.shift()).to.deep.include({
+      incoming: {income: 'hallo welt '},
+      outgoing: {output: 'hallo welt hallo welt hallo welt'},
+    });
 
   }
 
+  @test
+  async 'error missing incoming'() {
+    const executor1 = Injector.create(TaskExecutor);
+    let error = null;
+    try {
+      const entry = await executor1
+        .create(
+          [
+            'simple_in_out_task'
+          ],
+          {},
+          {
+            targetId: 'remote01',
+            skipTargetCheck: true
+          })
+        .run() as ITaskRunnerResult[];
+      expect(true).to.be.false;
+    } catch (e) {
+      error = e;
+    }
+    expect(error.message).to.be.eq('The required value is not passed. data: {"required":"income"}');
+
+  }
 
 }

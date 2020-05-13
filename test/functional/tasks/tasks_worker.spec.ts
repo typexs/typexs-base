@@ -439,15 +439,16 @@ class TasksWorkerSpec {
     // ---- finished
     await bootstrap.shutdown();
 
-    const events_01: TaskEvent[] = events.filter(x => x.targetIds.indexOf('fakeapp01') !== -1);
-    const events_02: TaskEvent[] = events.filter(x => x.targetIds.indexOf('fakeapp02') !== -1);
-    expect(events_01).to.have.length(4);
+    const events_01: TaskEvent[] = events.filter(x => x.targetIds.indexOf('system') !== -1);
+    const events_02: TaskEvent[] = events.filter(x => x.targetIds.indexOf('fakeapp01') !== -1);
+    const events_03: TaskEvent[] = events.filter(x => x.targetIds.indexOf('fakeapp02') !== -1);
+    expect(events_01).to.have.length(3);
     expect(events_02).to.have.length(1);
+    expect(events_03).to.have.length(1);
 
     expect(events_01.map(x => {
       return {state: x.state, respId: x.respId};
     })).to.deep.eq([
-      {state: 'proposed', respId: undefined},
       {state: 'enqueue', respId: 'fakeapp01'},
       {state: 'started', respId: 'fakeapp01'},
       {state: 'stopped', respId: 'fakeapp01'}
@@ -462,7 +463,6 @@ class TasksWorkerSpec {
     expect(events_01.map(x => {
       return {result: x.data ? x.data.results[0].result : null};
     })).to.deep.eq([
-      {result: null},
       {result: null},
       {result: null},
       {result: {res: 'okay', value: 'valueSome'}}

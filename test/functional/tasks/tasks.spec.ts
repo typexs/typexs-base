@@ -30,6 +30,7 @@ import {TaskRunner} from '../../../src/libs/tasks/TaskRunner';
 import {Tasks} from '../../../src/libs/tasks/Tasks';
 import {TaskRunnerRegistry} from '../../../src/libs/tasks/TaskRunnerRegistry';
 import {TasksHelper} from '../../../src/libs/tasks/TasksHelper';
+import {Injector} from '../../../src';
 
 const stdMocks = require('std-mocks');
 
@@ -478,8 +479,8 @@ class TasksSpec {
 
     const runner = new TaskRunner(tasks, ['simple_task']);
     expect(registry.getRunners()).to.have.length(1);
-    expect(registry.hasRunningTasks('simple_task')).to.be.true;
-    expect(registry.hasRunningTasks(['simple_task'])).to.be.true;
+    expect(registry.hasRunnerForTasks('simple_task')).to.be.true;
+    expect(registry.hasRunnerForTasks(['simple_task'])).to.be.true;
 
     const data = await runner.run();
     expect(data.results).to.have.length(1);
@@ -514,15 +515,11 @@ class TasksSpec {
     const tasks = new Tasks('testnode');
     const taskRef = tasks.addTask(SimpleTaskPromise);
     Container.set(Tasks.NAME, tasks);
+    const taskRunnerRegistry = Injector.create(TaskRunnerRegistry);
+    Container.set(TaskRunnerRegistry.NAME, taskRunnerRegistry);
+    await taskRunnerRegistry.prepare();
 
-    // expect(taskRef.name).to.be.eq('simple_task_promise');
-    // const runner = new TaskRunner(tasks, ['simple_task_promise']);
-    // const data = await runner.run();
-    // expect(data.results).to.have.length(1);
-    // // tslint:disable-next-line:no-shadowed-variable
-    // const x = data.results.find(x => x.name === taskRef.name);
-    // expect(x.name).to.be.eq(taskRef.name);
-    // expect(x.result).to.be.eq('test');
+
     const promise1 = TasksHelper.exec(['simple_task_promise'], {
       isLocal: true,
       skipTargetCheck: true,
@@ -537,7 +534,11 @@ class TasksSpec {
     const results = await Promise.all([promise1, promise2]);
     expect(results.shift()).not.to.be.null;
     expect(results.shift()).to.be.null;
+    await taskRunnerRegistry.prepare();
     Container.remove(Tasks.NAME);
+    Container.remove(TaskRunnerRegistry.NAME);
+
+
   }
 
 

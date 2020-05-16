@@ -13,9 +13,11 @@ import {DistributedStorageEntityController} from '../../../src/libs/distributed_
 import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
 import {DataRow} from './fake_app/entities/DataRow';
 import {__REMOTE_IDS__, XS_P_$ERRORED, XS_P_$SAVED} from '../../../src/libs/distributed_storage/Constants';
-import {C_STORAGE_DEFAULT, Injector, StorageRef} from '../../../src';
 import {IEntityController} from '../../../src/libs/storage/IEntityController';
 import {generateSqlDataRows} from './helper';
+import {Injector} from '../../../src/libs/di/Injector';
+import {C_STORAGE_DEFAULT} from '../../../src/libs/Constants';
+import {StorageRef} from '../../../src/libs/storage/StorageRef';
 
 // process.env.SQL_LOG = '1';
 

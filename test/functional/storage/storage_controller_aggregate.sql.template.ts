@@ -7,17 +7,17 @@ import {expect} from 'chai';
 import {Bootstrap} from '../../../src/Bootstrap';
 import {Config} from 'commons-config';
 import {ClassType} from 'commons-schema-api/browser';
-import {StorageRef} from '../../../src/libs/storage/StorageRef';
-import {StorageEntityController} from '../../../src/libs/storage/StorageEntityController';
 import {XS_P_$COUNT, XS_P_$LIMIT} from '../../../src/libs/Constants';
+import {TypeOrmEntityController} from '../../../src/libs/storage/framework/typeorm/TypeOrmEntityController';
+import {TypeOrmStorageRef} from '../../../src/libs/storage/framework/typeorm/TypeOrmStorageRef';
 
 let bootstrap: Bootstrap;
-let storageRef: StorageRef;
+let storageRef: TypeOrmStorageRef;
 
 let CarSql: ClassType<any> = null;
 let DriverSql: ClassType<any> = null;
 let CarParam: ClassType<any> = null;
-let controller: StorageEntityController = null;
+let controller: TypeOrmEntityController = null;
 
 export class StorageAcontrollerAggregateSqlTemplate {
 

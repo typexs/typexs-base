@@ -7,6 +7,7 @@ import {TypeOrmSqlConditionsBuilder} from '../../../src/libs/storage/framework/t
 import {TypeOrmEntityRegistry} from '../../../src/libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry';
 import {SelectQueryBuilder} from 'typeorm';
 import {Config} from 'commons-config';
+import {TypeOrmStorageRef} from '../../../src/libs/storage/framework/typeorm/TypeOrmStorageRef';
 
 let bootstrap: Bootstrap;
 let CarCond: any = null;
@@ -42,7 +43,7 @@ class StorageSqlConditionsBuilderSpec {
     bootstrap = await bootstrap.activateStorage();
 
     const storageManager = bootstrap.getStorage();
-    const storageRef = storageManager.get();
+    const storageRef: TypeOrmStorageRef = storageManager.get();
     CarCond = require('./fake_app_conditions/entities/CarCond').CarCond;
     DriverCond = require('./fake_app_conditions/entities/DriverCond').DriverCond;
 
@@ -317,7 +318,7 @@ class StorageSqlConditionsBuilderSpec {
 
   @test
   async 'build conditions for having mode'() {
-    const ref = bootstrap.getStorage().get();
+    const ref: TypeOrmStorageRef = bootstrap.getStorage().get();
     const connection = await ref.connect();
     const sql = new TypeOrmSqlConditionsBuilder(connection.manager, TypeOrmEntityRegistry.$().getEntityRefFor(DriverCond), ref, 'select', 'driver');
     sql.setMode('having');
@@ -360,7 +361,7 @@ class StorageSqlConditionsBuilderSpec {
 
 
 async function getQuery(condition: any, type: Function, alias: string) {
-  const ref = bootstrap.getStorage().get();
+  const ref: TypeOrmStorageRef = bootstrap.getStorage().get();
   const connection = await ref.connect();
   const sql = new TypeOrmSqlConditionsBuilder(connection.manager, TypeOrmEntityRegistry.$().getEntityRefFor(type), ref, 'select', alias);
   const where = sql.build(condition);

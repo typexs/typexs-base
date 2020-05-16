@@ -3,9 +3,10 @@ import {IEventBusConfiguration} from 'commons-eventbus';
 import {Config} from 'commons-config';
 import {ITypexsOptions} from '../../../../src/libs/ITypexsOptions';
 import {Bootstrap} from '../../../../src/Bootstrap';
-import {DataRow} from './entities/DataRow';
-import {C_STORAGE_DEFAULT, Injector, StorageRef} from '../../../../src';
 import {generateSqlDataRows} from '../helper';
+import {Injector} from '../../../../src/libs/di/Injector';
+import {C_STORAGE_DEFAULT} from '../../../../src/libs/Constants';
+import {StorageRef} from '../../../../src/libs/storage/StorageRef';
 
 (async function () {
   const LOG_EVENT = !!process.argv.find(x => x === '--enable_log');

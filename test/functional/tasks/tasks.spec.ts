@@ -30,7 +30,7 @@ import {TaskRunner} from '../../../src/libs/tasks/TaskRunner';
 import {Tasks} from '../../../src/libs/tasks/Tasks';
 import {TaskRunnerRegistry} from '../../../src/libs/tasks/TaskRunnerRegistry';
 import {TasksHelper} from '../../../src/libs/tasks/TasksHelper';
-import {Injector} from '../../../src';
+import {Injector} from '../../../src/libs/di/Injector';
 
 const stdMocks = require('std-mocks');
 

@@ -8,6 +8,7 @@ import {FileWatcher} from '../../../src/libs/watchers/FileWatcher';
 import {Config} from 'commons-config';
 import Sandbox = ChaiSpies.Sandbox;
 import {Log} from '../../../src/libs/logging/Log';
+import {PlatformUtils} from 'commons-base';
 
 async function sleep(duration: number): Promise<void> {
   return new Promise((resolve) => {
@@ -15,11 +16,17 @@ async function sleep(duration: number): Promise<void> {
   });
 }
 
+const tmpDir = '/tmp/watcher_test';
+
 @suite('functional/watchers/file_watcher', slow(5000), timeout(10000))
 class FileWatcherSpec {
   static sandbox: Sandbox;
 
-  static before() {
+  static async before() {
+    if (PlatformUtils.fileExist(tmpDir)) {
+      await PlatformUtils.deleteDirectory(tmpDir);
+    }
+    await PlatformUtils.mkdir(tmpDir);
 
     Config.clear();
 
@@ -41,7 +48,7 @@ class FileWatcherSpec {
       return new FileWatcher({
         type: 'file',
         name: 'dir1',
-        path: '/tmp',
+        path: tmpDir,
       });
     }).to.throw();
   }
@@ -63,7 +70,7 @@ class FileWatcherSpec {
     const fileWatcher = new FileWatcher({
       type: 'file',
       name: 'dir1',
-      path: '/tmp',
+      path: tmpDir,
       event: 'foo',
     });
 
@@ -75,7 +82,7 @@ class FileWatcherSpec {
     const fileWatcher = new FileWatcher({
       type: 'file',
       name: 'dir1',
-      path: '/tmp',
+      path: tmpDir,
       event: 'foo',
     });
 
@@ -91,7 +98,7 @@ class FileWatcherSpec {
     const fileWatcher = new FileWatcher({
       type: 'file',
       name: 'dir1',
-      path: '/tmp',
+      path: tmpDir,
       event: 'foo',
     });
 
@@ -105,7 +112,7 @@ class FileWatcherSpec {
     const fileWatcher = new FileWatcher({
       type: 'file',
       name: 'dir1',
-      path: '/tmp',
+      path: tmpDir,
       event: 'foo',
     });
 
@@ -121,14 +128,14 @@ class FileWatcherSpec {
     expect(emitEventSpy).not.to.have.been.called();
     expect(executeTasksSpy).not.to.have.been.called();
 
-    writeFileSync('/tmp/foo', 'lorem ipsum');
+    writeFileSync(tmpDir + '/foo', 'lorem ipsum');
 
     await sleep(2000);
 
     expect(emitEventSpy).to.have.been.called();
     expect(executeTasksSpy).to.have.been.called();
 
-    unlinkSync('/tmp/foo');
+    unlinkSync(tmpDir + '/foo');
     await fileWatcher.stop();
   }
 }

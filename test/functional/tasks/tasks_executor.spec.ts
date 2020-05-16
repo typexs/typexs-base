@@ -3,7 +3,6 @@ import {suite, test, timeout} from 'mocha-typescript';
 import {expect} from 'chai';
 import {SimpleTaskPromise} from './tasks/SimpleTaskPromise';
 import {TestHelper} from '../TestHelper';
-import {Bootstrap, Injector, ITypexsOptions} from '../../../src';
 import {TaskExecutor} from '../../../src/libs/tasks/TaskExecutor';
 import {TEST_STORAGE_OPTIONS} from '../config';
 import {IEventBusConfiguration} from 'commons-eventbus';
@@ -11,6 +10,10 @@ import {SpawnHandle} from '../SpawnHandle';
 import {TaskRequestFactory} from '../../../src/libs/tasks/worker/TaskRequestFactory';
 import {ITaskRunnerResult} from '../../../src/libs/tasks/ITaskRunnerResult';
 import {TaskEvent} from '../../../src/libs/tasks/worker/TaskEvent';
+import {Bootstrap} from '../../../src/Bootstrap';
+import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
+import {Injector} from '../../../src/libs/di/Injector';
+import {TaskFuture} from '../../../src/libs/tasks/worker/execute/TaskFuture';
 
 
 const LOG_EVENT = TestHelper.logEnable(false);
@@ -23,6 +26,8 @@ const p: SpawnHandle[] = [];
 class TasksSpec {
 
   static async before() {
+    Bootstrap.reset();
+
     const nodeId = 'system_0';
     bootstrap = Bootstrap
       .setConfigSources([{type: 'system'}])
@@ -307,6 +312,57 @@ class TasksSpec {
 
 
   @test
+  async 'error missing incoming'() {
+    const executor1 = Injector.create(TaskExecutor);
+    let error = null;
+    try {
+      const entry = await executor1
+        .create(
+          [
+            'simple_in_out_task'
+          ],
+          {},
+          {
+            targetId: 'remote01',
+            skipTargetCheck: true,
+            // timeout: 30000
+          })
+        .run() as ITaskRunnerResult[];
+      expect(true).to.be.false;
+    } catch (e) {
+      error = e;
+    }
+    expect(error.message).to.be.eq('The required value is not passed. data: {"required":"income"}');
+
+  }
+
+  @test
+  async 'check incoming + outgoing'() {
+    const executor1 = Injector.create(TaskExecutor);
+    const entry = await executor1
+      .create(
+        [
+          'simple_in_out_task'
+        ],
+        {income: 'hallo welt '},
+        {
+          targetId: 'remote01',
+          skipTargetCheck: true,
+          // timeout: 30000
+        })
+      .run() as ITaskRunnerResult[];
+
+    expect(entry).to.have.length(1);
+    const data = entry.shift();
+    expect(data.results).to.have.length(1);
+    expect(data.results.shift()).to.deep.include({
+      incoming: {income: 'hallo welt '},
+      outgoing: {output: 'hallo welt hallo welt hallo welt'},
+    });
+
+  }
+
+  @test
   async 'concurrency on same node'() {
     const executor1 = Injector.create(TaskExecutor);
     const executor2 = Injector.create(TaskExecutor);
@@ -322,7 +378,7 @@ class TasksSpec {
         })
       .run();
 
-    await TestHelper.wait(1000);
+    await TestHelper.wait(500);
 
     const running2 = executor2
       .create(
@@ -344,7 +400,6 @@ class TasksSpec {
     expect(executor1.isExecuteable()).to.be.true;
     expect(executor2.isExecuteable()).to.be.false;
     expect(results).to.have.length(2);
-    // console.log(results);
     expect((<any>results[0][0]).state).to.be.eq('stopped');
     expect((<any>results[1])).to.be.null;
   }
@@ -395,17 +450,17 @@ class TasksSpec {
   async 'concurrency on different nodes'() {
     const executor1 = Injector.create(TaskExecutor);
     const executor2 = Injector.create(TaskExecutor);
-    const running1 = executor1
+    const running1 = await executor1
       .create(
         ['simple_task_running'],
         {},
         {
           executionConcurrency: 1,
-          waitForRemoteResults: true,
           targetId: 'remote01',
           skipTargetCheck: true,
+          timeout: 10000
         })
-      .run();
+      .run(true) as TaskFuture;
 
     await TestHelper.wait(500);
 
@@ -418,18 +473,18 @@ class TasksSpec {
           waitForRemoteResults: true,
           targetId: 'remote02',
           skipTargetCheck: true,
+          timeout: 10000
         })
       .run();
 
     const results = await Promise.all([
-      running1,
+      running1.await(),
       running2
     ]);
 
     expect(executor1.isExecuteable()).to.be.true;
     expect(executor2.isExecuteable()).to.be.false;
     expect(results).to.have.length(2);
-    // console.log(results);
     expect((<any>results[0][0]).state).to.be.eq('stopped');
     expect((<any>results[1])).to.be.null;
   }
@@ -491,53 +546,5 @@ class TasksSpec {
     expect(data1.error.stack).to.have.length.gte(3);
   }
 
-  @test
-  async 'check incoming + outgoing'() {
-    const executor1 = Injector.create(TaskExecutor);
-    const entry = await executor1
-      .create(
-        [
-          'simple_in_out_task'
-        ],
-        {income: 'hallo welt '},
-        {
-          targetId: 'remote01',
-          skipTargetCheck: true
-        })
-      .run() as ITaskRunnerResult[];
-
-    expect(entry).to.have.length(1);
-    const data = entry.shift();
-    expect(data.results).to.have.length(1);
-    expect(data.results.shift()).to.deep.include({
-      incoming: {income: 'hallo welt '},
-      outgoing: {output: 'hallo welt hallo welt hallo welt'},
-    });
-
-  }
-
-  @test
-  async 'error missing incoming'() {
-    const executor1 = Injector.create(TaskExecutor);
-    let error = null;
-    try {
-      const entry = await executor1
-        .create(
-          [
-            'simple_in_out_task'
-          ],
-          {},
-          {
-            targetId: 'remote01',
-            skipTargetCheck: true
-          })
-        .run() as ITaskRunnerResult[];
-      expect(true).to.be.false;
-    } catch (e) {
-      error = e;
-    }
-    expect(error.message).to.be.eq('The required value is not passed. data: {"required":"income"}');
-
-  }
 
 }

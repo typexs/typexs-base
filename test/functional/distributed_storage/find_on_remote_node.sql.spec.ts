@@ -12,11 +12,13 @@ import {TestHelper} from '../TestHelper';
 import {DistributedStorageEntityController} from '../../../src/libs/distributed_storage/DistributedStorageEntityController';
 import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
 import {DataRow} from './fake_app/entities/DataRow';
-import {C_STORAGE_DEFAULT, Injector, StorageRef, XS_P_$COUNT} from '../../../src';
 import {IEntityController} from '../../../src/libs/storage/IEntityController';
 import {SpawnHandle} from '../SpawnHandle';
 import {__NODE_ID__} from '../../../src/libs/distributed_storage/Constants';
 import {generateSqlDataRows} from './helper';
+import {Injector} from '../../../src/libs/di/Injector';
+import {C_STORAGE_DEFAULT, XS_P_$COUNT} from '../../../src/libs/Constants';
+import {StorageRef} from '../../../src/libs/storage/StorageRef';
 
 
 const LOG_EVENT = TestHelper.logEnable(false);

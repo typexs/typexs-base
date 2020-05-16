@@ -7,7 +7,13 @@ import {Bootstrap} from '../../../src/Bootstrap';
 import {Config} from 'commons-config';
 import {RuntimeLoader} from '../../../src/base/RuntimeLoader';
 import {K_CLS_WORKERS} from '../../../src/libs/worker/Constants';
-import {K_CLS_API, K_CLS_BOOTSTRAP, K_CLS_STORAGE_SCHEMAHANDLER, K_CLS_USE_API} from '../../../src/libs/Constants';
+import {
+  K_CLS_API,
+  K_CLS_BOOTSTRAP,
+  K_CLS_STORAGE_SCHEMAHANDLER,
+  K_CLS_STORAGE_TYPES,
+  K_CLS_USE_API
+} from '../../../src/libs/Constants';
 import {K_CLS_TASKS} from '../../../src/libs/tasks/Constants';
 
 
@@ -160,12 +166,18 @@ class BootstrapGeneralSpec {
                 'src/adapters/scheduler/*Factory.*'
               ]
             },
-
             {
               topic: K_CLS_STORAGE_SCHEMAHANDLER,
               refs: [
-                'adapters/storage/*SchemaHandler.*',
-                'src/adapters/storage/*SchemaHandler.*'
+                'adapters/storage/*/*SchemaHandler.*',
+                'src/adapters/storage/*/*SchemaHandler.*'
+              ]
+            },
+            {
+              topic: K_CLS_STORAGE_TYPES,
+              refs: [
+                'adapters/storage/*/*Storage.*',
+                'src/adapters/storage/*/*Storage.*'
               ]
             },
             {

@@ -2,7 +2,8 @@
 
 import {suite} from 'mocha-typescript';
 import {StorageAcontrollerAggregateSqlTemplate} from './storage_controller_aggregate.sql.template';
-import {StorageRef} from '../../../src';
+import {StorageRef} from '../../../src/libs/storage/StorageRef';
+import {TypeOrmStorageRef} from '../../../src/libs/storage/framework/typeorm/TypeOrmStorageRef';
 
 // let bootstrap: Bootstrap;
 // let storageRef: StorageRef;
@@ -41,7 +42,7 @@ class StorageControllerAggregateMysqlSpec extends StorageAcontrollerAggregateSql
   }
 
 
-  static async cleanup(ref: StorageRef) {
+  static async cleanup(ref: TypeOrmStorageRef) {
     const c = await ref.connect();
     await c.manager.query('SET FOREIGN_KEY_CHECKS = 0');
     await c.manager.query('TRUNCATE TABLE  car_param');

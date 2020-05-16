@@ -5,7 +5,6 @@ import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 import {Invoker} from '../../../src/base/Invoker';
 import {IStorageOptions} from '../../../src/libs/storage/IStorageOptions';
-import {StorageRef} from '../../../src/libs/storage/StorageRef';
 import {Bootstrap} from '../../../src/Bootstrap';
 import {Config} from 'commons-config';
 import {BeforeInsert, Column, PrimaryColumn} from 'typeorm';
@@ -14,6 +13,8 @@ import {Y1} from './entities/Y1';
 import {TEST_STORAGE_OPTIONS} from '../config';
 import {Container} from 'typedi';
 import {ClassRef, XS_DEFAULT} from 'commons-schema-api';
+import {ITypeOrmStorageOptions} from '../../../src/libs/storage/framework/typeorm/ITypeOrmStorageOptions';
+import {TypeOrmStorageRef} from '../../../src/libs/storage/framework/typeorm/TypeOrmStorageRef';
 
 
 let bootstrap: Bootstrap;
@@ -37,8 +38,13 @@ class StorageGeneralSpec {
 
   @test
   async 'storage options override'() {
-    const opt1: IStorageOptions = {name: 'default', type: 'sqlite', entityPrefix: 'test', connectOnStartup: true};
-    const opt2: IStorageOptions = {name: 'default2', type: 'postgres', connectOnStartup: true};
+    const opt1: ITypeOrmStorageOptions = {
+      name: 'default',
+      type: 'sqlite',
+      entityPrefix: 'test',
+      connectOnStartup: true
+    };
+    const opt2: ITypeOrmStorageOptions = {name: 'default2', type: 'postgres', connectOnStartup: true};
     const options: IStorageOptions = _.merge(opt1, opt2);
     expect(options).to.be.deep.eq({name: 'default2', type: 'postgres', entityPrefix: 'test', connectOnStartup: true});
   }
@@ -54,7 +60,7 @@ class StorageGeneralSpec {
     bootstrap = await bootstrap.activateStorage();
 
     const storageManager = bootstrap.getStorage();
-    const storage = storageManager.get();
+    const storage: TypeOrmStorageRef = storageManager.get();
 
     expect(storage['options']).to.deep.include({
       name: 'default',
@@ -70,7 +76,7 @@ class StorageGeneralSpec {
       'SystemNodeInfo', 'TaskLog', 'ModuleEntity', 'TestEntity'
     ].sort());
 
-    let storageRef = storageManager.forClass('module_entity');
+    let storageRef: TypeOrmStorageRef = storageManager.forClass('module_entity');
     expect(storageRef.name).to.eq(XS_DEFAULT);
 
     const TestEntity = require('./fake_app/entities/TestEntity').TestEntity;
@@ -114,10 +120,10 @@ class StorageGeneralSpec {
     const invoker = new Invoker();
     Container.set(Invoker.NAME, invoker);
 
-    const storage = new StorageRef(TEST_STORAGE_OPTIONS);
+    const storage = new TypeOrmStorageRef(TEST_STORAGE_OPTIONS as ITypeOrmStorageOptions);
     await storage.prepare();
 
-    storage.addEntityClass(X, 'xtable');
+    storage.addTableEntityClass(X, 'xtable');
     await storage.reload();
     expect(storage['options'].entities).has.length(1);
 
@@ -142,10 +148,10 @@ class StorageGeneralSpec {
     const invoker = new Invoker();
     Container.set(Invoker.NAME, invoker);
 
-    const storage = new StorageRef(opts);
+    const storage = new TypeOrmStorageRef(opts as any);
     await storage.prepare();
 
-    storage.addEntityClass(X, 'xtable');
+    storage.addTableEntityClass(X, 'xtable');
     await storage.reload();
     expect(storage['options'].entities).has.length(1);
 
@@ -188,11 +194,11 @@ class StorageGeneralSpec {
     const invoker = new Invoker();
     Container.set(Invoker.NAME, invoker);
 
-    const storage = new StorageRef(TEST_STORAGE_OPTIONS);
+    const storage = new TypeOrmStorageRef(TEST_STORAGE_OPTIONS as any);
     await storage.prepare();
 
-    storage.addEntityClass(X, 'xtable');
-    storage.addEntityClass(Y, 'ytable');
+    storage.addTableEntityClass(X, 'xtable');
+    storage.addTableEntityClass(Y, 'ytable');
     await storage.reload();
 
     const c = await storage.connect();
@@ -221,7 +227,7 @@ class StorageGeneralSpec {
     const invoker = new Invoker();
     Container.set(Invoker.NAME, invoker);
 
-    const storage = new StorageRef(opts);
+    const storage = new TypeOrmStorageRef(opts as any);
     await storage.prepare();
 
     const c = await storage.connect();

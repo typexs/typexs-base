@@ -1,5 +1,6 @@
 import {ITask} from '../../../../../src/libs/tasks/ITask';
-import {Incoming, Outgoing} from '../../../../../src';
+import {Incoming} from '../../../../../src/libs/tasks/decorators/Incoming';
+import {Outgoing} from '../../../../../src/libs/tasks/decorators/Outgoing';
 
 export class SimpleInOutTask implements ITask {
   name = 'simple_in_out_task';

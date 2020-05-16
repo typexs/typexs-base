@@ -7,8 +7,13 @@ import {Container} from 'typedi';
 import {Bootstrap} from '../../../src/Bootstrap';
 import {WatcherRegistry} from '../../../src/libs/watchers/WatcherRegistry';
 import {TEST_STORAGE_OPTIONS} from '../config';
-import Sandbox = ChaiSpies.Sandbox;
 import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
+import {PlatformUtils} from 'commons-base';
+import Sandbox = ChaiSpies.Sandbox;
+
+
+const tmpDir = '/tmp/watcher_test';
+
 
 @suite('functional/watchers/watcher_registry', slow(5000), timeout(10000))
 class WatcherRegistrySpec {
@@ -18,18 +23,23 @@ class WatcherRegistrySpec {
   static before() {
     Bootstrap.reset();
 
-
     use(chaiSpies);
     WatcherRegistrySpec.sandbox = chai.spy.sandbox();
   }
 
-  before() {
+  async before() {
+    if (PlatformUtils.fileExist(tmpDir)) {
+      await PlatformUtils.deleteDirectory(tmpDir);
+    }
+    await PlatformUtils.mkdir(tmpDir);
+
     Config.clear();
     WatcherRegistrySpec.sandbox.restore();
   }
 
   @test
   async integration() {
+
     WatcherRegistrySpec.bootstrap = Bootstrap
       .setConfigSources([{type: 'system'}])
       .configure(<ITypexsOptions & any>{
@@ -39,7 +49,7 @@ class WatcherRegistrySpec {
         watchers: [{
           type: 'file',
           name: 'dir1',
-          path: '/tmp',
+          path: tmpDir,
           event: 'event_name',
           task: {
             names: [
@@ -75,7 +85,7 @@ class WatcherRegistrySpec {
     Config.set(WatcherRegistry.CONFIG_ENTRY, [{
       type: 'file',
       name: 'dir1',
-      path: '/tmp',
+      path: tmpDir,
       event: 'event_name',
       task: {
         names: [
@@ -114,7 +124,7 @@ class WatcherRegistrySpec {
     Config.set(WatcherRegistry.CONFIG_ENTRY, [{
       type: 'file',
       name: 'dir1',
-      path: '/tmp',
+      path: tmpDir,
     }]);
 
     expect(() => {

@@ -9,16 +9,17 @@ import {Config} from 'commons-config';
 // import {MdbDriver} from "./fake_app_mongo/entities/MdbDriver";
 import {ClassType} from 'commons-schema-api/browser';
 import {StorageRef} from '../../../src/libs/storage/StorageRef';
-import {StorageEntityController} from '../../../src/libs/storage/StorageEntityController';
+import {TypeOrmEntityController} from '../../../src/libs/storage/framework/typeorm/TypeOrmEntityController';
+import {TypeOrmStorageRef} from '../../../src/libs/storage/framework/typeorm/TypeOrmStorageRef';
 
 
 let bootstrap: Bootstrap;
-let storageRef: StorageRef;
+let storageRef: TypeOrmStorageRef;
 
 let MdbCar: ClassType<any> = null;
 let MdbPerson: ClassType<any> = null;
 let MdbDriver: ClassType<any> = null;
-let controller: StorageEntityController = null;
+let controller: TypeOrmEntityController = null;
 
 
 @suite('functional/storage/controller_mongo')

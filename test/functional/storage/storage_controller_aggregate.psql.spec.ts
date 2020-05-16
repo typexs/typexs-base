@@ -2,7 +2,7 @@
 
 import {suite} from 'mocha-typescript';
 import {StorageAcontrollerAggregateSqlTemplate} from './storage_controller_aggregate.sql.template';
-import {StorageRef} from '../../../src';
+import {TypeOrmStorageRef} from '../../../src/libs/storage/framework/typeorm/TypeOrmStorageRef';
 
 // let bootstrap: Bootstrap;
 // let storageRef: StorageRef;
@@ -42,7 +42,7 @@ class StorageControllerAggregatePostgresSpec extends StorageAcontrollerAggregate
   }
 
 
-  static async cleanup(ref: StorageRef) {
+  static async cleanup(ref: TypeOrmStorageRef) {
     const c = await ref.connect();
     await c.manager.query('TRUNCATE car_param RESTART IDENTITY CASCADE;');
     await c.manager.query('TRUNCATE driver_sql  RESTART IDENTITY CASCADE;');

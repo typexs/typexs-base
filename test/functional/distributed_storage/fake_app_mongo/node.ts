@@ -4,9 +4,10 @@ import {IEventBusConfiguration} from 'commons-eventbus';
 import {Config} from 'commons-config';
 import {ITypexsOptions} from '../../../../src/libs/ITypexsOptions';
 import {Bootstrap} from '../../../../src/Bootstrap';
-import {DataRow} from './entities/DataRow';
-import {C_STORAGE_DEFAULT, Injector, StorageRef} from '../../../../src';
 import {generateMongoDataRows} from '../helper';
+import {Injector} from '../../../../src/libs/di/Injector';
+import {C_STORAGE_DEFAULT} from '../../../../src/libs/Constants';
+import {StorageRef} from '../../../../src/libs/storage/StorageRef';
 
 (async function () {
   const LOG_EVENT = !!process.argv.find(x => x === '--enable_log');
@@ -37,7 +38,7 @@ import {generateMongoDataRows} from '../helper';
   process.send('startup');
 
 
-  const entries = generateMongoDataRows()
+  const entries = generateMongoDataRows();
 
   const storageRef = Injector.get(C_STORAGE_DEFAULT) as StorageRef;
   const controllerRef = storageRef.getController();

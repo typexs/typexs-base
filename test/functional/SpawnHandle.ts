@@ -72,17 +72,19 @@ export class SpawnHandle {
 
   withLog() {
     this.process.stdout.on('data', d => {
-      console.log('out=>' + d.toString().trim());
+      console.log('out=> ' + d.toString().trim());
     });
     this.process.stderr.on('data', d => {
-      console.error('err=>' + d.toString().trim());
+      console.error('err=> ' + d.toString().trim());
     });
     return this;
   }
 
+
   exit() {
     this.process.kill();
   }
+
 
   shutdown() {
     this.process.send('shutdown');

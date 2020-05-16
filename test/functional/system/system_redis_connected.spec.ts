@@ -2,7 +2,6 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 import {Bootstrap} from '../../../src/Bootstrap';
-import {Config} from 'commons-config';
 import {TEST_STORAGE_OPTIONS} from '../config';
 import {IEventBusConfiguration} from 'commons-eventbus/browser';
 import {Container} from 'typedi';
@@ -25,25 +24,13 @@ class SystemRedisConnectedSpec {
 
 
   async before() {
-    // TestHelper.typeOrmRestore();
     Bootstrap.reset();
-    Config.clear();
-  }
 
-  async after() {
-    if (bootstrap) {
-      await bootstrap.shutdown();
-    }
-  }
-
-
-  @test
-  async 'check own node info'() {
     bootstrap = Bootstrap
       .setConfigSources([{type: 'system'}])
       .configure(<ITypexsOptions & any>{
         app: {name: 'test', nodeId: 'system', path: __dirname + '/fake_app'},
-        logging: {enable: LOG_EVENT, level: 'debug', loggers: [{name: '*', level: 'debug', enable: true}]},
+        logging: {enable: LOG_EVENT, level: 'debug', loggers: [{name: '*', level: 'debug'}]},
         modules: {paths: [__dirname + '/../../..']},
         storage: {default: TEST_STORAGE_OPTIONS},
         eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}}
@@ -54,11 +41,24 @@ class SystemRedisConnectedSpec {
     await bootstrap.prepareRuntime();
     bootstrap = await bootstrap.activateStorage();
     bootstrap = await bootstrap.startup();
+  }
 
+  async after() {
+    if (bootstrap) {
+      await bootstrap.shutdown();
+      await bootstrap.getStorage().shutdown();
+      bootstrap = null;
+    }
+  }
+
+
+  @test
+  async 'check own node info'() {
     const system: System = Container.get(System.NAME);
     expect(system.node.state).to.eq('idle');
 
     await bootstrap.shutdown();
+    bootstrap = null;
     expect(system.node.nodeId).to.eq('system');
     expect(system.node.state).to.eq('unregister');
   }
@@ -66,20 +66,20 @@ class SystemRedisConnectedSpec {
 
   @test
   async 'node register and unregister'() {
-    bootstrap = Bootstrap
-      .setConfigSources([{type: 'system'}])
-      .configure(<ITypexsOptions & any>{
-        app: {name: 'test', nodeId: 'system', path: __dirname + '/fake_app'},
-        logging: {enable: LOG_EVENT, level: 'debug', loggers: [{name: '*', level: 'debug', enable: true}]},
-        modules: {paths: [__dirname + '/../../..']},
-        storage: {default: TEST_STORAGE_OPTIONS},
-        eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}}
-      });
-    bootstrap.activateLogger();
-    bootstrap.activateErrorHandling();
-    await bootstrap.prepareRuntime();
-    bootstrap = await bootstrap.activateStorage();
-    bootstrap = await bootstrap.startup();
+    // bootstrap = Bootstrap
+    //   .setConfigSources([{type: 'system'}])
+    //   .configure(<ITypexsOptions & any>{
+    //     app: {name: 'test', nodeId: 'system', path: __dirname + '/fake_app'},
+    //     logging: {enable: LOG_EVENT, level: 'debug', loggers: [{name: '*', level: 'debug', enable: true}]},
+    //     modules: {paths: [__dirname + '/../../..']},
+    //     storage: {default: TEST_STORAGE_OPTIONS},
+    //     eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}}
+    //   });
+    // bootstrap.activateLogger();
+    // bootstrap.activateErrorHandling();
+    // await bootstrap.prepareRuntime();
+    // bootstrap = await bootstrap.activateStorage();
+    // bootstrap = await bootstrap.startup();
 
     const remoteNodes: SystemNodeInfo[] = [];
 
@@ -105,6 +105,7 @@ class SystemRedisConnectedSpec {
     const p = SpawnHandle.do(__dirname + '/fake_app/node.ts').start(LOG_EVENT);
     await p.started;
     await TestHelper.wait(200);
+
     let remoteNode = remoteNodes.shift();
     expect(remoteNode.nodeId).to.be.eq('fakeapp01');
     expect(remoteNode.state).to.be.eq('register');
@@ -116,6 +117,7 @@ class SystemRedisConnectedSpec {
 
     p.shutdown();
     await p.done;
+
     remoteNode = remoteNodes.pop();
     expect(remoteNode.nodeId).to.be.eq('fakeapp01');
     expect(remoteNode.state).to.be.eq('unregister');
@@ -138,20 +140,20 @@ class SystemRedisConnectedSpec {
 
   @test
   async 'check system information'() {
-    bootstrap = Bootstrap
-      .setConfigSources([{type: 'system'}])
-      .configure(<ITypexsOptions & any>{
-        app: {name: 'test', nodeId: 'system', path: __dirname + '/fake_app'},
-        logging: {enable: LOG_EVENT, level: 'debug'},
-        modules: {paths: [__dirname + '/../../..']},
-        storage: {default: TEST_STORAGE_OPTIONS},
-        eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}}
-      });
-    bootstrap.activateLogger();
-    bootstrap.activateErrorHandling();
-    await bootstrap.prepareRuntime();
-    bootstrap = await bootstrap.activateStorage();
-    bootstrap = await bootstrap.startup();
+    // bootstrap = Bootstrap
+    //   .setConfigSources([{type: 'system'}])
+    //   .configure(<ITypexsOptions & any>{
+    //     app: {name: 'test', nodeId: 'system', path: __dirname + '/fake_app'},
+    //     logging: {enable: LOG_EVENT, level: 'debug'},
+    //     modules: {paths: [__dirname + '/../../..']},
+    //     storage: {default: TEST_STORAGE_OPTIONS},
+    //     eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}}
+    //   });
+    // bootstrap.activateLogger();
+    // bootstrap.activateErrorHandling();
+    // await bootstrap.prepareRuntime();
+    // bootstrap = await bootstrap.activateStorage();
+    // bootstrap = await bootstrap.startup();
 
     const system: System = Container.get(System.NAME);
 

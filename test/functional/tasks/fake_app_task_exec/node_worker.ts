@@ -17,7 +17,16 @@ import {Bootstrap} from '../../../../src/Bootstrap';
     .setConfigSources([{type: 'system'}])
     .configure(<ITypexsOptions & any>{
       app: {name: NODEID, nodeId: NODEID, path: __dirname},
-      logging: {enable: LOG_EVENT, level: 'debug', loggers: [{name: '*', level: 'debug'}]},
+      logging: {
+        enable: LOG_EVENT,
+        level: 'debug',
+        transports: [
+          {console: {}}
+        ],
+        loggers: [{
+          name: '*', level: 'debug', transports: [{console: {}}]
+        }]
+      },
       modules: {paths: [__dirname + '/../../../..']},
       storage: {default: TEST_STORAGE_OPTIONS},
       eventbus: {
@@ -36,7 +45,7 @@ import {Bootstrap} from '../../../../src/Bootstrap';
 
   process.send('startup');
 
-  const timeout = parseInt(Config.get('argv.timeout', 20000), 0);
+  const timeout = parseInt(Config.get('argv.timeout', 120000), 0);
   const t = setTimeout(async () => {
     await bootstrap.shutdown();
   }, timeout);

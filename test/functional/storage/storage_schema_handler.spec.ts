@@ -5,6 +5,7 @@ import {expect} from 'chai';
 
 import {Bootstrap} from '../../../src/Bootstrap';
 import {Config} from 'commons-config';
+import {TypeOrmStorageRef} from '../../../src/libs/storage/framework/typeorm/TypeOrmStorageRef';
 
 
 @suite('functional/storage/schema_handler')
@@ -38,7 +39,7 @@ class GeneralSpec {
     bootstrap = await bootstrap.activateStorage();
 
     const storageManager = bootstrap.getStorage();
-    const storageRef = storageManager.get();
+    const storageRef: TypeOrmStorageRef = storageManager.get();
 
 
     const c = await storageRef.connect();
@@ -54,7 +55,7 @@ class GeneralSpec {
     expect(tables).to.have.length(6);
     expect(tableNames).to.have.members(_.map(tables, _q => _q.name));
 
-    await bootstrap.shutdown()
+    await bootstrap.shutdown();
     await bootstrap.getStorage().shutdown();
   }
 

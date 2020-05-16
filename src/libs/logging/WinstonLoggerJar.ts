@@ -137,9 +137,10 @@ export class WinstonLoggerJar implements ILoggerApi {
 
 
   log(level: string, ...msg: any[]): void {
-    if (!this.isEnabled()) {
+    if (!this.isEnabled() || this._logger.transports && this._logger.transports.length === 0) {
       return;
     }
+
     if (msg[0] instanceof LogEvent) {
       this._logger.log(level, msg[0].message(), {event: msg[0]});
     } else {

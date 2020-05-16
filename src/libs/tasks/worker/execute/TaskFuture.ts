@@ -60,7 +60,7 @@ export class TaskFuture extends EventEmitter {
           this.targetResults[event.respId] = event.data;
         }
       }
-
+      
       if (this.isFinished()) {
         await this.close();
       }

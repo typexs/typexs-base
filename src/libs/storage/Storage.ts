@@ -1,12 +1,11 @@
-import {IStorageOptions} from './IStorageOptions';
-import {StorageRef} from './StorageRef';
+import {IStorageOptions, K_STORAGE} from './IStorageOptions';
 import * as _ from 'lodash';
-
-import {AbstractSchemaHandler} from './AbstractSchemaHandler';
 import {RuntimeLoader} from '../../base/RuntimeLoader';
-import {__DEFAULT__, K_CLS_STORAGE_SCHEMAHANDLER} from '../Constants';
-import {DefaultSchemaHandler} from '../../adapters/storage/DefaultSchemaHandler';
+import {K_CLS_STORAGE_TYPES} from '../Constants';
 import {IClassRef} from 'commons-schema-api';
+import {IStorage} from './IStorage';
+import {Config} from 'commons-config';
+import {IStorageRef} from './IStorageRef';
 
 
 export class Storage {
@@ -15,36 +14,38 @@ export class Storage {
 
   nodeId: string;
 
-  private refs: { [key: string]: StorageRef } = {};
+  storageFramework: { [key: string]: IStorage } = {};
 
-  private schemaHandler: { [key: string]: Function } = {};
+  private refs: { [key: string]: IStorageRef } = {};
 
-  constructor() {
-    this.schemaHandler[__DEFAULT__] = DefaultSchemaHandler;
+
+  /**
+   * return the name of the default framework to use
+   */
+  getDefaultFramework() {
+    return Config.get(K_STORAGE + '._defaultFramework', 'typeorm');
   }
 
 
-  register(name: string, options: IStorageOptions) {
-    // Todo load other handling class from baseClass if necassary options.baseClass
-    const ref = new StorageRef(options);
-    let type = __DEFAULT__;
-    if (_.has(this.schemaHandler, options.type)) {
-      type = options.type;
+  async register(name: string, options: IStorageOptions): Promise<IStorageRef> {
+    const useFramework = options.framework || this.getDefaultFramework();
+    if (this.storageFramework[useFramework]) {
+      const ref = await this.storageFramework[useFramework].create(name, options);
+      this.refs[name] = ref;
+      return ref;
+    } else {
+      throw new Error('not framework with ' + useFramework + ' exists');
     }
-    const schemaHandler = Reflect.construct(this.schemaHandler[type], [ref]);
-    schemaHandler.prepare();
-    ref.setSchemaHandler(schemaHandler);
-    this.refs[name] = ref;
-    return ref;
+
   }
 
 
   async prepare(loader: RuntimeLoader) {
-    const classes = await loader.getClasses(K_CLS_STORAGE_SCHEMAHANDLER);
+    const classes = await loader.getClasses(K_CLS_STORAGE_TYPES);
     for (const cls of classes) {
-      const obj = <AbstractSchemaHandler>Reflect.construct(cls, []);
-      if (obj) {
-        this.schemaHandler[obj.type] = cls;
+      const obj = <IStorage>Reflect.construct(cls, []);
+      if (obj && await obj.prepare(loader)) {
+        this.storageFramework[obj.getType()] = obj;
       }
     }
   }
@@ -54,18 +55,18 @@ export class Storage {
    * Returns storage ref for the given classRef or machineName
    * @param classRef
    */
-  forClass(classRef: IClassRef | string) {
+  forClass<X extends IStorageRef>(classRef: IClassRef | string): X {
     for (const k in this.refs) {
       if (this.refs[k].hasEntityClass(classRef)) {
-        return this.refs[k];
+        return this.refs[k] as X;
       }
     }
     return null;
   }
 
 
-  get(name: string = 'default'): StorageRef {
-    return this.refs[name];
+  get<X extends IStorageRef>(name: string = 'default'): X {
+    return this.refs[name] as X;
   }
 
 

@@ -1,7 +1,6 @@
 import * as _ from 'lodash';
 import {IFindOp} from '../IFindOp';
 import {IFindOptions} from '../IFindOptions';
-import {StorageEntityController} from '../../StorageEntityController';
 
 
 import {XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '../../../Constants';
@@ -12,11 +11,12 @@ import {TreeUtils} from 'commons-base';
 import {SelectQueryBuilder} from 'typeorm';
 import {ClassType} from 'commons-schema-api';
 import {StorageApi} from '../../../../api/Storage.api';
+import {TypeOrmEntityController} from './TypeOrmEntityController';
 
 
 export class FindOp<T> implements IFindOp<T> {
 
-  readonly controller: StorageEntityController;
+  readonly controller: TypeOrmEntityController;
 
   protected options: IFindOptions;
 
@@ -26,7 +26,7 @@ export class FindOp<T> implements IFindOp<T> {
 
   protected error: Error = null;
 
-  constructor(controller: StorageEntityController) {
+  constructor(controller: TypeOrmEntityController) {
     this.controller = controller;
   }
 

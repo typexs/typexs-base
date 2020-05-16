@@ -16,7 +16,7 @@ import {
 import {TypeOrmEntityRef} from './TypeOrmEntityRef';
 import {TypeOrmUtils} from '../TypeOrmUtils';
 import {REGISTRY_TYPEORM} from './TypeOrmConstants';
-import {classRefGet} from "../../../Helper";
+import {classRefGet} from '../Helper';
 
 
 

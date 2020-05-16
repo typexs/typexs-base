@@ -1,7 +1,6 @@
 import * as _ from 'lodash';
 
 import {ISaveOp} from '../ISaveOp';
-import {StorageEntityController} from '../../StorageEntityController';
 import {ISaveOptions} from '../ISaveOptions';
 import {DataContainer} from '../../DataContainer';
 
@@ -9,13 +8,14 @@ import {TypeOrmUtils} from './TypeOrmUtils';
 import {ObjectsNotValidError} from '../../../exceptions/ObjectsNotValidError';
 import {TypeOrmEntityRegistry} from './schema/TypeOrmEntityRegistry';
 import {StorageApi} from '../../../../api/Storage.api';
+import {TypeOrmEntityController} from './TypeOrmEntityController';
 
 
 export class SaveOp<T> implements ISaveOp<T> {
 
   error: Error = null;
 
-  readonly controller: StorageEntityController;
+  readonly controller: TypeOrmEntityController;
 
 
   protected options: ISaveOptions;
@@ -25,7 +25,7 @@ export class SaveOp<T> implements ISaveOp<T> {
   protected isArray: boolean = true;
 
 
-  constructor(controller: StorageEntityController) {
+  constructor(controller: TypeOrmEntityController) {
     this.controller = controller;
   }
 

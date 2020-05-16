@@ -4,6 +4,7 @@ import {Log} from '../libs/logging/Log';
 import {Inject} from 'typedi';
 import {ICommand} from '../libs/commands/ICommand';
 import {System} from '../libs/system/System';
+import {TypeOrmStorageRef} from '../libs/storage/framework/typeorm/TypeOrmStorageRef';
 
 export class StorageCommand implements ICommand {
 
@@ -55,13 +56,13 @@ export class StorageCommand implements ICommand {
       return;
     }
 
-    const storageRef = this.storage.get(storageName);
+    const storageRef: TypeOrmStorageRef = this.storage.get(storageName);
     if (!storageRef) {
       Log.info('No storage ref for "' + storageName + '" defined.');
       return;
     }
 
-    if (parts.length == 0) {
+    if (parts.length === 0) {
       parts = await storageRef.getSchemaHandler().getCollectionNames();
     }
 

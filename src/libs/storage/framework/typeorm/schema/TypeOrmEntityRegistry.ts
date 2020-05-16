@@ -22,8 +22,8 @@ import {RelationMetadataArgs} from 'typeorm/browser/metadata-args/RelationMetada
 import {ColumnMetadataArgs} from 'typeorm/browser/metadata-args/ColumnMetadataArgs';
 import {getFromContainer, MetadataStorage} from 'class-validator';
 import {MetadataArgsStorage} from 'typeorm/browser/metadata-args/MetadataArgsStorage';
-import {classRefGet} from '../../../Helper';
 import {ValidationMetadata} from '../../../../class-validator/ValidationMetadata';
+import {classRefGet} from '../Helper';
 
 
 export class TypeOrmEntityRegistry implements ILookupRegistry {

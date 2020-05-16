@@ -1,12 +1,12 @@
-import {AbstractSchemaHandler} from '../../libs/storage/AbstractSchemaHandler';
 import {NotYetImplementedError} from 'commons-base';
-import {ICollection} from '../../libs/storage/ICollection';
-
+import {AbstractSchemaHandler} from '../../../libs/storage/AbstractSchemaHandler';
+import {ICollection} from '../../../libs/storage/ICollection';
+import {__DEFAULT__} from '../../../libs/Constants';
 
 
 export class DefaultSchemaHandler extends AbstractSchemaHandler {
 
-  type: string = '__default__';
+  type: string = __DEFAULT__;
 
 
   getCollections(): Promise<ICollection[]> {

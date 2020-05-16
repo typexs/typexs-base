@@ -1,15 +1,15 @@
 import * as _ from 'lodash';
-import {StorageRef} from './StorageRef';
 import {IDBType} from './IDBType';
 import {JS_DATA_TYPES} from 'commons-schema-api/browser';
 import {ICollection} from './ICollection';
 import {ICollectionProperty} from './ICollectionProperty';
 import {NotSupportedError} from 'commons-base/browser';
+import {TypeOrmStorageRef} from './framework/typeorm/TypeOrmStorageRef';
 
 
 export abstract class AbstractSchemaHandler {
 
-  constructor(ref?: StorageRef) {
+  constructor(ref?: TypeOrmStorageRef) {
     this.storageRef = ref;
   }
 
@@ -19,7 +19,7 @@ export abstract class AbstractSchemaHandler {
 
   readonly type: string;
 
-  readonly storageRef: StorageRef;
+  readonly storageRef: TypeOrmStorageRef;
 
   prepare() {
     if (!AbstractSchemaHandler.types.includes(this.type)) {
@@ -112,7 +112,7 @@ export abstract class AbstractSchemaHandler {
     const colls: ICollection[] = [];
     _.map(collections, c => {
       const props: ICollectionProperty[] = [];
-      c.columns.map(c => {
+      c.columns.map((c: any) => {
         props.push(c);
       });
 

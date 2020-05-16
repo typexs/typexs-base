@@ -1,11 +1,20 @@
-import {BaseConnectionOptions} from 'typeorm/connection/BaseConnectionOptions';
 import {StringOrFunction} from 'commons-base';
 
 
 export const K_STORAGE = 'storage';
 
 
-export interface IStorageOptions extends BaseConnectionOptions {
+export interface IStorageOptions {
+
+  /**
+   * name of this storage
+   */
+  name?: string;
+
+  /**
+   * framework of storage
+   */
+  framework?: string;
 
   baseClass?: StringOrFunction;
 
@@ -19,4 +28,8 @@ export interface IStorageOptions extends BaseConnectionOptions {
    */
   extends?: string | string[];
 
+  /**
+   * Entities handled by this storage
+   */
+  entities?: (Function | any)[];
 }

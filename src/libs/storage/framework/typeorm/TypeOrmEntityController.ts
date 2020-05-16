@@ -1,35 +1,35 @@
-import {StorageRef} from './StorageRef';
-import {ISaveOptions} from './framework/ISaveOptions';
-import {IFindOptions} from './framework/IFindOptions';
-import {SaveOp} from './framework/typeorm/SaveOp';
-import {FindOp} from './framework/typeorm/FindOp';
-import {DeleteOp} from './framework/typeorm/DeleteOp';
-import {Invoker} from '../../base/Invoker';
-import {ConnectionWrapper} from './ConnectionWrapper';
-import {IEntityController} from './IEntityController';
-import {ClassType, IClassRef, IEntityRef} from 'commons-schema-api';
-import {IUpdateOptions} from './framework/IUpdateOptions';
-import {UpdateOp} from './framework/typeorm/UpdateOp';
-import {IDeleteOptions} from './framework/IDeleteOptions';
-import {IAggregateOptions} from './framework/IAggregateOptions';
-import {AggregateOp} from './framework/typeorm/AggregateOp';
-import {Injector} from '../../libs/di/Injector';
-
 /**
  * TODO Should be renamed to StorageEntityManager
  *
  * TODO also an interface for EntityManager should be implemented
  */
-export class StorageEntityController implements IEntityController {
+import {IEntityController} from '../../IEntityController';
+import {TypeOrmStorageRef} from './TypeOrmStorageRef';
+import {Invoker} from '../../../../base/Invoker';
+import {TypeOrmConnectionWrapper} from './TypeOrmConnectionWrapper';
+import {Injector} from '../../../di/Injector';
+import {ClassType, IClassRef, IEntityRef} from 'commons-schema-api';
+import {IFindOptions} from '../IFindOptions';
+import {FindOp} from './FindOp';
+import {ISaveOptions} from '../ISaveOptions';
+import {SaveOp} from './SaveOp';
+import {DeleteOp} from './DeleteOp';
+import {UpdateOp} from './UpdateOp';
+import {IUpdateOptions} from '../IUpdateOptions';
+import {IDeleteOptions} from '../IDeleteOptions';
+import {IAggregateOptions} from '../IAggregateOptions';
+import {AggregateOp} from './AggregateOp';
+
+export class TypeOrmEntityController implements IEntityController {
 
   // revision support
-  readonly storageRef: StorageRef;
+  readonly storageRef: TypeOrmStorageRef;
 
   readonly invoker: Invoker;
 
-  connection: ConnectionWrapper;
+  connection: TypeOrmConnectionWrapper;
 
-  constructor(ref: StorageRef) {
+  constructor(ref: TypeOrmStorageRef) {
     this.storageRef = ref;
     this.invoker = Injector.get(Invoker.NAME);
   }

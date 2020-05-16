@@ -1,5 +1,6 @@
 import {ClassRef} from 'commons-schema-api/browser';
-import {REGISTRY_TYPEORM} from './framework/typeorm/schema/TypeOrmConstants';
+import {REGISTRY_TYPEORM} from './schema/TypeOrmConstants';
+
 
 
 export function classRefGet(klass: string | Function) {

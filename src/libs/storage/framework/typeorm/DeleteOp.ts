@@ -1,7 +1,6 @@
 import * as _ from 'lodash';
 
 import {IDeleteOp} from '../IDeleteOp';
-import {StorageEntityController} from '../../StorageEntityController';
 import {TypeOrmUtils} from './TypeOrmUtils';
 import {ClassType} from 'commons-schema-api';
 import {TypeOrmSqlConditionsBuilder} from './TypeOrmSqlConditionsBuilder';
@@ -9,11 +8,12 @@ import {TypeOrmEntityRegistry} from './schema/TypeOrmEntityRegistry';
 import {IDeleteOptions} from '../IDeleteOptions';
 import {DeleteQueryBuilder} from 'typeorm';
 import {StorageApi} from '../../../../api/Storage.api';
+import {TypeOrmEntityController} from './TypeOrmEntityController';
 
 
 export class DeleteOp<T> implements IDeleteOp<T> {
 
-  readonly controller: StorageEntityController;
+  readonly controller: TypeOrmEntityController;
 
   error: Error = null;
 
@@ -25,7 +25,7 @@ export class DeleteOp<T> implements IDeleteOp<T> {
 
   protected options: IDeleteOptions;
 
-  constructor(controller: StorageEntityController) {
+  constructor(controller: TypeOrmEntityController) {
     this.controller = controller;
   }
 

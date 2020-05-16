@@ -23,11 +23,11 @@ export * from './adapters/cache/RedisCacheAdapter';
 export * from './adapters/cache/redis/IRedisCacheClient';
 
 
-export * from './adapters/storage/DefaultSchemaHandler';
-export * from './adapters/storage/SqliteSchemaHandler';
-export * from './adapters/storage/PostgresSchemaHandler';
-export * from './adapters/storage/MysqlSchemaHandler';
-export * from './adapters/storage/MongoDbSchemaHandler';
+export * from './adapters/storage/typeorm/DefaultSchemaHandler';
+export * from './adapters/storage/typeorm/SqliteSchemaHandler';
+export * from './adapters/storage/typeorm/PostgresSchemaHandler';
+export * from './adapters/storage/typeorm/MysqlSchemaHandler';
+export * from './adapters/storage/typeorm/MongoDbSchemaHandler';
 
 
 export * from './base/cli';
@@ -68,7 +68,11 @@ export * from './libs/queue/QueueJob';
 export * from './libs/system/System';
 export * from './libs/system/INodeInfo';
 
-export * from './libs/storage/ConnectionWrapper';
+export * from './libs/storage/framework/typeorm/TypeOrmConnectionWrapper';
+export * from './libs/storage/framework/typeorm/TypeOrmEntityController';
+export * from './libs/storage/framework/typeorm/TypeOrmStorageRef';
+export * from './libs/storage/framework/typeorm/ITypeOrmStorageOptions';
+
 export * from './libs/storage/EntitySchemaColumnOptions';
 export * from './libs/storage/EntitySchemaRelationOptions';
 export * from './libs/storage/IStorageOptions';
@@ -76,7 +80,6 @@ export * from './libs/storage/IDBType';
 export * from './libs/storage/Storage';
 export * from './libs/storage/StorageRef';
 export * from './libs/storage/AbstractSchemaHandler';
-export * from './libs/storage/StorageEntityController';
 
 
 export * from './libs/distributed_storage/IDistributedQueryWorkerOptions';

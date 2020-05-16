@@ -1,433 +1,64 @@
-import {Log} from '../logging/Log';
-import {TableMetadataArgs} from 'typeorm/metadata-args/TableMetadataArgs';
-import {Connection, ConnectionOptions, EntityOptions, getConnectionManager, getMetadataArgsStorage} from 'typeorm';
-import {ConnectionWrapper} from './ConnectionWrapper';
-import {Config} from 'commons-config';
-
-import {EntitySchema} from 'typeorm/entity-schema/EntitySchema';
-import {K_WORKDIR} from '../Constants';
 import {IStorageOptions} from './IStorageOptions';
-import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
-import * as path from 'path';
-import * as _ from 'lodash';
-import {ClassUtils, PlatformUtils, TodoException} from 'commons-base';
+import {IStorageRef} from './IStorageRef';
+import {IEntityController} from './IEntityController';
+import {ClassType, IClassRef} from 'commons-schema-api';
+import {IConnection} from './IConnection';
 
-import {AbstractSchemaHandler} from './AbstractSchemaHandler';
-import {BaseUtils} from '../utils/BaseUtils';
-import {StorageEntityController} from './StorageEntityController';
-import {ClassType, IClassRef, IEntityRef} from 'commons-schema-api';
-import {TypeOrmEntityRegistry} from './framework/typeorm/schema/TypeOrmEntityRegistry';
-import {classRefGet} from './Helper';
+export abstract class StorageRef implements IStorageRef {
 
 
-export const DEFAULT_STORAGEREF_OPTIONS: IStorageOptions = <SqliteConnectionOptions & IStorageOptions>{
-  connectOnStartup: false
-};
+  private options: IStorageOptions = null;
 
+  private _extending: IStorageRef[] = [];
 
-export class StorageRef /* extends EventEmitter */ {
+  private _extends: IStorageRef[] = [];
 
-  // private static $$: Storage = null;
-
-  constructor(options: IStorageOptions/* = DEFAULT_STORAGE_OPTIONS, FIX_STORAGE_OPTIONS: any = {}*/) {
-    // Apply some unchangeable and fixed options
-    // options = Utils.merge(options, FIX_STORAGE_OPTIONS);
-    // super();
-    // this.on('close', this.onCloseConnection.bind(this));
-    if (options.type === 'sqlite') {
-      const opts = <SqliteConnectionOptions & IStorageOptions>options;
-
-      if (opts.database !== ':memory:' &&
-        !_.isEmpty(opts.database) &&
-        !path.isAbsolute(opts.database)) {
-        // TODO check if file exists
-
-        const possibleFiles = [];
-        possibleFiles.push(PlatformUtils.pathResolveAndNormalize(opts.database));
-
-        const _path = Config.get(K_WORKDIR, process.cwd()) + '/' + opts.database;
-        possibleFiles.push(PlatformUtils.pathResolveAndNormalize(_path));
-
-        let found = false;
-        for (const test of possibleFiles) {
-          if (PlatformUtils.fileExist(test) || PlatformUtils.fileExist(PlatformUtils.directory(test))) {
-            options = BaseUtils.merge(options, {type: 'sqlite', database: test});
-            found = true;
-          }
-        }
-
-        if (!found) {
-          throw new TodoException('File ' + opts.database + ' for database can\'t be found.');
-        }
-      }
-    }
-
-    this.options = _.assign({}, DEFAULT_STORAGEREF_OPTIONS, options);
-
-    if (this.options.type === 'sqlite') {
-      this.singleConnection = true;
-      if (this.options['database'] === ':memory:') {
-        this.isMemoryOnly = true;
-      }
-    }
-
-    let out = '';
-    for (const x in this.options) {
-      // todo define per config?
-      if (['type', 'logging', 'database', 'dialect', 'synchronize', 'name'].indexOf(x) === -1) {
-        continue;
-      }
-      if (_.isString(this.options[x])) {
-        out += '\t' + x + ' = ' + this.options[x] + '\n';
-      }
-    }
-    Log.debug(`storage: use ${this.options.type} for storage with options:\n${out} `);
-    this.controller = new StorageEntityController(this);
-
-    // register used entities, TODO better way to register with annotation @Entity (from typeorm)
-    if (_.has(this.options, 'entities') && _.isArray(this.options.entities)) {
-      this.options.entities.map(type => {
-        this.registerEntityRef(type);
-      });
-    }
+  constructor(options: IStorageOptions) {
+    this.options = options;
   }
 
   get name() {
     return this.options.name;
   }
 
-  get dbType(): string {
-    return this.options.type;
+  abstract hasEntityClass(cls: string | Function | IClassRef): boolean;
+
+  abstract addEntityClass(type: Function | IClassRef | ClassType<any>, options?: any): void;
+
+  abstract shutdown(full?: boolean): void;
+
+  addExtendedStorageRef(ref: IStorageRef) {
+    this._extends.push(ref);
   }
 
-  // if memory then on connection must be permanent
-  private singleConnection = false;
-
-  private isMemoryOnly = false;
-
-  private isInternalPooled = false;
-
-  private connections: ConnectionWrapper[] = [];
-
-  private options: IStorageOptions = null;
-
-  // private entitySchemas: EntitySchema[] = [];
-
-  private schemaHandler: AbstractSchemaHandler;
-
-  private controller: StorageEntityController;
-
-  private _forceReload = false;
-
-  private _prepared = false;
-
-  private _extending: StorageRef[] = [];
-
-  private _extends: StorageRef[] = [];
-
-  // private static _LOCK: { [k: string]: Semaphore } = {};
-
-  private static getClassName(x: string | EntitySchema | Function) {
-    return ClassUtils.getClassName(x instanceof EntitySchema ? x.options.target : x);
+  addExtendingStorageRef(extRef: IStorageRef) {
+    this._extending.push(extRef);
   }
 
-
-  private static machineName(x: string | EntitySchema | Function) {
-    return _.snakeCase(this.getClassName(x));
-  }
+  abstract getController(): IEntityController;
 
 
-  registerEntityRef(type: string | Function | EntitySchema) {
-    const entityRef = this.getEntityRef(type instanceof EntitySchema ? type.options.target : type);
-    const cls = entityRef.getClassRef().getClass();
-    const columns = getMetadataArgsStorage().filterColumns(cls);
-    if (this.dbType === 'mongodb') {
-      /**
-       * add _id as default objectId field if in entity declaration is only set PrimaryColumn
-       */
-      const idProps = entityRef.getPropertyRefs().filter(x => x.isIdentifier());
-      const idNames = idProps.map(x => x.name);
-      const found = columns.filter(x => x.mode === 'objectId' && idNames.includes(x.propertyName));
-      if (found.length === 0 && !idNames.includes('_id')) {
-        getMetadataArgsStorage().columns.push({
-          mode: 'objectId',
-          propertyName: '_id',
-          target: cls,
-          options: {primary: true, name: '_id'},
-        });
-      }
-
-    } else {
-      _.remove(getMetadataArgsStorage().columns, x =>
-        x.target === cls && x.mode === 'objectId' && x.propertyName === '_id');
-    }
-  }
-
-
-  isSingleConnection(): boolean {
-    return this.singleConnection || this.isInternalPooled;
-  }
-
-
-  isOnlyMemory(): boolean {
-    return this.isMemoryOnly;
-  }
-
-  getExtendingStorageRef(): StorageRef[] {
-    return this._extending;
-  }
-
-  getExtendedStorageRef(): StorageRef[] {
-    return this._extends;
-  }
-
-  addEntityClass(type: Function, name: string, options: EntityOptions = {}) {
-    const args: TableMetadataArgs = {
-      target: type,
-      name: name.toLowerCase(),
-      type: 'regular',
-      orderBy: options && options.orderBy ? options.orderBy : undefined,
-      engine: options && options.engine ? options.engine : undefined,
-      database: options && options.database ? options.database : undefined,
-      schema: options && options.schema ? options.schema : undefined,
-      synchronize: options && options.synchronize ? options.synchronize : undefined
-    };
-    getMetadataArgsStorage().tables.push(args);
-    this.addEntityType(type);
-  }
-
-
-  populateToExtended(type: EntitySchema | Function) {
-    if (!_.isEmpty(this.getExtendedStorageRef())) {
-      for (const ref of this.getExtendedStorageRef()) {
-        ref.addEntityType(type);
-      }
-    }
-  }
-
-
-  addEntityType(type: EntitySchema | Function): void {
-    const opts: any = {
-      entities: []
-    };
-
-    if (this.options.entities) {
-      opts.entities = this.options.entities;
-    }
-
-    const exists = opts.entities.indexOf(type);
-
-    if (exists < 0) {
-      opts.entities.push(type);
-      this.options = _.assign(this.options, opts);
-      // NOTE create an class ref entry to register class usage in registry
-      this.registerEntityRef(type);
-    }
-
-    if (this._prepared) {
-      this._forceReload = true;
-    }
-
-    this.populateToExtended(type);
-
-  }
-
-
-  getEntityRef(name: string | Function): IEntityRef {
-    const clazz = this.getEntityClass(name);
-    if (clazz) {
-      return TypeOrmEntityRegistry.$().getEntityRefFor(clazz);
-    }
-    return null;
-  }
-
-
-  getClassRef(name: string | Function): IClassRef {
-    const clazz = this.getEntityClass(name);
-    if (clazz) {
-      return classRefGet(clazz instanceof EntitySchema ? clazz.options.target : clazz);
-    }
-    return null;
-  }
-
-
-  hasEntityClass(ref: IClassRef | string | Function | ClassType<any>) {
-    return !!this.getEntityClass(ref);
-  }
-
-
-  getEntityClass(ref: IClassRef | string | Function | ClassType<any>) {
-    if (_.isString(ref)) {
-      const _ref = _.snakeCase(ref);
-      return this.options.entities.find(x => _ref === StorageRef.machineName(x));
-    } else if (_.isFunction(ref)) {
-      const _ref = classRefGet(ref);
-      return this.options.entities.find(x => _ref.machineName === StorageRef.machineName(x));
-    } else {
-      return this.options.entities.find(x => (<IClassRef>ref).machineName === StorageRef.machineName(x));
-    }
-  }
-
-
-  getSchemaHandler() {
-    return this.schemaHandler;
-  }
-
-  setSchemaHandler(handler: AbstractSchemaHandler) {
-    this.schemaHandler = handler;
-  }
-
-  async reset(full: boolean = true): Promise<any> {
-    this._prepared = false;
-    if (getConnectionManager().has(this.name)) {
-      // let name = this.name
-      await this.shutdown(full);
-    }
-    // return this.prepare()
-  }
-
-
-  async reload(full: boolean = true): Promise<any> {
-    await this.reset(full);
-    return this.prepare();
-  }
-
-
-  async prepare(): Promise<void> {
-    if (!getConnectionManager().has(this.name)) {
-      // todo maybe handle exception?
-      let c = await getConnectionManager().create(<ConnectionOptions>this.options);
-      c = await c.connect();
-      await (await this.wrap(c)).close();
-    } else {
-      await (await this.wrap()).close();
-    }
-    this._prepared = true;
-  }
-
-
-  async wrap(conn ?: Connection): Promise<ConnectionWrapper> {
-    let wrapper: ConnectionWrapper = null;
-    if ((this.isSingleConnection() && this.connections.length === 0) || !this.isSingleConnection()) {
-      if (conn) {
-        wrapper = new ConnectionWrapper(this, conn);
-      } else {
-        wrapper = new ConnectionWrapper(this);
-      }
-      this.connections.push(wrapper);
-    } else if (this.isSingleConnection() && this.connections.length === 1) {
-      wrapper = this.connections[0];
-    }
-    return Promise.resolve(wrapper);
-  }
-
-
-  // get lock() {
-  //   if (!_.has(StorageRef._LOCK, this.name)) {
-  //     StorageRef._LOCK[this.name] = LockFactory.$().semaphore(1);
-  //   }
-  //   return StorageRef._LOCK[this.name];
-  // }
-
-
-  size() {
-    return this.connections.length;
-  }
-
-  // async onCloseConnection(inc: number) {
-  //   if (_.isEmpty(this.connections) && !this.isOnlyMemory()) {
-  //     if (getConnectionManager().has(this.name) && getConnectionManager().get(this.name).isConnected) {
-  //       try {
-  //         await getConnectionManager().get(this.name).close();
-  //       } catch (err) {
-  //         Log.error(err);
-  //       }
-  //     }
-  //   }
-  // }
-
-  async remove(wrapper: ConnectionWrapper) {
-    _.remove(this.connections, {inc: wrapper.inc});
-    // setTimeout(() => {
-    //   this.emit('close');
-    // }, 250)
-  }
-
-  async closeConnection() {
-    if (_.isEmpty(this.connections) && !this.isOnlyMemory()) {
-      if (getConnectionManager().has(this.name) && getConnectionManager().get(this.name).isConnected) {
-        try {
-          await getConnectionManager().get(this.name).close();
-        } catch (err) {
-          Log.error(err);
-        }
-      }
-    }
-  }
-
-
-  getOptions(): IStorageOptions {
+  getOptions() {
     return this.options;
   }
 
 
-  getController() {
-    return this.controller;
+  setOptions(options: IStorageOptions) {
+    this.options = options;
   }
 
 
-  async connect(): Promise<ConnectionWrapper> {
-    if (this._forceReload) {
-      this._forceReload = false;
-      await this.reload();
-    } else if (!this._prepared) {
-      await this.prepare();
-    }
-    return (await this.wrap()).connect();
+  abstract prepare(): boolean | Promise<boolean>;
+
+
+  getExtendingStorageRef(): IStorageRef[] {
+    return this._extending;
   }
 
 
-  private async closeConnections(): Promise<any> {
-    const ps: Promise<any> [] = [];
-    while (this.connections.length > 0) {
-      ps.push(this.connections.shift().close());
-    }
-    return Promise.all(ps);
+  getExtendedStorageRef(): IStorageRef[] {
+    return this._extends;
   }
 
-
-  private removeFromConnectionManager() {
-    const name = this.name;
-    _.remove(getConnectionManager()['connections'], (connection) => {
-      return connection.name === name;
-    });
-  }
-
-
-  async shutdown(full: boolean = true): Promise<void> {
-    if (!this.isOnlyMemory() || full) {
-      await this.closeConnections();
-    }
-    await this.closeConnection();
-    if (full) {
-      this.removeFromConnectionManager();
-    }
-    // this.removeAllListeners();
-  }
-
-
-  async forceShutdown(): Promise<void> {
-    await this.closeConnections();
-    await this.closeConnection();
-    this.removeFromConnectionManager();
-    // this.removeAllListeners();
-  }
-
-  addExtendedStorageRef(ref: StorageRef) {
-    this._extends.push(ref);
-  }
-
-  addExtendingStorageRef(extRef: StorageRef) {
-    this._extending.push(extRef);
-  }
+  abstract connect(): Promise<IConnection>;
 }

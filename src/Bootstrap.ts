@@ -12,7 +12,6 @@ import {Storage} from './libs/storage/Storage';
 import {Container} from 'typedi';
 import * as os from 'os';
 
-import {getMetadataArgsStorage, useContainer} from 'typeorm';
 import {BaseUtils} from './libs/utils/BaseUtils';
 import {CryptUtils, MetaArgs, PlatformUtils} from 'commons-base';
 import {
@@ -27,6 +26,7 @@ import {
   K_CLS_GENERATORS,
   K_CLS_SCHEDULE_ADAPTER_FACTORIES,
   K_CLS_STORAGE_SCHEMAHANDLER,
+  K_CLS_STORAGE_TYPES,
   K_CLS_USE_API
 } from './libs/Constants';
 import {IConfigOptions} from 'commons-config/config/IConfigOptions';
@@ -37,16 +37,12 @@ import {Invoker} from './base/Invoker';
 
 import {IShutdown} from './api/IShutdown';
 import {System} from './libs/system/System';
-import {TableMetadataArgs} from 'typeorm/metadata-args/TableMetadataArgs';
 import {K_CLS_WORKERS} from './libs/worker/Constants';
 import {K_CLS_TASKS} from './libs/tasks/Constants';
-import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
 import {ICommand} from './libs/commands/ICommand';
 import {LockFactory} from './libs/LockFactory';
 import {Injector} from './libs/di/Injector';
 import {EntityControllerRegistry} from './libs/storage/EntityControllerRegistry';
-
-useContainer(Container);
 
 
 /**
@@ -145,8 +141,15 @@ export const DEFAULT_RUNTIME_OPTIONS: IRuntimeLoaderOptions = {
     {
       topic: K_CLS_STORAGE_SCHEMAHANDLER,
       refs: [
-        'adapters/storage/*SchemaHandler.*',
-        'src/adapters/storage/*SchemaHandler.*'
+        'adapters/storage/*/*SchemaHandler.*',
+        'src/adapters/storage/*/*SchemaHandler.*'
+      ]
+    },
+    {
+      topic: K_CLS_STORAGE_TYPES,
+      refs: [
+        'adapters/storage/*/*Storage.*',
+        'src/adapters/storage/*/*Storage.*'
       ]
     },
     {
@@ -193,7 +196,7 @@ export const DEFAULT_RUNTIME_OPTIONS: IRuntimeLoaderOptions = {
 };
 
 
-export const DEFAULT_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions & IStorageOptions>{
+export const DEFAULT_STORAGE_OPTIONS: IStorageOptions = <any & IStorageOptions>{
   name: 'default',
   type: 'sqlite',
   database: ':memory:',
@@ -266,7 +269,7 @@ export class Bootstrap {
     this.$self = null;
     Container.reset();
     Log.reset();
-
+    Config.clear();
   }
 
   static getNodeId() {
@@ -358,20 +361,26 @@ export class Bootstrap {
     Bootstrap.getContainer().set(Storage.NAME, this.storage);
     Bootstrap.getContainer().set(K_STORAGE, this.storage);
 
+    // get configurated storages
     const o_storage: { [name: string]: IStorageOptions } = Config.get(K_STORAGE, CONFIG_NAMESPACE, {});
-    const storageNames = _.keys(o_storage);
 
+    // keys starting with undercore or dollar are reserved for generic configuration
+    const storageNames = _.keys(o_storage).filter(x => !/^(_|\$)/.test(x));
+
+    // create registry for entity controller which maybe loaded per dependency injection
     const entityControllerRegistry = Injector.create(EntityControllerRegistry);
     Injector.set(EntityControllerRegistry.NAME, entityControllerRegistry);
     Injector.set(EntityControllerRegistry, entityControllerRegistry);
 
     const storageRefs = [];
+    // iterate over storage configurations
     for (const name of storageNames) {
       const settings: any = o_storage[name];
       let entities: Function[] = [];
       if (this.runtimeLoader) {
-        const _entities: Function[] = this.runtimeLoader.getClasses(['entity', name].join('.'));
-        // Check if classes are realy for typeorm
+        // load entities handled by storage
+        entities = this.runtimeLoader.getClasses(['entity', name].join('.'));
+        // check if classes are realy for typeorm
         if (_.has(settings, 'extends')) {
           // if extends property is set
           let _extends = [];
@@ -380,23 +389,24 @@ export class Bootstrap {
           } else {
             _extends = settings.extends;
           }
-
           _extends.forEach((x: string) => {
             const __entities = this.runtimeLoader.getClasses(['entity', x].join('.'));
             if (__entities.length > 0) {
-              _entities.push(...__entities);
+              entities.push(...__entities);
             }
           });
         }
-        const tables: TableMetadataArgs[] = getMetadataArgsStorage().tables;
-        entities = tables
-          .filter(t => _entities.indexOf(<Function>t.target) !== -1)
-          .map(t => <Function>t.target);
+
+        // typeorm specifics must got to TypeOrmStorage
+        // const tables: TableMetadataArgs[] = getMetadataArgsStorage().tables;
+        // entities = tables
+        //   .filter(t => _entities.indexOf(<Function>t.target) !== -1)
+        //   .map(t => <Function>t.target);
       }
 
       const _settings: IStorageOptions = _.merge(settings, {entities: entities}, {name: name});
       Log.debug('storage register ' + name + ' with ' + entities.length + ' entities');
-      const storageRef = this.storage.register(name, _settings);
+      const storageRef = await this.storage.register(name, _settings);
       if (storageRef.getOptions().connectOnStartup) {
         await storageRef.prepare();
       }

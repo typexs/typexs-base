@@ -13,6 +13,7 @@ export const K_CLS_GENERATORS = 'generators';
 export const K_CLS_SCHEDULE_ADAPTER_FACTORIES = 'scheduler-factories';
 export const K_CLS_STORAGE_SCHEMAHANDLER = 'storage.schemahandler.adapters';
 export const K_CLS_CACHE_ADAPTER = 'cache.adapters';
+export const K_CLS_STORAGE_TYPES = 'storage.types';
 export const K_CLS_ENTITIES_DEFAULT = 'entity.default';
 export const K_CLS_EXCHANGE_MESSAGE = 'exchange.messages';
 

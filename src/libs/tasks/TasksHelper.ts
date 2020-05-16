@@ -15,7 +15,7 @@ import {TaskRunner} from './TaskRunner';
 import {TaskRunnerRegistry} from './TaskRunnerRegistry';
 import {IWorkerInfo} from '../worker/IWorkerInfo';
 import {TaskQueueWorker} from '../../workers/TaskQueueWorker';
-import {System} from '../..';
+import {System} from '../system/System';
 
 
 export class TasksHelper {

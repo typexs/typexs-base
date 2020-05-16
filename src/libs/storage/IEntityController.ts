@@ -13,9 +13,9 @@ export interface IEntityController {
 
   forClass(cls: CLS_DEF<any> | IClassRef): IEntityRef;
 
-  findOne<T>(fn: CLS_DEF<T>, conditions: any, options?: IFindOptions): Promise<T>;
+  findOne<T>(fn: CLS_DEF<T>, conditions?: any, options?: IFindOptions): Promise<T>;
 
-  find<T>(fn: CLS_DEF<T>, conditions: any, options: IFindOptions): Promise<T[]>;
+  find<T>(fn: CLS_DEF<T>, conditions?: any, options?: IFindOptions): Promise<T[]>;
 
   save<T>(object: T, options?: ISaveOptions): Promise<T>;
 
@@ -23,7 +23,7 @@ export interface IEntityController {
 
   remove<T>(object: T | T[], options?: IDeleteOptions): Promise<number>;
 
-  remove<T>(cls: CLS_DEF<T>, condition: any, options?: IDeleteOptions): Promise<number>;
+  remove<T>(cls: CLS_DEF<T>, condition?: any, options?: IDeleteOptions): Promise<number>;
 
   update<T>(cls: CLS_DEF<T>, condition: any, update: any, options?: IUpdateOptions): Promise<number>;
 

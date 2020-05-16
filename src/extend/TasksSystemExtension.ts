@@ -9,7 +9,7 @@ import {C_TASKS} from '../libs/tasks/Constants';
 import {ITaskInfo} from '../libs/tasks/ITaskInfo';
 import {SystemNodeInfo} from '../entities/SystemNodeInfo';
 import {Tasks} from '../libs/tasks/Tasks';
-import {TaskRunnerRegistry} from '..';
+import {TaskRunnerRegistry} from '../libs/tasks/TaskRunnerRegistry';
 
 @UseAPI(SystemApi)
 export class TasksSystemExtension implements ISystemApi {
@@ -18,7 +18,7 @@ export class TasksSystemExtension implements ISystemApi {
   tasks: Tasks;
 
 
-  @Inject('TaskRunnerRegistry')
+  @Inject(TaskRunnerRegistry.NAME)
   tasksRunnerRegistry: TaskRunnerRegistry;
 
   getNodeInfos(): INodeInfo | INodeInfo[] {

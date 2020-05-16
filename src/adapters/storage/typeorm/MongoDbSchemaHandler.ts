@@ -1,16 +1,16 @@
-import {AbstractSchemaHandler} from '../../libs/storage/AbstractSchemaHandler';
+import {AbstractSchemaHandler} from '../../../libs/storage/AbstractSchemaHandler';
 import * as _ from 'lodash';
 import {MongoQueryRunner} from 'typeorm/driver/mongodb/MongoQueryRunner';
-import {ICollection} from '../../libs/storage/ICollection';
-import {ICollectionProperty} from '../../libs/storage/ICollectionProperty';
-import {ConnectionWrapper} from '../../libs/storage/ConnectionWrapper';
+import {ICollection} from '../../../libs/storage/ICollection';
+import {ICollectionProperty} from '../../../libs/storage/ICollectionProperty';
+import {TypeOrmConnectionWrapper} from '../../../libs/storage/framework/typeorm/TypeOrmConnectionWrapper';
 
 
 export class MongoDbSchemaHandler extends AbstractSchemaHandler {
 
   type = 'mongodb';
 
-  private getDB(c: ConnectionWrapper) {
+  private getDB(c: TypeOrmConnectionWrapper) {
     const runner = <MongoQueryRunner>c.manager.connection.createQueryRunner();
     const database = c.manager.connection.driver.database;
     return runner.databaseConnection.db(database);
@@ -57,7 +57,7 @@ export class MongoDbSchemaHandler extends AbstractSchemaHandler {
         properties: props
       };
 
-      _.keys(cursor).filter(x => x != 'columns').map(k => {
+      _.keys(cursor).filter(x => x !== 'columns').map(k => {
         _c[k] = cursor[k];
       });
 

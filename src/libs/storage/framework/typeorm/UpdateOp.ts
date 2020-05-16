@@ -1,4 +1,3 @@
-import {StorageEntityController} from '../../StorageEntityController';
 import {ClassType, IEntityRef} from 'commons-schema-api';
 import {IUpdateOp} from '../IUpdateOp';
 import {TypeOrmEntityRegistry} from './schema/TypeOrmEntityRegistry';
@@ -8,13 +7,14 @@ import {IUpdateOptions} from '../IUpdateOptions';
 import {TypeOrmSqlConditionsBuilder} from './TypeOrmSqlConditionsBuilder';
 import {UpdateQueryBuilder} from 'typeorm';
 import {StorageApi} from '../../../../api/Storage.api';
+import {TypeOrmEntityController} from './TypeOrmEntityController';
 
 
 export class UpdateOp<T> implements IUpdateOp<T> {
 
   error: Error = null;
 
-  readonly controller: StorageEntityController;
+  readonly controller: TypeOrmEntityController;
 
   protected entityType: ClassType<T>;
 
@@ -26,7 +26,7 @@ export class UpdateOp<T> implements IUpdateOp<T> {
 
   protected options: IUpdateOptions;
 
-  constructor(controller: StorageEntityController) {
+  constructor(controller: TypeOrmEntityController) {
     this.controller = controller;
   }
 

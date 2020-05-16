@@ -1,4 +1,3 @@
-import {StorageEntityController} from '../../StorageEntityController';
 import {ClassType, IEntityRef} from 'commons-schema-api';
 import {TypeOrmEntityRegistry} from './schema/TypeOrmEntityRegistry';
 import {NotSupportedError, TreeUtils} from 'commons-base';
@@ -28,6 +27,7 @@ import {
   Value,
   ValueRef
 } from '@allgemein/mango-expressions';
+import {TypeOrmEntityController} from './TypeOrmEntityController';
 
 
 export interface ISqlAggregateParam {
@@ -37,7 +37,7 @@ export interface ISqlAggregateParam {
 
 export class AggregateOp<T> implements IAggregateOp, IMangoWalker {
 
-  readonly controller: StorageEntityController;
+  readonly controller: TypeOrmEntityController;
 
   protected entityType: Function | string | ClassType<any>;
 
@@ -67,7 +67,7 @@ export class AggregateOp<T> implements IAggregateOp, IMangoWalker {
 
   private sort: { [key: string]: 'asc' | 'desc' };
 
-  constructor(controller: StorageEntityController) {
+  constructor(controller: TypeOrmEntityController) {
     this.controller = controller;
   }
 

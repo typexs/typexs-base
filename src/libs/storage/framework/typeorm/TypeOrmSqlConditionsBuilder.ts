@@ -17,6 +17,7 @@ import {
   PAst,
   PValue
 } from '@allgemein/mango-expressions';
+import {TypeOrmStorageRef} from './TypeOrmStorageRef';
 
 
 export interface ISqlParam {
@@ -37,9 +38,30 @@ export interface ISqlParam {
 export class TypeOrmSqlConditionsBuilder<T> implements IMangoWalker {
 
 
+  protected inc = 1;
+
+  baseQueryBuilder: QueryBuilder<T>;
+
+  paramInc: number = 0;
+
+  alias: string;
+
+  entityRef: IEntityRef;
+
+  type: 'update' | 'select' | 'delete' = 'select';
+
+  mode: 'where' | 'having' = 'where';
+
+  baseStorageRef: TypeOrmStorageRef;
+
+  handler: AbstractSchemaHandler;
+
+  protected joins: IConditionJoin[] = [];
+
+
   constructor(manager: EntityManager | QueryBuilder<any>,
               entityRef: IEntityRef,
-              storageRef: StorageRef,
+              storageRef: TypeOrmStorageRef,
               type: 'update' | 'select' | 'delete',
               alias: string = null) {
     // super(entityRef, alias);
@@ -70,27 +92,6 @@ export class TypeOrmSqlConditionsBuilder<T> implements IMangoWalker {
       this.baseQueryBuilder = manager;
     }
   }
-
-
-  protected inc = 1;
-
-  baseQueryBuilder: QueryBuilder<T>;
-
-  paramInc: number = 0;
-
-  alias: string;
-
-  entityRef: IEntityRef;
-
-  type: 'update' | 'select' | 'delete' = 'select';
-
-  mode: 'where' | 'having' = 'where';
-
-  baseStorageRef: StorageRef;
-
-  handler: AbstractSchemaHandler;
-
-  protected joins: IConditionJoin[] = [];
 
 
   getQueryBuilder(): QueryBuilder<T> {

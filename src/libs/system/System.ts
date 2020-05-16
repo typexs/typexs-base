@@ -16,7 +16,7 @@ import {Config} from 'commons-config';
 import {Invoker} from '../../base/Invoker';
 import {SystemInfoResponse} from './SystemInfoResponse';
 import {ILoggerApi} from '../logging/ILoggerApi';
-import {StorageEntityController} from '../../libs/storage/StorageEntityController';
+import {IEntityController} from '../storage/IEntityController';
 
 export class System {
 
@@ -34,7 +34,7 @@ export class System {
   /**
    * Use entity controller to handle values
    */
-  controller: StorageEntityController;
+  controller: IEntityController;
 
 
   updateTimer: any;

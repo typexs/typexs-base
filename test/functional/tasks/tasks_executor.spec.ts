@@ -420,7 +420,7 @@ class TasksSpec {
         })
       .run();
 
-    await TestHelper.wait(500);
+    await TestHelper.wait(1000);
 
     const running2 = executor2
       .create(
@@ -450,19 +450,20 @@ class TasksSpec {
   async 'concurrency on different nodes'() {
     const executor1 = Injector.create(TaskExecutor);
     const executor2 = Injector.create(TaskExecutor);
-    const running1 = await executor1
+    const running1 = executor1
       .create(
         ['simple_task_running'],
         {},
         {
           executionConcurrency: 1,
+          waitForRemoteResults: true,
           targetId: 'remote01',
           skipTargetCheck: true,
           timeout: 10000
         })
-      .run(true) as TaskFuture;
+      .run();
 
-    await TestHelper.wait(500);
+    await TestHelper.wait(1000);
 
     const running2 = executor2
       .create(
@@ -478,7 +479,7 @@ class TasksSpec {
       .run();
 
     const results = await Promise.all([
-      running1.await(),
+      running1,
       running2
     ]);
 

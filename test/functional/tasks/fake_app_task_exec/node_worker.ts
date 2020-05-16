@@ -45,7 +45,7 @@ import {Bootstrap} from '../../../../src/Bootstrap';
 
   process.send('startup');
 
-  const timeout = parseInt(Config.get('argv.timeout', 120000), 0);
+  const timeout = parseInt(Config.get('argv.timeout', 240000), 0);
   const t = setTimeout(async () => {
     await bootstrap.shutdown();
   }, timeout);

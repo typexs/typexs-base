@@ -2,6 +2,7 @@ import {IEntityController} from './IEntityController';
 import {IStorageOptions} from './IStorageOptions';
 import {ClassType, IClassRef, IEntityRef} from 'commons-schema-api/browser';
 import {IConnection} from './IConnection';
+import {ICollection} from './ICollection';
 
 /**
  * Abstract interface for storage declaration
@@ -73,5 +74,30 @@ export interface IStorageRef {
    * @param name
    */
   getEntityRef(name: string | Function): IEntityRef;
+
+  /**
+   * Return all handled entities
+   */
+  getEntityRefs(): IEntityRef[];
+
+  /**
+   * Return all handled entity ames
+   */
+  getEntityNames(): string[];
+
+  /**
+   * Return all collection names handled by this storage ref
+   */
+  getRawCollectionNames(): string[] | Promise<string[]>;
+
+  /**
+   * Return all collection descriptions handled by this storage ref
+   */
+  getRawCollections(collectionNames: string[]): ICollection[] | Promise<ICollection[]>;
+
+  /**
+   * Return a collection description handled by this storage ref by name
+   */
+  getRawCollection(name: string): ICollection | Promise<ICollection>;
 
 }

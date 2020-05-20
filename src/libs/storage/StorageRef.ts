@@ -3,6 +3,7 @@ import {IStorageRef} from './IStorageRef';
 import {IEntityController} from './IEntityController';
 import {ClassType, IClassRef, IEntityRef} from 'commons-schema-api/browser';
 import {IConnection} from './IConnection';
+import {ICollection} from './ICollection';
 
 export abstract class StorageRef implements IStorageRef {
 
@@ -26,6 +27,16 @@ export abstract class StorageRef implements IStorageRef {
   abstract addEntityClass(type: Function | IClassRef | ClassType<any>, options?: any): void;
 
   abstract getEntityRef(name: string | Function): IEntityRef;
+
+  abstract getEntityRefs(): IEntityRef[];
+
+  abstract getEntityNames(): string[];
+
+  abstract getRawCollectionNames(): string[] | Promise<string[]>;
+
+  abstract getRawCollections(collectionNames: string[]): ICollection[] | Promise<ICollection[]>;
+
+  abstract getRawCollection(name: string): ICollection | Promise<ICollection>;
 
   abstract shutdown(full?: boolean): void;
 

@@ -21,6 +21,7 @@ export abstract class AbstractSchemaHandler {
 
   readonly storageRef: TypeOrmStorageRef;
 
+
   prepare() {
     if (!AbstractSchemaHandler.types.includes(this.type)) {
       AbstractSchemaHandler.types.push(this.type);
@@ -28,8 +29,8 @@ export abstract class AbstractSchemaHandler {
     }
   }
 
-  initOnceByType() {
 
+  initOnceByType() {
     const fn = {
       eq: (k: string, v: any) => k + ' = ' + v,
       ne: (k: string, v: any) => k + ' <> ' + v,
@@ -115,13 +116,11 @@ export abstract class AbstractSchemaHandler {
       c.columns.map((c: any) => {
         props.push(c);
       });
-
       const _c: ICollection = {
         name: c.name,
         framework: 'typeorm',
         properties: props
       };
-
       _.keys(c).filter(x => x !== 'columns').map(k => {
         _c[k] = c[k];
       });

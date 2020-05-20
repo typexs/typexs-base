@@ -18,6 +18,7 @@ import {classRefGet} from './Helper';
 import {TypeOrmEntityController} from './TypeOrmEntityController';
 import {TypeOrmConnectionWrapper} from './TypeOrmConnectionWrapper';
 import {StorageRef} from '../../StorageRef';
+import {ICollection} from '../../ICollection';
 
 export class TypeOrmStorageRef extends StorageRef {
 
@@ -224,6 +225,31 @@ export class TypeOrmStorageRef extends StorageRef {
     return null;
   }
 
+
+  getEntityRefs(): IEntityRef[] {
+    return this.getOptions().entities.map(x => this.getEntityRef(x));
+  }
+
+
+  getEntityNames(): string[] {
+    return this.getEntityRefs().map(x => x.name);
+  }
+
+
+  async getRawCollectionNames(): Promise<string[]> {
+    return this.getSchemaHandler().getCollectionNames();
+  }
+
+
+  async getRawCollections(collectionNames: string[]): Promise<ICollection[]> {
+    return this.getSchemaHandler().getCollections(collectionNames);
+  }
+
+
+  async getRawCollection(name: string): Promise<ICollection> {
+    const list = await this.getSchemaHandler().getCollections([name]);
+    return list.find(x => x.name === name);
+  }
 
   getClassRef(name: string | Function): IClassRef {
     const clazz = this.getEntityClass(name);

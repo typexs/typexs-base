@@ -159,6 +159,19 @@ export class TypeOrmEntityRegistry implements ILookupRegistry {
     return null;
   }
 
+  /**
+   * Return all entities in this registry
+   */
+  getEntityRefs(): TypeOrmEntityRef[] {
+    return this.lookupRegistry.list(XS_TYPE_ENTITY) as TypeOrmEntityRef[];
+  }
+
+  // /**
+  //  * Return all entities in this registry
+  //  */
+  // filter(x ): TypeOrmEntityRef[] {
+  //   return this.lookupRegistry.list(XS_TYPE_ENTITY) as TypeOrmEntityRef[];
+  // }
 
   getPropertyRefsFor(entity: IEntityRef | ClassRef): TypeOrmPropertyRef[] {
     if (entity instanceof TypeOrmEntityRef) {
@@ -189,7 +202,9 @@ export class TypeOrmEntityRegistry implements ILookupRegistry {
     if (entityRef) {
       for (const prop of json.properties) {
         const exists = entityRef.getPropertyRef(prop.name);
-        if (exists) { continue; }
+        if (exists) {
+          continue;
+        }
         let targetRef = null;
         const propType = _.get(prop, 'ormPropertyType', false);
         if (propType === 'relation') {

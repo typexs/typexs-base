@@ -12,13 +12,14 @@ import {Connection, ConnectionOptions, EntityOptions, getConnectionManager, getM
 import {TableMetadataArgs} from 'typeorm/metadata-args/TableMetadataArgs';
 import {ClassType, IClassRef, IEntityRef} from 'commons-schema-api';
 import {TypeOrmEntityRegistry} from './schema/TypeOrmEntityRegistry';
-import {ITypeOrmStorageOptions} from './ITypeOrmStorageOptions';
+// import {ITypeOrmStorageOptions} from './ITypeOrmStorageOptions';
 import {DEFAULT_STORAGEREF_OPTIONS} from '../../Constants';
 import {classRefGet} from './Helper';
 import {TypeOrmEntityController} from './TypeOrmEntityController';
 import {TypeOrmConnectionWrapper} from './TypeOrmConnectionWrapper';
 import {StorageRef} from '../../StorageRef';
 import {ICollection} from '../../ICollection';
+import {BaseConnectionOptions} from 'typeorm/connection/BaseConnectionOptions';
 
 export class TypeOrmStorageRef extends StorageRef {
 
@@ -40,7 +41,7 @@ export class TypeOrmStorageRef extends StorageRef {
   private _prepared = false;
 
 
-  constructor(options: ITypeOrmStorageOptions) {
+  constructor(options: IStorageOptions & BaseConnectionOptions) {
     super(options);
     // Apply some unchangeable and fixed options
     // options = Utils.merge(options, FIX_STORAGE_OPTIONS);
@@ -98,8 +99,8 @@ export class TypeOrmStorageRef extends StorageRef {
 
     // register used entities, TODO better way to register with annotation @Entity (from typeorm)
     if (_.has(this.getOptions(), 'entities') && _.isArray(this.getOptions().entities)) {
-      this.getOptions().entities.map(type => {
-        this.registerEntityRef(type as any);
+      this.getOptions().entities.map((type: any) => {
+        this.registerEntityRef(type);
       });
     }
   }
@@ -272,12 +273,12 @@ export class TypeOrmStorageRef extends StorageRef {
   getEntityClass(ref: IClassRef | string | Function | ClassType<any>) {
     if (_.isString(ref)) {
       const _ref = _.snakeCase(ref);
-      return this.getOptions().entities.find(x => _ref === TypeOrmStorageRef.machineName(x));
+      return this.getOptions().entities.find((x: any) => _ref === TypeOrmStorageRef.machineName(x));
     } else if (_.isFunction(ref)) {
       const _ref = classRefGet(ref);
-      return this.getOptions().entities.find(x => _ref.machineName === TypeOrmStorageRef.machineName(x));
+      return this.getOptions().entities.find((x: any) => _ref.machineName === TypeOrmStorageRef.machineName(x));
     } else {
-      return this.getOptions().entities.find(x => (<IClassRef>ref).machineName === TypeOrmStorageRef.machineName(x));
+      return this.getOptions().entities.find((x: any) => (<IClassRef>ref).machineName === TypeOrmStorageRef.machineName(x));
     }
   }
 
@@ -300,8 +301,8 @@ export class TypeOrmStorageRef extends StorageRef {
   }
 
 
-  getOptions(): ITypeOrmStorageOptions {
-    return super.getOptions() as ITypeOrmStorageOptions;
+  getOptions(): IStorageOptions & BaseConnectionOptions {
+    return super.getOptions() as IStorageOptions & BaseConnectionOptions;
   }
 
 

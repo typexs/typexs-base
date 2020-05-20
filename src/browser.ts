@@ -59,7 +59,7 @@ export * from './libs/storage/framework/IFindOptions';
 export * from './libs/storage/framework/ISaveOptions';
 export * from './libs/storage/framework/IConditionJoin';
 
-export * from './libs/storage/framework/typeorm/ITypeOrmStorageOptions';
+// export * from './libs/storage/framework/typeorm/ITypeOrmStorageOptions';
 
 export * from './libs/storage/framework/typeorm/schema/TypeOrmConstants';
 export * from './libs/storage/framework/typeorm/schema/TypeOrmEntityRef';

@@ -71,7 +71,7 @@ export * from './libs/system/INodeInfo';
 export * from './libs/storage/framework/typeorm/TypeOrmConnectionWrapper';
 export * from './libs/storage/framework/typeorm/TypeOrmEntityController';
 export * from './libs/storage/framework/typeorm/TypeOrmStorageRef';
-export * from './libs/storage/framework/typeorm/ITypeOrmStorageOptions';
+// export * from './libs/storage/framework/typeorm/ITypeOrmStorageOptions';
 
 export * from './libs/storage/EntitySchemaColumnOptions';
 export * from './libs/storage/EntitySchemaRelationOptions';

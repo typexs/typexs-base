@@ -1,4 +1,5 @@
 import {StringOrFunction} from 'commons-base';
+import {EntitySchema} from 'typeorm/entity-schema/EntitySchema';
 
 
 export const K_STORAGE = 'storage';
@@ -9,7 +10,7 @@ export interface IStorageOptions {
   /**
    * name of this storage
    */
-  name?: string;
+  readonly name?: string;
 
   /**
    * framework of storage
@@ -31,5 +32,5 @@ export interface IStorageOptions {
   /**
    * Entities handled by this storage
    */
-  entities?: (Function | any)[];
+  readonly entities?: ((Function | any | string))[];
 }

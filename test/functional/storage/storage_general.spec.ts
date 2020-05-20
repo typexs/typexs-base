@@ -13,8 +13,9 @@ import {Y1} from './entities/Y1';
 import {TEST_STORAGE_OPTIONS} from '../config';
 import {Container} from 'typedi';
 import {ClassRef, XS_DEFAULT} from 'commons-schema-api';
-import {ITypeOrmStorageOptions} from '../../../src/libs/storage/framework/typeorm/ITypeOrmStorageOptions';
+// import {ITypeOrmStorageOptions} from '../../../src/libs/storage/framework/typeorm/ITypeOrmStorageOptions';
 import {TypeOrmStorageRef} from '../../../src/libs/storage/framework/typeorm/TypeOrmStorageRef';
+import {BaseConnectionOptions} from 'typeorm/connection/BaseConnectionOptions';
 
 
 let bootstrap: Bootstrap;
@@ -38,13 +39,13 @@ class StorageGeneralSpec {
 
   @test
   async 'storage options override'() {
-    const opt1: ITypeOrmStorageOptions = {
+    const opt1: IStorageOptions & BaseConnectionOptions = {
       name: 'default',
       type: 'sqlite',
       entityPrefix: 'test',
       connectOnStartup: true
     };
-    const opt2: ITypeOrmStorageOptions = {name: 'default2', type: 'postgres', connectOnStartup: true};
+    const opt2: IStorageOptions & BaseConnectionOptions = {name: 'default2', type: 'postgres', connectOnStartup: true};
     const options: IStorageOptions = _.merge(opt1, opt2);
     expect(options).to.be.deep.eq({name: 'default2', type: 'postgres', entityPrefix: 'test', connectOnStartup: true});
   }
@@ -120,7 +121,7 @@ class StorageGeneralSpec {
     const invoker = new Invoker();
     Container.set(Invoker.NAME, invoker);
 
-    const storage = new TypeOrmStorageRef(TEST_STORAGE_OPTIONS as ITypeOrmStorageOptions);
+    const storage = new TypeOrmStorageRef(TEST_STORAGE_OPTIONS as IStorageOptions & BaseConnectionOptions);
     await storage.prepare();
 
     storage.addTableEntityClass(X, 'xtable');

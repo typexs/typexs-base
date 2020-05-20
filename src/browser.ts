@@ -42,6 +42,9 @@ export * from './libs/messaging/Message';
 export * from './libs/system/SystemInfoResponse';
 
 
+export * from './libs/storage/IStorageRef';
+export * from './libs/storage/IEntityController';
+export * from './libs/storage/IConnection';
 export * from './libs/storage/DataContainer';
 export * from './libs/storage/IStorageOptions';
 export * from './libs/storage/ICollection';
@@ -55,6 +58,8 @@ export * from './libs/storage/IValidationResult';
 export * from './libs/storage/framework/IFindOptions';
 export * from './libs/storage/framework/ISaveOptions';
 export * from './libs/storage/framework/IConditionJoin';
+
+export * from './libs/storage/framework/typeorm/ITypeOrmStorageOptions';
 
 export * from './libs/storage/framework/typeorm/schema/TypeOrmConstants';
 export * from './libs/storage/framework/typeorm/schema/TypeOrmEntityRef';

@@ -1,6 +1,6 @@
 import {IEntityController} from './IEntityController';
 import {IStorageOptions} from './IStorageOptions';
-import {ClassType, IClassRef} from 'commons-schema-api';
+import {ClassType, IClassRef, IEntityRef} from 'commons-schema-api/browser';
 import {IConnection} from './IConnection';
 
 /**
@@ -66,4 +66,12 @@ export interface IStorageRef {
    * @param ref
    */
   addExtendingStorageRef(extRef: IStorageRef): void;
+
+  /**
+   * Returns IEntityRef handled by the storage
+   *
+   * @param name
+   */
+  getEntityRef(name: string | Function): IEntityRef;
+
 }

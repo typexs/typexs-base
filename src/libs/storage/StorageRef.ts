@@ -1,7 +1,7 @@
 import {IStorageOptions} from './IStorageOptions';
 import {IStorageRef} from './IStorageRef';
 import {IEntityController} from './IEntityController';
-import {ClassType, IClassRef} from 'commons-schema-api';
+import {ClassType, IClassRef, IEntityRef} from 'commons-schema-api/browser';
 import {IConnection} from './IConnection';
 
 export abstract class StorageRef implements IStorageRef {
@@ -24,6 +24,8 @@ export abstract class StorageRef implements IStorageRef {
   abstract hasEntityClass(cls: string | Function | IClassRef): boolean;
 
   abstract addEntityClass(type: Function | IClassRef | ClassType<any>, options?: any): void;
+
+  abstract getEntityRef(name: string | Function): IEntityRef;
 
   abstract shutdown(full?: boolean): void;
 

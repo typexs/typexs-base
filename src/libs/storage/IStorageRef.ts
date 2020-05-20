@@ -10,6 +10,21 @@ import {ICollection} from './ICollection';
 export interface IStorageRef {
 
   /**
+   * returns the name
+   */
+  getName(): string;
+
+  /**
+   * return storage options
+   */
+  getFramework(): string;
+
+  /**
+   * return storage options
+   */
+  getType(): string;
+
+  /**
    * Return generic entity controller
    */
   getController(): IEntityController;

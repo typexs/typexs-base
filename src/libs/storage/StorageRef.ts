@@ -22,6 +22,14 @@ export abstract class StorageRef implements IStorageRef {
     return this.options.name;
   }
 
+  getName() {
+    return this.options.name;
+  }
+
+  abstract getType(): string;
+
+  abstract getFramework(): string;
+
   abstract hasEntityClass(cls: string | Function | IClassRef): boolean;
 
   abstract addEntityClass(type: Function | IClassRef | ClassType<any>, options?: any): void;

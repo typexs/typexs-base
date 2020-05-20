@@ -119,8 +119,12 @@ export class TypeOrmStorageRef extends StorageRef {
   }
 
 
-  getType(): string {
+  getFramework(): string {
     return 'typeorm';
+  }
+
+  getType(): string {
+    return this.dbType;
   }
 
   registerEntityRef(type: string | Function | EntitySchema) {

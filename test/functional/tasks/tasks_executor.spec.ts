@@ -13,12 +13,15 @@ import {TaskEvent} from '../../../src/libs/tasks/worker/TaskEvent';
 import {Bootstrap} from '../../../src/Bootstrap';
 import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
 import {Injector} from '../../../src/libs/di/Injector';
+import {C_STORAGE_DEFAULT, StorageRef, TaskLog, TasksExchange} from '../../../src';
+import {inspect} from 'util';
 
 
 const LOG_EVENT = TestHelper.logEnable(false);
 
 let bootstrap: Bootstrap;
 const p: SpawnHandle[] = [];
+
 
 @timeout(120000)
 @suite('functional/tasks/task_executor')
@@ -44,7 +47,12 @@ class TasksSpec {
             adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}
           }
         },
-        workers: {access: [{name: 'TaskQueueWorker', access: 'allow'}]}
+        workers: {
+          access: [
+            {name: 'TaskQueueWorker', access: 'allow'},
+            {name: 'ExchangeMessageWorker', access: 'allow'}
+          ]
+        }
       });
     bootstrap.activateLogger();
     bootstrap.activateErrorHandling();
@@ -62,8 +70,8 @@ class TasksSpec {
     await p[1].started;
 
     await TestHelper.wait(500);
-
   }
+
 
   static async after() {
     if (bootstrap) {
@@ -77,6 +85,9 @@ class TasksSpec {
   }
 
 
+  /**
+   * Check local execution of a task
+   */
   @test
   async 'locally task execution'() {
     const executor = Injector.create(TaskExecutor);
@@ -93,6 +104,32 @@ class TasksSpec {
       (x: any) => x.name === _.snakeCase('SimpleTaskPromise'));
     expect(x.name).to.be.eq(_.snakeCase('SimpleTaskPromise'));
     expect(x.result).to.be.eq('test');
+
+    await TestHelper.wait(100);
+    const runnerId = data.id;
+
+    //
+    // Check if tasks status was saved correctly
+    //
+    const storageRef = Injector.get(C_STORAGE_DEFAULT) as StorageRef;
+    const found = await storageRef.getController().findOne(TaskLog, {tasksId: runnerId});
+
+    expect(found).to.be.instanceOf(TaskLog);
+    expect(found).to.deep.include({
+      tasksId: runnerId,
+      taskName: 'simple_task_promise',
+      taskNr: 0,
+      state: 'stopped',
+      nodeId: 'system_0',
+      respId: 'system_0',
+      hasError: false,
+      progress: 100,
+      total: 100,
+      done: true,
+      running: false,
+      weight: 0,
+
+    });
   }
 
 
@@ -118,6 +155,31 @@ class TasksSpec {
       (x: any) => x.name === _.snakeCase('SimpleTaskPromise'));
     expect(x.name).to.be.eq(_.snakeCase('SimpleTaskPromise'));
     expect(x.result).to.be.eq('test');
+
+    await TestHelper.wait(100);
+    const runnerId = entry.id;
+    //
+    // Check if tasks status was saved correctly
+    //
+    const storageRef = Injector.get(C_STORAGE_DEFAULT) as StorageRef;
+    const found = await storageRef.getController().findOne(TaskLog, {tasksId: runnerId});
+
+    expect(found).to.be.instanceOf(TaskLog);
+    expect(found).to.deep.include({
+      tasksId: runnerId,
+      taskName: 'simple_task_promise',
+      taskNr: 0,
+      state: 'stopped',
+      nodeId: 'system_0',
+      respId: 'system_0',
+      hasError: false,
+      progress: 100,
+      total: 100,
+      done: true,
+      running: false,
+      weight: 0,
+
+    });
   }
 
 
@@ -193,6 +255,41 @@ class TasksSpec {
       (x: any) => x.name === _.snakeCase('SimpleTaskPromise'));
     expect(x.name).to.be.eq(_.snakeCase('SimpleTaskPromise'));
     expect(x.result).to.be.eq('test');
+
+    await TestHelper.wait(100);
+    const runnerId = entry.id;
+    //
+    // Task shouldn't be local
+    //
+    const storageRef = Injector.get(C_STORAGE_DEFAULT) as StorageRef;
+    const found = await storageRef.getController().findOne(TaskLog, {tasksId: runnerId});
+    expect(found).to.be.null;
+
+    //
+    // Task status get from remote
+    //
+    // const results = await Injector.get(TasksExchange).getStatus(runnerId, {
+    //   targetIds: ['remote01'],
+    //   // outputMode: 'only_value',
+    //   skipLocal: true
+    // });
+    // // console.log(inspect(results, false, 10));
+    // expect(results).to.have.length(1);
+    // expect(results.shift()).to.deep.include({
+    //   taskName: 'simple_task_promise',
+    //   taskNr: 0,
+    //   state: 'stopped',
+    //   callerId: 'system_0',
+    //   nodeId: 'remote01',
+    //   respId: 'remote01',
+    //   hasError: false,
+    //   progress: 100,
+    //   total: 100,
+    //   done: true,
+    //   running: false,
+    //   weight: 0,
+    //   data: {results: 'test', incoming: {}, outgoing: {}, error: null}
+    // });
   }
 
 

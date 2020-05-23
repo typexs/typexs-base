@@ -34,7 +34,12 @@ import {Bootstrap} from '../../../../src/Bootstrap';
           adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}
         }
       },
-      workers: {access: [{name: 'TaskQueueWorker', access: 'allow'}]}
+      workers: {
+        access: [
+          {name: 'TaskQueueWorker', access: 'allow'},
+          {name: 'ExchangeMessageWorker', access: 'allow'}
+        ]
+      }
     });
   bootstrap.activateLogger();
   bootstrap.activateErrorHandling();

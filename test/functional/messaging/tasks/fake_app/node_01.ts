@@ -20,8 +20,14 @@ import {Bootstrap} from '../../../../../src/Bootstrap';
       modules: {paths: [__dirname + '/../../../../..']},
       storage: {default: TEST_STORAGE_OPTIONS},
       eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}},
-      workers: {access: [{name: 'ExchangeMessageWorker', access: 'allow'}]},
-      tasks: {logdir: __dirname + '/logs'}
+      workers: {
+        access: [
+          {name: 'ExchangeMessageWorker', access: 'allow'},
+          {name: 'TaskQueueWorker', access: 'allow'}
+        ]
+      },
+      tasks: {logdir: __dirname + '/logs'},
+      filesystem: {paths: ['.']}
     });
   bootstrap.activateLogger();
   bootstrap.activateErrorHandling();

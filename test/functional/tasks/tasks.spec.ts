@@ -42,6 +42,7 @@ class TasksSpec {
 
   static before() {
     Log.reset();
+    // Log.options({level: 'debug', enable: LOG_EVENT});
     const i = new Invoker();
     Container.set(Invoker.NAME, i);
     i.register(TasksApi, []);

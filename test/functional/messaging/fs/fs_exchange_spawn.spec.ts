@@ -118,6 +118,32 @@ class MessagingSpec {
 
 
   @test
+  async 'read remote file - binary'() {
+    const filePath = __dirname + '/fake_app/test.txt';
+    const exchange = Injector.get(FileSystemExchange);
+    const results = await exchange.file({path: filePath, skipLocal: true});
+    expect(results).to.have.length(1);
+    const data = results[0];
+    expect(data.position).to.be.eq(44);
+    expect(data.buffer.toString()).to.be.eq('Hallo Welt\n\ndas ist ein\n\ninteressanter Test\n');
+  }
+
+
+
+  @test
+  async 'read remote file - binary (with local check)'() {
+    const filePath = __dirname + '/fake_app/test.txt';
+    const exchange = Injector.get(FileSystemExchange);
+    const results = await exchange.file({path: filePath});
+    expect(results).to.have.length(2);
+    const data = results[1];
+    expect(data.position).to.be.eq(44);
+    expect(data.buffer.toString()).to.be.eq('Hallo Welt\n\ndas ist ein\n\ninteressanter Test\n');
+  }
+
+
+
+  @test
   async 'read remote file - tail'() {
     const filePath = __dirname + '/fake_app/test.txt';
     const exchange = Injector.get(FileSystemExchange);

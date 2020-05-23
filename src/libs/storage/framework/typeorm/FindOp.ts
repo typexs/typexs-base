@@ -7,11 +7,13 @@ import {XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '../../../Constants';
 
 import {TypeOrmSqlConditionsBuilder} from './TypeOrmSqlConditionsBuilder';
 import {TypeOrmEntityRegistry} from './schema/TypeOrmEntityRegistry';
-import {TreeUtils} from 'commons-base';
+import {ClassUtils, TreeUtils} from 'commons-base';
 import {SelectQueryBuilder} from 'typeorm';
 import {ClassType} from 'commons-schema-api';
 import {StorageApi} from '../../../../api/Storage.api';
 import {TypeOrmEntityController} from './TypeOrmEntityController';
+import {REGISTRY_TYPEORM} from './schema/TypeOrmConstants';
+import {Cache, Injector} from '../../../..';
 
 
 export class FindOp<T> implements IFindOp<T> {
@@ -45,27 +47,49 @@ export class FindOp<T> implements IFindOp<T> {
   async run(entityType: Function | string | ClassType<T>, findConditions?: any, options?: IFindOptions): Promise<T[]> {
     this.entityType = entityType;
     this.findConditions = findConditions;
+    let cacheKey = null;
+    let cache: Cache = null;
+    let results: T[] = null;
 
     _.defaults(options, {
       limit: 50,
       offset: null,
-      sort: null
+      sort: null,
+      cache: false
     });
     this.options = options;
 
+
     await this.controller.invoker.use(StorageApi).doBeforeFind(this);
 
-    let results: T[] = [];
-    if (this.controller.storageRef.dbType === 'mongodb') {
-      results = await this.findMongo(entityType, findConditions);
-    } else {
-      results = await this.find(entityType, findConditions);
+    if (options.cache) {
+      cache = (Injector.get(Cache.NAME) as Cache);
+      cacheKey = [
+        REGISTRY_TYPEORM,
+        FindOp.name,
+        ClassUtils.getClassName(this.entityType),
+        JSON.stringify(findConditions),
+        JSON.stringify(options)].join('--');
+      results = await cache.get(cacheKey, 'storage_typeorm');
+    }
+
+
+    if (_.isNull(results)) {
+      if (this.controller.storageRef.dbType === 'mongodb') {
+        results = await this.findMongo(entityType, findConditions);
+      } else {
+        results = await this.find(entityType, findConditions);
+      }
     }
 
     await this.controller.invoker.use(StorageApi).doAfterFind(results, this.error, this);
 
     if (this.error) {
       throw this.error;
+    }
+
+    if (cacheKey) {
+      cache.set(cacheKey, results, 'storage_typeorm', {ttl: 120000}).catch(reason => {});
     }
 
     return results;

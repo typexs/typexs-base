@@ -97,10 +97,13 @@ export class TasksHelper {
   }
 
 
-  static getTaskLogFile(runnerId: string, nodeId: string) {
+  static getTaskLogFile(runnerId: string, nodeId: string, relative: boolean = false) {
+    const appPath = Config.get('app.path');
     let logdir = Config.get('tasks.logdir', Config.get('os.tmpdir'));
-    if (!PlatformUtils.isAbsolute(logdir)) {
-      logdir = PlatformUtils.join(Config.get('app.path'), logdir);
+    if (!relative && !PlatformUtils.isAbsolute(logdir)) {
+      logdir = PlatformUtils.join(appPath, logdir);
+    } else if (relative) {
+      logdir = logdir.replace(appPath + '/', '');
     }
     return PlatformUtils.join(
       logdir,

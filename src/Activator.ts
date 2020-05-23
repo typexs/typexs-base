@@ -26,11 +26,6 @@ export class Activator implements IActivator {
     const cache = new Cache();
     Container.set(Cache.NAME, cache);
 
-
-    //    const system = new System();
-//    system.create(Bootstrap.getNodeId());
-//    Container.set(System.NAME, system);
-
     /**
      * Initialize task content
      */

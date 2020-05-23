@@ -17,7 +17,7 @@ export abstract class AbstractMessage<REQ extends AbstractEvent, RES extends Abs
 
   protected responses: RES[] = [];
 
-  protected nodeIds: string[] = [];
+  // protected nodeIds: string[] = [];
 
   protected targetIds: string[];
 
@@ -54,12 +54,18 @@ export abstract class AbstractMessage<REQ extends AbstractEvent, RES extends Abs
       });
     }
     this.options = options;
+    _.defaults(this.options, {
+      filter: (x: any) => !!x
+    });
     this.once('postprocess', this.postProcess.bind(this));
   }
 
 
   target(nodeId: string) {
-    this.nodeIds.push(nodeId);
+    if (!this.targetIds) {
+      this.targetIds = [];
+    }
+    this.targetIds.push(nodeId);
     return this;
   }
 
@@ -85,7 +91,7 @@ export abstract class AbstractMessage<REQ extends AbstractEvent, RES extends Abs
 
   async send(req: REQ): Promise<any[]> {
     this.start = new Date();
-    if (_.isEmpty(this.targetIds) && this.nodeIds.length === 0) {
+    if (_.isUndefined(this.targetIds) || _.isEmpty(this.targetIds)) {
       this.targetIds = this.getSystem().nodes.map(n => n.nodeId);
     }
     this.request = req || Reflect.construct(this.getReqClass(), []);
@@ -120,7 +126,11 @@ export abstract class AbstractMessage<REQ extends AbstractEvent, RES extends Abs
 
     let responses: RES[] = this.responses;
     if (this.options.filterErrors) {
-      responses = this.responses.filter(x => !x.error);
+      responses = responses.filter(x => !x.error);
+    }
+
+    if (this.options.filter) {
+      responses = responses.filter(x => this.options.filter(x));
     }
 
     try {

@@ -18,4 +18,6 @@ export interface IMessageOptions {
 
   timeout?: number;
 
+  filter?: (x: any) => boolean;
+
 }

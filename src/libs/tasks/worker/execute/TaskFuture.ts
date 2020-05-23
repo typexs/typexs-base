@@ -16,6 +16,7 @@ export class TaskFuture extends EventEmitter {
 
   private start: Date = new Date();
 
+  private runnerId: string;
 
   private options: ITaskFutureOptions;
 
@@ -32,6 +33,14 @@ export class TaskFuture extends EventEmitter {
     this.options = options;
   }
 
+
+  getEventId() {
+    return this.options.eventId;
+  }
+
+  getRunnerId() {
+    return this.runnerId;
+  }
 
   async register() {
     subscribe(TaskEvent)(this, 'onTaskEvent');
@@ -50,6 +59,9 @@ export class TaskFuture extends EventEmitter {
 
   async onTaskEvent(event: TaskEvent) {
     if (this.options.eventId === event.reqEventId) {
+      if (!this.runnerId) {
+        this.runnerId = event.data.id;
+      }
       if (this.options.filter && this.options.filter(event)) {
         this.events.push(event);
         this.emit('future_event', event);
@@ -60,7 +72,7 @@ export class TaskFuture extends EventEmitter {
           this.targetResults[event.respId] = event.data;
         }
       }
-      
+
       if (this.isFinished()) {
         await this.close();
       }

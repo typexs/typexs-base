@@ -46,7 +46,7 @@ export class ExchangeMessageWorker implements IQueueProcessor<IMessageWorkload>,
     for (const messageRef of this.messageRegistry.getEntries()) {
       const exchange = await messageRef.initExchange();
       if (exchange) {
-        this.register(exchange);
+        await this.register(exchange);
       }
     }
     await EventBus.register(this);
@@ -77,11 +77,12 @@ export class ExchangeMessageWorker implements IQueueProcessor<IMessageWorkload>,
   onRequest(event: AbstractEvent) {
     // todo check
     try {
-      this.logger.debug('event: ' + event.id + ' ' + event.reqEventId + ' ' + event.targetIds);
       // check if its for me
       if (event.targetIds && event.targetIds.indexOf(this.system.node.nodeId) === -1) {
+        this.logger.debug('skipping event: ' + event.id + ' ' + event.reqEventId + ' ' + event.targetIds);
         return;
       }
+
 
       const q: IMessageWorkload = {
         event: event

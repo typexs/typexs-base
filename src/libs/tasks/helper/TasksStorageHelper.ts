@@ -3,7 +3,6 @@ import * as _ from 'lodash';
 import {ITaskRunResult} from '../ITaskRunResult';
 import {StorageRef} from '../../storage/StorageRef';
 import {TaskLog} from '../../../entities/TaskLog';
-import {Cache} from '../../cache/Cache';
 import {Semaphore} from '../../Semaphore';
 import {LockFactory} from '../../LockFactory';
 
@@ -50,6 +49,7 @@ export class TasksStorageHelper {
           exists.nodeId = taskRunnerResults.nodeId;
           exists.taskName = taskName;
           exists.respId = targetId;
+          exists.callerId = taskRunnerResults.callerId;
         }
         logs.push(exists);
         exists.state = taskRunnerResults.state;

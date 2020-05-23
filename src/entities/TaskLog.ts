@@ -1,12 +1,13 @@
 import * as _ from 'lodash';
 import {
   AfterInsert,
+  AfterLoad,
   AfterUpdate,
   BeforeInsert,
   BeforeUpdate,
   Column,
   Entity,
-  Index, AfterLoad,
+  Index,
   PrimaryGeneratedColumn
 } from 'typeorm';
 
@@ -32,6 +33,10 @@ export class TaskLog {
   @Index()
   @Column()
   state: string;
+
+  @Index()
+  @Column({nullable: true})
+  callerId: string;
 
   @Index()
   @Column()

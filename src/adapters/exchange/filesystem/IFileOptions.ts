@@ -1,6 +1,6 @@
 import {IMessageOptions} from '../../../libs/messaging/IMessageOptions';
 
-export interface IFileOptions extends IMessageOptions {
+export interface IFileOptions extends IFileSelectOptions {
 
   /**
    * if path operation which should be performed on given path
@@ -10,6 +10,10 @@ export interface IFileOptions extends IMessageOptions {
    */
   path: string;
 
+}
+
+
+export interface IFileSelectOptions extends IMessageOptions {
 
   /**
    * mark if path is an glob pattern

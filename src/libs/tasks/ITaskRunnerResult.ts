@@ -1,10 +1,12 @@
-import {ITaskRunResult} from "./ITaskRunResult";
-import {TASK_STATES} from "./Constants";
+import {ITaskRunResult} from './ITaskRunResult';
+import {TASK_STATES} from './Constants';
 
 export interface ITaskRunnerResult {
 
   // TaskRunner id
   id: string;
+
+  callerId: string;
 
   nodeId: string;
 

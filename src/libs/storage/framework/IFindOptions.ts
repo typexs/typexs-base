@@ -1,4 +1,5 @@
 export interface IFindOptions {
+  cache?: boolean;
   raw?: boolean;
   limit?: number;
   offset?: number;

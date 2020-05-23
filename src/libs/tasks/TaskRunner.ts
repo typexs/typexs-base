@@ -522,6 +522,7 @@ export class TaskRunner extends EventEmitter {
     const status: ITaskRunnerResult = {
       id: this.id,
       state: this.state,
+      callerId: this.$options.callerId,
       nodeId: Bootstrap.getNodeId(),
       targetIds: this.$options.targetIds,
       start: this.$start,

@@ -1,2 +1,2 @@
-export type TASK_OP = 'logfile' | 'runners' | 'start' | 'stop';
+export type TASK_OP = 'logfile' | 'logfile_path' | 'runners' | 'start' | 'stop' | 'status' | 'running_tasks';
 

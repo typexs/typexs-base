@@ -140,7 +140,12 @@ export class TasksExchange extends AbstractExchange<TasksRequest, TasksResponse>
           const req = new FileSystemRequest(opts);
           const res = new FileSystemResponse();
           await fsExchange.handleRequest(req, res);
-          response.logFileContent = res.data.toString();
+          if (res.error) {
+            response.error = res.error;
+          } else {
+            response.logFileContent = res.data.toString();
+          }
+
           break;
 
         case 'logfile_path':

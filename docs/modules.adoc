@@ -6,10 +6,10 @@ A modul will be automatically integrated in typexs framework
 when it is explicit declared as a typexs module.
 
 The declaration is done by a new entry "typexs" in the package.json.
-The only necassary information is the name for the module in the typexs
+The only necessary information is the name for the module in the typexs
 context.
 
-```json
+```js
 {
     "name": "my-typexs-module",
     "version": "1.0.0",
@@ -37,38 +37,38 @@ For example if the module implements an api which can be
 dynamically used or extended. Other modules extensions can be
 automatically integrated by placing their extensions under
 the specific path and when the handling module
-is loads it can load all the other extensions.
+loads it can load all the other extensions.
 
-```json
+```js
 {
-    ...
+    // ...
     "typexs": {
-        "name": "my-typexs-module"
+        "name": "my-typexs-module",
         "declareLibs": [
             {
-                "topic": "my_great_extension"
+                "topic": "my_great_extension",
                 "refs": [
                     // using glob pattern from modul
                     // root path (where package.json is placed)
                     "GreatExtension",
                     // using src prefix for local development lookups
-                    "src/GreatExtension"
+                    "src/GreatExtension",
                     // using directories
                     "src/great_extensions/*"
                 ]
             }
         ]
     }
-    ...
+    // ...
 }
 ```
 
 Modules extending "my-typexs-module" can put their code under the declared
 ref paths and they will be handled be "my-typexs-module".
 
-
-
-```ts
+To get programmatically all declared classes for a topic can be
+done through the RuntimeLoader class object like this:
+```typescript
 import {RuntimeLoader, IActivator} from '@typexs/base';
 
 export class Activator implements IActivator {
@@ -77,14 +77,128 @@ export class Activator implements IActivator {
     loader: RuntimeLoader;
 
     startup(){
+        // getting all implemented classes declared by this modul
         const classes = this.loader.getClasses('my_great_extension');
+        // doing something ...
     }
 }
-
 ```
 
-Access programatically
-RuntimeLoader -> getClasses ...
+
+During the booting of typexs all declared modules are looked up and
+their settings are analysed to get all the declared paths and dependencies
+between them. Additionally declaring topic paths can be overridden by the
+configuration.
+
+Through the analysis of the dependencies the correct modul load order is
+determined and during the bootstrap considered.
+
+The bootstrap of modules happens in three stages. At first we start with
+
+* the activation stage followed by
+* the startup stage and ending with
+* the ready stage.
+
+The activations stage is for handling initial modul specific configurations
+or declaring classes or instance for dependency injection, which can or must
+be present for the second stage the startup. To hook in the activation stage
+the module must have a Activator.(t|j)s (or src/Activator.(t|j)s) file
+with a class implementing the IActivator interface from @typexs/base.
+Some objects are at this point ready for injection, if they are needed:
+
+* Storage +
++
+--
+```typescript
+@Inject(Storage.NAME)
+storage: Storage;
+```
+--
+* StorageRef's
++
+--
+```typescript
+// C_DEFAULT_STORAGE = 'storage.default'
+@Inject(C_DEFAULT_STORAGE)
+storageRef: StorageRef;
+```
+--
+* RuntimeLoader
++
+--
+```typescript
+@Inject(RuntimeLoader.NAME)
+loader: RuntimeLoader;
+```
+--
+
+Here an example:
+```typescript
+// ./Activator.ts
+
+import {IActivator, Injector} from '@typexs/base';
+
+export class Activator implements IActivator {
+
+    startup(){
+        // modul specific stuff
+        const config = Config.get('my_stuff')
+        const handler = new MyHandler(config);
+        Injector.set(MyHandler, handler);
+    }
+}
+```
+
+
+In the second stage of bootstrap all activation over all modules are done
+and ready for usage. In this stage you can do initial
+loading, registering or processing and stuff that is necessary to make the
+modul work properly.  To hook in this stage
+the module must have a Startup.(t|j)s (or src/Startup.(t|j)s) file
+with a class implementing the IBootstrap (for shutdown operation the IShutdown
+interface) interface from @typexs/base.
+```typescript
+// ./Startup.ts
+
+import {IBootstrap, Inject} from '@typexs/base';
+
+export class Startup implements IBootstrap {
+
+    @Inject(MyHandler)
+    greatHandler: MyHandler;
+
+
+    bootstrap(){
+        this.greatHandler.letsRock();
+    }
+}
+```
+
+The last stage is executed after the startup stage. In this stage all modules
+went through activation and startup so the system is fully ready for further
+processing. This stage can be used if the module depends on fully loaded system.
+To hook in this stage is to use the interface IStartup and implement the
+method ready().
+```typescript
+// ./Startup.ts
+
+import {IBootstrap, Inject} from '@typexs/base';
+
+export class Startup implements IBootstrap {
+
+    @Inject(MyHandler)
+    greatHandler: MyHandler;
+
+    ready(){
+        this.greatHandler.fireMessageSystemIsReady();
+    }
+}
+```
+
+
+The hooking in the stages is optional and depends only on developer archtecture
+or integration level decision. So a typexs module could also implement only
+some extensions without interact with the bootstrap.
 
 
 ### Enabling/disabling modules

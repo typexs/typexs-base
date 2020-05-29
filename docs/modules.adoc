@@ -203,24 +203,32 @@ some extensions without interact with the bootstrap.
 
 ### Enabling/disabling modules
 
-```yml
+Modules found under node_modules or packages (or src/packages) are all
+automatically enabled if not explicit declared as disabled. By configuration
+can be the disable status be declared. There are two variants for disabling
+modules:
 
+* one by setting the value ot false for the configuration
+key 'modules.included.my-modul.enable' like:
++
+--
+```yml
+# config/typexs.yml
 modules:
     included:
-        'module1':
-            enabled: false | true
-
+        my-modul:
+            enabled: false
 ```
-
-
+--
+* the other by declaring pattern under the key 'modules.match'
++
+--
 ```yml
-
+# config/typexs.yml
 modules:
     match:
     - name: 'module*'
       enabled: false
-
 ```
-
-
-## Integration and Startup
+All modules matching the pattern will be disabled.
+--

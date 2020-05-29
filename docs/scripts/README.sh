@@ -4,8 +4,8 @@
 
 BASEDIR=$(dirname "$0")
 # MD=markdown_github
-MD=gfm
+MD=markdown_strict
 
-asciidoc -b docbook -o $BASEDIR/../README.xml $BASEDIR/../README.adoc
+asciidoc -b docbook45 -o $BASEDIR/../README.xml $BASEDIR/../README.adoc
 
 iconv -t utf-8 $BASEDIR/../README.xml | pandoc -f docbook -t $MD --wrap=none | iconv -f utf-8 > $BASEDIR/../README.md

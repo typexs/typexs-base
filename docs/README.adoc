@@ -4,12 +4,3 @@
 [![codecov](https://codecov.io/gh/typexs/typexs-base/branch/master/graph/badge.svg)](https://codecov.io/gh/typexs/typexs-base)
 [![Dependency Status](https://david-dm.org/typexs/typexs-base.svg)](https://david-dm.org/typexs/typexs-base)
 
-
-
-* [Documentation](docs/home.adoc)
-
-
-
-## Links:
-
-* http://typexs.github.io

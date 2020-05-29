@@ -18,8 +18,8 @@ import {Injector} from './libs/di/Injector';
 export class Activator implements IActivator {
 
 
-  @Inject(RuntimeLoader.NAME)
-  loader: RuntimeLoader;
+  // @Inject(RuntimeLoader.NAME)
+  // loader: RuntimeLoader;
 
 
   startup(): void {

@@ -1,8 +1,39 @@
-*STILL WIP*
-
 ## Storage
 
-* Declaring a storage
+At least one storage location must be declared and present when you
+running typexs. By default the predefined storage with the name 'default'
+is given and awaits a sqlite inmemory database. The default configuration
+if none other is given is (in yaml notation):
+
+```yml
+storage:
+  default:
+    framework: typeorm
+    type: sqlite
+    database: :memory:
+    synchronize: true,
+    connectOnStartup: false
+```
+
+This will be overwritten by a declared configuration.
+
+### Storage-Options
+
+### Declaring a new storage
+
+To declare a new storage location you must
+Declare location of entities for declaring storage.
+
+```
+storage:
+  default:
+
+
+    # extends by an existing storage schema
+    extends: string | string[]
+```
+
+
 
 ### Configuration
 

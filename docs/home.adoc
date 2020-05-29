@@ -1,0 +1,7 @@
+# @typexs/base
+
+include::modules.adoc[]
+
+include::storage.adoc[]
+
+include::tasks.adoc[]

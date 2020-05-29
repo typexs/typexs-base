@@ -1,4 +1,93 @@
+## Modules
 
+### Declare new module
+
+A modul will be automatically integrated in typexs framework
+when it is explicit declared as a typexs module.
+
+The declaration is done by a new entry "typexs" in the package.json.
+The only necassary information is the name for the module in the typexs
+context.
+
+```json
+{
+    "name": "my-typexs-module",
+    "version": "1.0.0",
+    "typexs": {
+        "name": "my-typexs-module"
+    }
+}
+```
+
+A modul containing this declaration and whose location is under
+```
+./node_modules
+# or
+./packages
+# or
+./src/packages
+```
+
+will be automatically integrated on startup of the framework.
+
+In the "typexs" section of the package.json can also be added
+additional declartions for modul specific autoload paths, which are
+processed by the module to look up for addons or extensions.
+For example if the module implements an api which can be
+dynamically used or extended. Other modules extensions can be
+automatically integrated by placing their extensions under
+the specific path and when the handling module
+is loads it can load all the other extensions.
+
+```json
+{
+    ...
+    "typexs": {
+        "name": "my-typexs-module"
+        "declareLibs": [
+            {
+                "topic": "my_great_extension"
+                "refs": [
+                    // using glob pattern from modul
+                    // root path (where package.json is placed)
+                    "GreatExtension",
+                    // using src prefix for local development lookups
+                    "src/GreatExtension"
+                    // using directories
+                    "src/great_extensions/*"
+                ]
+            }
+        ]
+    }
+    ...
+}
+```
+
+Modules extending "my-typexs-module" can put their code under the declared
+ref paths and they will be handled be "my-typexs-module".
+
+
+
+```ts
+import {RuntimeLoader, IActivator} from '@typexs/base';
+
+export class Activator implements IActivator {
+
+    @Inject(RuntimeLoader.NAME)
+    loader: RuntimeLoader;
+
+    startup(){
+        const classes = this.loader.getClasses('my_great_extension');
+    }
+}
+
+```
+
+Access programatically
+RuntimeLoader -> getClasses ...
+
+
+### Enabling/disabling modules
 
 ```yml
 
@@ -18,3 +107,6 @@ modules:
       enabled: false
 
 ```
+
+
+## Integration and Startup

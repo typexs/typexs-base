@@ -79,3 +79,7 @@ package-lock.json
 
 config/typexs--*
 docker/*/local
+
+# docs
+docs/*.md
+docs/*.xml

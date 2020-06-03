@@ -216,7 +216,9 @@ export class TaskExecutor extends EventEmitter {
     } else if (enqueueEvents && enqueueEvents.length > 0) {
       if (enqueueEvents[0].state === 'request_error') {
         if (_.isArray(enqueueEvents[0].errors) && enqueueEvents[0].errors.length > 0) {
-          await future.close();
+          if (future) {
+            await future.close();
+          }
           enqueueEvents[0].errors.forEach((x: IError) => {
             throw new Error(x.message + '' + (x.data ? ' data: ' + JSON.stringify(x.data) : ''));
           });

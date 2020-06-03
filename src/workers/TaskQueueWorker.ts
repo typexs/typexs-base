@@ -141,6 +141,7 @@ export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker 
     runner.getReadStream().on('data', (x: any) => {
       e.topic = 'log';
       e.log = x.toString().split('\n').filter((x: string) => !_.isEmpty(x));
+
       this.fireState(e);
     });
 

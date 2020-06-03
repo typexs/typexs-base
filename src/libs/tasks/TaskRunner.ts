@@ -108,7 +108,8 @@ export class TaskRunner extends EventEmitter {
     _.defaults(this.$options, <ITaskRunnerOptions>{
       nodeId: nodeId,
       targetIds: [nodeId],
-      skipRegistryAddition: false
+      skipRegistryAddition: false,
+      disableLogFile: false
     });
     this.invoker = Container.get(Invoker.NAME);
 
@@ -165,6 +166,15 @@ export class TaskRunner extends EventEmitter {
         stream: this.writeStream,
         format: new DefaultJsonFormat()
       }));
+
+    if (this.$options.disableLogFile) {
+      const filename = TasksHelper.getTaskLogFile(this.id, this.$options.nodeId);
+      (<WinstonLoggerJar>this.taskLogger).logger().add(
+        new winston.transports.File({
+          filename: filename,
+          format: new DefaultJsonFormat()
+        }));
+    }
 
 
     // this.$todo = _.keys(this.$tasks);

@@ -47,4 +47,10 @@ export interface ITaskRunnerOptions {
    * Ignore add to task runner registry, cause maybe already appended
    */
   skipRegistryAddition?: boolean;
+
+
+  /**
+   * Ignore creation of task logfile
+   */
+  disableLogFile?: boolean;
 }

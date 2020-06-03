@@ -81,7 +81,7 @@ export class TaskMonitorWorker implements IQueueProcessor<TaskEvent>, IWorker {
         }
 
       } else if (event.topic === 'log') {
-        const filename = TasksHelper.getTaskLogFile(event.id, event.respId);
+        const filename = TasksHelper.getTaskLogFile(event.id, event.nodeId);
         await new Promise((resolve) => {
           const out = event.log.join('\n') + '\n';
           fs.appendFile(filename, out, (err) => {

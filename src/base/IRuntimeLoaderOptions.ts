@@ -2,6 +2,9 @@ import {IClassesLib} from 'commons-moduls';
 
 export interface IRuntimeLoaderOptions {
 
+  /**
+   * declare the app path and where to lookup modules
+   */
   appdir?: string;
 
   /**
@@ -19,8 +22,14 @@ export interface IRuntimeLoaderOptions {
    */
   packageKeys?: string[];
 
+  /**
+   * Declare disabled modules
+   */
   disabled?: string[];
 
+  /**
+   * Declare contextualised file lookups
+   */
   libs?: IClassesLib[];
 
   /**
@@ -32,7 +41,7 @@ export interface IRuntimeLoaderOptions {
    * Lists modules with enable or disable possibilty and additional parameters if needed
    *
    * modules:
-   *   access:
+   *   match:
    *     - name: module*
    *       enabled: false
    */

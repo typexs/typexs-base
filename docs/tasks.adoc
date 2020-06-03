@@ -1,5 +1,7 @@
 ## Tasks
 
+Process units with input and output + return parameter
+which can spawn subprocess
 
 ### Configuration
 
@@ -17,6 +19,30 @@ tasks:
 
 
 ### API
+
+
+#### Task implementation
+
+in directory tasks or src/tasks can be also in subdirectories implements ITask
+
+#### Execution
+
+Programmatically
+
+```typescript
+const executor = Injector.create(TaskExecutor)
+executor.create(
+    taskSpec as TASK_RUNNER_SPEC[],
+    parameters as any,
+    execOptions as ITaskExectorOptions
+)
+await executor.run()
+```
+
+
+* describe options
+
+#### Execution
 
 
 #### TaskRuntimeContainer
@@ -69,7 +95,7 @@ tasks
 ```
 
 
-### Integretion / implementation
+### Integration / implementation
 
 * as Function
 * as Class

@@ -8,6 +8,7 @@ if none other is given is (in yaml notation):
 ```yml
 storage:
   default:
+    # typeorm is currently the default framework
     framework: typeorm
     type: sqlite
     database: :memory:
@@ -16,6 +17,8 @@ storage:
 ```
 
 This will be overwritten by a declared configuration.
+
+
 
 ### Storage-Options
 
@@ -32,6 +35,10 @@ storage:
     # extends by an existing storage schema
     extends: string | string[]
 ```
+
+
+
+entity.libs
 
 
 
@@ -67,3 +74,6 @@ The conversion to sql for typeorm datasources is processed by ``TypeOrmSqlCondit
 ```
 
 
+### Entity Controller
+
+IEntityController

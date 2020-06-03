@@ -1,5 +1,0 @@
-```
-app:
-  # Default is false, causes initialization off shutdown on an uncaught exception
-  enableShutdownOnUncaughtException: true
-```

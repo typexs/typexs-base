@@ -1,0 +1,27 @@
+## Configuration
+
+
+### File pattern
+
+
+### App Options
+
+```
+app:
+  # Default is false, causes initialization off
+  # shutdown on an uncaught exception
+  enableShutdownOnUncaughtException: true
+```
+
+[cols="1,2"]
+|===
+| Key | Description
+
+| app.enableShutdownOnUncaughtException
+|
+
+| app.system.distributed
+|
+
+
+|===

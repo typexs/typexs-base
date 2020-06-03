@@ -32,6 +32,7 @@ const DEFAULT_TASK_EXEC: ITaskExectorOptions = {
   skipTargetCheck: false,
   executionConcurrency: null,
   skipRequiredThrow: false,
+  skipThrow: false,
   targetId: null,
   targetIds: null,
   isLocal: true,
@@ -219,10 +220,15 @@ export class TaskExecutor extends EventEmitter {
           if (future) {
             await future.close();
           }
-          enqueueEvents[0].errors.forEach((x: IError) => {
-            throw new Error(x.message + '' + (x.data ? ' data: ' + JSON.stringify(x.data) : ''));
-          });
+          if (!options.skipThrow) {
+            enqueueEvents[0].errors.forEach((x: IError) => {
+              throw new Error(x.message + '' + (x.data ? ' data: ' + JSON.stringify(x.data) : ''));
+            });
+          }
+          return enqueueEvents;
         }
+
+
       }
     }
 

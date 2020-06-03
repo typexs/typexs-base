@@ -15,6 +15,11 @@ export interface ITaskExectorOptions extends ITaskExecutionRequestOptions {
   skipRequiredThrow?: boolean;
 
   /**
+   * skip generic throwing
+   */
+  skipThrow?: boolean;
+
+  /**
    * targetId mean the nodeId were the task must be executed
    */
   targetId?: string;

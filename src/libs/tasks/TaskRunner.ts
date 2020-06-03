@@ -167,7 +167,7 @@ export class TaskRunner extends EventEmitter {
         format: new DefaultJsonFormat()
       }));
 
-    if (this.$options.disableLogFile) {
+    if (!this.$options.disableLogFile) {
       const filename = TasksHelper.getTaskLogFile(this.id, this.$options.nodeId);
       (<WinstonLoggerJar>this.taskLogger).logger().add(
         new winston.transports.File({

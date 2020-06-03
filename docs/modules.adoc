@@ -201,7 +201,112 @@ or integration level decision. So a typexs module could also implement only
 some extensions without interact with the bootstrap.
 
 
-### Enabling/disabling modules
+### Configuration
+
+The integration of modules can also be configurated through the default
+configuration file(s) under
+
+ config/typexs.yml
+
+or also if the framework is used programatically in tests for example:
+
+```typescript
+(async function(){
+    const bootstrap = Bootstrap
+      .setConfigSources([{type: 'system'}])
+      .configure(<ITypexsOptions & any>{
+        // Put here the configuration
+        modules: {
+            // additonal modul lookup paths (if there are further "node_modules" present,
+            // they will be scanned too)
+            paths: [
+                __dirname + '/../furtherTxsModules'
+            ],
+
+            // Additional lookup root keys in the package.json
+            // for example: {..., hc_module: { myMod:true }, ... }
+            packageKeys: [
+                'hc_module'
+            ],
+
+            // like "declareLibs" but can be added in the configuration
+            libs: [
+                {
+                    topic: 'entity.default',
+                    refs: [
+                        'better/entity/path'
+                    ]
+                }
+            ]
+        },
+      });
+    bootstrap.activateLogger();
+    bootstrap.activateErrorHandling();
+    await bootstrap.prepareRuntime();
+    await bootstrap.activateStorage();
+    await bootstrap.startup();
+
+    // ... do something ...
+
+    await bootstrap.shutdown();
+
+})();
+```
+
+
+#### Additional lookup paths
+
+To define additional lookup paths which will be scanned for typexs modules at startup
+set the configuration key 'modules.paths'. The value must be an array of path
+where typexs modules could be present. If under the given paths there
+are 'node_modules' subpaths then they will be also scanned.
+
+```yml
+# config/typexs.yml
+
+modules:
+    paths:
+    - ../lookupAdd
+    - local/new/path
+```
+
+#### Declared contextualised lookups
+
+Like in the section "Declare new module" with the key 'typexs.declareLibs' in
+the package.json we can extend or create new declarations
+for addon/extensions lookups by using the configuration key 'modules.libs'.
+
+Each entry must contain a representing string value under the key 'topic' for
+the context of the lookuped files and a array under the key
+'refs' which can contain multiple values describing the file location, like
+directories or glob patterns.
+
+When a topic is already present it will be extended be the additional paths
+else a new topic for lookup will be created.
+
+
+```yml
+# config/typexs.yml
+modules:
+    libs:
+    - topic: entity.default
+      refs:
+        - additional/place/for/entities
+        - additional/entities/*Default*
+    - topic: new_topic
+      refs:
+        - new_topic
+```
+
+To get all classes under a topic use
+```typescript
+
+// ... load framework
+const classes = Injector.get(RuntimerLoader.NAME).getClasses('{your_topic_name}');
+// ... shutdown framework
+```
+
+#### Enabling/disabling modules
 
 Modules found under node_modules or packages (or src/packages) are all
 automatically enabled if not explicit declared as disabled. By configuration
@@ -232,3 +337,20 @@ modules:
 ```
 All modules matching the pattern will be disabled.
 --
+
+
+
+#### Further configuration options
+
+The full configuration is declared under `src/base/IRuntimeLoaderOptions` interface.
+
+|===
+|Key |Description
+
+| packageKeys
+| Filter modules which have 'typexs' or here defined keys in package.json definition
+
+| subModulPattern
+| Lookup directory pattern for included submodules. (Default: 'node_modules')
+
+|===

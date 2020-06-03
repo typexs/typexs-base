@@ -143,7 +143,12 @@ export class TasksExchange extends AbstractExchange<TasksRequest, TasksResponse>
           if (res.error) {
             response.error = res.error;
           } else {
-            response.logFileContent = res.data.toString();
+            if (res.data) {
+              response.logFileContent = res.data.toString();
+            } else {
+              response.logFileContent = '';
+            }
+
           }
 
           break;

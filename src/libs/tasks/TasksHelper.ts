@@ -16,6 +16,7 @@ import {TaskRunnerRegistry} from './TaskRunnerRegistry';
 import {IWorkerInfo} from '../worker/IWorkerInfo';
 import {TaskQueueWorker} from '../../workers/TaskQueueWorker';
 import {System} from '../system/System';
+import moment = require('moment');
 
 
 export class TasksHelper {
@@ -97,17 +98,42 @@ export class TasksHelper {
   }
 
 
-  static getTaskLogFile(runnerId: string, nodeId: string, relative: boolean = false) {
+  static getTaskLogFile(runnerId: string, nodeId: string, relative: boolean = false, options: { parseDate: boolean } = {parseDate: true}) {
     const appPath = Config.get('app.path');
-    let logdir = Config.get('tasks.logdir', Config.get('os.tmpdir'));
+    let logdir =
+      Config.get('tasks.logdir',
+        Config.get('os.tmpdir', '/tmp')
+      );
+
+    if (options.parseDate) {
+      const date = new Date();
+      const regex = /%(\w+)/ig;
+      let res = null;
+      while (res = regex.exec(logdir)) {
+        try {
+          const part = moment(date).format(res[1]);
+          logdir = logdir.replace(res[0], part);
+        } catch (e) {
+
+        }
+      }
+    }
+
+
     if (!relative && !PlatformUtils.isAbsolute(logdir)) {
       logdir = PlatformUtils.join(appPath, logdir);
     } else if (relative) {
       logdir = logdir.replace(appPath + '/', '');
     }
+
+    if (!PlatformUtils.fileExist(logdir)) {
+      PlatformUtils.mkdir(logdir);
+    }
+
     return PlatformUtils.join(
       logdir,
-      'taskmonitor-' + runnerId + '-' + nodeId + '.log');
+      'taskmonitor-' + runnerId + '-' + nodeId + '.log'
+    );
   }
 
   static getTaskNames(taskSpec: TASK_RUNNER_SPEC[]) {

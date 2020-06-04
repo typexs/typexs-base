@@ -23,6 +23,7 @@ import {Workers} from '../../../src/libs/worker/Workers';
 import {C_STORAGE_DEFAULT} from '../../../src/libs/Constants';
 import {TaskLog} from '../../../src/entities/TaskLog';
 import {StorageRef} from '../../../src/libs/storage/StorageRef';
+import {Injector} from '../../../src';
 
 
 const LOG_EVENT = TestHelper.logEnable(false);
@@ -47,16 +48,17 @@ class TasksWorkerSpec {
 
 
   @test
-  async 'run local job'() {
+  async 'run manuell task by triggering event on local worker'() {
+    const NODEID = 'worker';
     bootstrap = Bootstrap
       .setConfigSources([{type: 'system'}])
       .configure(<ITypexsOptions & any>{
-        app: {name: 'test', nodeId: 'worker'},
+        app: {name: 'test', nodeId: NODEID},
         logging: {enable: LOG_EVENT, level: 'debug'},
         modules: {paths: [__dirname + '/../../..']},
         storage: {default: TEST_STORAGE_OPTIONS},
         eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}},
-        workers: {access: [{name: 'TaskMonitorWorker', access: 'allow'}]}
+        // workers: {access: [{name: 'TaskMonitorWorker', access: 'allow'}]}
       });
     bootstrap.activateLogger();
     bootstrap.activateErrorHandling();
@@ -74,7 +76,7 @@ class TasksWorkerSpec {
       }
     }
 
-    const tasks: Tasks = Container.get(Tasks.NAME);
+    const tasks: Tasks = Injector.get(Tasks.NAME);
     const ref = tasks.addTask(SimpleWorkerTask);
 
 
@@ -87,21 +89,21 @@ class TasksWorkerSpec {
 
     // create event to fire
     const taskEvent = new TaskEvent();
-    taskEvent.nodeId = Bootstrap.getNodeId();
+    taskEvent.nodeId = NODEID;
     taskEvent.taskSpec = ref.name;
     let res = await EventBus.post(taskEvent);
 
     expect(res).to.have.length(1);
     res = res.shift();
-    expect(res).to.have.length(3);
+    expect(res).to.have.length(2);
 
-    const work = _.find(res, (x: any) => x && x.nodeId === 'worker');
-    expect(work.nodeId).to.be.eq('worker');
-    expect(work.respId).to.be.eq('worker');
+    const work = _.find(res, (x: any) => x && x.nodeId === NODEID) as TaskEvent;
+    expect(work.nodeId).to.be.eq(NODEID);
+    expect(work.respId).to.be.eq(NODEID);
     expect(work.state).to.be.eq('enqueue');
 
     worker.queue.resume();
-    await TestHelper.waitFor(() => events.length >= 4);
+    await TestHelper.waitFor(() => events.find(x => x.state === 'stopped' && x.id === work.id));
     await worker.queue.pause();
     // await worker.queue.await();
     expect(events).to.have.length(4);
@@ -111,18 +113,19 @@ class TasksWorkerSpec {
       {state: 'enqueue', result: null},
       {state: 'enqueue', result: null},
       {state: 'started', result: null},
+      // {state: 'running', result: null},
       {state: 'stopped', result: 'test'}
     ]);
 
     events = [];
 
     const taskEvent2 = new TaskEvent();
-    taskEvent2.nodeId = Bootstrap.getNodeId();
+    taskEvent2.nodeId = NODEID;
     taskEvent2.taskSpec = {name: ref.name, incomings: {data: 'pass test'}};
     const res2 = await EventBus.post(taskEvent2);
-    const work2 = _.find(res2[0], (x: any) => x && x.nodeId === 'worker');
-    expect(work2.nodeId).to.be.eq('worker');
-    expect(work2.respId).to.be.eq('worker');
+    const work2 = _.find(res2[0], (x: any) => x && x.nodeId === NODEID);
+    expect(work2.nodeId).to.be.eq(NODEID);
+    expect(work2.respId).to.be.eq(NODEID);
     expect(work2.state).to.be.eq('enqueue');
 
     worker.queue.resume();

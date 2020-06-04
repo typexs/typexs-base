@@ -31,6 +31,7 @@ import {Tasks} from '../../../src/libs/tasks/Tasks';
 import {TaskRunnerRegistry} from '../../../src/libs/tasks/TaskRunnerRegistry';
 import {TasksHelper} from '../../../src/libs/tasks/TasksHelper';
 import {Injector} from '../../../src/libs/di/Injector';
+import {Config} from 'commons-config';
 
 const stdMocks = require('std-mocks');
 
@@ -538,8 +539,19 @@ class TasksSpec {
     await taskRunnerRegistry.prepare();
     Container.remove(Tasks.NAME);
     Container.remove(TaskRunnerRegistry.NAME);
+  }
 
 
+  @test
+  async 'task helper log file path'() {
+    let path = TasksHelper.getTaskLogFile('123', 'go');
+    expect(path).to.be.eq('/tmp/taskmonitor-123-go.log');
+    Config.set('tasks.logdir', '/tmp/tasks-%YYYY-%MM-%DD');
+    path = TasksHelper.getTaskLogFile('123', 'go');
+    expect(path).to.be.eq('/tmp/tasks-2020-06-04/taskmonitor-123-go.log');
+    Config.set('tasks.logdir', '/tmp/tasks/%YYYY-%MM-%DD');
+    path = TasksHelper.getTaskLogFile('123', 'go');
+    expect(path).to.be.eq('/tmp/tasks/2020-06-04/taskmonitor-123-go.log');
   }
 
 

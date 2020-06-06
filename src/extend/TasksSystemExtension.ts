@@ -37,7 +37,7 @@ export class TasksSystemExtension implements ISystemApi {
       const found = x.contexts.find(x => x.context === C_TASKS);
       if (found) {
         const workers = x.contexts.find(x => x.context === C_WORKERS);
-        const hasWorker = workers[C_WORKERS].find((x: IWorkerInfo) => x.className === TaskQueueWorker.NAME);
+        const hasWorker = !!workers[C_WORKERS].find((x: IWorkerInfo) => x.className === TaskQueueWorker.NAME);
         found.tasks.map((info: ITaskInfo) => {
           if (this.tasks.contains(info.name)) {
             this.tasks.get(info.name).addNodeId(x.nodeId, hasWorker);

@@ -68,6 +68,7 @@ typings/
 
 # Directories
 
+.txs
 tmp/
 build/
 dist/
@@ -83,3 +84,5 @@ docker/*/local
 # docs
 docs/*.md
 docs/*.xml
+
+

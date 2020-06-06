@@ -198,10 +198,10 @@ class TasksWorkerSpec {
     const z = new T02();
     await EventBus.register(z);
 
-    const tasks: Tasks = Container.get(Tasks.NAME);
-    const ref = tasks.addTask(SimpleWorkerTask);
+    const tasks: Tasks = Injector.get(Tasks.NAME);
+    const ref = tasks.addTask(SimpleWorkerTask, null, {worker: true});
 
-    const execReq = Container.get(TaskRequestFactory).executeRequest();
+    const execReq = Injector.get(TaskRequestFactory).executeRequest();
     const results = await execReq.create([ref.name]).run();
     await TestHelper.waitFor(() => events.length >= 4, 100);
 
@@ -567,7 +567,7 @@ class TasksWorkerSpec {
     await EventBus.register(l);
 
     const tasks: Tasks = Container.get(Tasks.NAME);
-    const ref = tasks.addTask(SimpleTaskWithLog);
+    const ref = tasks.addTask(SimpleTaskWithLog, null, {worker: true});
 
     const execReq = Container.get(TaskRequestFactory).executeRequest();
     const results = await execReq.create([ref.name]).run();

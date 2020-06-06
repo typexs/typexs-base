@@ -58,7 +58,12 @@ class TasksSystemSpec {
       description: 'Hallo welt',
       permissions: null,
       groups: [],
-      nodeIds: [nodeId],
+      nodeInfos: [
+        {
+          'hasWorker': false,
+          'nodeId': 'system_0'
+        }
+      ],
       remote: null
     });
   }
@@ -94,7 +99,12 @@ class TasksSystemSpec {
       description: 'Hallo welt',
       permissions: null,
       groups: [],
-      nodeIds: [nodeId],
+      'nodeInfos': [
+        {
+          'hasWorker': false,
+          'nodeId': nodeId
+        }
+      ],
       remote: null
     });
 
@@ -110,7 +120,16 @@ class TasksSystemSpec {
       description: 'Hallo welt',
       permissions: null,
       groups: [],
-      nodeIds: [nodeId, 'fakeapp01'],
+      'nodeInfos': [
+        {
+          'hasWorker': false,
+          'nodeId': nodeId,
+        },
+        {
+          'hasWorker': false,
+          'nodeId': 'fakeapp01'
+        }
+      ],
       remote: null
     });
 
@@ -127,7 +146,12 @@ class TasksSystemSpec {
       description: 'Hallo welt',
       permissions: null,
       groups: [],
-      nodeIds: [nodeId],
+      'nodeInfos': [
+        {
+          'hasWorker': false,
+          'nodeId': nodeId
+        }
+      ],
       remote: null
     });
 
@@ -173,7 +197,12 @@ class TasksSystemSpec {
       description: 'Hallo welt',
       permissions: null,
       groups: [],
-      nodeIds: ['fakeapp01'],
+      'nodeInfos': [
+        {
+          'hasWorker': false,
+          'nodeId': 'fakeapp01'
+        }
+      ],
       remote: true
     });
 

@@ -53,6 +53,8 @@ export class TaskExecutor extends EventEmitter {
 
   private options: ITaskExectorOptions;
 
+  private passedOptions: ITaskExectorOptions = {};
+
   private params: any;
 
   private spec: TASK_RUNNER_SPEC[];
@@ -78,6 +80,7 @@ export class TaskExecutor extends EventEmitter {
   logger: ILoggerApi = Log.getLoggerFor(TaskExecutor);
 
   setOptions(options: ITaskExectorOptions) {
+    this.passedOptions = options;
     this.options = options || {skipTargetCheck: false};
     _.defaults(this.options, DEFAULT_TASK_EXEC);
   }
@@ -122,7 +125,7 @@ export class TaskExecutor extends EventEmitter {
 
       const nodeId = Bootstrap.getNodeId();
       const tasks = this.tasks.getTasks(this.taskNames);
-      if (_.isUndefined(this.options.isLocal)) {
+      if (_.isUndefined(this.passedOptions.isLocal)) {
         // when isLocal is not set manuell
         this.options.remote = false;
         this.options.isLocal = true;

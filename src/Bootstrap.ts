@@ -43,6 +43,8 @@ import {ICommand} from './libs/commands/ICommand';
 import {LockFactory} from './libs/LockFactory';
 import {Injector} from './libs/di/Injector';
 import {EntityControllerRegistry} from './libs/storage/EntityControllerRegistry';
+import {Cache} from './libs/cache/Cache';
+import {ModulRegistryCache} from './libs/cache/ModulRegistryCache';
 
 
 /**
@@ -541,14 +543,17 @@ export class Bootstrap {
 
 
   async prepareRuntime(): Promise<Bootstrap> {
+    const cache = new Cache();
+    Injector.set(Cache.NAME, cache);
+    this._options.modules.cache = new ModulRegistryCache(cache);
     this._options.modules.appdir = this._options.app.path;
     this.runtimeLoader = new RuntimeLoader(this._options.modules);
-    Bootstrap.getContainer().set(RuntimeLoader, this.runtimeLoader);
-    Bootstrap.getContainer().set(RuntimeLoader.NAME, this.runtimeLoader);
+    Injector.set(RuntimeLoader, this.runtimeLoader);
+    Injector.set(RuntimeLoader.NAME, this.runtimeLoader);
     await this.runtimeLoader.prepare();
 
     const invoker = new Invoker();
-    Bootstrap.getContainer().set(Invoker.NAME, invoker);
+    Injector.set(Invoker.NAME, invoker);
     Bootstrap.prepareInvoker(invoker, this.runtimeLoader);
 
     // update config

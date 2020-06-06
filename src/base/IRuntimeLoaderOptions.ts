@@ -1,4 +1,5 @@
 import {IClassesLib} from 'commons-moduls';
+import {ICache} from 'commons-moduls/registry/ICache';
 
 export interface IRuntimeLoaderOptions {
 
@@ -47,4 +48,8 @@ export interface IRuntimeLoaderOptions {
    */
   match?: { name: string, enabled?: boolean, params?: any, match?: any }[];
 
+  /**
+   * Modulcache
+   */
+  cache?: ICache;
 }

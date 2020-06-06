@@ -47,8 +47,6 @@ export class RuntimeLoader {
         return PlatformUtils.join(appdir, p);
       }
     });
-
-
   }
 
 
@@ -80,7 +78,8 @@ export class RuntimeLoader {
       },
       module: module,
       paths: modulPaths,
-      pattern: this._options.subModulPattern ? this._options.subModulPattern : []
+      pattern: this._options.subModulPattern ? this._options.subModulPattern : [],
+      cache: this._options.cache
     });
 
     await this.registry.rebuild();

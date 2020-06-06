@@ -1,3 +1,5 @@
+import {ITaskRefNodeInfo} from './ITaskRefNodeInfo';
+
 export interface ITaskInfo {
 
   name?: string;
@@ -8,8 +10,8 @@ export interface ITaskInfo {
 
   description?: string;
 
-  nodeIds?: string[];
+  nodeInfos?: ITaskRefNodeInfo[];
 
-  remote?:boolean;
+  remote?: boolean;
 
 }

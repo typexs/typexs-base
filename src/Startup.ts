@@ -26,6 +26,7 @@ import {Workers} from './libs/worker/Workers';
 import {ExchangeMessageRegistry} from './libs/messaging/ExchangeMessageRegistry';
 import {ConfigUtils} from './libs/utils/ConfigUtils';
 import {TaskRunnerRegistry} from './libs/tasks/TaskRunnerRegistry';
+import {TaskQueueWorker} from './workers/TaskQueueWorker';
 
 
 export class Startup implements IBootstrap, IShutdown {
@@ -85,8 +86,8 @@ export class Startup implements IBootstrap, IShutdown {
      */
     this.eventbus();
 
-    TasksHelper.prepare(this.tasks, this.loader);
     await this.workers.prepare(this.loader);
+    TasksHelper.prepare(this.tasks, this.loader, this.workers.contains('TaskQueueWorker'));
     await this.taskRunnerRegistry.prepare();
 
 

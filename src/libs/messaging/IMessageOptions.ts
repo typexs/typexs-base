@@ -6,7 +6,7 @@ export interface IMessageOptions {
 
   outputMode?: 'map' | 'only_value' | 'embed_nodeId' | 'responses';
 
-  // nodeIds?: string[];
+  // nodeInfos?: string[];
   /**
    * used for defining targets to send messages
    */

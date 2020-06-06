@@ -17,7 +17,7 @@ export abstract class AbstractMessage<REQ extends AbstractEvent, RES extends Abs
 
   protected responses: RES[] = [];
 
-  // protected nodeIds: string[] = [];
+  // protected nodeInfos: string[] = [];
 
   protected targetIds: string[];
 

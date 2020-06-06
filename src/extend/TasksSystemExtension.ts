@@ -10,6 +10,9 @@ import {ITaskInfo} from '../libs/tasks/ITaskInfo';
 import {SystemNodeInfo} from '../entities/SystemNodeInfo';
 import {Tasks} from '../libs/tasks/Tasks';
 import {TaskRunnerRegistry} from '../libs/tasks/TaskRunnerRegistry';
+import {C_WORKERS} from '..';
+import {TaskQueueWorker} from '../workers/TaskQueueWorker';
+import {IWorkerInfo} from '../libs/worker/IWorkerInfo';
 
 @UseAPI(SystemApi)
 export class TasksSystemExtension implements ISystemApi {
@@ -33,12 +36,14 @@ export class TasksSystemExtension implements ISystemApi {
     if (x && _.has(x, 'contexts')) {
       const found = x.contexts.find(x => x.context === C_TASKS);
       if (found) {
+        const workers = x.contexts.find(x => x.context === C_WORKERS);
+        const hasWorker = workers[C_WORKERS].find((x: IWorkerInfo) => x.className === TaskQueueWorker.NAME);
         found.tasks.map((info: ITaskInfo) => {
           if (this.tasks.contains(info.name)) {
-            this.tasks.get(info.name).addNodeId(x.nodeId, true);
+            this.tasks.get(info.name).addNodeId(x.nodeId, hasWorker);
           } else {
             if (!info.remote) {
-              this.tasks.addRemoteTask(x.nodeId, info);
+              this.tasks.addRemoteTask(x.nodeId, info, hasWorker);
             }
           }
         });

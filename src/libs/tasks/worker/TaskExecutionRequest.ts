@@ -60,11 +60,11 @@ export class TaskExecutionRequest extends EventEmitter {
       const possibleTargetIds: string[][] = [workerIds];
       const tasks: TaskRef[] = this.tasks.getTasks(TasksHelper.getTaskNames(taskSpec));
       for (const taskRef of tasks) {
-        possibleTargetIds.push(taskRef.nodeIds);
+        possibleTargetIds.push(taskRef.nodeInfos.filter(x => x.hasWorker).map(x => x.nodeId));
       }
 
       if (options.targetIds.length === 0) {
-        // get intersection of nodeIds
+        // get intersection of nodeInfos
         this.targetIds = _.intersection(...possibleTargetIds);
       } else {
         this.targetIds = _.intersection(options.targetIds, ...possibleTargetIds);

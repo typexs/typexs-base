@@ -16,6 +16,7 @@ import {TaskExchangeRef} from './TaskExchangeRef';
 import {ITaskRefOptions} from './ITaskRefOptions';
 import {ITaskInfo} from './ITaskInfo';
 import {Injector} from '../di/Injector';
+import {ITaskRefNodeInfo} from './ITaskRefNodeInfo';
 
 
 export enum TaskRefType {
@@ -23,14 +24,15 @@ export enum TaskRefType {
 }
 
 
+/**
+ * Descriptor for task functionality and location
+ */
 export class TaskRef extends AbstractRef implements IEntityRef {
 
 
   _type: TaskRefType;
 
-  nodeIds: string[] = [];
-
-  _hasWorker = false;
+  nodeInfos: ITaskRefNodeInfo[] = [];
 
   $source: any;
 
@@ -55,8 +57,7 @@ export class TaskRef extends AbstractRef implements IEntityRef {
     taskRef._type = <any>TaskRefType[json.mode];
     taskRef.description = json.description;
     taskRef.permissions = json.permissions;
-    taskRef._hasWorker = json.hasWorker;
-    taskRef.nodeIds = _.get(json, 'nodeIds', []);
+    taskRef.nodeInfos = _.get(json, 'nodeInfos', []);
     const groups = _.get(json, 'groups', []);
     taskRef.setOptions(json.options);
     groups.forEach((group: string) => {
@@ -218,8 +219,7 @@ export class TaskRef extends AbstractRef implements IEntityRef {
         source.name = name;
 
         tr = new TaskRef(source);
-        tr.nodeIds = _.clone(this.nodeIds);
-        tr._hasWorker = this._hasWorker;
+        tr.nodeInfos = _.clone(this.nodeInfos);
         return tr;
 
       case TaskRefType.GROUP:
@@ -228,16 +228,14 @@ export class TaskRef extends AbstractRef implements IEntityRef {
         this.grouping().forEach(x => {
           TaskRef.group(name, x);
         });
-        tr.nodeIds = _.clone(this.nodeIds);
-        tr._hasWorker = this._hasWorker;
+        tr.nodeInfos = _.clone(this.nodeInfos);
         return tr;
 
       default:
         fn = this.getFn();
         opts = _.clone(this.getOptions());
         tr = new TaskRef(name, fn, opts);
-        tr.nodeIds = _.clone(this.nodeIds);
-        tr._hasWorker = this._hasWorker;
+        tr.nodeInfos = _.clone(this.nodeInfos);
         this.dependencies().forEach(d => {
           tr.dependsOn(d);
         });
@@ -246,27 +244,29 @@ export class TaskRef extends AbstractRef implements IEntityRef {
   }
 
 
-  hasTargetNodeId(nodeId: string) {
-    return this.nodeIds.indexOf(nodeId) !== -1;
+  hasTargetNodeId(nodeId: string, withWorker: boolean = false) {
+    if (withWorker) {
+      return !!this.nodeInfos.find(x => x.nodeId === nodeId && x.hasWorker === withWorker);
+    }
+    return !!this.nodeInfos.find(x => x.nodeId === nodeId);
   }
 
 
   addNodeId(nodeId: string, hasWorker: boolean = false) {
     this.removeNodeId(nodeId);
-    this.nodeIds.push(nodeId);
-    this._hasWorker = hasWorker;
+    this.nodeInfos.push({nodeId: nodeId, hasWorker: hasWorker});
   }
 
   removeNodeId(nodeId: string) {
-    _.remove(this.nodeIds, x => x === nodeId);
+    _.remove(this.nodeInfos, x => x.nodeId === nodeId);
   }
 
   hasWorker() {
-    return this._hasWorker;
+    return !!this.nodeInfos.find(x => x.hasWorker === true);
   }
 
   hasNodeIds() {
-    return this.nodeIds.length > 0;
+    return this.nodeInfos.length > 0;
   }
 
   isRemote(): boolean {
@@ -308,7 +308,7 @@ export class TaskRef extends AbstractRef implements IEntityRef {
       description: this.description,
       permissions: this.permissions,
       groups: this.groups(),
-      nodeIds: this.nodeIds,
+      nodeInfos: this.nodeInfos,
       remote: this.isRemote()
     };
   }
@@ -316,12 +316,11 @@ export class TaskRef extends AbstractRef implements IEntityRef {
   toJson(withProperties: boolean = true): IEntityRefMetadata {
     const data = super.toJson();
     data.mode = this._type.toString();
-    data.hasWorker = this._hasWorker;
     data.permissions = this.permissions;
     data.description = this.description;
     data.remote = this.isRemote();
     data.groups = this.groups();
-    data.nodeIds = this.nodeIds;
+    data.nodeInfos = this.nodeInfos;
     const ref = this.getClassRef();
     data.target = ref ? ref.toJson(false) : null;
     data.options = _.merge(data.options);

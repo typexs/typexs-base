@@ -37,14 +37,14 @@ export class TasksHelper {
   }
 
 
-  static prepare(tasks: Tasks, loader: RuntimeLoader) {
+  static prepare(tasks: Tasks, loader: RuntimeLoader, hasWorker: boolean = false) {
     const klasses = loader.getClasses(K_CLS_TASKS);
     for (const klass of klasses) {
       const task = Reflect.construct(klass, []);
       if (!('name' in task) || !_.isFunction(task['exec'])) {
         throw new Error('task ' + klass + ' has no name');
       }
-      tasks.addTask(klass);
+      tasks.addTask(klass, null, {worker: hasWorker});
     }
   }
 

@@ -10,7 +10,12 @@ import {
   XS_TYPE_ENTITY,
   XS_TYPE_PROPERTY
 } from 'commons-schema-api/browser';
-import {C_TASKS, K_CLS_TASK_DESCRIPTORS, XS_TYPE_BINDING_TASK_DEPENDS_ON, XS_TYPE_BINDING_TASK_GROUP} from './Constants';
+import {
+  C_TASKS,
+  K_CLS_TASK_DESCRIPTORS,
+  XS_TYPE_BINDING_TASK_DEPENDS_ON,
+  XS_TYPE_BINDING_TASK_GROUP
+} from './Constants';
 import {TaskExchangeRef} from './TaskExchangeRef';
 import {ITasksConfig} from './ITasksConfig';
 import {ITaskRefOptions} from './ITaskRefOptions';
@@ -42,7 +47,7 @@ export class Tasks implements ILookupRegistry {
   }
 
 
-  private getEntries(withRemote: boolean = false) {
+  private getEntries(withRemote: boolean = false): TaskRef[] {
     return this.registry.list(XS_TYPE_ENTITY).filter(x => withRemote || !x.isRemote());
   }
 
@@ -126,21 +131,21 @@ export class Tasks implements ILookupRegistry {
 
   addTask(name: string | object | Function, fn: object | Function = null, options: ITaskRefOptions = null): TaskRef {
     const task = new TaskRef(name, fn, options);
-    return this.addTaskRef(task, this.nodeId);
+    return this.addTaskRef(task, this.nodeId, _.get(options, 'worker', false));
   }
 
 
-  addRemoteTask(nodeId: string, info: ITaskInfo): TaskRef {
+  addRemoteTask(nodeId: string, info: ITaskInfo, hasWorker: boolean = false): TaskRef {
     const task = new TaskRef(info, null, {remote: true});
-    return this.addTaskRef(task, nodeId);
+    return this.addTaskRef(task, nodeId, hasWorker);
   }
 
 
-  addTaskRef(task: TaskRef, nodeId: string) {
+  addTaskRef(task: TaskRef, nodeId: string, hasWorker: boolean = false) {
     if (this.access(task.name) || task.isRemote()) {
       const exists = <TaskRef>this.registry.find(XS_TYPE_ENTITY, (x: TaskRef) => x.name === task.name);
       if (!exists) {
-        task.addNodeId(nodeId);
+        task.addNodeId(nodeId, hasWorker);
         this.registry.add(XS_TYPE_ENTITY, task);
         if (task.canHaveProperties()) {
           const ref = task.getClassRef().getClass(false);
@@ -160,7 +165,7 @@ export class Tasks implements ILookupRegistry {
         }
         return this.get(task.name);
       } else {
-        exists.addNodeId(nodeId);
+        exists.addNodeId(nodeId, hasWorker);
         return exists;
       }
     }

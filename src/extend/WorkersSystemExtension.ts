@@ -16,7 +16,7 @@ export class WorkersSystemExtension implements ISystemApi {
   getNodeInfos(): INodeInfo | INodeInfo[] {
     const infos = this.workers.infos();
     const nodeTaskContext: INodeInfo = {context: C_WORKERS};
-    nodeTaskContext.workers = infos;
+    nodeTaskContext[C_WORKERS] = infos;
     return nodeTaskContext;
   }
 

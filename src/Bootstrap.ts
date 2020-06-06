@@ -60,7 +60,9 @@ const DEFAULT_CONFIG_LOAD_ORDER = [
     pattern: [
       'typexs--${os.hostname}',
       'typexs--${argv.nodeId}',
-      'typexs--${os.hostname}--${argv.nodeId}'
+      'typexs--${os.hostname}--${argv.nodeId}',
+      '${os.hostname}/typexs',
+      '${os.hostname}/typexs--${argv.nodeId}'
     ]
   },
   {
@@ -75,6 +77,7 @@ const DEFAULT_CONFIG_LOAD_ORDER = [
       'secrets--${os.hostname}--${argv.nodeId}',
       'secrets--${os.hostname}--${app.nodeId}',
       'secrets--${os.hostname}--${env.nodeId}',
+      '${os.hostname}/secrets',
       '${app.name}--${os.hostname}',
       '${app.name}--${argv.nodeId}',
       '${app.name}--${app.nodeId}',
@@ -87,7 +90,9 @@ const DEFAULT_CONFIG_LOAD_ORDER = [
       '${app.name}--${os.hostname}--${env.stage}--${argv.nodeId}',
       '${app.name}--${os.hostname}--${env.stage}--${app.nodeId}',
       '${app.name}--${os.hostname}--${argv.stage}--${argv.nodeId}',
-      '${app.name}--${os.hostname}--${argv.stage}--${argv.nodeId}'
+      '${app.name}--${os.hostname}--${argv.stage}--${argv.nodeId}',
+      '${app.name}/typexs--${os.hostname}--${argv.stage}--${argv.nodeId}',
+      '${app.name}/${os.hostname}/typexs--${argv.stage}--${argv.nodeId}'
     ]
   }
 ];
@@ -123,7 +128,8 @@ export const DEFAULT_RUNTIME_OPTIONS: IRuntimeLoaderOptions = {
     {
       topic: K_CLS_API,
       refs: [
-        'api/*.api.*', 'src/api/*.api.*'
+        'api/*.api.*',
+        'src/api/*.api.*'
       ]
     },
     {

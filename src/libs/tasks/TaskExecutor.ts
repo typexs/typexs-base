@@ -15,6 +15,7 @@ import {EventBus, subscribe, unsubscribe} from 'commons-eventbus';
 import {TaskFuture} from './worker/execute/TaskFuture';
 import {ITaskRunnerResult} from './ITaskRunnerResult';
 import {IError} from '../exceptions/IError';
+import {Bootstrap} from '../../Bootstrap';
 
 /**
  * Class controlling local or remote tasks execution.
@@ -113,13 +114,36 @@ export class TaskExecutor extends EventEmitter {
       this.options.remote = true;
     } else if (this.options.targetIds && !this.options.remote) {
       this.targetIds = this.options.targetIds;
-      this.options.remote = true;
       this.options.isLocal = false;
+      this.options.remote = true;
     } else if (this.options.remote) {
       this.options.isLocal = false;
     } else {
-      this.options.remote = false;
-      this.options.isLocal = true;
+
+      const nodeId = Bootstrap.getNodeId();
+      const tasks = this.tasks.getTasks(this.taskNames);
+      if (_.isUndefined(this.options.isLocal)) {
+        // when isLocal is not set manuell
+        this.options.remote = false;
+        this.options.isLocal = true;
+        const taskRef = tasks.find(x => !!x.nodeInfos.find(x => x.nodeId === nodeId));
+        if (taskRef) {
+          // found local reference look if
+          const taskRefNodeInfo = taskRef.nodeInfos.find(x => x.nodeId === nodeId);
+          if (taskRefNodeInfo && taskRefNodeInfo.hasWorker) {
+            // local worker is running
+            this.options.isLocal = false;
+            this.targetIds = [nodeId];
+          }
+        } else {
+          // try remote lookup
+          this.options.remote = true;
+          this.options.isLocal = false;
+        }
+      } else {
+        this.options.remote = false;
+        this.options.isLocal = true;
+      }
     }
 
 

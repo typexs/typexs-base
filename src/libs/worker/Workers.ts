@@ -42,6 +42,15 @@ export class Workers implements ILookupRegistry {
     }
   }
 
+  contains(name: string) {
+    return !!this.get(name);
+  }
+
+  get(name: string) {
+    const snakeCase = _.snakeCase(name);
+    return this.registry.find(XS_TYPE_ENTITY, (w: WorkerRef) => w.name === name || _.snakeCase(w.name) === snakeCase);
+  }
+
 
   async startup() {
     const refs: WorkerRef[] = this.registry.list(XS_TYPE_ENTITY);

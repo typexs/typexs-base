@@ -1,6 +1,5 @@
 import {ICache} from 'commons-moduls/registry/ICache';
-import {Cache} from './Cache';
-import {NotYetImplementedError} from 'commons-base';
+import {FileUtils, NotYetImplementedError, PlatformUtils} from 'commons-base';
 
 export interface IModulRegistryCache {
 
@@ -10,20 +9,29 @@ export interface IModulRegistryCache {
 
 export class ModulRegistryCache implements ICache {
 
-  private cacheBin = 'modul_registry';
+  private cachePath: string;
 
-  private cache: Cache;
+  private data: any;
 
-  constructor(cache: Cache) {
-    this.cache = cache;
+  constructor(path: string, nodeId: string) {
+    path = PlatformUtils.join(path, '.txs', 'cache', nodeId);
+    this.cachePath = PlatformUtils.pathNormAndResolve(path);
+    if (!PlatformUtils.fileExist(this.cachePath)) {
+      PlatformUtils.mkdir(this.cachePath);
+    }
   }
 
   get(key: string) {
-    return this.cache.get(key, this.cacheBin);
+    const path = PlatformUtils.join(this.cachePath, key) + '.json';
+    if (PlatformUtils.fileExist(path)) {
+      return FileUtils.getJson(path);
+    }
+    return null;
   }
 
   async set(key: string, value: any) {
-    await this.cache.set(key, value, this.cacheBin, {});
+    const path = PlatformUtils.join(this.cachePath, key) + '.json';
+    await FileUtils.writeFileSync(path, JSON.stringify(value));
   }
 
   clear(): void {

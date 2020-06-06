@@ -23,6 +23,8 @@ export class Activator implements IActivator {
 
 
   startup(): void {
+    const cache = new Cache();
+    Injector.set(Cache.NAME, cache);
 
     /**
      * Initialize task content

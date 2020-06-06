@@ -43,7 +43,6 @@ import {ICommand} from './libs/commands/ICommand';
 import {LockFactory} from './libs/LockFactory';
 import {Injector} from './libs/di/Injector';
 import {EntityControllerRegistry} from './libs/storage/EntityControllerRegistry';
-import {Cache} from './libs/cache/Cache';
 import {ModulRegistryCache} from './libs/cache/ModulRegistryCache';
 
 
@@ -543,9 +542,12 @@ export class Bootstrap {
 
 
   async prepareRuntime(): Promise<Bootstrap> {
-    const cache = new Cache();
-    Injector.set(Cache.NAME, cache);
-    this._options.modules.cache = new ModulRegistryCache(cache);
+
+
+    this._options.modules.cache = new ModulRegistryCache(
+      this._options.app.path,
+      CryptUtils.shorthash(JSON.stringify(this._options.modules))
+    );
     this._options.modules.appdir = this._options.app.path;
     this.runtimeLoader = new RuntimeLoader(this._options.modules);
     Injector.set(RuntimeLoader, this.runtimeLoader);

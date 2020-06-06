@@ -80,8 +80,9 @@ export class TaskExecutor extends EventEmitter {
   logger: ILoggerApi = Log.getLoggerFor(TaskExecutor);
 
   setOptions(options: ITaskExectorOptions) {
-    this.passedOptions = options;
-    this.options = options || {skipTargetCheck: false};
+    const _opts = options || {skipTargetCheck: false};
+    this.passedOptions = _.clone(_opts);
+    this.options = _opts;
     _.defaults(this.options, DEFAULT_TASK_EXEC);
   }
 

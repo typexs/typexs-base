@@ -2,12 +2,10 @@
 
 ### Declare new module
 
-A modul will be automatically integrated in typexs framework
-when it is explicit declared as a typexs module.
+A modul will be automatically integrated in typexs framework when it is explicit declared as a typexs module.
 
 The declaration is done by a new entry "typexs" in the package.json.
-The only necessary information is the name for the module in the typexs
-context.
+The only necessary information is the name for the module in the typexs context.
 
 ```js
 {
@@ -20,6 +18,7 @@ context.
 ```
 
 A modul containing this declaration and whose location is under
+
 ```
 ./node_modules
 # or
@@ -30,14 +29,9 @@ A modul containing this declaration and whose location is under
 
 will be automatically integrated on startup of the framework.
 
-In the "typexs" section of the package.json can also be added
-additional declartions for modul specific autoload paths, which are
-processed by the module to look up for addons or extensions.
-For example if the module implements an api which can be
-dynamically used or extended. Other modules extensions can be
-automatically integrated by placing their extensions under
-the specific path and when the handling module
-loads it can load all the other extensions.
+In the "typexs" section of the package.json can also be added additional declartions for modul specific autoload paths, which are processed by the module to look up for addons or extensions.
+For example if the module implements an api which can be dynamically used or extended.
+Other modules extensions can be automatically integrated by placing their extensions under the specific path and when the handling module loads it can load all the other extensions.
 
 ```js
 {
@@ -63,11 +57,10 @@ loads it can load all the other extensions.
 }
 ```
 
-Modules extending "my-typexs-module" can put their code under the declared
-ref paths and they will be handled be "my-typexs-module".
+Modules extending "my-typexs-module" can put their code under the declared ref paths and they will be handled be "my-typexs-module".
 
-To get programmatically all declared classes for a topic can be
-done through the RuntimeLoader class object like this:
+To get programmatically all declared classes for a topic can be done through the RuntimeLoader class object like this:
+
 ```typescript
 import {RuntimeLoader, IActivator} from '@typexs/base';
 
@@ -84,26 +77,20 @@ export class Activator implements IActivator {
 }
 ```
 
+During the booting of typexs all declared modules are looked up and their settings are analysed to get all the declared paths and dependencies between them.
+Additionally declaring topic paths can be overridden by the configuration.
 
-During the booting of typexs all declared modules are looked up and
-their settings are analysed to get all the declared paths and dependencies
-between them. Additionally declaring topic paths can be overridden by the
-configuration.
+Through the analysis of the dependencies the correct modul load order is determined and during the bootstrap considered.
 
-Through the analysis of the dependencies the correct modul load order is
-determined and during the bootstrap considered.
-
-The bootstrap of modules happens in three stages. At first we start with
+The bootstrap of modules happens in three stages.
+At first we start with
 
 * the activation stage followed by
 * the startup stage and ending with
 * the ready stage.
 
-The activations stage is for handling initial modul specific configurations
-or declaring classes or instance for dependency injection, which can or must
-be present for the second stage the startup. To hook in the activation stage
-the module must have a Activator.(t|j)s (or src/Activator.(t|j)s) file
-with a class implementing the IActivator interface from @typexs/base.
+The activations stage is for handling initial modul specific configurations or declaring classes or instance for dependency injection, which can or must be present for the second stage the startup.
+To hook in the activation stage the module must have a Activator.(t|j)s (or src/Activator.(t|j)s) file with a class implementing the IActivator interface from @typexs/base.
 Some objects are at this point ready for injection, if they are needed:
 
 * Storage +
@@ -114,6 +101,7 @@ Some objects are at this point ready for injection, if they are needed:
 storage: Storage;
 ```
 --
+
 * StorageRef's
 +
 --
@@ -123,6 +111,7 @@ storage: Storage;
 storageRef: StorageRef;
 ```
 --
+
 * RuntimeLoader
 +
 --
@@ -133,6 +122,7 @@ loader: RuntimeLoader;
 --
 
 Here an example:
+
 ```typescript
 // ./Activator.ts
 
@@ -149,14 +139,10 @@ export class Activator implements IActivator {
 }
 ```
 
+In the second stage of bootstrap all activation over all modules are done and ready for usage.
+In this stage you can do initial loading, registering or processing and stuff that is necessary to make the modul work properly.
+To hook in this stage the module must have a Startup.(t|j)s (or src/Startup.(t|j)s) file with a class implementing the IBootstrap (for shutdown operation the IShutdown interface) interface from @typexs/base.
 
-In the second stage of bootstrap all activation over all modules are done
-and ready for usage. In this stage you can do initial
-loading, registering or processing and stuff that is necessary to make the
-modul work properly.  To hook in this stage
-the module must have a Startup.(t|j)s (or src/Startup.(t|j)s) file
-with a class implementing the IBootstrap (for shutdown operation the IShutdown
-interface) interface from @typexs/base.
 ```typescript
 // ./Startup.ts
 
@@ -174,11 +160,11 @@ export class Startup implements IBootstrap {
 }
 ```
 
-The last stage is executed after the startup stage. In this stage all modules
-went through activation and startup so the system is fully ready for further
-processing. This stage can be used if the module depends on fully loaded system.
-To hook in this stage is to use the interface IStartup and implement the
-method ready().
+The last stage is executed after the startup stage.
+In this stage all modules went through activation and startup so the system is fully ready for further processing.
+This stage can be used if the module depends on fully loaded system.
+To hook in this stage is to use the interface IStartup and implement the method ready().
+
 ```typescript
 // ./Startup.ts
 
@@ -195,16 +181,12 @@ export class Startup implements IBootstrap {
 }
 ```
 
-
-The hooking in the stages is optional and depends only on developer archtecture
-or integration level decision. So a typexs module could also implement only
-some extensions without interact with the bootstrap.
-
+The hooking in the stages is optional and depends only on developer archtecture or integration level decision.
+So a typexs module could also implement only some extensions without interact with the bootstrap.
 
 ### Configuration
 
-The integration of modules can also be configurated through the default
-configuration file(s) under
+The integration of modules can also be configurated through the default configuration file(s) under
 
  config/typexs.yml
 
@@ -253,13 +235,11 @@ or also if the framework is used programatically in tests for example:
 })();
 ```
 
-
 #### Additional lookup paths
 
-To define additional lookup paths which will be scanned for typexs modules at startup
-set the configuration key 'modules.paths'. The value must be an array of path
-where typexs modules could be present. If under the given paths there
-are 'node_modules' subpaths then they will be also scanned.
+To define additional lookup paths which will be scanned for typexs modules at startup set the configuration key 'modules.paths'.
+The value must be an array of path where typexs modules could be present.
+If under the given paths there are 'node_modules' subpaths then they will be also scanned.
 
 ```yml
 # config/typexs.yml
@@ -272,18 +252,11 @@ modules:
 
 #### Declared contextualised lookups
 
-Like in the section "Declare new module" with the key 'typexs.declareLibs' in
-the package.json we can extend or create new declarations
-for addon/extensions lookups by using the configuration key 'modules.libs'.
+Like in the section "Declare new module" with the key 'typexs.declareLibs' in the package.json we can extend or create new declarations for addon/extensions lookups by using the configuration key 'modules.libs'.
 
-Each entry must contain a representing string value under the key 'topic' for
-the context of the lookuped files and a array under the key
-'refs' which can contain multiple values describing the file location, like
-directories or glob patterns.
+Each entry must contain a representing string value under the key 'topic' for the context of the lookuped files and a array under the key 'refs' which can contain multiple values describing the file location, like directories or glob patterns.
 
-When a topic is already present it will be extended be the additional paths
-else a new topic for lookup will be created.
-
+When a topic is already present it will be extended be the additional paths else a new topic for lookup will be created.
 
 ```yml
 # config/typexs.yml
@@ -299,6 +272,7 @@ modules:
 ```
 
 To get all classes under a topic use
+
 ```typescript
 
 // ... load framework
@@ -308,13 +282,11 @@ const classes = Injector.get(RuntimerLoader.NAME).getClasses('{your_topic_name}'
 
 #### Enabling/disabling modules
 
-Modules found under node_modules or packages (or src/packages) are all
-automatically enabled if not explicit declared as disabled. By configuration
-can be the disable status be declared. There are two variants for disabling
-modules:
+Modules found under node_modules or packages (or src/packages) are all automatically enabled if not explicit declared as disabled.
+By configuration can be the disable status be declared.
+There are two variants for disabling modules:
 
-* one by setting the value ot false for the configuration
-key 'modules.included.my-modul.enable' like:
+* one by setting the value ot false for the configuration key 'modules.included.my-modul.enable' like:
 +
 --
 ```yml
@@ -325,6 +297,7 @@ modules:
             enabled: false
 ```
 --
+
 * the other by declaring pattern under the key 'modules.match'
 +
 --
@@ -335,17 +308,35 @@ modules:
     - name: 'module*'
       enabled: false
 ```
+
 All modules matching the pattern will be disabled.
 --
 
+#### Caching
 
+Modules are lookuped up by the RuntimeLoader in the subdirectories like "packages", "node_modules" and their subdirectories.
+Those informations are cached under the given cache path or by default under "/tmp/.txs/cache".
+
+```yml
+# config/typexs.yml
+modules:
+    cachePath: /tmp/.txs/cache
+```
 
 #### Further configuration options
 
 The full configuration is declared under `src/base/IRuntimeLoaderOptions` interface.
 
+[cols="1,3"]
 |===
 |Key |Description
+
+| cachePath
+| RuntimeLoader scanning for modul informations (package.json)
+in subdirectories like "packages",
+"node_modules" and further declared subdirectories. To optimize the startup
+toe found informations are cached under the given cachePath or per default
+under "/tmp/.txs/cache"
 
 | packageKeys
 | Filter modules which have 'typexs' or here defined keys in package.json definition

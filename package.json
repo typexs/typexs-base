@@ -71,7 +71,7 @@
     "commons-config": "^0.4.19",
     "commons-eventbus": "^0.12.2",
     "commons-expressions": "^1.0.7",
-    "commons-moduls": "^1.2.0",
+    "commons-moduls": "^1.2.1",
     "commons-schema-api": "^1.1.9",
     "js-yaml": "^3.13.1",
     "moment": "^2.24.0",

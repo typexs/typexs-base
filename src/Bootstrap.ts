@@ -544,13 +544,14 @@ export class Bootstrap {
 
   async prepareRuntime(): Promise<Bootstrap> {
 
-    let cachePath = _.has(this._options.modules, 'cachePath') ? this._options.modules.cachePath : Config.get('os.tmpdir') + '.txs/cache';
+    this._options.modules.appdir = this._options.app.path;
+    let cachePath = _.has(this._options.modules, 'cachePath') ?
+      this._options.modules.cachePath :
+      PlatformUtils.join(Config.get('os.tmpdir', '/tmp'), '.txs', 'cache');
     cachePath = PlatformUtils.pathNormAndResolve(cachePath);
     if (!PlatformUtils.fileExist(cachePath)) {
       PlatformUtils.mkdir(cachePath);
     }
-
-    this._options.modules.appdir = this._options.app.path;
     this._options.modules.cachePath = cachePath;
     this.runtimeLoader = new RuntimeLoader(this._options.modules);
     Injector.set(RuntimeLoader, this.runtimeLoader);

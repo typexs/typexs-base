@@ -40,7 +40,7 @@ export class RuntimeLoader {
     const appdir = this._options.appdir || PlatformUtils.pathResolve('.');
 
     this.cache = new ModulRegistryCache(
-      this._options.cachePath,
+      this._options.cachePath ? this._options.cachePath : '/tmp/.txs/cache',
       CryptUtils.shorthash(JSON.stringify(this._options))
     );
 

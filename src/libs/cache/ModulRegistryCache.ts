@@ -1,5 +1,6 @@
 import {ICache} from 'commons-moduls/registry/ICache';
 import {FileUtils, NotYetImplementedError, PlatformUtils} from 'commons-base';
+import {Config} from 'commons-config';
 
 export interface IModulRegistryCache {
 
@@ -14,7 +15,7 @@ export class ModulRegistryCache implements ICache {
   private data: any;
 
   constructor(path: string, nodeId: string) {
-    path = PlatformUtils.join(path, '.txs', 'cache', nodeId);
+    path = PlatformUtils.join(path, nodeId);
     this.cachePath = PlatformUtils.pathNormAndResolve(path);
     if (!PlatformUtils.fileExist(this.cachePath)) {
       PlatformUtils.mkdir(this.cachePath);

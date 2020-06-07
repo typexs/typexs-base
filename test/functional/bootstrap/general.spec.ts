@@ -108,9 +108,7 @@ class BootstrapGeneralSpec {
 
       modules: {
         appdir: appdir,
-        'cache': {
-          'cachePath': appdir + '/.txs/cache/Zszag0'
-        },
+        'cachePath': '/tmp/.txs/cache',
         included: {
           'fake_app': {
             'enabled': true

@@ -5,9 +5,11 @@ import {IRuntimeLoaderOptions} from './IRuntimeLoaderOptions';
 
 import {DEFAULT_RUNTIME_OPTIONS} from '../Bootstrap';
 import {TYPEXS_NAME} from '../libs/Constants';
-import {PlatformUtils} from 'commons-base';
+import {CryptUtils, PlatformUtils} from 'commons-base';
 import {Log} from './../libs/logging/Log';
 import {MatchUtils} from '../libs/utils/MatchUtils';
+import {ModulRegistryCache} from '../libs/cache/ModulRegistryCache';
+import {ICache} from 'commons-moduls/registry/ICache';
 
 
 export class RuntimeLoader {
@@ -25,6 +27,7 @@ export class RuntimeLoader {
 
   classesLoader: ClassesLoader;
 
+  cache: ICache;
 
   disabledModuleNames: string[] = [];
 
@@ -35,6 +38,11 @@ export class RuntimeLoader {
     _.defaults(options, _.cloneDeep(DEFAULT_RUNTIME_OPTIONS));
     this._options = options;
     const appdir = this._options.appdir || PlatformUtils.pathResolve('.');
+
+    this.cache = new ModulRegistryCache(
+      this._options.cachePath,
+      CryptUtils.shorthash(JSON.stringify(this._options))
+    );
 
     if (appdir && this._options.paths.indexOf(appdir) === -1) {
       this._options.paths.unshift(appdir);
@@ -79,7 +87,7 @@ export class RuntimeLoader {
       module: module,
       paths: modulPaths,
       pattern: this._options.subModulPattern ? this._options.subModulPattern : [],
-      cache: this._options.cache
+      cache: this.cache
     });
 
     await this.registry.rebuild();

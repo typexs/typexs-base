@@ -43,7 +43,6 @@ import {ICommand} from './libs/commands/ICommand';
 import {LockFactory} from './libs/LockFactory';
 import {Injector} from './libs/di/Injector';
 import {EntityControllerRegistry} from './libs/storage/EntityControllerRegistry';
-import {ModulRegistryCache} from './libs/cache/ModulRegistryCache';
 
 
 /**
@@ -98,7 +97,9 @@ const DEFAULT_CONFIG_LOAD_ORDER = [
   }
 ];
 
-
+/**
+ * using default path for caching
+ */
 export const DEFAULT_RUNTIME_OPTIONS: IRuntimeLoaderOptions = {
 
   appdir: '.',
@@ -543,12 +544,14 @@ export class Bootstrap {
 
   async prepareRuntime(): Promise<Bootstrap> {
 
+    let cachePath = _.has(this._options.modules, 'cachePath') ? this._options.modules.cachePath : Config.get('os.tmpdir') + '.txs/cache';
+    cachePath = PlatformUtils.pathNormAndResolve(cachePath);
+    if (!PlatformUtils.fileExist(cachePath)) {
+      PlatformUtils.mkdir(cachePath);
+    }
 
-    this._options.modules.cache = new ModulRegistryCache(
-      this._options.app.path,
-      CryptUtils.shorthash(JSON.stringify(this._options.modules))
-    );
     this._options.modules.appdir = this._options.app.path;
+    this._options.modules.cachePath = cachePath;
     this.runtimeLoader = new RuntimeLoader(this._options.modules);
     Injector.set(RuntimeLoader, this.runtimeLoader);
     Injector.set(RuntimeLoader.NAME, this.runtimeLoader);

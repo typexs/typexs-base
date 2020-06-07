@@ -51,5 +51,5 @@ export interface IRuntimeLoaderOptions {
   /**
    * Modulcache
    */
-  cache?: ICache;
+  cachePath?: string;
 }

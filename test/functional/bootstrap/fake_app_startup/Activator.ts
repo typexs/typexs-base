@@ -1,13 +1,12 @@
-
-
 export class Activator {
-  name:string;
-  done:boolean = false;
-  constructor(){
+  name: string;
+  done: boolean = false;
+
+  constructor() {
     this.name = 'base';
   }
 
-  startup(){
+  startup() {
     this.done = true;
 
   }

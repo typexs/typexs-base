@@ -132,6 +132,9 @@ export class WinstonLoggerJar implements ILoggerApi {
     if (_.isBoolean(set)) {
       this.enabled = set;
     }
+    if (_.get(this.options, 'force', false)) {
+      return this.enabled;
+    }
     return this.enabled && Log.enable;
   }
 

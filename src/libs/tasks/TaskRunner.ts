@@ -143,7 +143,7 @@ export class TaskRunner extends EventEmitter {
       taskStart: startDate,
       taskId: this.id,
       taskNames: this.todoNrs.join('--')
-    }, {enable: true, prefix: this.loggerName});
+    }, {enable: true, prefix: this.loggerName, force: true});
     this.taskLogger.info('execute tasks: ' + this.$tasks.map(t => t.taskRef().name).join(', '));
 
     const self = this;

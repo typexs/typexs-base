@@ -38,4 +38,9 @@ export interface ILoggerOptions {
   transports?: { [k: string]: ILoggerTransport }[];
 
   loggers?: ILoggerOptions[];
+
+  /**
+   * Log also if Log.enabled = false
+   */
+  force?: boolean;
 }

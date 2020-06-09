@@ -72,7 +72,9 @@ class TasksWorkerSpec {
     class T {
       @subscribe(TaskEvent) on(e: TaskEvent) {
         const _e = _.cloneDeep(e);
-        events.push(_e);
+        if (_e.topic === 'data') {
+          events.push(_e);
+        }
       }
     }
 
@@ -103,7 +105,7 @@ class TasksWorkerSpec {
     expect(work.state).to.be.eq('enqueue');
 
     worker.queue.resume();
-    await TestHelper.waitFor(() => events.find(x => x.state === 'stopped' && x.id === work.id));
+    await TestHelper.waitFor(() => events.find(x => x.state === 'stopped' && x.id === work.id && x.topic === 'data'));
     await worker.queue.pause();
     // await worker.queue.await();
     expect(events).to.have.length(4);
@@ -250,6 +252,7 @@ class TasksWorkerSpec {
     class T2 {
       @subscribe(TaskEvent)
       on(e: TaskEvent) {
+        if (e.topic !== 'data') return;
         const _e = _.cloneDeep(e);
         events.push(_e);
       }
@@ -392,6 +395,7 @@ class TasksWorkerSpec {
     class T2 {
       @subscribe(TaskEvent)
       on(e: TaskEvent) {
+        if (e.topic !== 'data') return;
         const _e = _.cloneDeep(e);
         events.push(_e);
       }

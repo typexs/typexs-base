@@ -7,7 +7,7 @@ export interface ILoggerTransport {
 
 export interface ILoggerOptions {
 
-  enable: boolean;
+  enable?: boolean;
 
   /**
    * Log info prefix

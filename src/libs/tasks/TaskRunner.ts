@@ -139,11 +139,11 @@ export class TaskRunner extends EventEmitter {
     this.loggerName = 'task-runner-' + this.id;
     const startDate = moment(this.$start).toISOString();
     this.taskLogger = Log._().createLogger(this.loggerName, {
-      prefix: this.loggerName,
+
       taskStart: startDate,
       taskId: this.id,
       taskNames: this.todoNrs.join('--')
-    });
+    }, {enable: true, prefix: this.loggerName});
     this.taskLogger.info('execute tasks: ' + this.$tasks.map(t => t.taskRef().name).join(', '));
 
     const self = this;

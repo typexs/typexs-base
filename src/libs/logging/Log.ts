@@ -178,16 +178,20 @@ export class Log {
   }
 
 
-  createLogger(name: string, params: any = {}) {
-    let opts = this.getLoggerOptionsFor(name);
-    if (!opts) {
-      opts = DEFAULT_OPTIONS;
-      opts.name = 'logger_' + Log.inc++;
+  createLogger(name: string, params: any = {}, options: ILoggerOptions = {}) {
+    let defaultOptions = this.getLoggerOptionsFor(name);
+    if (!defaultOptions) {
+      defaultOptions = DEFAULT_OPTIONS;
+      defaultOptions.name = 'logger_' + Log.inc++;
     } else {
-      _.defaults(opts, DEFAULT_OPTIONS);
+      _.defaults(defaultOptions, DEFAULT_OPTIONS);
     }
 
-    const optsClone = _.cloneDeep(opts);
+    if (options && !_.isEmpty(options)) {
+      _.assign(defaultOptions, options);
+    }
+
+    const optsClone = _.cloneDeep(defaultOptions);
 
     if (params.prefix) {
       optsClone.prefix = params.prefix;

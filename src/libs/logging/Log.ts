@@ -187,11 +187,12 @@ export class Log {
       _.defaults(defaultOptions, DEFAULT_OPTIONS);
     }
 
-    if (options && !_.isEmpty(options)) {
-      _.assign(defaultOptions, options);
-    }
 
     const optsClone = _.cloneDeep(defaultOptions);
+    // apply additional options
+    if (options && !_.isEmpty(options)) {
+      _.assign(optsClone, options);
+    }
 
     if (params.prefix) {
       optsClone.prefix = params.prefix;

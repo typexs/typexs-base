@@ -252,7 +252,10 @@ class TasksWorkerSpec {
     class T2 {
       @subscribe(TaskEvent)
       on(e: TaskEvent) {
-        if (e.topic !== 'data') return;
+        // console.log(e)
+        if (e.topic !== 'data') {
+          return;
+        }
         const _e = _.cloneDeep(e);
         events.push(_e);
       }
@@ -328,6 +331,9 @@ class TasksWorkerSpec {
     class T2 {
       @subscribe(TaskEvent)
       on(e: TaskEvent) {
+        if (e.topic !== 'data') {
+          return;
+        }
         const _e = _.cloneDeep(e);
         events.push(_e);
       }
@@ -395,7 +401,9 @@ class TasksWorkerSpec {
     class T2 {
       @subscribe(TaskEvent)
       on(e: TaskEvent) {
-        if (e.topic !== 'data') return;
+        if (e.topic !== 'data') {
+          return;
+        }
         const _e = _.cloneDeep(e);
         events.push(_e);
       }

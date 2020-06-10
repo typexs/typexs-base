@@ -138,12 +138,17 @@ export class TaskRunner extends EventEmitter {
     this.todoNrs = this.$tasks.map(x => x.nr);
     this.loggerName = 'task-runner-' + this.id;
     const startDate = moment(this.$start).toISOString();
-    this.taskLogger = Log._().createLogger(this.loggerName, {
-
-      taskStart: startDate,
-      taskId: this.id,
-      taskNames: this.todoNrs.join('--')
-    }, {enable: true, prefix: this.loggerName, force: true});
+    this.taskLogger = Log._().createLogger(this.loggerName,
+      {
+        taskStart: startDate,
+        taskId: this.id,
+        taskNames: this.todoNrs.join('--')
+      },
+      {
+        enable: true,
+        prefix: this.loggerName,
+        force: true
+      });
     this.taskLogger.info('execute tasks: ' + this.$tasks.map(t => t.taskRef().name).join(', '));
 
     const self = this;
@@ -159,7 +164,6 @@ export class TaskRunner extends EventEmitter {
         next();
       }
     });
-
 
     (<WinstonLoggerJar>this.taskLogger).logger().add(
       new winston.transports.Stream({

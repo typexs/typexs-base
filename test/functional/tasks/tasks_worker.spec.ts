@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import {suite, test} from 'mocha-typescript';
+import {suite, test, timeout} from 'mocha-typescript';
 import {expect} from 'chai';
 
 import {Bootstrap} from '../../../src/Bootstrap';
@@ -29,7 +29,7 @@ import {Injector} from '../../../src';
 const LOG_EVENT = TestHelper.logEnable(false);
 let bootstrap: Bootstrap = null;
 
-@suite('functional/tasks/tasks_worker')
+@suite('functional/tasks/tasks_worker') @timeout(120000)
 class TasksWorkerSpec {
 
 
@@ -71,6 +71,7 @@ class TasksWorkerSpec {
 
     class T {
       @subscribe(TaskEvent) on(e: TaskEvent) {
+        // console.log(e)
         const _e = _.cloneDeep(e);
         if (_e.topic === 'data') {
           events.push(_e);
@@ -192,6 +193,9 @@ class TasksWorkerSpec {
 
     class T02 {
       @subscribe(TaskEvent) on(e: TaskEvent) {
+        if (e.topic !== 'data') {
+          return;
+        }
         const _e = _.cloneDeep(e);
         events.push(_e);
       }
@@ -265,6 +269,7 @@ class TasksWorkerSpec {
     await EventBus.register(l);
     const p = SpawnHandle.do(__dirname + '/fake_app/node_task_worker.ts').start(LOG_EVENT);
     await p.started;
+    await TestHelper.wait(100);
 
     const taskEvent = new TaskEvent();
     taskEvent.nodeId = bootstrap.getNodeId();

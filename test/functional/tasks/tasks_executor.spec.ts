@@ -61,11 +61,13 @@ class TasksSpec {
     bootstrap = await bootstrap.startup();
 
 
-    p[0] = SpawnHandle.do(__dirname + '/fake_app_task_exec/node_worker.ts')
+    p[0] = SpawnHandle
+      .do(__dirname + '/fake_app_task_exec/node_worker.ts')
       .nodeId('remote01').start(LOG_EVENT);
     await p[0].started;
 
-    p[1] = SpawnHandle.do(__dirname + '/fake_app_task_exec/node_worker.ts')
+    p[1] = SpawnHandle
+      .do(__dirname + '/fake_app_task_exec/node_worker.ts')
       .nodeId('remote02').start(LOG_EVENT);
     await p[1].started;
 

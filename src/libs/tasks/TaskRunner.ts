@@ -32,6 +32,7 @@ import {TasksApi} from '../../api/Tasks.api';
 import {TaskRunnerRegistry} from './TaskRunnerRegistry';
 import {TaskRunnerEvent} from './TaskRunnerEvent';
 import {EventBus} from 'commons-eventbus';
+import {ILoggerOptions} from '../../libs/logging/ILoggerOptions';
 
 /**
  * Container for single or multiple task execution
@@ -138,17 +139,26 @@ export class TaskRunner extends EventEmitter {
     this.todoNrs = this.$tasks.map(x => x.nr);
     this.loggerName = 'task-runner-' + this.id;
     const startDate = moment(this.$start).toISOString();
+
+    const overrideOptions: ILoggerOptions = Log._().getLoggerOptionsFor(this.loggerName) || {};
+    _.assign(overrideOptions,
+      {
+        enable: true,
+        prefix: this.loggerName,
+        force: true
+      });
+    if (!Log.enable) {
+      // disable transports when general logs are disabled
+      overrideOptions.transports = [];
+    }
+
     this.taskLogger = Log._().createLogger(this.loggerName,
       {
         taskStart: startDate,
         taskId: this.id,
         taskNames: this.todoNrs.join('--')
       },
-      {
-        enable: true,
-        prefix: this.loggerName,
-        force: true
-      });
+      overrideOptions);
     this.taskLogger.info('execute tasks: ' + this.$tasks.map(t => t.taskRef().name).join(', '));
 
     const self = this;
@@ -345,7 +355,6 @@ export class TaskRunner extends EventEmitter {
 
 
   areTasksDone(tasksNrs: number[]) {
-    // console.log('check',tasks, 'done',this.$done)
     for (let i = 0; i < tasksNrs.length; i++) {
       const tName = tasksNrs[i];
       if (this.doneNrs.indexOf(tName) === -1) {

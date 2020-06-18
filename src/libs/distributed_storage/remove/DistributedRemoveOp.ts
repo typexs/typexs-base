@@ -61,10 +61,11 @@ export class DistributedRemoveOp<T>
     this.removable = object;
 
     if (_.isFunction(object)) {
+      // delete by conditions
       this.entityType = object;
-      // this.entityTypeOrig = object;
       this.conditions = conditions;
     } else {
+      // delete by id
       this.isArray = _.isArray(object);
 
       let inc = 0;
@@ -72,7 +73,7 @@ export class DistributedRemoveOp<T>
       objects.forEach((o: any) => {
         _.set(o, __DISTRIBUTED_ID__, inc++);
       });
-
+      this.options = conditions || {};
     }
 
     _.defaults(this.options, {
@@ -111,7 +112,6 @@ export class DistributedRemoveOp<T>
       throw new Error('no distributed worker found to execute the query.');
     }
 
-
     // this.queryEvent.targetIds = this.targetIds;
     if (this.targetIds.length === 0) {
       return 0;
@@ -120,7 +120,6 @@ export class DistributedRemoveOp<T>
     await this.send(req);
 
     return this.results;
-
   }
 
 

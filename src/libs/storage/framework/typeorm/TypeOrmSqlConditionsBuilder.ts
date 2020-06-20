@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import {NotYetImplementedError} from 'commons-base/browser';
-import {RelationMetadataArgs} from 'typeorm/browser/metadata-args/RelationMetadataArgs';
+import {RelationMetadataArgs} from 'typeorm/metadata-args/RelationMetadataArgs';
 import {IConditionJoin} from '../IConditionJoin';
 import {TypeOrmPropertyRef} from './schema/TypeOrmPropertyRef';
 import {IClassRef, IEntityRef} from 'commons-schema-api/browser';
@@ -32,6 +32,7 @@ export interface ISqlParam {
    */
   p?: any;
 }
+
 
 /**
  * TODO Ugly build style make this better
@@ -147,7 +148,7 @@ export class TypeOrmSqlConditionsBuilder<T> implements IMangoWalker {
 
         const relation: RelationMetadataArgs = (<TypeOrmPropertyRef>prop).relation;
         if (relation) {
-          if (relation.relationType === 'one-to-many') {
+          if (relation.relationType === 'one-to-many' || relation.relationType === 'one-to-one') {
             const targetIdKeyProps = tmp.getPropertyRefs().filter(f => f.isIdentifier());
             const sourceIdKeyProps = from.getPropertyRefs().filter(f => f.isIdentifier());
             if (sourceIdKeyProps.length === 1 && targetIdKeyProps.length === 1) {
@@ -163,10 +164,10 @@ export class TypeOrmSqlConditionsBuilder<T> implements IMangoWalker {
             } else {
               throw new NotYetImplementedError();
             }
-          } else if (relation.relationType === 'many-to-one') {
+          } else if (relation.relationType === 'many-to-one' || relation.relationType === 'many-to-many') {
             const sourceIdKeyProps = from.getPropertyRefs().filter(f => f.isIdentifier());
             const targetIdKeyProps = tmp.getPropertyRefs().filter(f => f.isIdentifier());
-            if (targetIdKeyProps.length === 1 && targetIdKeyProps.length === 1) {
+            if (sourceIdKeyProps.length === 1 && targetIdKeyProps.length === 1) {
               const targetIdKey = targetIdKeyProps[0].name;
               const sourceIdKey = prop.storingName + '' + _.capitalize(sourceIdKeyProps[0].name);
               conditions.push([join.alias + '.' + targetIdKey, rootAlias + '.' + sourceIdKey].join(' = '));

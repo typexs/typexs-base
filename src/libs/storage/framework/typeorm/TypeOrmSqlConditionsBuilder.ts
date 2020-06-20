@@ -6,14 +6,15 @@ import {TypeOrmPropertyRef} from './schema/TypeOrmPropertyRef';
 import {IClassRef, IEntityRef} from 'commons-schema-api/browser';
 import {EntityManager, QueryBuilder, SelectQueryBuilder} from 'typeorm';
 import {DateUtils} from 'typeorm/util/DateUtils';
-import {StorageRef} from '../../../../libs/storage/StorageRef';
 import {AbstractSchemaHandler} from '../../AbstractSchemaHandler';
 import {
   AbstractCompare,
   And,
   IMangoWalker,
   MangoExpression,
-  MultiArgs, Not, Or,
+  MultiArgs,
+  Not,
+  Or,
   PAst,
   PValue
 } from '@allgemein/mango-expressions';
@@ -135,7 +136,6 @@ export class TypeOrmSqlConditionsBuilder<T> implements IMangoWalker {
         const from = tmp;
         tmp = prop.getTargetRef() ? prop.getTargetRef() : null;
 
-        const relation: RelationMetadataArgs = (<TypeOrmPropertyRef>prop).relation;
         const join: IConditionJoin = {
           alias: this.createAlias(tmp),
           table: tmp.storingName,
@@ -144,35 +144,41 @@ export class TypeOrmSqlConditionsBuilder<T> implements IMangoWalker {
         };
 
         const conditions: string[] = [];
-        if (relation.relationType === 'one-to-many') {
-          const targetIdKeyProps = tmp.getPropertyRefs().filter(f => f.isIdentifier());
-          const sourceIdKeyProps = from.getPropertyRefs().filter(f => f.isIdentifier());
-          if (sourceIdKeyProps.length === 1 && targetIdKeyProps.length === 1) {
-            const reverseFieldMatch = relation.inverseSideProperty.toString().match(/\.(\w(\w|\d|_)+)/);
-            if (reverseFieldMatch && reverseFieldMatch[1]) {
-              const reverseField = reverseFieldMatch[1];
-              const sourceIdKey = sourceIdKeyProps[0].name;
-              const targetIdKey = reverseField + _.capitalize(targetIdKeyProps[0].name);
+
+        const relation: RelationMetadataArgs = (<TypeOrmPropertyRef>prop).relation;
+        if (relation) {
+          if (relation.relationType === 'one-to-many') {
+            const targetIdKeyProps = tmp.getPropertyRefs().filter(f => f.isIdentifier());
+            const sourceIdKeyProps = from.getPropertyRefs().filter(f => f.isIdentifier());
+            if (sourceIdKeyProps.length === 1 && targetIdKeyProps.length === 1) {
+              const reverseFieldMatch = relation.inverseSideProperty.toString().match(/\.(\w(\w|\d|_)+)/);
+              if (reverseFieldMatch && reverseFieldMatch[1]) {
+                const reverseField = reverseFieldMatch[1];
+                const sourceIdKey = sourceIdKeyProps[0].name;
+                const targetIdKey = reverseField + _.capitalize(targetIdKeyProps[0].name);
+                conditions.push([join.alias + '.' + targetIdKey, rootAlias + '.' + sourceIdKey].join(' = '));
+              } else {
+                throw new NotYetImplementedError();
+              }
+            } else {
+              throw new NotYetImplementedError();
+            }
+          } else if (relation.relationType === 'many-to-one') {
+            const sourceIdKeyProps = from.getPropertyRefs().filter(f => f.isIdentifier());
+            const targetIdKeyProps = tmp.getPropertyRefs().filter(f => f.isIdentifier());
+            if (targetIdKeyProps.length === 1 && targetIdKeyProps.length === 1) {
+              const targetIdKey = targetIdKeyProps[0].name;
+              const sourceIdKey = prop.storingName + '' + _.capitalize(sourceIdKeyProps[0].name);
               conditions.push([join.alias + '.' + targetIdKey, rootAlias + '.' + sourceIdKey].join(' = '));
             } else {
               throw new NotYetImplementedError();
             }
-          } else {
-            throw new NotYetImplementedError();
-          }
-        } else if (relation.relationType === 'many-to-one') {
-          const sourceIdKeyProps = from.getPropertyRefs().filter(f => f.isIdentifier());
-          const targetIdKeyProps = tmp.getPropertyRefs().filter(f => f.isIdentifier());
-          if (targetIdKeyProps.length === 1 && targetIdKeyProps.length === 1) {
-            const targetIdKey = targetIdKeyProps[0].name;
-            const sourceIdKey = prop.storingName + '' + _.capitalize(sourceIdKeyProps[0].name);
-            conditions.push([join.alias + '.' + targetIdKey, rootAlias + '.' + sourceIdKey].join(' = '));
-          } else {
-            throw new NotYetImplementedError();
-          }
 
+          } else {
+            throw new NotYetImplementedError();
+          }
         } else {
-          throw new NotYetImplementedError();
+          throw new NotYetImplementedError('relation is not given');
         }
 
         join.condition = conditions.join(' AND ');

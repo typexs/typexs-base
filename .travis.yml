@@ -8,6 +8,7 @@ node_js:
   - 11
   - 12
   - 13
+  - 14
 
 env:
   - DOCKER_COMPOSE_VERSION=1.25.5 CI_RUN=1

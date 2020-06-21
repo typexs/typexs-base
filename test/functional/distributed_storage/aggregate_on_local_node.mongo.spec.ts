@@ -6,7 +6,6 @@ import {TEST_MONGO_STORAGE_OPTIONS} from '../config';
 import {IEventBusConfiguration} from 'commons-eventbus';
 import {Container} from 'typedi';
 import {TestHelper} from '../TestHelper';
-import {SpawnHandle} from '../SpawnHandle';
 
 import {DistributedStorageEntityController} from '../../../src/libs/distributed_storage/DistributedStorageEntityController';
 import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
@@ -16,12 +15,14 @@ import {__NODE_ID__} from '../../../src/libs/distributed_storage/Constants';
 import {Injector} from '../../../src/libs/di/Injector';
 import {C_STORAGE_DEFAULT} from '../../../src/libs/Constants';
 import {StorageRef} from '../../../src/libs/storage/StorageRef';
-import {generateMongoDataRows, generateSqlDataRows} from './helper';
+import {generateMongoDataRows} from './helper';
+import {getMetadataArgsStorage} from 'typeorm';
 
 
 const LOG_EVENT = TestHelper.logEnable(false);
 
 let bootstrap: Bootstrap;
+
 // let p: SpawnHandle;
 
 
@@ -51,27 +52,23 @@ class DistributedStorageSaveSpec {
     bootstrap = await bootstrap.startup();
 
     const storageRef = Injector.get(C_STORAGE_DEFAULT) as StorageRef;
-
     const entries = generateMongoDataRows();
-
     await storageRef.getController().save(entries);
   }
 
   static async after() {
     if (bootstrap) {
       await bootstrap.shutdown();
+      _.remove(getMetadataArgsStorage().columns, x => x.mode === 'objectId' || x.propertyName === '_id');
     }
   }
 
 
   @test
   async 'local'() {
-
     const controller = Container.get(DistributedStorageEntityController);
-
     const results = await controller.aggregate(DataRow, [{$match: {someBool: true}}]);
 
-    // console.log(results);
     const evenIds = results.map(x => {
       return x.id;
     });
@@ -81,8 +78,6 @@ class DistributedStorageSaveSpec {
       return x[__NODE_ID__];
     }));
     expect(nodeIds).to.be.deep.eq(['system']);
-
-
   }
 
 }

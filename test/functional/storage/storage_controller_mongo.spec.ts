@@ -8,9 +8,10 @@ import {Config} from 'commons-config';
 // import {MdbCar} from "./fake_app_mongo/entities/MdbCar";
 // import {MdbDriver} from "./fake_app_mongo/entities/MdbDriver";
 import {ClassType} from 'commons-schema-api/browser';
-import {StorageRef} from '../../../src/libs/storage/StorageRef';
 import {TypeOrmEntityController} from '../../../src/libs/storage/framework/typeorm/TypeOrmEntityController';
 import {TypeOrmStorageRef} from '../../../src/libs/storage/framework/typeorm/TypeOrmStorageRef';
+import {getMetadataArgsStorage} from 'typeorm';
+import {TypeOrmEntityRegistry} from '../../../src';
 
 
 let bootstrap: Bootstrap;
@@ -26,7 +27,7 @@ let controller: TypeOrmEntityController = null;
 class StorageControllerMongoSpec {
 
   static after() {
-    // const ref = storageRef['connections'];
+    _.remove(getMetadataArgsStorage().columns, x => x.mode === 'objectId' || x.propertyName === '_id');
   }
 
 
@@ -74,6 +75,7 @@ class StorageControllerMongoSpec {
       // await controller.close();
       await bootstrap.shutdown();
       await bootstrap.getStorage().shutdown();
+      TypeOrmEntityRegistry.reset();
     }
   }
 

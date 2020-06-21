@@ -18,7 +18,8 @@ class StorageTypeormRegistrySpec {
 
   after() {
     if (registry) {
-      registry.reset();
+      registry = null;
+      TypeOrmEntityRegistry.reset();
     }
   }
 

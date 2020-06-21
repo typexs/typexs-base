@@ -14,6 +14,8 @@ import {SpawnHandle} from '../SpawnHandle';
 import {SystemNodeInfo} from '../../../src/entities/SystemNodeInfo';
 import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
 import {Invoker} from '../../../src/base/Invoker';
+import {getMetadataArgsStorage} from 'typeorm';
+import {TypeOrmEntityRegistry} from '../../../src';
 
 
 const LOG_EVENT = TestHelper.logEnable(false);
@@ -25,6 +27,8 @@ class SystemRedisConnectedSpec {
 
   async before() {
     Bootstrap.reset();
+    const x = getMetadataArgsStorage();
+    const t = TypeOrmEntityRegistry.$();
 
     bootstrap = Bootstrap
       .setConfigSources([{type: 'system'}])
@@ -43,6 +47,7 @@ class SystemRedisConnectedSpec {
     bootstrap = await bootstrap.startup();
   }
 
+
   async after() {
     if (bootstrap) {
       await bootstrap.shutdown();
@@ -54,6 +59,7 @@ class SystemRedisConnectedSpec {
 
   @test
   async 'check own node info'() {
+    const x = getMetadataArgsStorage();
     const system: System = Container.get(System.NAME);
     expect(system.node.state).to.eq('idle');
 

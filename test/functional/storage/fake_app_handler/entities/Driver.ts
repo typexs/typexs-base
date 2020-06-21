@@ -1,11 +1,11 @@
-import {Column, Entity, ManyToOne, PrimaryColumn, PrimaryGeneratedColumn} from "typeorm";
-import {Car} from "./Car";
+import {Column, Entity, ManyToOne, PrimaryGeneratedColumn} from 'typeorm';
+import {Car} from './Car';
 
 @Entity()
 export class Driver {
 
   @PrimaryGeneratedColumn()
-  id:number;
+  id: number;
 
   @Column()
   firstName: string;
@@ -14,5 +14,5 @@ export class Driver {
   lastName: string;
 
   @ManyToOne(type => Car, user => user.driver)
-  car:Car;
+  car: Car;
 }

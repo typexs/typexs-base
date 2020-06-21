@@ -1,12 +1,12 @@
-import {Column, Entity, PrimaryGeneratedColumn,OneToMany} from "typeorm";
+import {Column, Entity, OneToMany, PrimaryGeneratedColumn} from 'typeorm';
 
-import {Driver} from "./Driver";
+import {Driver} from './Driver';
 
 @Entity()
 export class Car {
 
   @PrimaryGeneratedColumn()
-  id:number;
+  id: number;
 
   @Column()
   name: string;

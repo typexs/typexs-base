@@ -10,6 +10,7 @@ import {
   IEntityRef,
   IEntityRefMetadata,
   ILookupRegistry,
+  IPropertyRef,
   LookupRegistry,
   SchemaUtils,
   XS_TYPE_ENTITY,
@@ -20,13 +21,61 @@ import {ClassUtils, NotYetImplementedError} from 'commons-base/browser';
 import {TypeOrmPropertyRef} from './TypeOrmPropertyRef';
 import {RelationMetadataArgs} from 'typeorm/browser/metadata-args/RelationMetadataArgs';
 import {ColumnMetadataArgs} from 'typeorm/browser/metadata-args/ColumnMetadataArgs';
-import {getFromContainer, MetadataStorage} from 'class-validator';
+import {getMetadataStorage} from 'class-validator';
 import {MetadataArgsStorage} from 'typeorm/browser/metadata-args/MetadataArgsStorage';
 import {ValidationMetadata} from '../../../../class-validator/ValidationMetadata';
 import {classRefGet} from '../Helper';
+import {EventEmitter} from 'events';
+import {EmbeddedMetadataArgs} from 'typeorm/browser/metadata-args/EmbeddedMetadataArgs';
 
+export type TYPEORM_METADATA_KEYS = 'tables' |
+  'trees' |
+  'entityRepositories' |
+  'transactionEntityManagers' |
+  'transactionRepositories' |
+  'namingStrategies' |
+  'entitySubscribers' |
+  'indices' |
+  'uniques' |
+  'checks' |
+  'exclusions' |
+  'columns' |
+  'generations' |
+  'relations' |
+  'joinColumns' |
+  'joinTables' |
+  'entityListeners' |
+  'relationCounts' |
+  'relationIds' |
+  'embeddeds' |
+  'inheritances' |
+  'discriminatorValues';
 
-export class TypeOrmEntityRegistry implements ILookupRegistry {
+const typeormMetadataKeys: TYPEORM_METADATA_KEYS[] = [
+  'tables',
+  'trees',
+  'entityRepositories',
+  'transactionEntityManagers',
+  'transactionRepositories',
+  'namingStrategies',
+  'entitySubscribers',
+  'indices',
+  'uniques',
+  'checks',
+  'exclusions',
+  'columns',
+  'generations',
+  'relations',
+  'joinColumns',
+  'joinTables',
+  'entityListeners',
+  'relationCounts',
+  'relationIds',
+  'embeddeds',
+  'inheritances',
+  'discriminatorValues'];
+
+export class TypeOrmEntityRegistry extends EventEmitter implements ILookupRegistry {
 
   private static _self: TypeOrmEntityRegistry;
 
@@ -42,12 +91,77 @@ export class TypeOrmEntityRegistry implements ILookupRegistry {
   }
 
   constructor() {
+    super();
     try {
       this.metadatastore = this.getGlobal()['typeormMetadataArgsStorage'];
+      const self = this;
+      for (const key of typeormMetadataKeys) {
+        if (this.metadatastore[key]['__txs']) {
+          continue;
+        }
+        this.metadatastore[key]['__txs'] = true;
+        // const orgPushFn = this.metadatastore[key].push;
+        // const orgSpliceFn = this.metadatastore[key].splice as any;
+        this.metadatastore[key].push = function (...args: any[]) {
+          const result = Array.prototype.push.bind(this)(...args);
+          self.emit('metadata_push', key, ...args);
+          return result;
+        };
+        this.metadatastore[key].splice = function (start: number, deletecount?: number) {
+          const result = Array.prototype.splice.bind(this)(start, deletecount);
+          self.emit('metadata_splice', key, result, start, deletecount);
+          return result;
+        };
+      }
+
+      this.on('metadata_push', this.onMetaDataPush.bind(this));
+      this.on('metadata_splice', this.onMetaDataSplice.bind(this));
     } catch (e) {
 
     }
   }
+
+
+  onMetaDataPush(key: TYPEORM_METADATA_KEYS, ...args: any[]) {
+    let foundEntity = null;
+    switch (key) {
+      case 'columns':
+        const columnMetadata = args[0] as ColumnMetadataArgs;
+        if (columnMetadata.target) {
+          foundEntity = this.find(columnMetadata.target);
+        }
+        if (foundEntity) {
+          const exists = foundEntity.getPropertyRefs()
+            .find(x => x.storingName === embedded.propertyName && x.getClass() === embedded.target);
+          if (!exists) {
+            this.createPropertyByArgs('column', columnMetadata, true);
+          }
+        }
+        break;
+      case 'embeddeds':
+        const embedded = args[0] as EmbeddedMetadataArgs;
+
+        if (embedded.target) {
+          foundEntity = this.find(embedded.target);
+        }
+        if (foundEntity) {
+          const exists = foundEntity.getPropertyRefs()
+            .find(x => x.storingName === embedded.propertyName && x.getClass() === embedded.target);
+          if (!exists) {
+            this.createPropertyByArgs('embedded', embedded, true);
+          }
+        }
+        break;
+      case 'tables':
+        break;
+    }
+  }
+
+
+  onMetaDataSplice(key: TYPEORM_METADATA_KEYS, ...args: any[]) {
+    // TODO remove entities
+  }
+
 
   getGlobal() {
     if (typeof window !== 'undefined') {
@@ -60,7 +174,7 @@ export class TypeOrmEntityRegistry implements ILookupRegistry {
 
 
   private findTable(f: (x: TableMetadataArgs) => boolean) {
-    return this.metadatastore.tables.find(f);
+    return this.metadatastore.tables.find(f as any);
   }
 
 
@@ -92,24 +206,42 @@ export class TypeOrmEntityRegistry implements ILookupRegistry {
     return cName;
   }
 
+  createPropertyByArgs(type: 'column' | 'relation' | 'embedded',
+                       args: ColumnMetadataArgs | RelationMetadataArgs | EmbeddedMetadataArgs,
+                       recursive: boolean = false) {
+    const propRef = new TypeOrmPropertyRef(args, type);
+    this.register(propRef);
+    if (recursive && propRef.isReference()) {
+      const classRef = propRef.getTargetRef();
+      if (!classRef.getEntityRef()) {
+        const metadata = this._findTableMetadataArgs(classRef.getClass());
+        if (metadata) {
+          this.createEntity(metadata);
+        }
+      }
+    }
+    return propRef;
+  }
+
 
   createEntity(fn: TableMetadataArgs) {
+    // check if entity exists?
     const entity = new TypeOrmEntityRef(fn);
     this.register(entity);
 
     const properties: TypeOrmPropertyRef[] = <TypeOrmPropertyRef[]>_.concat(
       _.map(this.metadatastore.columns
           .filter(c => c.target === fn.target),
-        c => this.register(new TypeOrmPropertyRef(c, 'column'))),
+        c => this.createPropertyByArgs('column', c)),
       _.map(this.metadatastore.filterRelations(fn.target),
-        c => this.register(new TypeOrmPropertyRef(c, 'relation')))
+        c => this.createPropertyByArgs('relation', c))
     );
 
     _.map(this.metadatastore.filterEmbeddeds(fn.target),
       c => {
         const exists = properties.find(x => x.storingName === c.propertyName && x.getClass() === c.target);
         if (!exists) {
-          const r = this.register(new TypeOrmPropertyRef(c, 'embedded')) as TypeOrmPropertyRef;
+          const r = this.createPropertyByArgs('embedded', c);
           properties.push(r);
         }
       });
@@ -262,7 +394,7 @@ export class TypeOrmEntityRegistry implements ILookupRegistry {
             const _m = _.clone(m);
             _m.target = classRef.getClass();
             const vma = new ValidationMetadata(_m);
-            getFromContainer(MetadataStorage).addValidationMetadata(vma as any);
+            getMetadataStorage().addValidationMetadata(vma as any);
           });
         }
       }
@@ -271,5 +403,23 @@ export class TypeOrmEntityRegistry implements ILookupRegistry {
     return entityRef;
   }
 
+
+  listEntities(fn?: (x: IEntityRef) => boolean) {
+    return this.lookupRegistry.filter(XS_TYPE_ENTITY, fn);
+  }
+
+  listProperties(fn?: (x: IPropertyRef) => boolean) {
+    return this.lookupRegistry.filter(XS_TYPE_PROPERTY, fn);
+  }
+
+  reset() {
+    this.removeAllListeners();
+    for (const key of typeormMetadataKeys) {
+      delete this.metadatastore[key]['__txs'];
+      this.metadatastore[key].push = Array.prototype.push.bind(this.metadatastore[key]);
+      this.metadatastore[key].splice = Array.prototype.splice.bind(this.metadatastore[key]);
+    }
+    LookupRegistry.reset(REGISTRY_TYPEORM);
+  }
 
 }

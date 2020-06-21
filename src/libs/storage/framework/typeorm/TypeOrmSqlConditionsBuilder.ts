@@ -92,6 +92,7 @@ export class TypeOrmSqlConditionsBuilder<T> implements IMangoWalker {
       }
     } else {
       this.baseQueryBuilder = manager;
+      this.alias = this.baseQueryBuilder.alias;
     }
   }
 
@@ -248,29 +249,6 @@ export class TypeOrmSqlConditionsBuilder<T> implements IMangoWalker {
     name += '_' + (this.inc++);
     return name;
   }
-
-
-  // private _erg2(op: string, key: string = null, value?: any): ISqlParam {
-  //   const _key = this.lookupKeys(key);
-  //   if (!_.isUndefined(value)) {
-  //     const p = this.paramName();
-  //     if (_.isArray(value)) {
-  //       return {
-  //         q: `${_key} ${op} (:...${p})`,
-  //         p: this.paramValue(p, value, _key)
-  //       };
-  //     } else {
-  //       return {
-  //         q: `${_key} ${op} :${p}`,
-  //         p: this.paramValue(p, value, _key)
-  //       };
-  //     }
-  //   } else {
-  //     return {
-  //       q: `${_key} ${op}`
-  //     };
-  //   }
-  // }
 
 
   private handleOperation(op: string, key: string = null, value: any = null) {

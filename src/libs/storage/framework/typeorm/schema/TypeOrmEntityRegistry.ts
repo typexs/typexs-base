@@ -77,21 +77,10 @@ const typeormMetadataKeys: TYPEORM_METADATA_KEYS[] = [
 
 export class TypeOrmEntityRegistry extends EventEmitter implements ILookupRegistry {
 
-  private static _self: TypeOrmEntityRegistry;
-
-  private lookupRegistry = LookupRegistry.$(REGISTRY_TYPEORM);
-
-  private metadatastore: MetadataArgsStorage = null;
-
-  static $() {
-    if (!this._self) {
-      this._self = new TypeOrmEntityRegistry();
-    }
-    return this._self;
-  }
-
   constructor() {
     super();
+
+    this.lookupRegistry = LookupRegistry.$(REGISTRY_TYPEORM);
     try {
       this.metadatastore = this.getGlobal()['typeormMetadataArgsStorage'];
       const self = this;
@@ -100,8 +89,6 @@ export class TypeOrmEntityRegistry extends EventEmitter implements ILookupRegist
           continue;
         }
         this.metadatastore[key]['__txs'] = true;
-        // const orgPushFn = this.metadatastore[key].push;
-        // const orgSpliceFn = this.metadatastore[key].splice as any;
         this.metadatastore[key].push = function (...args: any[]) {
           const result = Array.prototype.push.bind(this)(...args);
           self.emit('metadata_push', key, ...args);
@@ -121,6 +108,36 @@ export class TypeOrmEntityRegistry extends EventEmitter implements ILookupRegist
     }
   }
 
+  private static _self: TypeOrmEntityRegistry;
+
+  private lookupRegistry: LookupRegistry;
+
+  private metadatastore: MetadataArgsStorage = null;
+
+  static $() {
+    if (!this._self) {
+      this._self = new TypeOrmEntityRegistry();
+    }
+    return this._self;
+  }
+
+
+  static reset() {
+    const self = this.$();
+    self.reset();
+    this._self = null;
+    LookupRegistry.reset(REGISTRY_TYPEORM);
+  }
+
+  reset() {
+    this.removeAllListeners();
+    for (const key of typeormMetadataKeys) {
+      delete this.metadatastore[key]['__txs'];
+      this.metadatastore[key].push = Array.prototype.push.bind(this.metadatastore[key]);
+      this.metadatastore[key].splice = Array.prototype.splice.bind(this.metadatastore[key]);
+    }
+    this.lookupRegistry = null;
+  }
 
   onMetaDataPush(key: TYPEORM_METADATA_KEYS, ...args: any[]) {
     let foundEntity = null;
@@ -132,7 +149,7 @@ export class TypeOrmEntityRegistry extends EventEmitter implements ILookupRegist
         }
         if (foundEntity) {
           const exists = foundEntity.getPropertyRefs()
-            .find(x => x.storingName === embedded.propertyName && x.getClass() === embedded.target);
+            .find(x => x.storingName === columnMetadata.propertyName && x.getClass() === columnMetadata.target);
           if (!exists) {
             this.createPropertyByArgs('column', columnMetadata, true);
           }
@@ -205,6 +222,7 @@ export class TypeOrmEntityRegistry extends EventEmitter implements ILookupRegist
     }
     return cName;
   }
+
 
   createPropertyByArgs(type: 'column' | 'relation' | 'embedded',
                        args: ColumnMetadataArgs | RelationMetadataArgs | EmbeddedMetadataArgs,
@@ -298,12 +316,6 @@ export class TypeOrmEntityRegistry extends EventEmitter implements ILookupRegist
     return this.lookupRegistry.list(XS_TYPE_ENTITY) as TypeOrmEntityRef[];
   }
 
-  // /**
-  //  * Return all entities in this registry
-  //  */
-  // filter(x ): TypeOrmEntityRef[] {
-  //   return this.lookupRegistry.list(XS_TYPE_ENTITY) as TypeOrmEntityRef[];
-  // }
 
   getPropertyRefsFor(entity: IEntityRef | ClassRef): TypeOrmPropertyRef[] {
     if (entity instanceof TypeOrmEntityRef) {
@@ -314,6 +326,7 @@ export class TypeOrmEntityRegistry extends EventEmitter implements ILookupRegist
       });
     }
   }
+
 
   fromJson(orgJson: IEntityRefMetadata): IEntityRef {
     const json = _.cloneDeep(orgJson);
@@ -408,18 +421,9 @@ export class TypeOrmEntityRegistry extends EventEmitter implements ILookupRegist
     return this.lookupRegistry.filter(XS_TYPE_ENTITY, fn);
   }
 
+
   listProperties(fn?: (x: IPropertyRef) => boolean) {
     return this.lookupRegistry.filter(XS_TYPE_PROPERTY, fn);
-  }
-
-  reset() {
-    this.removeAllListeners();
-    for (const key of typeormMetadataKeys) {
-      delete this.metadatastore[key]['__txs'];
-      this.metadatastore[key].push = Array.prototype.push.bind(this.metadatastore[key]);
-      this.metadatastore[key].splice = Array.prototype.splice.bind(this.metadatastore[key]);
-    }
-    LookupRegistry.reset(REGISTRY_TYPEORM);
   }
 
 }

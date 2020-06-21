@@ -27,6 +27,7 @@ import {ExchangeMessageRegistry} from './libs/messaging/ExchangeMessageRegistry'
 import {ConfigUtils} from './libs/utils/ConfigUtils';
 import {TaskRunnerRegistry} from './libs/tasks/TaskRunnerRegistry';
 import {TaskQueueWorker} from './workers/TaskQueueWorker';
+import {TypeOrmEntityRegistry} from './libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry';
 
 
 export class Startup implements IBootstrap, IShutdown {

@@ -43,6 +43,7 @@ import {ICommand} from './libs/commands/ICommand';
 import {LockFactory} from './libs/LockFactory';
 import {Injector} from './libs/di/Injector';
 import {EntityControllerRegistry} from './libs/storage/EntityControllerRegistry';
+import {TypeOrmEntityRegistry} from './libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry';
 
 
 /**
@@ -681,6 +682,7 @@ export class Bootstrap {
     await (Container.get(Storage.NAME) as Storage).shutdown();
 
     LockFactory.$().shutdown(10000);
+    TypeOrmEntityRegistry.reset();
     // shutdown storages
     // await Promise.all(this.storage.getNames().map(x => this.storage.get(x).shutdownOnFinish()));
 

@@ -63,12 +63,25 @@ class StorageSqlConditionsBuilderSpec {
 
 
   @test
-  async 'condition $eq'() {
+  async 'condition $eq (indirect)'() {
     const query2 = await getQuery({'name': 1}, CarCond, 'car');
     expect(query2).to.deep.eq([
       'SELECT "car"."id" AS "car_id", "car"."name" AS "car_name" FROM "car_cond" "car" WHERE "car"."name" = ?',
       [
         1
+      ]
+    ]);
+  }
+
+
+  @test
+  async 'condition $eq multiple (indirect)'() {
+    const query2 = await getQuery({'name': 'hallo', 'id': 123}, CarCond, 'car');
+    expect(query2).to.deep.eq([
+      'SELECT "car"."id" AS "car_id", "car"."name" AS "car_name" FROM "car_cond" "car" WHERE ("car"."name" = ?) AND ("car"."id" = ?)',
+      [
+        'hallo',
+        123
       ]
     ]);
   }

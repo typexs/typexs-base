@@ -366,9 +366,9 @@ export class Bootstrap {
     this.storage.nodeId = this.getNodeId();
     await this.storage.prepare(this.runtimeLoader);
 
-    Bootstrap.getContainer().set(Storage, this.storage);
-    Bootstrap.getContainer().set(Storage.NAME, this.storage);
-    Bootstrap.getContainer().set(K_STORAGE, this.storage);
+    Injector.set(Storage, this.storage);
+    Injector.set(Storage.NAME, this.storage);
+    Injector.set(K_STORAGE, this.storage);
 
     // get configurated storages
     const o_storage: { [name: string]: IStorageOptions } = Config.get(K_STORAGE, CONFIG_NAMESPACE, {});
@@ -424,7 +424,7 @@ export class Bootstrap {
       // register the storage controller
       entityControllerRegistry.add(storageRef.getController());
 
-      Bootstrap.getContainer().set([K_STORAGE, name].join('.'), storageRef);
+      Injector.set([K_STORAGE, name].join('.'), storageRef);
     }
 
     for (const ref of storageRefs) {
@@ -590,7 +590,7 @@ export class Bootstrap {
   private async createSystemInfo() {
     const system = Injector.create(System) as System;
     await system.initialize(os.hostname(), this.getNodeId());
-    Bootstrap.getContainer().set(System.NAME, system);
+    Injector.set(System.NAME, system);
     // todo ip + command
     return this;
   }
@@ -601,7 +601,7 @@ export class Bootstrap {
     this.activators = [];
     // todo before create injector and pass as parameter
     for (const clz of classes) {
-      this.activators.push(Bootstrap.getContainer().get(clz));
+      this.activators.push(Injector.get(clz));
     }
     return this.activators;
   }
@@ -613,7 +613,7 @@ export class Bootstrap {
     // todo before create injector and pass as parameter
     for (const clz of classes) {
       if (clz !== Bootstrap) {
-        this.bootstraps.push(Bootstrap.getContainer().get(clz));
+        this.bootstraps.push(Injector.get(clz));
       }
     }
     return this.bootstraps;
@@ -707,7 +707,7 @@ export class Bootstrap {
     const commands = [];
     for (const clz of this.runtimeLoader.getClasses(K_CLS_COMMANDS)) {
       if (withInject) {
-        commands.push(Bootstrap.getContainer().get(clz));
+        commands.push(Injector.get(clz));
       } else {
         commands.push(Reflect.construct(clz, []));
       }

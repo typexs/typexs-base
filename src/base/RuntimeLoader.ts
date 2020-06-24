@@ -1,8 +1,7 @@
 import * as _ from 'lodash';
 import {ModuleRegistry} from 'commons-moduls/registry/ModuleRegistry';
-import {ClassesLoader, Module} from 'commons-moduls';
+import {ClassesLoader, ModuleDescriptor} from 'commons-moduls';
 import {IRuntimeLoaderOptions} from './IRuntimeLoaderOptions';
-
 import {DEFAULT_RUNTIME_OPTIONS} from '../Bootstrap';
 import {TYPEXS_NAME} from '../libs/Constants';
 import {CryptUtils, PlatformUtils} from 'commons-base';
@@ -18,12 +17,9 @@ export class RuntimeLoader {
 
   _options: IRuntimeLoaderOptions;
 
-
   registry: ModuleRegistry;
 
-
   settings: { [moduleName: string]: any };
-
 
   classesLoader: ClassesLoader;
 
@@ -155,7 +151,7 @@ export class RuntimeLoader {
   }
 
 
-  getModule(modulName: string): Module {
+  getModule(modulName: string): ModuleDescriptor {
     return this.registry.modules().find(m => m.name === modulName);
   }
 

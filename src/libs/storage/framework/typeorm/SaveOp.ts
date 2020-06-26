@@ -9,6 +9,7 @@ import {ObjectsNotValidError} from '../../../exceptions/ObjectsNotValidError';
 import {TypeOrmEntityRegistry} from './schema/TypeOrmEntityRegistry';
 import {StorageApi} from '../../../../api/Storage.api';
 import {TypeOrmEntityController} from './TypeOrmEntityController';
+import {IEntityRef} from 'commons-schema-api';
 
 
 export class SaveOp<T> implements ISaveOp<T> {
@@ -64,14 +65,18 @@ export class SaveOp<T> implements ISaveOp<T> {
       const promises: Promise<any>[] = [];
       const resolveByEntityRef = TypeOrmUtils.resolveByEntityRef(this.objects);
       const entityNames = _.keys(resolveByEntityRef);
+      // load before connect
+      const refs: { [k: string]: IEntityRef } = {};
+      for (const entityName of entityNames) {
+        refs[entityName] = TypeOrmEntityRegistry.$().getEntityRefFor(entityName);
+      }
       const connection = await this.controller.connect();
-
       try {
         if (this.isMongoDB()) {
 
           for (const entityName of entityNames) {
             const repo = connection.manager.getMongoRepository(entityName);
-            const entityDef = TypeOrmEntityRegistry.$().getEntityRefFor(entityName);
+            const entityDef = refs[entityName];
             const propertyRefs = entityDef.getPropertyRefs().filter(p => p.isIdentifier());
             if (propertyRefs.length === 0) {
               throw new Error('no id property found for ' + entityName);

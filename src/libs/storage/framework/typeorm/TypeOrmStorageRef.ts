@@ -103,15 +103,13 @@ export class TypeOrmStorageRef extends StorageRef {
         this.registerEntityRef(type);
       });
     }
-
-    TypeOrmEntityRegistry.$().on('metadata_push');
   }
-
 
 
   get dbType(): string {
     return this.getOptions().type;
   }
+
 
   private static getClassName(x: string | EntitySchema | Function) {
     return ClassUtils.getClassName(x instanceof EntitySchema ? x.options.target : x);

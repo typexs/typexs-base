@@ -9,6 +9,7 @@ import {IDeleteOptions} from '../IDeleteOptions';
 import {DeleteQueryBuilder} from 'typeorm';
 import {StorageApi} from '../../../../api/Storage.api';
 import {TypeOrmEntityController} from './TypeOrmEntityController';
+import {TypeOrmConnectionWrapper} from './TypeOrmConnectionWrapper';
 
 
 export class DeleteOp<T> implements IDeleteOp<T> {
@@ -72,10 +73,11 @@ export class DeleteOp<T> implements IDeleteOp<T> {
 
   private async removeByCondition(object: ClassType<T>, condition: any, options: IDeleteOptions = {}) {
     let count = -1;
-    const connection = await this.controller.connect();
+    let connection: TypeOrmConnectionWrapper = null;
     try {
       const entityName = TypeOrmUtils.resolveName(object);
       if (this.isMongoDB()) {
+        connection = await this.controller.connect();
         const p = await connection.manager.getMongoRepository(entityName).deleteMany(condition);
         return p.deletedCount;
       } else {
@@ -84,6 +86,7 @@ export class DeleteOp<T> implements IDeleteOp<T> {
         }
 
         const entityRef = TypeOrmEntityRegistry.$().getEntityRefByName(entityName);
+        connection = await this.controller.connect();
         if (options.noTransaction) {
           const x = new TypeOrmSqlConditionsBuilder(connection.manager, entityRef, this.controller.getStorageRef(), 'delete');
           const qb = x.getQueryBuilder() as DeleteQueryBuilder<any>;
@@ -107,8 +110,9 @@ export class DeleteOp<T> implements IDeleteOp<T> {
     } catch (e) {
       this.error = e;
     } finally {
-      await connection.close();
-
+      if (connection) {
+        await connection.close();
+      }
     }
     return count;
   }

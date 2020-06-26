@@ -13,7 +13,7 @@ import {ClassType} from 'commons-schema-api';
 import {StorageApi} from '../../../../api/Storage.api';
 import {TypeOrmEntityController} from './TypeOrmEntityController';
 import {REGISTRY_TYPEORM} from './schema/TypeOrmConstants';
-import {Cache, Injector} from '../../../..';
+import {Cache, IConnection, Injector, TypeOrmConnectionWrapper} from '../../../..';
 
 
 export class FindOp<T> implements IFindOp<T> {
@@ -98,13 +98,15 @@ export class FindOp<T> implements IFindOp<T> {
 
 
   private async find(entityType: Function | string | ClassType<T>, findConditions?: any): Promise<T[]> {
-    const connection = await this.controller.connect();
+    let connection: TypeOrmConnectionWrapper = null;
     let results: T[] = [];
     try {
       // const repo = connection.manager.getRepository(entityType);
       // const qb = repo.createQueryBuilder() as SelectQueryBuilder<T>;
       let qb: SelectQueryBuilder<T> = null;
       const entityRef = TypeOrmEntityRegistry.$().getEntityRefFor(entityType);
+      // connect only when type is already loaded
+      connection = await this.controller.connect();
       if (findConditions && !_.isEmpty(findConditions)) {
         const builder = new TypeOrmSqlConditionsBuilder<T>(connection.manager, entityRef, this.controller.getStorageRef(), 'select');
         builder.build(findConditions);
@@ -141,7 +143,9 @@ export class FindOp<T> implements IFindOp<T> {
     } catch (e) {
       this.error = e;
     } finally {
-      await connection.close();
+      if (connection) {
+        await connection.close();
+      }
 
     }
 

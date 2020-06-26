@@ -89,7 +89,8 @@ export class FindOp<T> implements IFindOp<T> {
     }
 
     if (cacheKey) {
-      cache.set(cacheKey, results, 'storage_typeorm', {ttl: 120000}).catch(reason => {});
+      cache.set(cacheKey, results, 'storage_typeorm', {ttl: 120000}).catch(reason => {
+      });
     }
 
     return results;
@@ -104,7 +105,7 @@ export class FindOp<T> implements IFindOp<T> {
       // const qb = repo.createQueryBuilder() as SelectQueryBuilder<T>;
       let qb: SelectQueryBuilder<T> = null;
       const entityRef = TypeOrmEntityRegistry.$().getEntityRefFor(entityType);
-      if (findConditions) {
+      if (findConditions && !_.isEmpty(findConditions)) {
         const builder = new TypeOrmSqlConditionsBuilder<T>(connection.manager, entityRef, this.controller.getStorageRef(), 'select');
         builder.build(findConditions);
         qb = builder.getQueryBuilder() as SelectQueryBuilder<T>;

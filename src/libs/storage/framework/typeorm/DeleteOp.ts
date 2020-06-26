@@ -81,12 +81,12 @@ export class DeleteOp<T> implements IDeleteOp<T> {
         const p = await connection.manager.getMongoRepository(entityName).deleteMany(condition);
         return p.deletedCount;
       } else {
+        const entityRef = TypeOrmEntityRegistry.$().getEntityRefByName(entityName);
+        connection = await this.controller.connect();
         if (connection.isSingleConnection()) {
           options.noTransaction = true;
         }
 
-        const entityRef = TypeOrmEntityRegistry.$().getEntityRefByName(entityName);
-        connection = await this.controller.connect();
         if (options.noTransaction) {
           const x = new TypeOrmSqlConditionsBuilder(connection.manager, entityRef, this.controller.getStorageRef(), 'delete');
           const qb = x.getQueryBuilder() as DeleteQueryBuilder<any>;

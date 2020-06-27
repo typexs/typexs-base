@@ -417,9 +417,6 @@ export class TypeOrmStorageRef extends StorageRef {
       this.removeFromConnectionManager();
     }
     this.emit(EVENT_STORAGE_REF_SHUTDOWN);
-    if (full) {
-      this.removeAllListeners();
-    }
 
   }
 
@@ -428,6 +425,7 @@ export class TypeOrmStorageRef extends StorageRef {
     await this.closeConnections();
     await this.closeConnection();
     this.removeFromConnectionManager();
+    this.removeAllListeners();
   }
 
 }

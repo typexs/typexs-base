@@ -35,26 +35,7 @@ export class TypeOrmConnectionWrapper implements IConnection {
 
 
   async reload() {
-    // detatch
-
-    if (this._connection && this._connection.isConnected) {
-      try {
-        await this.close();
-      } catch (e) {
-
-      }
-      try {
-        await this.connect();
-      } catch (e) {
-
-      }
-    } else {
-      try {
-        await this.close();
-      } catch (e) {
-
-      }
-    }
+    this._connection = null;
   }
 
   async destroy() {

@@ -12,7 +12,6 @@ import {Connection, ConnectionOptions, EntityOptions, getConnectionManager, getM
 import {TableMetadataArgs} from 'typeorm/metadata-args/TableMetadataArgs';
 import {ClassType, IClassRef, IEntityRef} from 'commons-schema-api';
 import {TypeOrmEntityRegistry} from './schema/TypeOrmEntityRegistry';
-// import {ITypeOrmStorageOptions} from './ITypeOrmStorageOptions';
 import {DEFAULT_STORAGEREF_OPTIONS} from '../../Constants';
 import {classRefGet} from './Helper';
 import {TypeOrmEntityController} from './TypeOrmEntityController';
@@ -20,6 +19,8 @@ import {TypeOrmConnectionWrapper} from './TypeOrmConnectionWrapper';
 import {StorageRef} from '../../StorageRef';
 import {ICollection} from '../../ICollection';
 import {BaseConnectionOptions} from 'typeorm/connection/BaseConnectionOptions';
+import {EVENT_STORAGE_ENTITY_ADDED, EVENT_STORAGE_REF_PREPARED, EVENT_STORAGE_REF_SHUTDOWN} from './Constants';
+
 
 export class TypeOrmStorageRef extends StorageRef {
 
@@ -190,7 +191,12 @@ export class TypeOrmStorageRef extends StorageRef {
     }
   }
 
-
+  /**
+   * wrapping to addEntityType
+   *
+   * @param type
+   * @param options
+   */
   addEntityClass(type: Function | IClassRef | ClassType<any>, options?: any): void {
     this.addEntityType(type as any);
   }
@@ -218,6 +224,7 @@ export class TypeOrmStorageRef extends StorageRef {
       this._forceReload = true;
     }
 
+    this.emit(EVENT_STORAGE_ENTITY_ADDED, type);
     this.populateToExtended(type);
 
   }
@@ -323,6 +330,7 @@ export class TypeOrmStorageRef extends StorageRef {
       await (await this.wrap()).close();
     }
     this._prepared = true;
+    this.emit(EVENT_STORAGE_REF_PREPARED);
     return Promise.resolve(this._prepared);
   }
 
@@ -407,6 +415,8 @@ export class TypeOrmStorageRef extends StorageRef {
     if (full) {
       this.removeFromConnectionManager();
     }
+    this.emit(EVENT_STORAGE_REF_SHUTDOWN);
+    this.removeAllListeners();
   }
 
 

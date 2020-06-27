@@ -4,8 +4,9 @@ import {IEntityController} from './IEntityController';
 import {ClassType, IClassRef, IEntityRef} from 'commons-schema-api/browser';
 import {IConnection} from './IConnection';
 import {ICollection} from './ICollection';
+import {EventEmitter} from 'events';
 
-export abstract class StorageRef implements IStorageRef {
+export abstract class StorageRef extends EventEmitter implements IStorageRef {
 
 
   private options: IStorageOptions = null;
@@ -15,6 +16,7 @@ export abstract class StorageRef implements IStorageRef {
   private _extends: IStorageRef[] = [];
 
   constructor(options: IStorageOptions) {
+    super();
     this.options = options;
   }
 

@@ -15,13 +15,15 @@ import {
   K_CLS_USE_API
 } from '../../../src/libs/Constants';
 import {K_CLS_TASKS} from '../../../src/libs/tasks/Constants';
+import {TestHelper} from '../TestHelper';
 
 
 @suite('functional/bootstrap/general')
 class BootstrapGeneralSpec {
 
 
-  before() {
+  async before() {
+    await TestHelper.clearCache();
     Bootstrap.reset();
     Config.clear();
   }

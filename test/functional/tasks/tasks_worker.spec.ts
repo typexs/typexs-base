@@ -23,7 +23,7 @@ import {Workers} from '../../../src/libs/worker/Workers';
 import {C_STORAGE_DEFAULT} from '../../../src/libs/Constants';
 import {TaskLog} from '../../../src/entities/TaskLog';
 import {StorageRef} from '../../../src/libs/storage/StorageRef';
-import {Injector} from '../../../src';
+import {Injector} from '../../../src/libs/di/Injector';
 
 
 const LOG_EVENT = TestHelper.logEnable(false);
@@ -33,8 +33,8 @@ let bootstrap: Bootstrap = null;
 class TasksWorkerSpec {
 
 
-  before() {
-
+  async before() {
+    await TestHelper.clearCache();
     Bootstrap.reset();
     Config.clear();
   }

@@ -33,10 +33,11 @@ class MessagingSpec {
         enable: LOG_EVENT
       },
 
-      modules: {
+      modules: <any>{
         paths: [
           __dirname + '/../../../..'
-        ]
+        ],
+        disableCache: true
       }
     });
     await bootstrap.activateLogger();

@@ -20,7 +20,10 @@ class GeneralSpec {
     const appdir = path.join(__dirname, 'fake_app');
     const bootstrap = await Bootstrap.configure({
       app: {path: appdir},
-      modules: {paths: [__dirname + '/../../..']}
+      modules: <any>{
+        disableCache: true,
+        paths: [__dirname + '/../../..']
+      }
     });
     await bootstrap.prepareRuntime();
     await bootstrap.activateStorage();

@@ -35,7 +35,7 @@ class DistributedStorageSaveSpec {
       .configure(<ITypexsOptions & any>{
         app: {name: 'test', nodeId: 'system', path: __dirname + '/fake_app'},
         logging: {enable: LOG_EVENT, level: 'debug'},
-        modules: {paths: [__dirname + '/../../..']},
+        modules: {paths: [__dirname + '/../../..'], disableCache: true},
         storage: {default: TEST_STORAGE_OPTIONS},
         eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}},
         workers: {access: [{name: 'DistributedQueryWorker', access: 'allow'}]}

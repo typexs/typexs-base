@@ -1,20 +1,22 @@
 import * as path from 'path';
-import {suite, test} from "mocha-typescript";
-import {expect} from "chai";
+import {suite, test} from 'mocha-typescript';
+import {expect} from 'chai';
 
-import {Bootstrap} from "../../../src/Bootstrap";
-import {Config} from "commons-config";
-import {RuntimeLoader} from "../../../src/base/RuntimeLoader";
-import {Container} from "typedi";
-import {Invoker} from "../../../src/base/Invoker";
-import {K_CLS_API, K_CLS_USE_API} from "../../../src/libs/Constants";
-import {AwesomeApi} from "./fake_app/src/api/Awesome.api";
+import {Bootstrap} from '../../../src/Bootstrap';
+import {Config} from 'commons-config';
+import {RuntimeLoader} from '../../../src/base/RuntimeLoader';
+import {Container} from 'typedi';
+import {Invoker} from '../../../src/base/Invoker';
+import {K_CLS_API, K_CLS_USE_API} from '../../../src/libs/Constants';
+import {AwesomeApi} from './fake_app/src/api/Awesome.api';
+import {TestHelper} from '../TestHelper';
 
 
 @suite('functional/bootstrap/invoker')
 class InvokerSpec {
 
-  before() {
+  async before() {
+    await TestHelper.clearCache();
     Bootstrap.reset();
     Config.clear();
   }
@@ -35,7 +37,7 @@ class InvokerSpec {
     await loader.rebuild();
 
     let invoker = new Invoker();
-    await Bootstrap.prepareInvoker(invoker,loader);
+    await Bootstrap.prepareInvoker(invoker, loader);
     expect(invoker.has(AwesomeApi)).to.be.true;
     expect(invoker.hasImpl(AwesomeApi)).to.be.true;
 
@@ -48,7 +50,7 @@ class InvokerSpec {
     api = invoker.use(AwesomeApi);
     expect(api.doNotSomethingGreat).to.exist;
     ret = await api.doNotSomethingGreat('data');
-    expect(ret).to.be.deep.eq([null])
+    expect(ret).to.be.deep.eq([null]);
 
   }
 

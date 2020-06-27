@@ -11,7 +11,8 @@ const LOG_EVENT = TestHelper.logEnable(false);
 class TasksAccessSpec {
 
 
-  static before() {
+  static async before() {
+    await TestHelper.clearCache();
     Log.options({level: 'debug', enable: LOG_EVENT});
   }
 

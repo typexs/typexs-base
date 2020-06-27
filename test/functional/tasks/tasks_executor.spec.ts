@@ -13,8 +13,9 @@ import {TaskEvent} from '../../../src/libs/tasks/worker/TaskEvent';
 import {Bootstrap} from '../../../src/Bootstrap';
 import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
 import {Injector} from '../../../src/libs/di/Injector';
-import {C_STORAGE_DEFAULT, StorageRef, TaskLog, TasksExchange} from '../../../src';
-import {inspect} from 'util';
+import {StorageRef} from '../../../src/libs/storage/StorageRef';
+import {TaskLog} from '../../../src/entities/TaskLog';
+import {C_STORAGE_DEFAULT} from '../../../src/libs/Constants';
 
 
 const LOG_EVENT = TestHelper.logEnable(false);
@@ -29,6 +30,7 @@ class TasksSpec {
 
   static async before() {
     Bootstrap.reset();
+    await TestHelper.clearCache();
 
     const nodeId = 'system_0';
     bootstrap = Bootstrap

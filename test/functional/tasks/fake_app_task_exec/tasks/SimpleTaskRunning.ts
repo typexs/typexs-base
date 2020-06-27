@@ -1,5 +1,5 @@
 import {ITask} from '../../../../../src/libs/tasks/ITask';
-import {Incoming} from '../../../../../src';
+import {Incoming} from '../../../../../src/libs/tasks/decorators/Incoming';
 
 export class SimpleTaskRunning implements ITask {
   name = 'simple_task_running';

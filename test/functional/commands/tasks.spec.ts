@@ -36,7 +36,7 @@ class TasksSpec {
       // },
       app: {path: appdir},
       storage: {default: TEST_STORAGE_OPTIONS},
-      modules: {paths: [__dirname + '/../../..']},
+      modules: {paths: [__dirname + '/../../..'], disableCache: true},
       // workers: {access: [{name: 'TaskMonitorWorker', access: 'allow'}]}
     });
     bootstrap.activateLogger();

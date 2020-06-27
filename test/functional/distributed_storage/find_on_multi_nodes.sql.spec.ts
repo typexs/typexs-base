@@ -42,7 +42,7 @@ class DistributedQuerySpec {
       .configure(<ITypexsOptions & any>{
         app: {name: 'test', nodeId: 'system', path: __dirname + '/fake_app'},
         logging: {enable: LOG_EVENT, level: 'debug'},
-        modules: {paths: [__dirname + '/../../..']},
+        modules: {paths: [__dirname + '/../../..'], disableCache: true},
         storage: {default: TEST_STORAGE_OPTIONS},
         eventbus: {
           default: <IEventBusConfiguration>{

@@ -9,12 +9,16 @@ import {Container} from 'typedi';
 import {XS_DEFAULT} from 'commons-schema-api';
 import {Cache} from '../../../src/libs/cache/Cache';
 import {MemoryCacheAdapter} from '../../../src/adapters/cache/MemoryCacheAdapter';
+import {TestHelper} from '../TestHelper';
+
 let bootstrap: Bootstrap = null;
+
 @suite('functional/cache/memory')
 class CacheMemorySpec {
 
 
-  before() {
+  async before() {
+    await TestHelper.clearCache();
     Bootstrap.reset();
     Config.clear();
   }
@@ -30,7 +34,7 @@ class CacheMemorySpec {
       .setConfigSources([{type: 'system'}])
       .configure({
         app: {name: 'test'},
-        modules: {paths: [__dirname + '/../../..']},
+        modules: {paths: [__dirname + '/../../..'], disableCache: true},
         storage: {default: TEST_STORAGE_OPTIONS},
       });
     bootstrap.activateLogger();

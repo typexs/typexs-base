@@ -21,6 +21,7 @@ class TasksSystemSpec {
 
 
   async before() {
+    await TestHelper.clearCache();
     Container.reset();
     Bootstrap.reset();
     Config.clear();

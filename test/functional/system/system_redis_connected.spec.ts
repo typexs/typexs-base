@@ -15,7 +15,6 @@ import {SystemNodeInfo} from '../../../src/entities/SystemNodeInfo';
 import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
 import {Invoker} from '../../../src/base/Invoker';
 import {getMetadataArgsStorage} from 'typeorm';
-import {TypeOrmEntityRegistry} from '../../../src';
 
 
 const LOG_EVENT = TestHelper.logEnable(false);
@@ -27,8 +26,9 @@ class SystemRedisConnectedSpec {
 
   async before() {
     Bootstrap.reset();
-    const x = getMetadataArgsStorage();
-    const t = TypeOrmEntityRegistry.$();
+    await TestHelper.clearCache();
+    // const x = getMetadataArgsStorage();
+    // const t = TypeOrmEntityRegistry.$();
 
     bootstrap = Bootstrap
       .setConfigSources([{type: 'system'}])

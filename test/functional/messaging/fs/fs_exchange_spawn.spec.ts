@@ -35,10 +35,10 @@ class MessagingSpec {
           enable: LOG_EVENT
         },
 
-        modules: {
+        modules: <any>{
           paths: [
             __dirname + '/../../../..'
-          ]
+          ], disableCache: true
         }
       }
     );
@@ -129,7 +129,6 @@ class MessagingSpec {
   }
 
 
-
   @test
   async 'read remote file - binary (with local check)'() {
     const filePath = __dirname + '/fake_app/test.txt';
@@ -140,7 +139,6 @@ class MessagingSpec {
     expect(data.position).to.be.eq(44);
     expect(data.buffer.toString()).to.be.eq('Hallo Welt\n\ndas ist ein\n\ninteressanter Test\n');
   }
-
 
 
   @test

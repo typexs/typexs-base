@@ -11,7 +11,7 @@ import {ClassType} from 'commons-schema-api/browser';
 import {TypeOrmEntityController} from '../../../src/libs/storage/framework/typeorm/TypeOrmEntityController';
 import {TypeOrmStorageRef} from '../../../src/libs/storage/framework/typeorm/TypeOrmStorageRef';
 import {getMetadataArgsStorage} from 'typeorm';
-import {TypeOrmEntityRegistry} from '../../../src';
+import {TypeOrmEntityRegistry} from '../../../src/libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry';
 
 
 let bootstrap: Bootstrap;

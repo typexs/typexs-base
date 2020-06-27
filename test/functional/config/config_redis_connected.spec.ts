@@ -72,7 +72,7 @@ class ConfigRedisSpec {
       .configure(<ITypexsOptions & any>{
         app: {name: 'test', nodeId: 'system', path: __dirname + '/fake_app'},
         logging: {enable: LOG_EVENT, level: 'debug', loggers: [{name: '*', level: 'debug', enable: true}]},
-        modules: {paths: [__dirname + '/../../..']},
+        modules: {paths: [__dirname + '/../../..'], disableCache: true},
         storage: {default: TEST_STORAGE_OPTIONS},
         cache: {bins: {default: 'redis1'}, adapter: {redis1: {type: 'redis', host: '127.0.0.1', port: 6380}}},
         eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}}

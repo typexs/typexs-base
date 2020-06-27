@@ -2,12 +2,19 @@ import * as _ from 'lodash';
 import {getMetadataArgsStorage} from 'typeorm';
 import {SystemNodeInfo} from '../../src/entities/SystemNodeInfo';
 import {TaskLog} from '../../src/entities/TaskLog';
+import {PlatformUtils} from 'commons-base';
 
 export class TestHelper {
 
   // static suiteName(filename: string) {
   //   return filename.split('/test/').pop();
   // }
+
+  static async clearCache() {
+    if (PlatformUtils.fileExist('/tmp/.txs/cache')) {
+      await PlatformUtils.deleteDirectory('/tmp/.txs/cache');
+    }
+  }
 
   static wait(ms: number) {
     return new Promise(resolve => {

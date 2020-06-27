@@ -42,7 +42,8 @@ const LOG_EVENT = TestHelper.logEnable(false);
 @suite('functional/tasks/tasks')
 class TasksSpec {
 
-  static before() {
+  static async before() {
+    await TestHelper.clearCache();
     Log.reset();
     // Log.options({level: 'debug', enable: LOG_EVENT});
     const i = new Invoker();

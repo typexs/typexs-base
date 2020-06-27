@@ -6,13 +6,15 @@ import {expect} from 'chai';
 import {Bootstrap} from '../../../src/Bootstrap';
 import {Config} from 'commons-config';
 import {RuntimeLoader} from '../../../src/base/RuntimeLoader';
+import {TestHelper} from '../TestHelper';
 
 
 @suite('functional/bootstrap/modules')
 class BootstrapGeneralSpec {
 
 
-  before() {
+  async before() {
+    await TestHelper.clearCache();
     Bootstrap.reset();
     Config.clear();
   }

@@ -10,8 +10,7 @@ import {expect} from 'chai';
 import {TasksExchange} from '../../../../src/adapters/exchange/tasks/TasksExchange';
 import {TaskExecutor} from '../../../../src/libs/tasks/TaskExecutor';
 import {TaskFuture} from '../../../../src/libs/tasks/worker/execute/TaskFuture';
-import {FileSystemExchange} from '../../../../src';
-import {inspect} from 'util';
+import {FileSystemExchange} from '../../../../src/adapters/exchange/filesystem/FileSystemExchange';
 
 
 const LOG_EVENT = TestHelper.logEnable(true);
@@ -41,10 +40,11 @@ class MessagingSpec {
           transports: [{console: {}}],
           loggers: [<any>{name: '*', level: 'debug'}]
         },
-        modules: {
+        modules: <any>{
           paths: [
             __dirname + '/../../../..'
-          ]
+          ],
+          disableCache: true
         },
       }
     );

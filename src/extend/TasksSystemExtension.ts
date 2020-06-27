@@ -10,9 +10,9 @@ import {ITaskInfo} from '../libs/tasks/ITaskInfo';
 import {SystemNodeInfo} from '../entities/SystemNodeInfo';
 import {Tasks} from '../libs/tasks/Tasks';
 import {TaskRunnerRegistry} from '../libs/tasks/TaskRunnerRegistry';
-import {C_WORKERS} from '..';
 import {TaskQueueWorker} from '../workers/TaskQueueWorker';
 import {IWorkerInfo} from '../libs/worker/IWorkerInfo';
+import {C_WORKERS} from '../libs/worker/Constants';
 
 @UseAPI(SystemApi)
 export class TasksSystemExtension implements ISystemApi {

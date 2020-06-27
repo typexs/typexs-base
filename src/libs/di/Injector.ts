@@ -1,7 +1,7 @@
 import {Container, ObjectType, ServiceIdentifier, ServiceMetadata, Token} from 'typedi';
 import {MissingProvidedServiceTypeError} from 'typedi/error/MissingProvidedServiceTypeError';
 import {ServiceNotFoundError} from 'typedi/error/ServiceNotFoundError';
-import {ClassType} from "commons-schema-api";
+import {ClassType} from 'commons-schema-api';
 
 export class Injector {
 
@@ -11,6 +11,10 @@ export class Injector {
   }
 
   private static __self__: Injector;
+
+  static getContainer() {
+    return Container;
+  }
 
   static get<T>(identifier: ServiceIdentifier<T> | string | Token<T> | ObjectType<T> | { service: T }): T {
     return <T>this.$().get(identifier);
@@ -29,6 +33,11 @@ export class Injector {
       this.__self__ = new Injector();
     }
     return this.__self__;
+  }
+
+
+  static reset(id?: any) {
+    Container.reset(id);
   }
 
   /**
@@ -177,6 +186,5 @@ export class Injector {
       instance[handler.propertyName] = handler.value(this.globalContainer);
     });
   }
-
 
 }

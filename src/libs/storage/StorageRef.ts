@@ -17,6 +17,7 @@ export abstract class StorageRef extends EventEmitter implements IStorageRef {
 
   constructor(options: IStorageOptions) {
     super();
+    this.setMaxListeners(1000);
     this.options = options;
   }
 

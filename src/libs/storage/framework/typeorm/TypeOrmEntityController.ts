@@ -19,7 +19,6 @@ import {IUpdateOptions} from '../IUpdateOptions';
 import {IDeleteOptions} from '../IDeleteOptions';
 import {IAggregateOptions} from '../IAggregateOptions';
 import {AggregateOp} from './AggregateOp';
-import {EVENT_STORAGE_ENTITY_ADDED, EVENT_STORAGE_REF_SHUTDOWN} from './Constants';
 
 export class TypeOrmEntityController implements IEntityController {
 
@@ -33,22 +32,6 @@ export class TypeOrmEntityController implements IEntityController {
   constructor(ref: TypeOrmStorageRef) {
     this.storageRef = ref;
     this.invoker = Injector.get(Invoker.NAME);
-    this.storageRef.on(EVENT_STORAGE_ENTITY_ADDED, this.reconnect.bind(this));
-    this.storageRef.on(EVENT_STORAGE_REF_SHUTDOWN, this.destroy.bind(this));
-  }
-
-  async reconnect() {
-    await this.close();
-    await this.connect();
-  }
-
-  async destroy() {
-    await this.close();
-    // @ts-ignore
-    this['storageRef'] = undefined;
-    // @ts-ignore
-    this['invoker'] = undefined;
-    this.connection = undefined;
   }
 
   async connect() {

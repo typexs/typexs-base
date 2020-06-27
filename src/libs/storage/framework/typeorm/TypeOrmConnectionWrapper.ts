@@ -5,7 +5,7 @@ import {TypeOrmStorageRef} from './TypeOrmStorageRef';
 import {Semaphore} from '../../../Semaphore';
 import {Log} from '../../../logging/Log';
 import {LockFactory} from '../../../LockFactory';
-
+import {EVENT_STORAGE_ENTITY_ADDED, EVENT_STORAGE_REF_SHUTDOWN} from './Constants';
 
 
 export class TypeOrmConnectionWrapper implements IConnection {
@@ -29,7 +29,37 @@ export class TypeOrmConnectionWrapper implements IConnection {
     this.storageRef = s;
     this._connection = conn;
     this.name = this.storageRef.name;
+    this.storageRef.on(EVENT_STORAGE_ENTITY_ADDED, this.reload.bind(this));
+    this.storageRef.on(EVENT_STORAGE_REF_SHUTDOWN, this.destroy.bind(this));
+  }
 
+
+  async reload() {
+    // detatch
+
+    if (this._connection && this._connection.isConnected) {
+      try {
+        await this.close();
+      } catch (e) {
+
+      }
+      try {
+        await this.connect();
+      } catch (e) {
+
+      }
+    } else {
+      try {
+        await this.close();
+      } catch (e) {
+
+      }
+    }
+  }
+
+  async destroy() {
+    this.storageRef.removeListener(EVENT_STORAGE_ENTITY_ADDED, this.reload.bind(this));
+    this.storageRef.removeListener(EVENT_STORAGE_REF_SHUTDOWN, this.destroy.bind(this));
   }
 
 
@@ -42,12 +72,14 @@ export class TypeOrmConnectionWrapper implements IConnection {
     return this._connection;
   }
 
+
   get lock() {
     if (!_.has(TypeOrmConnectionWrapper._LOCK, this.name)) {
       TypeOrmConnectionWrapper._LOCK[this.name] = LockFactory.$().semaphore(1);
     }
     return TypeOrmConnectionWrapper._LOCK[this.name];
   }
+
 
   getStorageRef() {
     return this.storageRef;
@@ -58,36 +90,16 @@ export class TypeOrmConnectionWrapper implements IConnection {
     return ++this.usage;
   }
 
+
   usageDec() {
     if (this.usage > 0) {
       return --this.usage;
     }
     return this.usage;
-
   }
 
   getUsage() {
     return this.usage;
-  }
-
-  /**
-   * Persists (saves) all given entities in the database.
-   * If entities do not exist in the database then inserts, otherwise updates.
-   *
-   * @deprecated
-   */
-  persist<Entity>(o: Entity): Promise<any> {
-    return this.manager.save(o);
-  }
-
-
-  save<Entity>(o: Entity): Promise<any> {
-    try {
-      return this.manager.save(o);
-    } catch (err) {
-      Log.error(err);
-      throw err;
-    }
   }
 
 
@@ -95,7 +107,7 @@ export class TypeOrmConnectionWrapper implements IConnection {
    * Is the connection opened
    */
   isOpened() {
-    return this._connection.isConnected;
+    return this._connection && this._connection.isConnected;
   }
 
 

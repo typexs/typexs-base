@@ -34,14 +34,14 @@ export class Activator implements IActivator {
     if (cfg) {
       tasks.setConfig(cfg);
     }
-    Container.set(Tasks.NAME, tasks);
+    Injector.set(Tasks.NAME, tasks);
     const taskRunnerRegistry = Injector.create(TaskRunnerRegistry);
-    Container.set(TaskRunnerRegistry.NAME, taskRunnerRegistry);
+    Injector.set(TaskRunnerRegistry.NAME, taskRunnerRegistry);
 
 
     // Schedule init
-    const scheduler = Container.get(Scheduler);
-    Container.set(Scheduler.NAME, scheduler);
+    const scheduler = Injector.get(Scheduler);
+    Injector.set(Scheduler.NAME, scheduler);
 
 
     const workers = new Workers();
@@ -49,16 +49,15 @@ export class Activator implements IActivator {
     if (cfg) {
       workers.setConfig(cfg);
     }
-    Container.set(Workers.NAME, workers);
+    Injector.set(Workers.NAME, workers);
 
     const exchange = new ExchangeMessageRegistry();
     cfg = Config.get(C_EXCHANGE_MESSAGE, null);
     if (cfg) {
       exchange.setConfig(cfg);
     }
-    Container.set(ExchangeMessageRegistry.NAME, exchange);
-
-    Container.set(WatcherRegistry.NAME, new WatcherRegistry());
+    Injector.set(ExchangeMessageRegistry.NAME, exchange);
+    Injector.set(WatcherRegistry.NAME, new WatcherRegistry());
   }
 
 

@@ -44,6 +44,7 @@ export class TypeOrmStorageRef extends StorageRef {
 
   constructor(options: IStorageOptions & BaseConnectionOptions) {
     super(options);
+
     // Apply some unchangeable and fixed options
     // options = Utils.merge(options, FIX_STORAGE_OPTIONS);
     // super();
@@ -221,12 +222,12 @@ export class TypeOrmStorageRef extends StorageRef {
     }
 
     if (this._prepared) {
-      this._forceReload = true;
+      this._prepared = false;
+      this.removeFromConnectionManager();
+      this.emit(EVENT_STORAGE_ENTITY_ADDED, type);
     }
 
-    this.emit(EVENT_STORAGE_ENTITY_ADDED, type);
     this.populateToExtended(type);
-
   }
 
 
@@ -323,11 +324,11 @@ export class TypeOrmStorageRef extends StorageRef {
   async prepare(): Promise<boolean> {
     if (!getConnectionManager().has(this.name)) {
       // todo maybe handle exception?
-      let c = await getConnectionManager().create(<ConnectionOptions>this.getOptions());
+      let c = getConnectionManager().create(<ConnectionOptions>this.getOptions());
       c = await c.connect();
-      await (await this.wrap(c)).close();
+      await this.wrap(c).close();
     } else {
-      await (await this.wrap()).close();
+      await this.wrap().close();
     }
     this._prepared = true;
     this.emit(EVENT_STORAGE_REF_PREPARED);
@@ -335,7 +336,7 @@ export class TypeOrmStorageRef extends StorageRef {
   }
 
 
-  async wrap(conn ?: Connection): Promise<TypeOrmConnectionWrapper> {
+  wrap(conn ?: Connection): TypeOrmConnectionWrapper {
     let wrapper: TypeOrmConnectionWrapper = null;
     if ((this.isSingleConnection() && this.connections.length === 0) || !this.isSingleConnection()) {
       if (conn) {
@@ -347,7 +348,7 @@ export class TypeOrmStorageRef extends StorageRef {
     } else if (this.isSingleConnection() && this.connections.length === 1) {
       wrapper = this.connections[0];
     }
-    return Promise.resolve(wrapper);
+    return wrapper;
   }
 
 
@@ -386,7 +387,7 @@ export class TypeOrmStorageRef extends StorageRef {
     } else if (!this._prepared) {
       await this.prepare();
     }
-    return (await this.wrap()).connect();
+    return this.wrap().connect();
   }
 
 
@@ -416,7 +417,10 @@ export class TypeOrmStorageRef extends StorageRef {
       this.removeFromConnectionManager();
     }
     this.emit(EVENT_STORAGE_REF_SHUTDOWN);
-    this.removeAllListeners();
+    if (full) {
+      this.removeAllListeners();
+    }
+
   }
 
 

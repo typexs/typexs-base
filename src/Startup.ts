@@ -28,6 +28,7 @@ import {ConfigUtils} from './libs/utils/ConfigUtils';
 import {TaskRunnerRegistry} from './libs/tasks/TaskRunnerRegistry';
 import {TaskQueueWorker} from './workers/TaskQueueWorker';
 import {TypeOrmEntityRegistry} from './libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry';
+import {Injector} from './libs/di/Injector';
 
 
 export class Startup implements IBootstrap, IShutdown {
@@ -58,8 +59,8 @@ export class Startup implements IBootstrap, IShutdown {
 
 
   private async schedule() {
-    const scheduler: Scheduler = Container.get(Scheduler.NAME);
-    await scheduler.prepare(this.loader.getClasses(K_CLS_SCHEDULE_ADAPTER_FACTORIES).map(x => Container.get(x)));
+    const scheduler: Scheduler = Injector.get(Scheduler.NAME);
+    await scheduler.prepare(this.loader.getClasses(K_CLS_SCHEDULE_ADAPTER_FACTORIES).map(x => Injector.get(x)));
     const schedules: IScheduleDef[] = Config.get('schedules', []);
     if (_.isArray(schedules)) {
       for (const s of schedules) {

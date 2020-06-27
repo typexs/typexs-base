@@ -79,6 +79,7 @@ export class TypeOrmEntityRegistry extends EventEmitter implements ILookupRegist
 
   constructor() {
     super();
+    this.setMaxListeners(1000);
 
     this.lookupRegistry = LookupRegistry.$(REGISTRY_TYPEORM);
     try {

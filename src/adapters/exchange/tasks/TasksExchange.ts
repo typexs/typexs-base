@@ -7,12 +7,16 @@ import {NotYetImplementedError, PlatformUtils} from 'commons-base';
 import {TaskRunnerRegistry} from '../../../libs/tasks/TaskRunnerRegistry';
 import {Inject} from 'typedi';
 import {IMessageOptions} from '../../../libs/messaging/IMessageOptions';
-import {C_STORAGE_DEFAULT, FileSystemExchange, Injector, StorageRef, TaskLog} from '../../..';
 import {Config} from 'commons-config';
 import {CFG_KEY_APP_PATH} from '../../../libs/filesystem/Constants';
 import {FileSystemRequest} from '../filesystem/FileSystemRequest';
 import {FileSystemResponse} from '../filesystem/FileSystemResponse';
 import {IFileOptions, IFileSelectOptions} from '../filesystem/IFileOptions';
+import {FileSystemExchange} from '../filesystem/FileSystemExchange';
+import {Injector} from '../../../libs/di/Injector';
+import {C_STORAGE_DEFAULT} from '../../../libs/Constants';
+import {StorageRef} from '../../../libs/storage/StorageRef';
+import {TaskLog} from '../../../entities/TaskLog';
 
 
 export class TasksExchange extends AbstractExchange<TasksRequest, TasksResponse> {

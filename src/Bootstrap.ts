@@ -6,12 +6,9 @@ import {IRuntimeLoaderOptions} from './base/IRuntimeLoaderOptions';
 import {IActivator} from './api/IActivator';
 import {Config} from 'commons-config/config/Config';
 import {IModule} from './api/IModule';
-
 import {IStorageOptions, K_STORAGE} from './libs/storage/IStorageOptions';
 import {Storage} from './libs/storage/Storage';
-import {Container} from 'typedi';
 import * as os from 'os';
-
 import {BaseUtils} from './libs/utils/BaseUtils';
 import {CryptUtils, MetaArgs, PlatformUtils} from 'commons-base';
 import {
@@ -276,7 +273,7 @@ export class Bootstrap {
 
   static reset() {
     this.$self = null;
-    Container.reset();
+    Injector.reset();
     Log.reset();
     Config.clear();
   }
@@ -315,7 +312,7 @@ export class Bootstrap {
 
 
   static getContainer() {
-    return Container;
+    return Injector;
   }
 
 
@@ -405,12 +402,6 @@ export class Bootstrap {
             }
           });
         }
-
-        // typeorm specifics must got to TypeOrmStorage
-        // const tables: TableMetadataArgs[] = getMetadataArgsStorage().tables;
-        // entities = tables
-        //   .filter(t => _entities.indexOf(<Function>t.target) !== -1)
-        //   .map(t => <Function>t.target);
       }
 
       const _settings: IStorageOptions = _.merge(settings, {entities: entities}, {name: name});
@@ -661,7 +652,7 @@ export class Bootstrap {
   }
 
   async execCommand(clazz: Function, argv: any) {
-    const command: ICommand = Container.get(clazz);
+    const command: ICommand = Injector.get(clazz);
     return await command.handler(argv);
   }
 
@@ -679,12 +670,13 @@ export class Bootstrap {
       await (<IShutdown>bootstrap).shutdown();
     }
 
-    await (Container.get(Storage.NAME) as Storage).shutdown();
+    await this.getStorage().shutdown();
 
     LockFactory.$().shutdown(10000);
     TypeOrmEntityRegistry.reset();
-    // shutdown storages
-    // await Promise.all(this.storage.getNames().map(x => this.storage.get(x).shutdownOnFinish()));
+    process.removeAllListeners('exit');
+    process.removeAllListeners('SIGINT');
+    process.removeAllListeners('SIGTERM');
 
   }
 

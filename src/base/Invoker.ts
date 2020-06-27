@@ -3,6 +3,7 @@ import * as _ from 'lodash';
 import {Container} from 'typedi';
 import {IAPIDef} from '../libs/api/IAPIDef';
 import {ClassType} from 'commons-schema-api/browser';
+import {Injector} from '..';
 
 
 export class Invoker {
@@ -46,7 +47,7 @@ export class Invoker {
 
   private async execute(api: Function, method: string, ...args: any[]) {
     const def = _.find(this.apiImpls, apiImpl => apiImpl.api === api);
-    const instances = def.impl.map(impl => Container. get(impl));
+    const instances = def.impl.map(impl => Injector. get(impl));
     const results = [];
     // TODO maybe parallel
     for (const instance of instances) {

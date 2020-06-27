@@ -13,7 +13,9 @@ import {ClassType} from 'commons-schema-api';
 import {StorageApi} from '../../../../api/Storage.api';
 import {TypeOrmEntityController} from './TypeOrmEntityController';
 import {REGISTRY_TYPEORM} from './schema/TypeOrmConstants';
-import {Cache, IConnection, Injector, TypeOrmConnectionWrapper} from '../../../..';
+import {Injector} from '../../../di/Injector';
+import {Cache} from '../../../cache/Cache';
+import {TypeOrmConnectionWrapper} from './TypeOrmConnectionWrapper';
 
 
 export class FindOp<T> implements IFindOp<T> {

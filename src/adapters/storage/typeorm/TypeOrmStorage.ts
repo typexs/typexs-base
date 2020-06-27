@@ -1,5 +1,4 @@
 import {IStorage} from '../../../libs/storage/IStorage';
-import {Container} from 'typedi';
 import {getMetadataArgsStorage, useContainer} from 'typeorm';
 import {TableMetadataArgs} from 'typeorm/metadata-args/TableMetadataArgs';
 import {DefaultSchemaHandler} from './DefaultSchemaHandler';
@@ -9,8 +8,9 @@ import {RuntimeLoader} from '../../../base/RuntimeLoader';
 import {AbstractSchemaHandler} from '../../../libs/storage/AbstractSchemaHandler';
 import * as _ from 'lodash';
 import {TypeOrmStorageRef} from '../../../libs/storage/framework/typeorm/TypeOrmStorageRef';
+import {Injector} from '../../../libs/di/Injector';
 
-useContainer(Container);
+useContainer(Injector.getContainer());
 
 export class TypeOrmStorage implements IStorage {
 

@@ -35,10 +35,13 @@ export class RuntimeLoader {
     this._options = options;
     const appdir = this._options.appdir || PlatformUtils.pathResolve('.');
 
-    this.cache = new ModulRegistryCache(
-      this._options.cachePath ? this._options.cachePath : '/tmp/.txs/cache',
-      CryptUtils.shorthash(JSON.stringify(this._options))
-    );
+    const cacheDisable = _.get(options, 'disableCache', false);
+    if (!cacheDisable) {
+      this.cache = new ModulRegistryCache(
+        this._options.cachePath ? this._options.cachePath : '/tmp/.txs/cache',
+        CryptUtils.shorthash(JSON.stringify(this._options) + appdir)
+      );
+    }
 
     if (appdir && this._options.paths.indexOf(appdir) === -1) {
       this._options.paths.unshift(appdir);

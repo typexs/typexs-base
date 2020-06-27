@@ -33,6 +33,7 @@ import {TaskRunnerRegistry} from './TaskRunnerRegistry';
 import {TaskRunnerEvent} from './TaskRunnerEvent';
 import {EventBus} from 'commons-eventbus';
 import {ILoggerOptions} from '../../libs/logging/ILoggerOptions';
+import {Injector} from '../..';
 
 /**
  * Container for single or multiple task execution
@@ -112,7 +113,7 @@ export class TaskRunner extends EventEmitter {
       skipRegistryAddition: false,
       disableLogFile: false
     });
-    this.invoker = Container.get(Invoker.NAME);
+    this.invoker = Injector.get(Invoker.NAME);
 
     // id can be overwriten
     this.$start = new Date();
@@ -204,7 +205,7 @@ export class TaskRunner extends EventEmitter {
     // For compatibility reasons
     if (!this.$options.skipRegistryAddition) {
       try {
-        const registry: TaskRunnerRegistry = Container.get(TaskRunnerRegistry.NAME);
+        const registry: TaskRunnerRegistry = Injector.get(TaskRunnerRegistry.NAME);
         registry.addRunner(this);
       } catch (e) {
         this.getLogger().debug(`couldn't locally register task nr=${this.nr} id=${this.id}`);

@@ -4,7 +4,6 @@ import {TaskExchangeRef} from './TaskExchangeRef';
 import {ClassLoader, PlatformUtils} from 'commons-base';
 import {Config} from 'commons-config';
 import {ITaskRunnerOptions} from './ITaskRunnerOptions';
-import {Container} from 'typedi';
 import {TaskRequestFactory} from './worker/TaskRequestFactory';
 import {ITaskExectorOptions} from './ITaskExectorOptions';
 import {K_CLS_TASKS, TASK_RUNNER_SPEC} from './Constants';
@@ -17,6 +16,7 @@ import {IWorkerInfo} from '../worker/IWorkerInfo';
 import {TaskQueueWorker} from '../../workers/TaskQueueWorker';
 import {System} from '../system/System';
 import moment = require('moment');
+import {Injector} from '../..';
 
 
 export class TasksHelper {
@@ -191,7 +191,7 @@ export class TasksHelper {
 
     const options: ITaskExectorOptions = this.extractOptions(argv);
     const taskNames = this.getTaskNames(taskSpec);
-    const tasksReg: Tasks = Container.get(Tasks.NAME);
+    const tasksReg: Tasks = Injector.get(Tasks.NAME);
     const tasks = tasksReg.getTasks(taskNames);
     const targetId = _.get(options, 'targetId', null);
     let isLocal = _.get(options, 'isLocal', true);
@@ -200,7 +200,7 @@ export class TasksHelper {
 
     if (options.executionConcurrency) {
       if (options.executionConcurrency !== 0) {
-        const registry = Container.get(TaskRunnerRegistry.NAME) as TaskRunnerRegistry;
+        const registry = Injector.get(TaskRunnerRegistry.NAME) as TaskRunnerRegistry;
         const counts = registry.getLocalTaskCounts(taskNames);
         if (!_.isEmpty(counts)) {
           const max = _.max(_.values(counts));
@@ -221,7 +221,7 @@ export class TasksHelper {
     const localPossible = _.uniq(taskNames).length === tasks.length;
     if (!isLocal) {
       Log.debug('task command: before request fire');
-      const execReq = Container.get(TaskRequestFactory).executeRequest();
+      const execReq = Injector.get(TaskRequestFactory).executeRequest();
       const results = await execReq.create(
         taskSpec,
         argv,

@@ -37,8 +37,8 @@ export class TypeOrmConnectionWrapper implements IConnection {
   async reload() {
     const connected = this._connection && this._connection.isConnected;
     this._connection = getConnectionManager().get(this.name);
-    if (!this._connection.isConnected && connected) {
-      await this._connection.connect();
+    if (connected) {
+      await this.connect();
     }
   }
 

@@ -5,7 +5,7 @@ import {TypeOrmStorageRef} from './TypeOrmStorageRef';
 import {Semaphore} from '../../../Semaphore';
 import {Log} from '../../../logging/Log';
 import {LockFactory} from '../../../LockFactory';
-import {EVENT_STORAGE_ENTITY_ADDED, EVENT_STORAGE_REF_SHUTDOWN} from './Constants';
+import {EVENT_STORAGE_ENTITY_ADDED, EVENT_STORAGE_REF_PREPARED, EVENT_STORAGE_REF_SHUTDOWN} from './Constants';
 
 
 export class TypeOrmConnectionWrapper implements IConnection {
@@ -29,7 +29,7 @@ export class TypeOrmConnectionWrapper implements IConnection {
     this.storageRef = s;
     this._connection = conn;
     this.name = this.storageRef.name;
-    this.storageRef.on(EVENT_STORAGE_ENTITY_ADDED, this.reload.bind(this));
+    this.storageRef.on(EVENT_STORAGE_REF_PREPARED, this.reload.bind(this));
     this.storageRef.on(EVENT_STORAGE_REF_SHUTDOWN, this.destroy.bind(this));
   }
 
@@ -43,7 +43,7 @@ export class TypeOrmConnectionWrapper implements IConnection {
   }
 
   async destroy() {
-    this.storageRef.removeListener(EVENT_STORAGE_ENTITY_ADDED, this.reload.bind(this));
+    this.storageRef.removeListener(EVENT_STORAGE_REF_PREPARED, this.reload.bind(this));
     this.storageRef.removeListener(EVENT_STORAGE_REF_SHUTDOWN, this.destroy.bind(this));
   }
 

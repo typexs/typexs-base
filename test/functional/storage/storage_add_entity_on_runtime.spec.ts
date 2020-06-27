@@ -73,8 +73,6 @@ class StorageAddEntityOnRuntimeSpec {
 
     let connection = await storageRef.connect() as TypeOrmConnectionWrapper;
     // open new connection
-    let enttityMetadata = connection._connection.entityMetadatas;
-    expect(enttityMetadata).to.have.length(4);
 
     Entity({name: 'test_class'})(clazz);
     PrimaryGeneratedColumn({type: 'int'})({constructor: clazz}, 'id');
@@ -92,8 +90,8 @@ class StorageAddEntityOnRuntimeSpec {
       'TestEntity'
     ]);
 
-    // connection will be reseted
-    expect(connection._connection).to.be.null;
+    let enttityMetadata = connection._connection.entityMetadatas;
+    expect(enttityMetadata).to.have.length(4);
 
     // check if it can be queried
     let results = await connection.manager.getRepository('SystemNodeInfo').find();

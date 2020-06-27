@@ -35,7 +35,11 @@ export class TypeOrmConnectionWrapper implements IConnection {
 
 
   async reload() {
-    this._connection = null;
+    const connected = this._connection && this._connection.isConnected;
+    this._connection = getConnectionManager().get(this.name);
+    if (!this._connection.isConnected && connected) {
+      await this._connection.connect();
+    }
   }
 
   async destroy() {
@@ -107,7 +111,7 @@ export class TypeOrmConnectionWrapper implements IConnection {
       await this.lock.acquire();
       try {
         if (!this._connection) {
-          this._connection = await getConnectionManager().get(this.name);
+          this._connection = getConnectionManager().get(this.name);
         }
         if (!this._connection.isConnected) {
           this._connection = await this._connection.connect();

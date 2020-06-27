@@ -1,3 +1,4 @@
+
 export {
   NestedException,
   TodoException,
@@ -7,6 +8,9 @@ export {
   MetaArgs
 } from 'commons-base/browser';
 
+export * from './libs/di/Injector';
+
+export * from './base/Invoker';
 
 export * from './api/IActivator';
 export * from './api/IBootstrap';
@@ -14,7 +18,6 @@ export * from './api/IModule';
 export * from './api/IShutdown';
 
 export * from './decorators/UseAPI';
-export * from './base/Invoker';
 
 export * from './entities/SystemNodeInfo';
 export * from './entities/TaskLog';
@@ -34,8 +37,6 @@ export * from './libs/cache/ICacheConfig';
 export * from './libs/cache/ICacheOptions';
 
 export * from './libs/commands/ICommand';
-
-export * from './libs/di/Injector';
 
 export * from './libs/messaging/AbstractEvent';
 export * from './libs/messaging/Message';

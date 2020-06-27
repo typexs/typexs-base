@@ -16,7 +16,7 @@ import {IWorkerInfo} from '../worker/IWorkerInfo';
 import {TaskQueueWorker} from '../../workers/TaskQueueWorker';
 import {System} from '../system/System';
 import moment = require('moment');
-import {Injector} from '../..';
+import {Injector} from '../di/Injector';
 
 
 export class TasksHelper {

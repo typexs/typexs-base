@@ -33,7 +33,7 @@ import {TaskRunnerRegistry} from './TaskRunnerRegistry';
 import {TaskRunnerEvent} from './TaskRunnerEvent';
 import {EventBus} from 'commons-eventbus';
 import {ILoggerOptions} from '../../libs/logging/ILoggerOptions';
-import {Injector} from '../..';
+import {Injector} from '../di/Injector';
 
 /**
  * Container for single or multiple task execution

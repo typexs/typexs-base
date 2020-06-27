@@ -579,9 +579,9 @@ export class Bootstrap {
 
 
   private async createSystemInfo() {
-    const system = Injector.create(System) as System;
+    const system = Injector.create(System);
     await system.initialize(os.hostname(), this.getNodeId());
-    Injector.set(System.NAME, system);
+    Injector.getContainer().set(System.NAME, system);
     // todo ip + command
     return this;
   }

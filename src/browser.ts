@@ -38,11 +38,6 @@ export * from './libs/cache/ICacheOptions';
 
 export * from './libs/commands/ICommand';
 
-export * from './libs/messaging/AbstractEvent';
-export * from './libs/messaging/Message';
-export * from './libs/system/SystemInfoResponse';
-
-
 export * from './libs/storage/IStorageRef';
 export * from './libs/storage/IEntityController';
 export * from './libs/storage/IConnection';

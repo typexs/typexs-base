@@ -1,12 +1,12 @@
+import * as _ from 'lodash';
 import {EventEmitter} from 'events';
 import {System} from '../../libs/system/System';
-import * as _ from 'lodash';
 import {ILoggerApi} from '../../libs/logging/ILoggerApi';
 import {EventBus, subscribe, unsubscribe} from 'commons-eventbus';
 import {ClassType} from 'commons-schema-api';
 import {IMessageOptions} from './IMessageOptions';
 import {AbstractEvent} from './AbstractEvent';
-import {Log} from '../logging/Log';
+import {Log} from '../../libs/logging/Log';
 
 
 export abstract class AbstractMessage<REQ extends AbstractEvent, RES extends AbstractEvent> extends EventEmitter {
@@ -16,8 +16,6 @@ export abstract class AbstractMessage<REQ extends AbstractEvent, RES extends Abs
   protected request: REQ;
 
   protected responses: RES[] = [];
-
-  // protected nodeInfos: string[] = [];
 
   protected targetIds: string[];
 

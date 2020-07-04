@@ -14,7 +14,6 @@ export * from './api/System.api';
 export * from './api/ISystemApi';
 
 
-
 export * from './adapters/exchange/config/ConfigExchange';
 export * from './adapters/exchange/tasks/TasksExchange';
 export * from './adapters/exchange/filesystem/FileSystemExchange';
@@ -59,7 +58,6 @@ export * from './libs/messaging/Message';
 export * from './libs/messaging/IMessageOptions';
 
 
-
 export * from './libs/queue/AsyncWorkerQueue';
 export * from './libs/queue/IAsyncQueueOptions';
 export * from './libs/queue/IQueue';
@@ -71,10 +69,11 @@ export * from './libs/system/System';
 export * from './libs/system/INodeInfo';
 export * from './libs/system/SystemInfoResponse';
 
+
 export * from './libs/storage/framework/typeorm/TypeOrmConnectionWrapper';
 export * from './libs/storage/framework/typeorm/TypeOrmEntityController';
 export * from './libs/storage/framework/typeorm/TypeOrmStorageRef';
-// export * from './libs/storage/framework/typeorm/ITypeOrmStorageOptions';
+
 
 export * from './libs/storage/EntitySchemaColumnOptions';
 export * from './libs/storage/EntitySchemaRelationOptions';

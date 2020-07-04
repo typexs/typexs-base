@@ -1,6 +1,6 @@
 {
   "name": "@typexs/base",
-  "version": "1.2.23",
+  "version": "1.2.24",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -10,7 +10,7 @@
   "bin": {
     "typexs": "./bin/typexs.sh"
   },
-  "browser": "brower.js",
+  "browser": "browser.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/typexs/typexs-base.git"

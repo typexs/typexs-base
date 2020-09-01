@@ -92,6 +92,8 @@ export abstract class AbstractMessage<REQ extends AbstractEvent, RES extends Abs
     if (_.isUndefined(this.targetIds) || _.isEmpty(this.targetIds)) {
       this.targetIds = this.getSystem().nodes.map(n => n.nodeId);
     }
+
+
     this.request = req || Reflect.construct(this.getReqClass(), []);
     this.request.nodeId = this.getSystem().node.nodeId;
     this.request.targetIds = _.uniq(this.targetIds);
@@ -100,11 +102,19 @@ export abstract class AbstractMessage<REQ extends AbstractEvent, RES extends Abs
       await this.beforeSend(this.request);
     }
 
+    // when no targets given, we don't know for how many worker we should listen
+    if (!this.targetIds || _.isEmpty(this.targetIds)) {
+      if (_.isUndefined(this.options.waitIfNoTarget) ||
+        !_.get(this.options, 'waitIfNoTarget', false)) {
+        const ready = this.ready();
+        this.emit('postprocess');
+        this.results = await ready;
+        return this.results;
+      }
+    }
+
     subscribe(this.getResClass())(this, 'onResults');
 
-    this.logger.debug('REQ: ' +
-      this.getSystem().node.nodeId + ' => ' +
-      this.request.id + ' ' + this.request.targetIds);
     await EventBus.register(this);
     const ready = this.ready();
     await EventBus.postAndForget(this.request);

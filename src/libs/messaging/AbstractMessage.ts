@@ -162,10 +162,6 @@ export abstract class AbstractMessage<REQ extends AbstractEvent, RES extends Abs
       return;
     }
 
-    this.logger.debug('RES: ' +
-      this.request.id + ' ' + res.respId + '=>' + res.id +
-      ' [reqId=' + res.reqEventId + ']');
-
     // has query req
     if (!this.request || res.reqEventId !== this.request.id) {
       return;
@@ -212,7 +208,6 @@ export abstract class AbstractMessage<REQ extends AbstractEvent, RES extends Abs
         // as long eventbus has no unregister
         unsubscribe(this, this.getResClass(), 'onResults');
         clearTimeout(t);
-        this.logger.debug('finished duration=' + (this.stop.getTime() - this.start.getTime()) + 'ms');
         if (err) {
           this.logger.error(err);
 

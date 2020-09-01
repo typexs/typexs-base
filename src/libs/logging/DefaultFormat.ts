@@ -3,7 +3,7 @@ import * as moment from 'moment';
 import * as _ from 'lodash';
 import {Log} from './Log';
 
-// import {MESSAGE} from 'triple-beam';
+import {MESSAGE} from 'triple-beam';
 import {LogEvent} from './LogEvent';
 
 export class DefaultFormat {
@@ -26,7 +26,8 @@ export class DefaultFormat {
 
     const _prefix = prefix.filter(x => !_.isEmpty(x)).map(x => x.trim()).join(':');
 
-    info['message'] = '[' + moment(Date.now()).format('YYYY.MM.DD HH:mm:ss.SSS') + '] ' +
+    // @ts-ignore
+    info[MESSAGE] = '[' + moment(Date.now()).format('YYYY.MM.DD HH:mm:ss.SSS') + '] ' +
       ' [' + info.level.toUpperCase() + ']' + ' '.repeat(7 - info.level.length) +
       _prefix + ' | ' +
       (info.message ? info.message : '') +

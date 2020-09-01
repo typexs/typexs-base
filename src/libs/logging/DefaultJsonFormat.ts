@@ -4,6 +4,7 @@ import {Log} from './Log';
 import * as stringify from 'fast-safe-stringify';
 import {LogEvent} from './LogEvent';
 import * as _ from 'lodash';
+import {MESSAGE} from 'triple-beam';
 
 function replacer(key: any, value: any) {
   return value instanceof Buffer
@@ -35,7 +36,8 @@ export class DefaultJsonFormat {
     info['prefix'] = prefix.filter(x => !_.isEmpty(x)).join(':');
 
     // Return string will be passed to logger.
-    info['message'] = stringify.default(info, opts.replacer || replacer, opts.space);
+    // @ts-ignore
+    info[MESSAGE] = stringify.default(info, opts.replacer || replacer, opts.space);
     return info;
   }
 

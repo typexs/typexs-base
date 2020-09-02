@@ -18,7 +18,7 @@ async function sleep(duration: number): Promise<void> {
 
 const tmpDir = '/tmp/watcher_test';
 
-@suite('functional/watchers/file_watcher', slow(5000), timeout(10000))
+@suite('functional/watchers/file_watcher')
 class FileWatcherSpec {
   static sandbox: Sandbox;
 

@@ -340,14 +340,11 @@ class DistributedQuerySpec {
     } catch (e) {
       expect(e).to.be.instanceOf(Error);
       expect(e.message.split('\n').sort()).to.be.deep.eq([
-
         'remote01: condition property "some_body" is not definied',
         'remote02: condition property "some_body" is not definied',
         'system: condition property "some_body" is not definied',
-
       ]);
     }
-
   }
 
 
@@ -355,7 +352,6 @@ class DistributedQuerySpec {
   async 'run query on two nodes'() {
     const controller = Container.get(DistributedStorageEntityController);
     const results = await controller.find(SystemNodeInfo, null, {timeout: 30000});
-
     expect(results).to.have.length(9);
     expect(results[0]).to.be.instanceOf(SystemNodeInfo);
   }
@@ -363,39 +359,31 @@ class DistributedQuerySpec {
 
   @test
   async 'run query on two nodes with conditions'() {
-
     const controller = Container.get(DistributedStorageEntityController);
     const results = await controller.find(SystemNodeInfo, {nodeId: 'system'});
-
     expect(results).to.have.length(3);
     expect(results[XS_P_$COUNT]).to.be.eq(3);
     expect(_.uniq(results.map((x: any) => x.nodeId))).to.be.deep.eq(['system']);
     expect(results[0]).to.be.instanceOf(SystemNodeInfo);
-
   }
 
 
   @test
   async 'multiple queries after an other'() {
-
     const controller = Container.get(DistributedStorageEntityController);
     const results1 = await controller.find(SystemNodeInfo, {nodeId: 'system'});
     expect(results1).to.have.length(3);
     expect(_.map(results1, (x: any) => x.nodeId)).to.contain.members(['system']);
-
     const results2 = await controller.find(SystemNodeInfo, {nodeId: 'remote01'});
     expect(results2).to.have.length(3);
     expect(_.map(results2, (x: any) => x.nodeId)).to.contain.members(['remote01']);
-
   }
 
 
   @test
   async 'find all'() {
-
     const controller = Container.get(DistributedStorageEntityController);
     const res = await controller.find(SystemNodeInfo, null, {timeout: 30000});
-
     expect(res).to.not.be.null;
     expect(res).to.have.length(9);
     expect(res[XS_P_$COUNT]).to.be.eq(9);
@@ -407,7 +395,6 @@ class DistributedQuerySpec {
   async 'find with conditions'() {
     const controller = Container.get(DistributedStorageEntityController);
     const res = await controller.find(SystemNodeInfo, {nodeId: 'system'});
-
     expect(res).to.not.be.null;
     expect(res).to.have.length(3);
     expect(res[XS_P_$COUNT]).to.be.eq(3);

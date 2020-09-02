@@ -69,8 +69,7 @@ export abstract class AbstractExchange<REQ extends AbstractEvent, RES extends Ab
     try {
       await this.handleRequest(request, response);
     } catch (err) {
-      this.logger.error(err);
-      response.error = err.message;
+      response.error = err;
     }
     return response;
   }
@@ -87,6 +86,7 @@ export abstract class AbstractExchange<REQ extends AbstractEvent, RES extends Ab
     this.reqCache[request.id] = true;
     const response = await this.getResponse(request);
     if (response.error) {
+      this.logger.error(response.error);
       response.error = {
         name: response.error.name,
         message: response.error.message

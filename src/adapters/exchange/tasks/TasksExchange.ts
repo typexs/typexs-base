@@ -145,7 +145,7 @@ export class TasksExchange extends AbstractExchange<TasksRequest, TasksResponse>
           const res = new FileSystemResponse();
           await fsExchange.handleRequest(req, res);
           if (res.error) {
-            response.error = res.error;
+            throw res.error;
           } else {
             if (res.data) {
               response.logFileContent = res.data.toString();

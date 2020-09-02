@@ -89,14 +89,21 @@ export abstract class AbstractMessage<REQ extends AbstractEvent, RES extends Abs
 
   async send(req: REQ): Promise<any[]> {
     this.start = new Date();
-    if (_.isUndefined(this.targetIds) || _.isEmpty(this.targetIds)) {
+    this.targetIds = !!this.targetIds ? this.targetIds : [];
+    if (_.isEmpty(this.targetIds)) {
       this.targetIds = this.getSystem().nodes.map(n => n.nodeId);
     }
 
+    const myNodeId = this.getSystem().node.nodeId;
+
+
 
     this.request = req || Reflect.construct(this.getReqClass(), []);
-    this.request.nodeId = this.getSystem().node.nodeId;
+    this.request.nodeId = myNodeId;
     this.request.targetIds = _.uniq(this.targetIds);
+
+    // remove self from target list
+    _.remove(this.targetIds, x => x === myNodeId);
 
     if (this.beforeSend) {
       await this.beforeSend(this.request);

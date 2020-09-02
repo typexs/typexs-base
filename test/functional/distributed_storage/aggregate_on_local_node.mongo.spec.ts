@@ -66,7 +66,7 @@ class DistributedStorageSaveSpec {
 
   @test
   async 'local'() {
-    const controller = Container.get(DistributedStorageEntityController);
+    const controller = Injector.get(DistributedStorageEntityController);
     const results = await controller.aggregate(DataRow, [{$match: {someBool: true}}]);
 
     const evenIds = results.map(x => {

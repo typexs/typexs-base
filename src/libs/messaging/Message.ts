@@ -3,6 +3,7 @@ import {AbstractEvent} from './AbstractEvent';
 import {AbstractExchange} from './AbstractExchange';
 import {IMessageOptions} from './IMessageOptions';
 import {AbstractMessage} from './AbstractMessage';
+import {K_INST_ID, K_NODE_ID} from './Constants';
 
 
 export class Message<REQ extends AbstractEvent, RES extends AbstractEvent>
@@ -38,8 +39,8 @@ export class Message<REQ extends AbstractEvent, RES extends AbstractEvent>
           } else {
             y = this.factory.handleResponse(x, err);
           }
-          y['__nodeId__'] = x.nodeId;
-          y['__instNr__'] = x.instNr;
+          y[K_NODE_ID] = x.nodeId;
+          y[K_INST_ID] = x.instNr;
           return y;
         });
         break;
@@ -49,6 +50,8 @@ export class Message<REQ extends AbstractEvent, RES extends AbstractEvent>
           let y: any = null;
           if (x.error) {
             y = new Error(x.error.message);
+            y[K_NODE_ID] = x.nodeId;
+            y[K_INST_ID] = x.instNr;
           } else {
             y = this.factory.handleResponse(x, err);
           }
@@ -64,6 +67,8 @@ export class Message<REQ extends AbstractEvent, RES extends AbstractEvent>
           let y: any = null;
           if (x.error) {
             y = new Error(x.error.message);
+            y[K_NODE_ID] = x.nodeId;
+            y[K_INST_ID] = x.instNr;
           } else {
             y = this.factory.handleResponse(x, err);
           }

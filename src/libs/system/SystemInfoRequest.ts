@@ -8,6 +8,7 @@ import {EventBus, subscribe} from 'commons-eventbus';
 import {NodeRuntimeInfo} from './NodeRuntimeInfo';
 import {SystemInfoResponse} from './SystemInfoResponse';
 import {Log} from '../logging/Log';
+import {K_NODE_ID} from '../messaging/Constants';
 
 export class SystemInfoRequest extends EventEmitter {
 
@@ -76,7 +77,7 @@ export class SystemInfoRequest extends EventEmitter {
     }
     _.remove(this.targetIds, x => x === event.nodeId);
 
-    event.info['__nodeId__'] = event.nodeId;
+    event.info[K_NODE_ID] = event.nodeId;
     this.responses.push(event);
 
     if (this.targetIds.length === 0) {

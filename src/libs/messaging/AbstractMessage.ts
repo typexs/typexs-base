@@ -7,6 +7,7 @@ import {ClassType} from 'commons-schema-api';
 import {IMessageOptions} from './IMessageOptions';
 import {AbstractEvent} from './AbstractEvent';
 import {Log} from '../../libs/logging/Log';
+import {K_NODE_ID} from './Constants';
 
 
 export abstract class AbstractMessage<REQ extends AbstractEvent, RES extends AbstractEvent> extends EventEmitter {
@@ -201,7 +202,7 @@ export abstract class AbstractMessage<REQ extends AbstractEvent, RES extends Abs
 
     _.remove(this.targetIds, x => x === res.nodeId);
 
-    res['__nodeId__'] = res.nodeId;
+    res[K_NODE_ID] = res.nodeId;
     if (!res.skipping) {
       this.responses.push(res);
     }

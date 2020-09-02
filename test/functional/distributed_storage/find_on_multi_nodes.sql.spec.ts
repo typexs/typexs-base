@@ -302,8 +302,8 @@ class DistributedQuerySpec {
     const controller = Container.get(DistributedStorageEntityController);
     const entities = await controller.find(DataRow, {someBool: true}, {outputMode: 'only_value'});
     expect(entities).to.be.have.length(30);
-
   }
+
 
   /**
    * nodeId are always embedded in the records

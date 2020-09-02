@@ -22,6 +22,8 @@ export class Message<REQ extends AbstractEvent, RES extends AbstractEvent>
       !_.get(this.options, 'skipLocal', false)) {
       const localResponse = await this.factory.getResponse(req);
       this.responses.push(localResponse);
+      // self already done remove from target list
+      _.remove(this.targetIds, x => x === this.getLocalNodeId());
     }
   }
 

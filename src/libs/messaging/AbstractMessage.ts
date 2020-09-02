@@ -74,6 +74,10 @@ export abstract class AbstractMessage<REQ extends AbstractEvent, RES extends Abs
     return this.system;
   }
 
+  getLocalNodeId() {
+    return this.getSystem().getNodeId();
+  }
+
   getReqClass() {
     return this.reqClass;
   }
@@ -95,15 +99,12 @@ export abstract class AbstractMessage<REQ extends AbstractEvent, RES extends Abs
     }
 
     const myNodeId = this.getSystem().node.nodeId;
-
-
-
     this.request = req || Reflect.construct(this.getReqClass(), []);
     this.request.nodeId = myNodeId;
     this.request.targetIds = _.uniq(this.targetIds);
 
     // remove self from target list
-    _.remove(this.targetIds, x => x === myNodeId);
+    // _.remove(this.targetIds, x => x === myNodeId);
 
     if (this.beforeSend) {
       await this.beforeSend(this.request);

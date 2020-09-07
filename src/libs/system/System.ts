@@ -92,9 +92,9 @@ export class System {
       this.controller = this.storageRef.getController();
       // check if instance number exists
       this.nodes = await this.controller.find(SystemNodeInfo,
-        {$and: [{state: {$ne: 'unregister'}}, {state: {$ne: 'offline'}}]}, {limit: 0});
+        {$and: [{state: {$ne: 'unregister'}}, {state: {$ne: 'offline'}}, {state: {$ne: 'startup'}}]}, {limit: 0});
 
-      const filtered = this.nodes.filter(c => c.nodeId === nodeId && !['unregister', 'offline'].includes(c.state));
+      const filtered = this.nodes.filter(c => c.nodeId === nodeId && !['unregister', 'offline', 'startup'].includes(c.state));
       if (!_.isEmpty(filtered)) {
         instNr = _.max(filtered.map(x => x.instNr)) + 1;
       }
@@ -111,9 +111,9 @@ export class System {
     this.node.isBackend = true;
     this.updateNodeRuntimeInfo();
 
-    if (this.controller) {
-      await this.controller.save(this.node);
-    }
+    // if (this.controller) {
+    //   await this.controller.save(this.node);
+    // }
   }
 
   getNodeId() {
@@ -268,11 +268,7 @@ export class System {
     this.updateTimer = setInterval(this.updateNodeRuntimeInfo.bind(this), 5000);
     await EventBus.postAndForget(this.node);
 
-    this.node.state = 'idle';
-
-    if (this.controller) {
-      await this.controller.save(this.node);
-    }
+    await this.idle();
   }
 
 
@@ -295,5 +291,22 @@ export class System {
 
   }
 
+
+  async idle() {
+    this.node.state = 'idle';
+
+    if (this.controller) {
+      await this.controller.save(this.node);
+    }
+  }
+
+
+  async offline() {
+    this.node.state = 'offline';
+
+    if (this.controller) {
+      await this.controller.save(this.node);
+    }
+  }
 
 }

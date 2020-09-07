@@ -1,7 +1,7 @@
 import {Config} from 'commons-config';
 import {EventBus, IEventBusConfiguration} from 'commons-eventbus';
 import * as _ from 'lodash';
-import {Container, Inject} from 'typedi';
+import {Inject} from 'typedi';
 import {IBootstrap} from './api/IBootstrap';
 import {IShutdown} from './api/IShutdown';
 import {RuntimeLoader} from './base/RuntimeLoader';
@@ -27,7 +27,6 @@ import {ExchangeMessageRegistry} from './libs/messaging/ExchangeMessageRegistry'
 import {ConfigUtils} from './libs/utils/ConfigUtils';
 import {TaskRunnerRegistry} from './libs/tasks/TaskRunnerRegistry';
 import {TaskQueueWorker} from './workers/TaskQueueWorker';
-import {TypeOrmEntityRegistry} from './libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry';
 import {Injector} from './libs/di/Injector';
 
 
@@ -126,6 +125,8 @@ export class Startup implements IBootstrap, IShutdown {
           setTimeout(resolve, wait);
         }));
       }
+    } else {
+      await this.system.idle();
     }
   }
 
@@ -152,6 +153,8 @@ export class Startup implements IBootstrap, IShutdown {
     await this.cache.shutdown();
     if (System.isDistributionEnabled()) {
       await this.system.unregister();
+    } else {
+      await this.system.offline();
     }
     await EventBus.$().shutdown();
     this.tasks.reset();

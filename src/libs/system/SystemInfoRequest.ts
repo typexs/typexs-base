@@ -7,7 +7,6 @@ import * as _ from 'lodash';
 import {EventBus, subscribe} from 'commons-eventbus';
 import {NodeRuntimeInfo} from './NodeRuntimeInfo';
 import {SystemInfoResponse} from './SystemInfoResponse';
-import {Log} from '../logging/Log';
 import {K_NODE_ID} from '../messaging/Constants';
 
 export class SystemInfoRequest extends EventEmitter {
@@ -44,8 +43,18 @@ export class SystemInfoRequest extends EventEmitter {
     this.event.nodeId = this.system.node.nodeId;
     this.event.targetIds = this.targetIds;
     await EventBus.register(this);
-    await Promise.all([this.ready(), EventBus.postAndForget(this.event)]);
-    await EventBus.unregister(this);
+    const ready = this.ready();
+    await EventBus.postAndForget(this.event);
+    try {
+      await ready;
+    } catch (err) {
+
+    }
+
+    try {
+      await EventBus.unregister(this);
+    } catch (e) {
+    }
     return this.results;
   }
 
@@ -98,7 +107,6 @@ export class SystemInfoRequest extends EventEmitter {
       this.once('finished', (err: Error, data: any) => {
         clearTimeout(t);
         if (err) {
-          Log.error(err);
           if (data) {
             resolve(data);
           } else {

@@ -1,7 +1,6 @@
 import * as path from 'path';
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
-
 import {Bootstrap} from '../../../src/Bootstrap';
 import {Config} from 'commons-config';
 import {ClassType} from 'commons-schema-api/browser';
@@ -15,7 +14,9 @@ let storageRef: TypeOrmStorageRef;
 let CarSql: ClassType<any> = null;
 let DriverSql: ClassType<any> = null;
 let CarParam: ClassType<any> = null;
+let ObjectWithJson: ClassType<any> = null;
 let controller: TypeOrmEntityController = null;
+
 
 @suite('functional/storage/controller_sql')
 class StorageControllerSqlSpec {
@@ -29,6 +30,7 @@ class StorageControllerSqlSpec {
     CarSql = require('./fake_app_sql/entities/CarSql').CarSql;
     DriverSql = require('./fake_app_sql/entities/DriverSql').DriverSql;
     CarParam = require('./fake_app_sql/entities/CarParam').CarParam;
+    ObjectWithJson = require('./fake_app_sql/entities/ObjectWithJson').ObjectWithJson;
 
     const appdir = path.join(__dirname, 'fake_app_sql');
     bootstrap = await Bootstrap
@@ -196,6 +198,22 @@ class StorageControllerSqlSpec {
     expect(remove_car_count).to.be.eq(1);
 
   }
+
+
+  @test
+  async 'save and find object with property marked as stringify'() {
+    const subObj = {hallo: 'welt', das: 'ist', ein: {objekt: '!'}};
+    const obj = new ObjectWithJson();
+    obj.firstName = 'JsonTest';
+    obj.lastName = subObj;
+    const saved_obj = await controller.save(obj);
+    delete saved_obj['$state'];
+    const saved_obj1 = await controller.findOne(ObjectWithJson, {id: saved_obj.id});
+    expect(saved_obj.lastName).to.be.deep.eq(subObj);
+    expect(saved_obj).to.be.deep.eq(saved_obj1);
+    expect(saved_obj1.lastName).to.be.deep.eq(subObj);
+  }
+
 
   @test
   async 'remove by conditions'() {

@@ -17,6 +17,10 @@ export class MongoDbSchemaHandler extends AbstractSchemaHandler {
 
   }
 
+  supportsJson(): boolean {
+    return true;
+  }
+
   initOnceByType() {
 
   }

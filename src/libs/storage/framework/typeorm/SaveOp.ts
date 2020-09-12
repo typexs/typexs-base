@@ -10,6 +10,8 @@ import {TypeOrmEntityRegistry} from './schema/TypeOrmEntityRegistry';
 import {StorageApi} from '../../../../api/Storage.api';
 import {TypeOrmEntityController} from './TypeOrmEntityController';
 import {IEntityRef} from 'commons-schema-api';
+import {TypeOrmPropertyRef} from './schema/TypeOrmPropertyRef';
+import {convertPropertyValueJsonToString, convertPropertyValueStringToJson} from './Helper';
 
 
 export class SaveOp<T> implements ISaveOp<T> {
@@ -50,8 +52,9 @@ export class SaveOp<T> implements ISaveOp<T> {
     _.defaults(options, {validate: false, raw: false});
     this.options = options;
     this.isArray = _.isArray(object);
-
     this.objects = this.prepare(object);
+
+    const jsonPropertySupport = this.controller.storageRef.getSchemaHandler().supportsJson();
 
     await this.controller.invoker.use(StorageApi).doBeforeSave(this.objects, this);
 
@@ -65,11 +68,17 @@ export class SaveOp<T> implements ISaveOp<T> {
       const promises: Promise<any>[] = [];
       const resolveByEntityRef = TypeOrmUtils.resolveByEntityRef(this.objects);
       const entityNames = _.keys(resolveByEntityRef);
+
       // load before connect
       const refs: { [k: string]: IEntityRef } = {};
       for (const entityName of entityNames) {
         refs[entityName] = TypeOrmEntityRegistry.$().getEntityRefFor(entityName);
+        // await this.controller.invoker.use(StorageApi).prepareEntities(this.objects, this);
+        if (!jsonPropertySupport) {
+          convertPropertyValueJsonToString(refs[entityName], resolveByEntityRef[entityName]);
+        }
       }
+
       const connection = await this.controller.connect();
       try {
         if (this.isMongoDB()) {
@@ -77,18 +86,18 @@ export class SaveOp<T> implements ISaveOp<T> {
           for (const entityName of entityNames) {
             const repo = connection.manager.getMongoRepository(entityName);
             const entityDef = refs[entityName];
-            const propertyRefs = entityDef.getPropertyRefs().filter(p => p.isIdentifier());
-            if (propertyRefs.length === 0) {
+            const idPropertyRefs = entityDef.getPropertyRefs().filter(p => p.isIdentifier());
+            if (idPropertyRefs.length === 0) {
               throw new Error('no id property found for ' + entityName);
             }
-            const _idRef = _.remove(propertyRefs, x => x.name === '_id').shift();
+            const _idRef = _.remove(idPropertyRefs, x => x.name === '_id').shift();
 
             resolveByEntityRef[entityName].forEach((entity: any) => {
               // if no _id is set then generate one
               if (!entity._id) {
-                entity._id = propertyRefs.map(x => _.get(entity, x.name)).join('--');
+                entity._id = idPropertyRefs.map(x => _.get(entity, x.name)).join('--');
                 if (_.isEmpty(entity._id)) {
-                  throw new Error('no id could be generate for ' + entityName + ' with properties ' + propertyRefs.map(x => x.name).join(', '));
+                  throw new Error('no id could be generate for ' + entityName + ' with properties ' + idPropertyRefs.map(x => x.name).join(', '));
                 }
               }
               _.keys(entity).filter(x => /^$/.test(x)).map(x => delete entity[x]);
@@ -106,7 +115,7 @@ export class SaveOp<T> implements ISaveOp<T> {
                 .then((x: any) => {
                   resolveByEntityRef[entityName].forEach((entity: any) => {
                     if (!entity._id) {
-                      entity._id = propertyRefs.map(x => _.get(entity, x.name)).join('--');
+                      entity._id = idPropertyRefs.map(x => _.get(entity, x.name)).join('--');
                     }
                   });
                 });
@@ -126,9 +135,25 @@ export class SaveOp<T> implements ISaveOp<T> {
               promises.push(p);
             }
           } else {
+
             const promise = connection.manager.transaction(async em => {
               const _promises = [];
               for (const entityName of entityNames) {
+                // convert sub-objects to string
+                if (!jsonPropertySupport) {
+                  const structuredProps = refs[entityName].getPropertyRefs().filter((x: TypeOrmPropertyRef) => x.isStructuredType());
+                  for (const structuredProp of structuredProps) {
+                    for (const entity of resolveByEntityRef[entityName]) {
+                      const value = entity[structuredProp.name];
+                      if (!_.isString(value)) {
+                        try {
+                          entity[structuredProp.name] = JSON.stringify(value);
+                        } catch (e) {
+                        }
+                      }
+                    }
+                  }
+                }
                 const p = em.getRepository(entityName).save(resolveByEntityRef[entityName]);
                 _promises.push(p);
               }
@@ -141,14 +166,41 @@ export class SaveOp<T> implements ISaveOp<T> {
         if (promises.length > 0) {
           await Promise.all(promises);
         }
+
+        if (!jsonPropertySupport) {
+          for (const entityName of entityNames) {
+            convertPropertyValueStringToJson(refs[entityName], resolveByEntityRef[entityName]);
+          }
+        }
+
       } catch (e) {
         this.error = e;
       } finally {
         await connection.close();
       }
+
+      for (const entityName of entityNames) {
+        // await this.controller.invoker.use(StorageApi).prepareEntities(this.objects, this);
+        if (!jsonPropertySupport) {
+          const structuredProps = refs[entityName].getPropertyRefs().filter((x: TypeOrmPropertyRef) => x.isStructuredType());
+          for (const structuredProp of structuredProps) {
+            for (const entity of resolveByEntityRef[entityName]) {
+              const value = entity[structuredProp.name];
+              if (_.isString(value)) {
+                try {
+                  entity[structuredProp.name] = JSON.parse(value);
+                } catch (e) {
+                }
+              }
+            }
+          }
+        }
+      }
+
     } else {
       this.error = new ObjectsNotValidError(this.objects, this.isArray);
     }
+
 
     const result = this.isArray ? this.objects : this.objects.shift();
     await this.controller.invoker.use(StorageApi).doAfterSave(result, this.error, this);

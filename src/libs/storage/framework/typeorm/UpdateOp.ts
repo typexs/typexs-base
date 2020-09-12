@@ -8,6 +8,7 @@ import {TypeOrmSqlConditionsBuilder} from './TypeOrmSqlConditionsBuilder';
 import {UpdateQueryBuilder} from 'typeorm';
 import {StorageApi} from '../../../../api/Storage.api';
 import {TypeOrmEntityController} from './TypeOrmEntityController';
+import {convertPropertyValueJsonToString} from './Helper';
 
 
 export class UpdateOp<T> implements IUpdateOp<T> {
@@ -74,6 +75,7 @@ export class UpdateOp<T> implements IUpdateOp<T> {
    * when returns -2 then affected is not supported, so update worked but how many records ware changes is not given back
    */
   private async updateSql(): Promise<number> {
+    const jsonPropertySupport = this.controller.storageRef.getSchemaHandler().supportsJson();
     let affected = -1;
     const connection = await this.controller.connect();
     try {
@@ -89,17 +91,25 @@ export class UpdateOp<T> implements IUpdateOp<T> {
           .createQueryBuilder().update() as UpdateQueryBuilder<T>;
       }
 
+      // TODO make this better currently Hacki hacki
       let hasUpdate = false;
+      let updateData = null;
       if (_.has(this.update, '$set')) {
-        qb.set(this.update['$set']);
+        updateData = this.update['$set'];
         hasUpdate = true;
       } else if (!_.isEmpty(this.update)) {
-        qb.set(this.update);
+        updateData = this.update;
         hasUpdate = true;
       }
       affected = 0;
 
       if (hasUpdate) {
+
+        if (!jsonPropertySupport) {
+          convertPropertyValueJsonToString(this.entityRef, updateData);
+        }
+        qb.set(updateData);
+
         if (_.has(this.options, 'limit')) {
           qb.limit(this.options['limit']);
         }

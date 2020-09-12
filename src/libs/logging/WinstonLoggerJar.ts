@@ -91,7 +91,7 @@ export class WinstonLoggerJar implements ILoggerApi {
     const t: any[] = [];
     if (_.has(options, 'transports')) {
       for (const opt of options.transports) {
-        const k = Object.keys(opt).shift();
+        const k = _.keys(opt).shift();
         const transportOptions: any = _.defaults(opt[k], DEFAULT_TRANSPORT_OPTIONS);
         if (_.has(WinstonLoggerJar.transportTypes, k)) {
           t.push(Reflect.construct(WinstonLoggerJar.transportTypes[k], [transportOptions]));

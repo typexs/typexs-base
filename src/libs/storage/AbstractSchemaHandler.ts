@@ -22,6 +22,21 @@ export abstract class AbstractSchemaHandler {
   readonly storageRef: TypeOrmStorageRef;
 
 
+  /**
+   * Returns false if db type doesn't supports json type for columns
+   */
+  supportsJson() {
+    return false;
+  }
+
+  /**
+   * Return if null first or null last extra support during sort
+   */
+  supportsSortNull(){
+    return false;
+  }
+
+
   prepare() {
     if (!AbstractSchemaHandler.types.includes(this.type)) {
       AbstractSchemaHandler.types.push(this.type);

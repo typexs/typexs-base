@@ -19,7 +19,6 @@ import {REGISTRY_TYPEORM} from './TypeOrmConstants';
 import {classRefGet} from '../Helper';
 
 
-
 export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
 
   ormPropertyType: string = null;
@@ -131,9 +130,6 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
         }
         break;
 
-      // ---
-
-
       case 'double':
       case 'number':
         if (_.isString(data)) {
@@ -165,6 +161,19 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
 
   private convertDate(data: any, options?: IBuildOptions) {
     return new Date(data);
+  }
+
+  /**
+   * Check if type of this property is structured
+   */
+  isStructuredType() {
+    const type = (<string>this.getType());
+    if (!type || !_.isString(type)) {
+      return false;
+    }
+
+    const jsType = type.toLowerCase();
+    return ['json', 'object', 'array'].includes(jsType);
   }
 
 

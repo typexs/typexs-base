@@ -16,6 +16,7 @@ import {REGISTRY_TYPEORM} from './schema/TypeOrmConstants';
 import {Injector} from '../../../di/Injector';
 import {Cache} from '../../../cache/Cache';
 import {TypeOrmConnectionWrapper} from './TypeOrmConnectionWrapper';
+import {convertPropertyValueStringToJson} from './Helper';
 
 
 export class FindOp<T> implements IFindOp<T> {
@@ -61,7 +62,7 @@ export class FindOp<T> implements IFindOp<T> {
     });
     this.options = options;
 
-
+    const jsonPropertySupport = this.controller.storageRef.getSchemaHandler().supportsJson();
     await this.controller.invoker.use(StorageApi).doBeforeFind(this);
 
     if (options.cache) {
@@ -84,6 +85,10 @@ export class FindOp<T> implements IFindOp<T> {
       }
     }
 
+    if (!jsonPropertySupport) {
+      const entityRef = TypeOrmEntityRegistry.$().getEntityRefFor(entityType);
+      convertPropertyValueStringToJson(entityRef, results);
+    }
     await this.controller.invoker.use(StorageApi).doAfterFind(results, this.error, this);
 
     if (this.error) {

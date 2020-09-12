@@ -28,6 +28,7 @@ import {
   ValueRef
 } from '@allgemein/mango-expressions';
 import {TypeOrmEntityController} from './TypeOrmEntityController';
+import {convertPropertyValueJsonToString} from './Helper';
 
 
 export interface ISqlAggregateParam {
@@ -121,7 +122,6 @@ export class AggregateOp<T> implements IAggregateOp, IMangoWalker {
     this.offset = 0;
     this.sort = _.get(options, 'sort', {});
 
-
     // throw new NotYetImplementedError('interpretation of aggregate array in pending ... ');
     let results: any[] = [];
 
@@ -189,7 +189,7 @@ export class AggregateOp<T> implements IAggregateOp, IMangoWalker {
       }
 
       if (this.sort) {
-        const nullSupport = this.controller.getStorageRef().dbType === 'postgres';
+        const nullSupport = this.controller.storageRef.getSchemaHandler().supportsSortNull();
         _.keys(this.sort).forEach(k => {
           if (nullSupport) {
             this.queryBuilder.addOrderBy(k, this.sort[k] === 'asc' ? 'ASC' : 'DESC',
@@ -227,6 +227,12 @@ export class AggregateOp<T> implements IAggregateOp, IMangoWalker {
           });
           results.push(newRes);
         }
+
+        const jsonPropertySupport = this.controller.storageRef.getSchemaHandler().supportsJson();
+        if (!jsonPropertySupport) {
+          convertPropertyValueJsonToString(this.entityRef, results);
+        }
+
         results[XS_P_$LIMIT] = this.limit;
         results[XS_P_$OFFSET] = this.offset;
         results[XS_P_$COUNT] = count;

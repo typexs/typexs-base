@@ -65,3 +65,6 @@ Spin-off modules:
 * TaskFuture wait for results or errors
 * TaskHelper add option to select only one worker (maybe random selection)
 
+**@ISSUE {counter:issue} 20200908** +
+
+* Add StorageEngine to abstract backend storage integration, for example TypeOrmStorageEngine

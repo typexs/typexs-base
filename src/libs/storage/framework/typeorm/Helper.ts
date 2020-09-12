@@ -11,7 +11,11 @@ export function classRefGet(klass: string | Function) {
 
 export function convertPropertyValueJsonToString(entityRef: IEntityRef, entities: any[]) {
   const check = _.isArray(entities) ? entities : [entities];
-  const structuredProps = entityRef.getPropertyRefs().filter((x: TypeOrmPropertyRef) => x.isStructuredType());
+  const structuredProps = entityRef.getPropertyRefs()
+    .filter(
+      (x: TypeOrmPropertyRef) =>
+        x.getOptions('options.stringify', false)
+    );
   for (const structuredProp of structuredProps) {
     for (const entity of check) {
       const value = entity[structuredProp.name];
@@ -27,7 +31,7 @@ export function convertPropertyValueJsonToString(entityRef: IEntityRef, entities
 
 export function convertPropertyValueStringToJson(entityRef: IEntityRef, entities: any[]) {
   const check = _.isArray(entities) ? entities : [entities];
-  const structuredProps = entityRef.getPropertyRefs().filter((x: TypeOrmPropertyRef) => x.isStructuredType());
+  const structuredProps = entityRef.getPropertyRefs().filter((x: TypeOrmPropertyRef) => x.getOptions('options.stringify', false));
   for (const structuredProp of structuredProps) {
     for (const entity of check) {
       const value = entity[structuredProp.name];

@@ -32,7 +32,7 @@ export abstract class AbstractSchemaHandler {
   /**
    * Return if null first or null last extra support during sort
    */
-  supportsSortNull(){
+  supportsSortNull() {
     return false;
   }
 
@@ -98,16 +98,17 @@ export abstract class AbstractSchemaHandler {
     _.keys(fn).forEach(x => {
       this.registerOperationHandle(x, fn[x]);
     });
-
   }
 
 
   abstract getCollectionNames(): Promise<string[]>;
 
+
   async getCollection(name: string): Promise<any> {
     const c = await this.storageRef.connect();
     return await c.manager.connection.createQueryRunner().getTable(name);
   }
+
 
   escape(name: string, quote: boolean = true) {
     if (_.isString(name)) {
@@ -247,6 +248,7 @@ export abstract class AbstractSchemaHandler {
     }
     AbstractSchemaHandler.operations[this.type][name.toLowerCase()] = op;
   }
+
 
   getOperationHandle(name: string): (...args: any[]) => string {
     if (AbstractSchemaHandler.operations[this.type][name.toLowerCase()]) {

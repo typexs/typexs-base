@@ -141,18 +141,7 @@ export class SaveOp<T> implements ISaveOp<T> {
               for (const entityName of entityNames) {
                 // convert sub-objects to string
                 if (!jsonPropertySupport) {
-                  const structuredProps = refs[entityName].getPropertyRefs().filter((x: TypeOrmPropertyRef) => x.isStructuredType());
-                  for (const structuredProp of structuredProps) {
-                    for (const entity of resolveByEntityRef[entityName]) {
-                      const value = entity[structuredProp.name];
-                      if (!_.isString(value)) {
-                        try {
-                          entity[structuredProp.name] = JSON.stringify(value);
-                        } catch (e) {
-                        }
-                      }
-                    }
-                  }
+                  convertPropertyValueStringToJson(refs[entityName], resolveByEntityRef[entityName]);
                 }
                 const p = em.getRepository(entityName).save(resolveByEntityRef[entityName]);
                 _promises.push(p);
@@ -167,11 +156,6 @@ export class SaveOp<T> implements ISaveOp<T> {
           await Promise.all(promises);
         }
 
-        if (!jsonPropertySupport) {
-          for (const entityName of entityNames) {
-            convertPropertyValueStringToJson(refs[entityName], resolveByEntityRef[entityName]);
-          }
-        }
 
       } catch (e) {
         this.error = e;
@@ -179,21 +163,9 @@ export class SaveOp<T> implements ISaveOp<T> {
         await connection.close();
       }
 
-      for (const entityName of entityNames) {
-        // await this.controller.invoker.use(StorageApi).prepareEntities(this.objects, this);
-        if (!jsonPropertySupport) {
-          const structuredProps = refs[entityName].getPropertyRefs().filter((x: TypeOrmPropertyRef) => x.isStructuredType());
-          for (const structuredProp of structuredProps) {
-            for (const entity of resolveByEntityRef[entityName]) {
-              const value = entity[structuredProp.name];
-              if (_.isString(value)) {
-                try {
-                  entity[structuredProp.name] = JSON.parse(value);
-                } catch (e) {
-                }
-              }
-            }
-          }
+      if (!jsonPropertySupport) {
+        for (const entityName of entityNames) {
+          convertPropertyValueStringToJson(refs[entityName], resolveByEntityRef[entityName]);
         }
       }
 

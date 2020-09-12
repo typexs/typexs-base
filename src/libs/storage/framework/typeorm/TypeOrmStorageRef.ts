@@ -135,6 +135,21 @@ export class TypeOrmStorageRef extends StorageRef {
     const entityRef = this.getEntityRef(type instanceof EntitySchema ? type.options.target : type);
     const cls = entityRef.getClassRef().getClass();
     const columns = getMetadataArgsStorage().filterColumns(cls);
+    // convert unknown types
+
+    // change unknown types to convert json
+    columns.map(x => {
+      if (_.isFunction(x.options.type)) {
+        if (x.options.type.name === Object.name) {
+          x.options.type = String;
+          (<any>x.options).stringify = true;
+        } else if (x.options.type.name === Array.name) {
+          x.options.type = String;
+          (<any>x.options).stringify = true;
+        }
+      }
+    });
+
     if (this.dbType === 'mongodb') {
       /**
        * add _id as default objectId field if in entity declaration is only set PrimaryColumn
@@ -202,7 +217,11 @@ export class TypeOrmStorageRef extends StorageRef {
     this.addEntityType(type as any);
   }
 
-
+  /**
+   * Add entity class
+   *
+   * @param type
+   */
   addEntityType(type: EntitySchema | Function): void {
     const opts: any = {
       entities: []
@@ -211,6 +230,7 @@ export class TypeOrmStorageRef extends StorageRef {
     if (this.getOptions().entities) {
       opts.entities = this.getOptions().entities;
     }
+
 
     const exists = opts.entities.indexOf(type);
 
@@ -264,6 +284,7 @@ export class TypeOrmStorageRef extends StorageRef {
     const list = await this.getSchemaHandler().getCollections([name]);
     return list.find(x => x.name === name);
   }
+
 
   getClassRef(name: string | Function): IClassRef {
     const clazz = this.getEntityClass(name);

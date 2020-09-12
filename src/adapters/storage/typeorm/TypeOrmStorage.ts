@@ -39,7 +39,7 @@ export class TypeOrmStorage implements IStorage {
     if (_.has(this.schemaHandler, options.type)) {
       type = options.type;
     }
-    const schemaHandler = Reflect.construct(this.schemaHandler[type], [ref]);
+    const schemaHandler: AbstractSchemaHandler = Reflect.construct(this.schemaHandler[type], [ref]);
     schemaHandler.prepare();
     ref.setSchemaHandler(schemaHandler);
 

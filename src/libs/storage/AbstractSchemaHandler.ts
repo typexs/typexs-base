@@ -201,7 +201,7 @@ export abstract class AbstractSchemaHandler {
     };
 
     const split = jsType.split(':');
-    type.sourceType = <JS_DATA_TYPES>split.shift();
+    type.sourceType = <JS_DATA_TYPES | 'array'>split.shift();
     if (split.length > 0) {
       type.variant = split.shift();
     }
@@ -235,7 +235,13 @@ export abstract class AbstractSchemaHandler {
         type.type = 'datetime';
         break;
       case 'json':
-        type.type = 'text';
+        type.type = 'json';
+        break;
+      case 'object':
+        type.type = 'object';
+        break;
+      case 'array':
+        type.type = 'array';
         break;
     }
     return type;

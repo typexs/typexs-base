@@ -127,9 +127,11 @@ export class TypeOrmStorageRef extends StorageRef {
     return 'typeorm';
   }
 
+
   getType(): string {
     return this.dbType;
   }
+
 
   registerEntityRef(type: string | Function | EntitySchema) {
     const entityRef = this.getEntityRef(type instanceof EntitySchema ? type.options.target : type);
@@ -217,6 +219,7 @@ export class TypeOrmStorageRef extends StorageRef {
     this.addEntityType(type as any);
   }
 
+
   /**
    * Add entity class
    *
@@ -231,9 +234,7 @@ export class TypeOrmStorageRef extends StorageRef {
       opts.entities = this.getOptions().entities;
     }
 
-
     const exists = opts.entities.indexOf(type);
-
     if (exists < 0) {
       opts.entities.push(type);
       this.setOptions(_.assign(this.getOptions(), opts));
@@ -324,10 +325,8 @@ export class TypeOrmStorageRef extends StorageRef {
   async reset(full: boolean = true): Promise<any> {
     this._prepared = false;
     if (getConnectionManager().has(this.name)) {
-      // let name = this.name
       await this.shutdown(full);
     }
-    // return this.prepare()
   }
 
 

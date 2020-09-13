@@ -1,9 +1,9 @@
-import {JS_DATA_TYPES} from "commons-schema-api/browser";
+import {JS_DATA_TYPES} from 'commons-schema-api/browser';
 
 
 export interface IDBType {
-  type: string;
-  sourceType: JS_DATA_TYPES;
+  type: any;
+  sourceType: JS_DATA_TYPES | 'array';
   length?: number;
-  variant?: string
+  variant?: string;
 }

@@ -5,6 +5,7 @@ import {ICollection} from './ICollection';
 import {ICollectionProperty} from './ICollectionProperty';
 import {NotSupportedError} from 'commons-base/browser';
 import {TypeOrmStorageRef} from './framework/typeorm/TypeOrmStorageRef';
+import {Config} from 'commons-config/index';
 
 
 export abstract class AbstractSchemaHandler {
@@ -15,7 +16,11 @@ export abstract class AbstractSchemaHandler {
 
   static types: string[] = [];
 
+
   static operations: { [type: string]: { [op: string]: (...args: any[]) => string } } = {};
+
+  static typeMap: { [type: string]: { [type: string]: string } } = {};
+
 
   readonly type: string;
 
@@ -46,6 +51,15 @@ export abstract class AbstractSchemaHandler {
 
 
   initOnceByType() {
+    const typeMap = Config.get('schemaHandler.' + this.type + '.typeMap', {});
+    if (!AbstractSchemaHandler.typeMap[this.type]) {
+      AbstractSchemaHandler.typeMap[this.type] = {};
+    }
+    _.keys(typeMap).map(k => {
+      AbstractSchemaHandler.typeMap[this.type][k] = typeMap[k];
+    });
+
+
     const fn = {
       eq: (k: string, v: any) => k + ' = ' + v,
       ne: (k: string, v: any) => k + ' <> ' + v,
@@ -192,6 +206,10 @@ export abstract class AbstractSchemaHandler {
     return type;
   }
 
+  getTypeMap() {
+    return _.get(AbstractSchemaHandler.typeMap, this.type, {});
+  }
+
   translateToStorageType(jsType: string, length: number = null): IDBType {
     const type: IDBType = {
       type: null,
@@ -206,44 +224,52 @@ export abstract class AbstractSchemaHandler {
       type.variant = split.shift();
     }
 
-    switch (type.sourceType) {
-      case 'string':
-        type.type = 'text';
-        break;
-      case 'text':
-        type.type = 'text';
-        break;
-      case 'boolean':
-        type.type = 'int';
-        break;
-      case 'number':
-        type.type = 'int';
-        break;
-      case 'double':
-        type.type = 'numeric';
-        break;
-      case 'time':
-        type.type = 'datetime';
-        break;
-      case 'date':
-        type.type = 'datetime';
-        break;
-      case 'datetime':
-        type.type = 'datetime';
-        break;
-      case 'timestamp':
-        type.type = 'datetime';
-        break;
-      case 'json':
-        type.type = 'json';
-        break;
-      case 'object':
-        type.type = 'object';
-        break;
-      case 'array':
-        type.type = 'array';
-        break;
+
+    const mapType = this.getTypeMap()[type.sourceType];
+    if (!!mapType) {
+      type.type = mapType;
+    } else {
+      switch (type.sourceType) {
+        case 'string':
+          type.type = 'varchar';
+          break;
+        case 'text':
+          type.type = 'text';
+          break;
+        case 'boolean':
+          type.type = 'int';
+          break;
+        case 'number':
+          type.type = 'int';
+          break;
+        case 'double':
+          type.type = 'numeric';
+          break;
+        case 'time':
+          type.type = 'datetime';
+          break;
+        case 'date':
+          type.type = 'datetime';
+          break;
+        case 'datetime':
+          type.type = 'datetime';
+          break;
+        case 'timestamp':
+          type.type = 'datetime';
+          break;
+        case 'json':
+          type.type = 'json';
+          break;
+        case 'object':
+          type.type = 'object';
+          break;
+        case 'array':
+          type.type = 'array';
+          break;
+
+      }
     }
+
     return type;
   }
 

@@ -1,11 +1,11 @@
-import {Connection, EntityManager, getConnectionManager} from 'typeorm';
+import {Connection, EntityManager} from 'typeorm';
 import * as _ from 'lodash';
 import {IConnection} from '../../IConnection';
 import {TypeOrmStorageRef} from './TypeOrmStorageRef';
 import {Semaphore} from '../../../Semaphore';
 import {Log} from '../../../logging/Log';
 import {LockFactory} from '../../../LockFactory';
-import {EVENT_STORAGE_ENTITY_ADDED, EVENT_STORAGE_REF_PREPARED, EVENT_STORAGE_REF_SHUTDOWN} from './Constants';
+import {EVENT_STORAGE_REF_PREPARED, EVENT_STORAGE_REF_SHUTDOWN} from './Constants';
 
 
 export class TypeOrmConnectionWrapper implements IConnection {
@@ -29,6 +29,8 @@ export class TypeOrmConnectionWrapper implements IConnection {
     this.storageRef = s;
     this._connection = conn;
     this.name = this.storageRef.name;
+
+    // this.storageRef.on(EVENT_STORAGE_ENTITY_ADDED, this.reload.bind(this));
     this.storageRef.on(EVENT_STORAGE_REF_PREPARED, this.reload.bind(this));
     this.storageRef.on(EVENT_STORAGE_REF_SHUTDOWN, this.destroy.bind(this));
   }
@@ -36,25 +38,35 @@ export class TypeOrmConnectionWrapper implements IConnection {
 
   async reload() {
     const connected = this._connection && this._connection.isConnected;
-    this._connection = getConnectionManager().get(this.name);
+    this.reset();
+    this.connection;
     if (connected) {
       await this.connect();
     }
   }
 
   async destroy() {
+    // this.storageRef.removeListener(EVENT_STORAGE_ENTITY_ADDED, this.reload.bind(this));
     this.storageRef.removeListener(EVENT_STORAGE_REF_PREPARED, this.reload.bind(this));
     this.storageRef.removeListener(EVENT_STORAGE_REF_SHUTDOWN, this.destroy.bind(this));
   }
 
 
   get manager(): EntityManager {
-    return this._connection.manager;
+    return this.connection.manager;
   }
 
 
   get connection() {
+    if (!this._connection) {
+      this._connection = this.getStorageRef().getConnection();
+    }
     return this._connection;
+  }
+
+
+  reset() {
+    this._connection = null;
   }
 
 
@@ -110,11 +122,10 @@ export class TypeOrmConnectionWrapper implements IConnection {
     if (this.getUsage() <= 0) {
       await this.lock.acquire();
       try {
-        if (!this._connection) {
-          this._connection = getConnectionManager().get(this.name);
-        }
-        if (!this._connection.isConnected) {
-          this._connection = await this._connection.connect();
+        const connection = this.connection;
+
+        if (!connection.isConnected) {
+          await this.connection.connect();
         }
         this.usageInc();
       } catch (err) {

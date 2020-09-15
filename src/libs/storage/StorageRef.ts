@@ -29,6 +29,10 @@ export abstract class StorageRef extends EventEmitter implements IStorageRef {
     return this.options.name;
   }
 
+  abstract reload(): Promise<boolean> | boolean;
+
+  abstract isActive(): boolean;
+
   abstract getType(): string;
 
   abstract getFramework(): string;

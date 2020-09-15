@@ -115,4 +115,15 @@ export interface IStorageRef {
    */
   getRawCollection(name: string): ICollection | Promise<ICollection>;
 
+  /**
+   * Reload storage configuration
+   */
+  reload(): Promise<boolean> | boolean;
+
+
+  /**
+   * Test if storage ref is already connected
+   */
+  isActive(): boolean;
+
 }

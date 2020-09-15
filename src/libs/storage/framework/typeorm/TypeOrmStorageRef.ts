@@ -41,6 +41,10 @@ export class TypeOrmStorageRef extends StorageRef {
 
   private _prepared = false;
 
+  private _isActive = false;
+  //
+  // private reloadTimout: NodeJS.Timeout;
+
 
   constructor(options: IStorageOptions & BaseConnectionOptions) {
     super(options);
@@ -105,6 +109,13 @@ export class TypeOrmStorageRef extends StorageRef {
         this.registerEntityRef(type);
       });
     }
+
+    // this.on(EVENT_STORAGE_ENTITY_ADDED, () => {
+    //   clearTimeout(this.reloadTimout);
+    //   this.reloadTimout = setTimeout(async () => {
+    //     await this.reload();
+    //   }, 0);
+    // });
   }
 
 
@@ -210,7 +221,6 @@ export class TypeOrmStorageRef extends StorageRef {
   }
 
   /**
-   * wrapping to addEntityType
    *
    * @param type
    * @param options
@@ -245,10 +255,10 @@ export class TypeOrmStorageRef extends StorageRef {
     if (this._prepared) {
       this._prepared = false;
       this.removeFromConnectionManager();
-      this.emit(EVENT_STORAGE_ENTITY_ADDED, type);
     }
 
     this.populateToExtended(type);
+    this.emit(EVENT_STORAGE_ENTITY_ADDED, type);
   }
 
 
@@ -335,7 +345,7 @@ export class TypeOrmStorageRef extends StorageRef {
   }
 
 
-  async reload(full: boolean = true): Promise<any> {
+  async reload(full: boolean = true): Promise<boolean> {
     await this.reset(full);
     return this.prepare();
   }
@@ -344,7 +354,8 @@ export class TypeOrmStorageRef extends StorageRef {
   async prepare(): Promise<boolean> {
     if (!getConnectionManager().has(this.name)) {
       // todo maybe handle exception?
-      let c = getConnectionManager().create(<ConnectionOptions>this.getOptions());
+      this._isActive = true;
+      let c = this.getConnection();
       c = await c.connect();
       await this.wrap(c).close();
     } else {
@@ -353,6 +364,21 @@ export class TypeOrmStorageRef extends StorageRef {
     this._prepared = true;
     this.emit(EVENT_STORAGE_REF_PREPARED);
     return Promise.resolve(this._prepared);
+  }
+
+  isActive() {
+    return this._isActive;
+  }
+
+  /**
+   * Return typeorm connection object
+   */
+  getConnection() {
+    if (!getConnectionManager().has(this.name)) {
+      return getConnectionManager().create(<ConnectionOptions>this.getOptions());
+    } else {
+      return getConnectionManager().get(this.name);
+    }
   }
 
 

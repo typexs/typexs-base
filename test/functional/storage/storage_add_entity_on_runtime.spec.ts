@@ -81,6 +81,7 @@ class StorageAddEntityOnRuntimeSpec {
 
     // now add new entity
     entityNames = storageRef.getEntityNames();
+    expect(entityNames).to.have.length(5);
     entityNames.sort();
     expect(entityNames).to.be.deep.eq([
       'ModuleEntity',
@@ -90,7 +91,7 @@ class StorageAddEntityOnRuntimeSpec {
       'TestEntity'
     ]);
 
-    let enttityMetadata = connection._connection.entityMetadatas;
+    let enttityMetadata = connection.connection.entityMetadatas;
     expect(enttityMetadata).to.have.length(4);
 
     // check if it can be queried

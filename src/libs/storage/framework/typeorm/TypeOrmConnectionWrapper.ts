@@ -24,15 +24,21 @@ export class TypeOrmConnectionWrapper implements IConnection {
 
   _connection: Connection;
 
+  _fn: { [k: string]: any } = {};
+
 
   constructor(s: TypeOrmStorageRef, conn?: Connection) {
     this.storageRef = s;
     this._connection = conn;
     this.name = this.storageRef.name;
+    this._fn[EVENT_STORAGE_REF_PREPARED] = this.reload.bind(this);
+    this._fn[EVENT_STORAGE_REF_SHUTDOWN] = this.destroy.bind(this);
 
     // this.storageRef.on(EVENT_STORAGE_ENTITY_ADDED, this.reload.bind(this));
-    this.storageRef.on(EVENT_STORAGE_REF_PREPARED, this.reload.bind(this));
-    this.storageRef.on(EVENT_STORAGE_REF_SHUTDOWN, this.destroy.bind(this));
+    for (const k of _.keys(this._fn)) {
+      this.storageRef.on(k, this._fn[k]);
+    }
+
   }
 
 
@@ -45,10 +51,11 @@ export class TypeOrmConnectionWrapper implements IConnection {
     }
   }
 
-  async destroy() {
+  destroy() {
     // this.storageRef.removeListener(EVENT_STORAGE_ENTITY_ADDED, this.reload.bind(this));
-    this.storageRef.removeListener(EVENT_STORAGE_REF_PREPARED, this.reload.bind(this));
-    this.storageRef.removeListener(EVENT_STORAGE_REF_SHUTDOWN, this.destroy.bind(this));
+    for (const k of _.keys(this._fn)) {
+      this.storageRef.removeListener(k, this._fn[k]);
+    }
   }
 
 
@@ -145,6 +152,7 @@ export class TypeOrmConnectionWrapper implements IConnection {
     if (rest <= 0) {
       await this.lock.acquire();
       try {
+        this.destroy();
         await this.storageRef.remove(this);
       } catch (err) {
         Log.error(err);

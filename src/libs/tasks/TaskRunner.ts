@@ -561,6 +561,7 @@ export class TaskRunner extends EventEmitter {
 
   async finalize() {
     // TODO ...
+    this.removeAllListeners();
   }
 
 }

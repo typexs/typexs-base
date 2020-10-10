@@ -17,7 +17,7 @@ export abstract class StorageRef extends EventEmitter implements IStorageRef {
 
   constructor(options: IStorageOptions) {
     super();
-    this.setMaxListeners(1000);
+    this.setMaxListeners(10000);
     this.options = options;
   }
 
@@ -89,4 +89,6 @@ export abstract class StorageRef extends EventEmitter implements IStorageRef {
   }
 
   abstract connect(): Promise<IConnection>;
+
+
 }

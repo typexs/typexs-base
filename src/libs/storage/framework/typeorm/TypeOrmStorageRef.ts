@@ -405,6 +405,7 @@ export class TypeOrmStorageRef extends StorageRef {
 
   async remove(wrapper: TypeOrmConnectionWrapper) {
     _.remove(this.connections, {inc: wrapper.inc});
+
   }
 
 
@@ -461,9 +462,9 @@ export class TypeOrmStorageRef extends StorageRef {
     await this.closeConnection();
     if (full) {
       this.removeFromConnectionManager();
+      this.emit(EVENT_STORAGE_REF_SHUTDOWN);
+      this.removeAllListeners();
     }
-    this.emit(EVENT_STORAGE_REF_SHUTDOWN);
-
   }
 
 

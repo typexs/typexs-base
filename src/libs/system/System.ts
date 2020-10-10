@@ -110,11 +110,8 @@ export class System {
     this.node.state = 'startup';
     this.node.isBackend = true;
     this.updateNodeRuntimeInfo();
-
-    // if (this.controller) {
-    //   await this.controller.save(this.node);
-    // }
   }
+
 
   getNodeId() {
     return this.node.nodeId;
@@ -137,19 +134,17 @@ export class System {
       nodeInfo.restore();
     }
 
-
     // clear local info
     delete nodeInfo.isBackend;
 
     const node = _.find(this.nodes, n => n.eqNode(nodeInfo));
-    this.logger.debug(`system node: ${nodeInfo.hostname}:${nodeInfo.nodeId}-${nodeInfo.instNr} state=${nodeInfo.state} [${this.node.nodeId}] already exists=${!!node}`);
+    this.logger.debug(`system node: ${nodeInfo.hostname}:${nodeInfo.nodeId}-${nodeInfo.instNr} ` +
+      `state=${nodeInfo.state} [${this.node.nodeId}] already exists=${!!node}`);
     if ((nodeInfo.state === 'register' || (nodeInfo.state === 'idle' && !node))) {
       if (!node) {
         this.nodes.push(nodeInfo);
       }
-
       this.logger.debug(`add remote node ${nodeInfo.hostname}:${nodeInfo.nodeId}--${nodeInfo.instNr}`);
-
       await EventBus.postAndForget(this.node);
       try {
         await this.invoker.use(SystemApi).onNodeRegister(nodeInfo);
@@ -163,7 +158,6 @@ export class System {
       }
     } else if (nodeInfo.state === 'unregister') {
       const nodes = _.remove(this.nodes, n => n.eqNode(nodeInfo));
-
       this.logger.debug(`remove remote node ${nodeInfo.hostname}:${nodeInfo.nodeId}--${nodeInfo.instNr}`);
       await this.invoker.use(SystemApi).onNodeUnregister(nodeInfo);
       try {

@@ -181,7 +181,7 @@ export class TaskQueueWorker implements IQueueProcessor<ITaskWorkload>, IWorker 
       runner.getLogger().error(err);
       this.fireState(e);
     } finally {
-      runner.removeAllListeners();
+      await runner.finalize();
     }
     return results;
   }

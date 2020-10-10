@@ -1,4 +1,4 @@
-import {suite, test} from 'mocha-typescript';
+import {suite, test} from '@testdeck/mocha';
 import {TypeOrmEntityRegistry} from '../../../src/libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry';
 import {MultipleTypes} from './entities/MultipleTypes';
 import {expect} from 'chai';

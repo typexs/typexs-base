@@ -1,4 +1,4 @@
-import {suite, test} from 'mocha-typescript';
+import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 import {FileReadUtils} from '../../../src/libs/filesystem/FileReadUtils';
 import {FileUtils} from 'commons-base';

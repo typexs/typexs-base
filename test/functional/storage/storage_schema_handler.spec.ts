@@ -1,6 +1,6 @@
 import * as path from 'path';
 import * as _ from 'lodash';
-import {suite, test} from 'mocha-typescript';
+import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 
 import {Bootstrap} from '../../../src/Bootstrap';

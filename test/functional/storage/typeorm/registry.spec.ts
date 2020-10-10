@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import {expect} from 'chai';
-import {suite, test} from 'mocha-typescript';
+import {suite, test} from '@testdeck/mocha';
 import {TypeOrmEntityRegistry} from '../../../../src/libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry';
 import {House} from './entities/House';
 import {Column, Entity, getMetadataArgsStorage} from 'typeorm';

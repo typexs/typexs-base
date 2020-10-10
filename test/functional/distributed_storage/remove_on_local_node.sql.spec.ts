@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import {suite, test} from 'mocha-typescript';
+import {suite, test} from '@testdeck/mocha';
 import {Bootstrap} from '../../../src/Bootstrap';
 import {Config} from 'commons-config';
 import {TEST_STORAGE_OPTIONS} from '../config';

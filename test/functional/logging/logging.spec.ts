@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import {suite, test} from 'mocha-typescript';
+import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 import {TestHelper} from '../TestHelper';
 import * as os from 'os';

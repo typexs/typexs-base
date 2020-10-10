@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import {suite, test, timeout} from 'mocha-typescript';
+import {suite, test, timeout} from '@testdeck/mocha';
 import {expect} from 'chai';
 import {SimpleTaskPromise} from './tasks/SimpleTaskPromise';
 import {TestHelper} from '../TestHelper';

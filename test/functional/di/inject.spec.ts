@@ -1,4 +1,4 @@
-import {suite, test} from 'mocha-typescript';
+import {suite, test} from '@testdeck/mocha';
 import {Injector} from '../../../src/libs/di/Injector';
 import {StaticService} from './StaticService';
 import {expect} from 'chai';

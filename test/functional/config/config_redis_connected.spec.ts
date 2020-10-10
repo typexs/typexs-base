@@ -1,5 +1,5 @@
 // process.env.SQL_LOG = '1';
-import {suite, test} from 'mocha-typescript';
+import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 import {Bootstrap} from '../../../src/Bootstrap';
 import {Config} from 'commons-config';

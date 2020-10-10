@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import {suite, test} from 'mocha-typescript';
+import {suite, test} from '@testdeck/mocha';
 import {TestHelper} from '../TestHelper';
 import {Counters} from '../../../src/libs/helper/Counters';
 

@@ -1,4 +1,4 @@
-// import {suite, test, timeout} from "mocha-typescript";
+// import {suite, test, timeout} from "@testdeck/mocha";
 // import {expect} from "chai";
 // import {Log, MetaArgs, SchematicsExecutor} from "../../../src";
 // import {Config} from "commons-config";

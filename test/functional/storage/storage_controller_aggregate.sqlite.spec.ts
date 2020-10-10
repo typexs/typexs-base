@@ -1,6 +1,6 @@
 // process.env.SQL_LOG = '1';
 
-import {suite} from 'mocha-typescript';
+import {suite} from '@testdeck/mocha';
 import {StorageAcontrollerAggregateSqlTemplate} from './storage_controller_aggregate.sql.template';
 
 // let bootstrap: Bootstrap;

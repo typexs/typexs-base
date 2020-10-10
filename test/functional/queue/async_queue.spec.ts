@@ -1,6 +1,6 @@
-// Reference mocha-typescript's global definitions:
+// Reference @testdeck/mocha's global definitions:
 
-import {suite, test, slow, timeout, pending} from 'mocha-typescript';
+import {suite, test, slow, timeout, pending} from '@testdeck/mocha';
 import {expect} from 'chai';
 import {IQueueWorkload} from '../../../src/libs/queue/IQueueWorkload';
 import {IQueueProcessor} from '../../../src/libs/queue/IQueueProcessor';

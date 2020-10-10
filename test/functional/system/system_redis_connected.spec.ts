@@ -1,5 +1,5 @@
 // process.env.SQL_LOG = '1';
-import {suite, test} from 'mocha-typescript';
+import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 import {Bootstrap} from '../../../src/Bootstrap';
 import {TEST_STORAGE_OPTIONS} from '../config';
@@ -27,8 +27,6 @@ class SystemRedisConnectedSpec {
   async before() {
     Bootstrap.reset();
     await TestHelper.clearCache();
-    // const x = getMetadataArgsStorage();
-    // const t = TypeOrmEntityRegistry.$();
 
     bootstrap = Bootstrap
       .setConfigSources([{type: 'system'}])
@@ -59,7 +57,7 @@ class SystemRedisConnectedSpec {
 
   @test
   async 'check own node info'() {
-    const x = getMetadataArgsStorage();
+    // const x = getMetadataArgsStorage();
     const system: System = Container.get(System.NAME);
     expect(system.node.state).to.eq('idle');
 
@@ -72,21 +70,6 @@ class SystemRedisConnectedSpec {
 
   @test
   async 'node register and unregister'() {
-    // bootstrap = Bootstrap
-    //   .setConfigSources([{type: 'system'}])
-    //   .configure(<ITypexsOptions & any>{
-    //     app: {name: 'test', nodeId: 'system', path: __dirname + '/fake_app'},
-    //     logging: {enable: LOG_EVENT, level: 'debug', loggers: [{name: '*', level: 'debug', enable: true}]},
-    //     modules: {paths: [__dirname + '/../../..']},
-    //     storage: {default: TEST_STORAGE_OPTIONS},
-    //     eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}}
-    //   });
-    // bootstrap.activateLogger();
-    // bootstrap.activateErrorHandling();
-    // await bootstrap.prepareRuntime();
-    // bootstrap = await bootstrap.activateStorage();
-    // bootstrap = await bootstrap.startup();
-
     const remoteNodes: SystemNodeInfo[] = [];
 
     class OnSystem implements ISystemApi {
@@ -140,27 +123,11 @@ class SystemRedisConnectedSpec {
       }]
     );
     expect(system.nodes).to.have.length(0);
-
   }
 
 
   @test
   async 'check system information'() {
-    // bootstrap = Bootstrap
-    //   .setConfigSources([{type: 'system'}])
-    //   .configure(<ITypexsOptions & any>{
-    //     app: {name: 'test', nodeId: 'system', path: __dirname + '/fake_app'},
-    //     logging: {enable: LOG_EVENT, level: 'debug'},
-    //     modules: {paths: [__dirname + '/../../..']},
-    //     storage: {default: TEST_STORAGE_OPTIONS},
-    //     eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}}
-    //   });
-    // bootstrap.activateLogger();
-    // bootstrap.activateErrorHandling();
-    // await bootstrap.prepareRuntime();
-    // bootstrap = await bootstrap.activateStorage();
-    // bootstrap = await bootstrap.startup();
-
     const system: System = Container.get(System.NAME);
 
     expect(system.info).to.not.be.null;
@@ -178,7 +145,6 @@ class SystemRedisConnectedSpec {
 
     p.shutdown();
     await p.done;
-
   }
 
 

@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import {expect} from 'chai';
 import * as path from 'path';
-import {suite, test} from 'mocha-typescript';
+import {suite, test} from '@testdeck/mocha';
 import {Bootstrap} from '../../../src/Bootstrap';
 import {Config} from 'commons-config';
 import {C_DEFAULT} from 'commons-base';

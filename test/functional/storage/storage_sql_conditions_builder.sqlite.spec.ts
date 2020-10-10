@@ -1,5 +1,5 @@
 import * as path from 'path';
-import {suite, test} from 'mocha-typescript';
+import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 
 import {Bootstrap} from '../../../src/Bootstrap';
@@ -344,7 +344,7 @@ class StorageSqlConditionsBuilderSpec {
     await connection.close();
     expect(query2).to.deep.eq(
       [
-        'SELECT SUM(id) AS "soneHavingField", firstName FROM "driver_cond" "driver" GROUP BY firstName HAVING soneHavingField > ?',
+        'SELECT SUM(id) AS "soneHavingField", firstName FROM "driver_cond" "driver"  GROUP BY firstName HAVING soneHavingField > ?',
         [0]
       ]
     );

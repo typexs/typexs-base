@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import {suite, test} from 'mocha-typescript';
+import {suite, test} from '@testdeck/mocha';
 import {MatchUtils} from '../../../src/libs/utils/MatchUtils';
 
 

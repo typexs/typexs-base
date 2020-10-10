@@ -1,7 +1,7 @@
 // process.env.SQL_LOG = '1';
 import * as _ from 'lodash';
 import * as path from 'path';
-import {test} from 'mocha-typescript';
+import {test} from '@testdeck/mocha';
 import {expect} from 'chai';
 
 import {Bootstrap} from '../../../src/Bootstrap';

@@ -2,7 +2,7 @@
 // import {expect, use} from 'chai';
 // import * as chaiSpies from 'chai-spies';
 // import {Config} from 'commons-config';
-// import {slow, suite, test, timeout} from 'mocha-typescript';
+// import {slow, suite, test, timeout} from '@testdeck/mocha';
 // import {Bootstrap} from '../../../src/Bootstrap';
 // import {WatcherRegistry} from '../../../src/libs/watchers/WatcherRegistry';
 // import {TEST_STORAGE_OPTIONS} from '../config';

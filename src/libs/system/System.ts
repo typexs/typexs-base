@@ -1,7 +1,13 @@
 import * as _ from 'lodash';
 import {EventBus, subscribe} from 'commons-eventbus';
 import {Log} from '../logging/Log';
-import {APP_SYSTEM_DISTRIBUTED, C_KEY_SEPARATOR, C_STORAGE_DEFAULT, TYPEXS_NAME} from '../Constants';
+import {
+  APP_SYSTEM_DISTRIBUTED,
+  APP_SYSTEM_UPDATE_INTERVAL,
+  C_KEY_SEPARATOR,
+  C_STORAGE_DEFAULT,
+  TYPEXS_NAME
+} from '../Constants';
 import {StorageRef} from '../storage/StorageRef';
 import {Inject} from 'typedi';
 import {SystemApi} from '../../api/System.api';
@@ -79,6 +85,7 @@ export class System {
     Config.set(APP_SYSTEM_DISTRIBUTED, b, TYPEXS_NAME);
   }
 
+
   constructor() {
     this.logger = Log.getLoggerFor(System);
   }
@@ -106,9 +113,10 @@ export class System {
     this.node.nodeId = nodeId;
     this.node.instNr = instNr;
     this.node.key = key;
-    this.node.started = new Date();
+    this.node.started_at = new Date();
     this.node.state = 'startup';
     this.node.isBackend = true;
+    this.node.updated_at = this.node.started_at;
     this.updateNodeRuntimeInfo();
   }
 
@@ -119,12 +127,7 @@ export class System {
 
 
   @subscribe(SystemNodeInfo)
-  onNodeInfo(nodeInfo: SystemNodeInfo) {
-    return this.handleNode(nodeInfo);
-  }
-
-
-  async handleNode(nodeInfo: SystemNodeInfo) {
+  async onNodeInfo(nodeInfo: SystemNodeInfo) {
     if (this.node.eqNode(nodeInfo)) {
       // own information can be ignored
       return null;
@@ -209,6 +212,7 @@ export class System {
 
 
   updateNodeRuntimeInfo() {
+    this.node.updated_at = new Date();
     this.info.nodeId = this.node.nodeId;
     this.info.machineId = this.node.machineId;
     this.info.networks = os.networkInterfaces();
@@ -258,8 +262,8 @@ export class System {
     this._registered = true;
     await EventBus.register(this);
 
-
-    this.updateTimer = setInterval(this.updateNodeRuntimeInfo.bind(this), 5000);
+    const interval = Config.get(APP_SYSTEM_UPDATE_INTERVAL, 1000);
+    this.updateTimer = setInterval(this.updateNodeRuntimeInfo.bind(this), interval);
     await EventBus.postAndForget(this.node);
 
     await this.idle();
@@ -282,7 +286,6 @@ export class System {
     }
     await EventBus.unregister(this);
     await EventBus.postAndForget(this.node);
-
   }
 
 

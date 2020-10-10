@@ -48,7 +48,6 @@ export class SystemInfoRequest extends EventEmitter {
     try {
       await ready;
     } catch (err) {
-
     }
 
     try {

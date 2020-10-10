@@ -43,7 +43,10 @@ export class SystemNodeInfo {
   state: string; // 'startup' | 'offline' | 'register' | 'unregister' | 'idle' | 'active';
 
   @Column({nullable: true})
-  started: Date = new Date();
+  started_at: Date = new Date();
+
+  @Column({nullable: true})
+  updated_at: Date;
 
   @Column({nullable: true})
   finished: Date;
@@ -53,13 +56,18 @@ export class SystemNodeInfo {
   active: boolean = false;
 
 
+
+
   getRuntime() {
-    return (new Date().getTime()) - this.started.getTime();
+    return (new Date().getTime()) - this.started_at.getTime();
   }
 
   restore() {
-    if (_.isString(this.started)) {
-      this.started = new Date(this.started);
+    if (_.isString(this.started_at)) {
+      this.started_at = new Date(this.started_at);
+    }
+    if (_.isString(this.updated_at)) {
+      this.updated_at = new Date(this.updated_at);
     }
   }
 

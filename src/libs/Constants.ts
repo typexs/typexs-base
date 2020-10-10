@@ -22,6 +22,7 @@ export const C_EVENTBUS = 'eventbus';
 export const C_CONFIG = 'config';
 
 export const APP_SYSTEM_DISTRIBUTED = 'app.system.distributed';
+export const APP_SYSTEM_UPDATE_INTERVAL = 'app.system.updateInterval';
 
 export const XS_P_$COUNT = '$count';
 export const XS_P_$LIMIT = '$limit';

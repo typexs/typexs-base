@@ -5,7 +5,7 @@ import {TypeOrmStorageRef} from './TypeOrmStorageRef';
 import {Semaphore} from '../../../Semaphore';
 import {Log} from '../../../logging/Log';
 import {LockFactory} from '../../../LockFactory';
-import {EVENT_STORAGE_REF_PREPARED, EVENT_STORAGE_REF_SHUTDOWN} from './Constants';
+import {EVENT_STORAGE_REF_PREPARED} from './Constants';
 
 
 export class TypeOrmConnectionWrapper implements IConnection {
@@ -24,37 +24,39 @@ export class TypeOrmConnectionWrapper implements IConnection {
 
   _connection: Connection;
 
-  _fn: { [k: string]: any } = {};
+  _fn: any;
 
 
   constructor(s: TypeOrmStorageRef, conn?: Connection) {
     this.storageRef = s;
     this._connection = conn;
     this.name = this.storageRef.name;
-    this._fn[EVENT_STORAGE_REF_PREPARED] = this.reload.bind(this);
-    this._fn[EVENT_STORAGE_REF_SHUTDOWN] = this.destroy.bind(this);
+  }
 
-    // this.storageRef.on(EVENT_STORAGE_ENTITY_ADDED, this.reload.bind(this));
-    for (const k of _.keys(this._fn)) {
-      this.storageRef.on(k, this._fn[k]);
-    }
 
+  initialize() {
+    const self = this;
+    this._fn = function () {
+      self.reload();
+    };
+    this.storageRef.on(EVENT_STORAGE_REF_PREPARED, this._fn);
   }
 
 
   async reload() {
-    const connected = this._connection && this._connection.isConnected;
+    const connected = !!this._connection && this._connection.isConnected;
     this.reset();
-    this.connection;
     if (connected) {
+      this.usageDec();
       await this.connect();
     }
   }
 
+
   destroy() {
-    // this.storageRef.removeListener(EVENT_STORAGE_ENTITY_ADDED, this.reload.bind(this));
-    for (const k of _.keys(this._fn)) {
-      this.storageRef.removeListener(k, this._fn[k]);
+    this.reset();
+    if (this._fn) {
+      this.storageRef.off(EVENT_STORAGE_REF_PREPARED, this._fn);
     }
   }
 
@@ -102,6 +104,7 @@ export class TypeOrmConnectionWrapper implements IConnection {
     return this.usage;
   }
 
+
   getUsage() {
     return this.usage;
   }
@@ -130,7 +133,6 @@ export class TypeOrmConnectionWrapper implements IConnection {
       await this.lock.acquire();
       try {
         const connection = this.connection;
-
         if (!connection.isConnected) {
           await this.connection.connect();
         }
@@ -152,8 +154,8 @@ export class TypeOrmConnectionWrapper implements IConnection {
     if (rest <= 0) {
       await this.lock.acquire();
       try {
-        this.destroy();
         await this.storageRef.remove(this);
+        this.destroy();
       } catch (err) {
         Log.error(err);
       } finally {

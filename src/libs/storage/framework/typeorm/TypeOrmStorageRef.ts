@@ -390,6 +390,7 @@ export class TypeOrmStorageRef extends StorageRef {
       } else {
         wrapper = new TypeOrmConnectionWrapper(this);
       }
+      wrapper.initialize();
       this.connections.push(wrapper);
     } else if (this.isSingleConnection() && this.connections.length === 1) {
       wrapper = this.connections[0];

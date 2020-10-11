@@ -8,15 +8,18 @@ import {C_DEFAULT} from 'commons-base';
 import {SchemaUtils} from 'commons-schema-api';
 import {Column, Entity, getMetadataArgsStorage, PrimaryGeneratedColumn} from 'typeorm';
 import {TypeOrmConnectionWrapper} from '../../../src/libs/storage/framework/typeorm/TypeOrmConnectionWrapper';
+import {TypeOrmStorageRef} from '../../../src';
+import {EVENT_STORAGE_REF_PREPARED} from '../../../src/libs/storage/framework/typeorm/Constants';
 
 let bootstrap: Bootstrap;
 
 
-@suite('functional/storage/add_entity_on_runtime')
+
+@suite('functional/storage/add_entity_on_runtime (sqlite)')
 class StorageAddEntityOnRuntimeSpec {
 
 
-  static async before() {
+  async before() {
     // TestHelper.typeOrmReset();
     Bootstrap.reset();
     Config.clear();
@@ -47,7 +50,7 @@ class StorageAddEntityOnRuntimeSpec {
   }
 
 
-  static async after() {
+  async after() {
     if (bootstrap) {
       await bootstrap.shutdown();
     }
@@ -58,7 +61,7 @@ class StorageAddEntityOnRuntimeSpec {
   async 'dynamically add entity'() {
     const metadataArgsStorage = getMetadataArgsStorage();
     const storageManager = bootstrap.getStorage();
-    const storageRef = storageManager.get(C_DEFAULT);
+    const storageRef = storageManager.get(C_DEFAULT) as TypeOrmStorageRef;
 
     let entityNames = storageRef.getEntityNames();
     entityNames.sort();
@@ -101,10 +104,8 @@ class StorageAddEntityOnRuntimeSpec {
     let error = null;
     try {
       results = await connection.manager.getRepository('TestClass').find();
-
     } catch (e) {
       error = e;
-
     }
 
     expect(error).to.not.be.null;
@@ -124,5 +125,76 @@ class StorageAddEntityOnRuntimeSpec {
 
 
     await connection.close();
+    expect(storageRef.listenerCount(EVENT_STORAGE_REF_PREPARED)).to.be.eq(0);
+  }
+
+
+  @test
+  async 'dynamically add entity during opened connections'() {
+    const storageManager = bootstrap.getStorage();
+    const storageRef = storageManager.get(C_DEFAULT) as TypeOrmStorageRef;
+
+    let entityNames = storageRef.getEntityNames();
+    entityNames.sort();
+    expect(entityNames).to.be.deep.eq([
+      'ModuleEntity',
+      'SystemNodeInfo',
+      'TaskLog',
+      'TestEntity'
+    ]);
+
+    const clazz = SchemaUtils.clazz('TestClass');
+
+    const connection = await storageRef.connect() as TypeOrmConnectionWrapper;
+    // open new connection
+
+    Entity({name: 'test_class'})(clazz);
+    PrimaryGeneratedColumn({type: 'int'})({constructor: clazz}, 'id');
+    Column({type: 'varchar', length: 16})({constructor: clazz}, 'name');
+    storageRef.addEntityClass(clazz);
+
+    // now add new entity
+    entityNames = storageRef.getEntityNames();
+    expect(entityNames).to.have.length(5);
+    entityNames.sort();
+    expect(entityNames).to.be.deep.eq([
+      'ModuleEntity',
+      'SystemNodeInfo',
+      'TaskLog',
+      'TestClass',
+      'TestEntity'
+    ]);
+
+    let enttityMetadata = connection.connection.entityMetadatas;
+    expect(enttityMetadata).to.have.length(4);
+
+    // check if it can be queried
+    let results = await connection.manager.getRepository('SystemNodeInfo').find();
+
+    // check if old data is present (no in inmemory db)
+    let error = null;
+    try {
+      results = await connection.manager.getRepository('TestClass').find();
+    } catch (e) {
+      error = e;
+    }
+
+    expect(error).to.not.be.null;
+
+    const connection2 = await storageRef.connect() as TypeOrmConnectionWrapper;
+
+    enttityMetadata = connection2._connection.entityMetadatas;
+    expect(enttityMetadata).to.have.length(5);
+    expect(enttityMetadata.map(x => x.name)).to.contain('TestClass');
+
+    // check if it can be queried
+    results = await connection2.manager.getRepository('SystemNodeInfo').find();
+
+    // check if old data is present (no in inmemory db)
+    results = await connection2.manager.getRepository('TestClass').find();
+
+
+    await Promise.all([connection.close(), connection2.close()]);
+    expect(storageRef.listenerCount(EVENT_STORAGE_REF_PREPARED)).to.be.eq(0);
   }
 }

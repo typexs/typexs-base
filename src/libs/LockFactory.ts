@@ -4,6 +4,11 @@ import {Semaphore} from './Semaphore';
 
 export class LockFactory extends EventEmitter {
 
+  constructor() {
+    super();
+    this.setMaxListeners(10000);
+  }
+
 
   static NAME: string = LockFactory.name;
 
@@ -18,9 +23,8 @@ export class LockFactory extends EventEmitter {
     return this.__self__;
   }
 
-  constructor() {
-    super();
-    this.setMaxListeners(10000);
+  static reset() {
+    this.__self__ = null;
   }
 
   semaphore(max: number) {
@@ -58,6 +62,7 @@ export class LockFactory extends EventEmitter {
       }
       this.remove(s);
     }
+
   }
 
 }

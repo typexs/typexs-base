@@ -51,7 +51,7 @@ class StorageGeneralSpec {
     const storage: TypeOrmStorageRef = storageManager.get();
 
     const connections = [];
-    for (const i in _.range(0, 1001)) {
+    for (const i of _.range(0, 1001)) {
       const c = await storage.connect();
       // console.log(i + ' ' + storage.listenerCount(EVENT_STORAGE_REF_PREPARED) + ' ' + storage.listenerCount(EVENT_STORAGE_REF_SHUTDOWN));
       connections.push(c);

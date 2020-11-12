@@ -88,12 +88,12 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
   }
 
   private convertRegular(data: any, options?: IBuildOptions) {
-    const type = (<string>this.getType());
-    if (!type || !_.isString(type)) {
+    const sourceType = this.getOptions('sourceType', <string>this.getType());
+    if (!sourceType || !_.isString(sourceType)) {
       return data;
     }
 
-    const jsType = type.toLowerCase();
+    const jsType = sourceType.toLowerCase();
 
     switch (jsType) {
       case 'datetime':
@@ -141,9 +141,10 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
           }
         } else if (_.isNumber(data)) {
           return data;
-        } else if (data) {
+        } else if (_.isBoolean(data)) {
+          return data ? 1 : 0;
         } else {
-          return null;
+          // Pass to exception
         }
         break;
 

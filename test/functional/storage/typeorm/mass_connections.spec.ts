@@ -2,7 +2,8 @@ import * as _ from 'lodash';
 import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 import {Config} from 'commons-config';
-import {Bootstrap, TypeOrmStorageRef} from '../../../../src';
+import {Bootstrap} from '../../../../src/Bootstrap';
+import {TypeOrmStorageRef} from '../../../../src/libs/storage/framework/typeorm/TypeOrmStorageRef';
 import {
   EVENT_STORAGE_REF_PREPARED,
   EVENT_STORAGE_REF_SHUTDOWN

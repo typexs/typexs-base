@@ -6,6 +6,7 @@ import {IClassRef} from 'commons-schema-api';
 import {IStorage} from './IStorage';
 import {Config} from 'commons-config';
 import {IStorageRef} from './IStorageRef';
+import {Log} from '../..';
 
 
 export class Storage {
@@ -79,7 +80,13 @@ export class Storage {
   }
 
   shutdown() {
-    const ps = _.values(this.refs).map(async x => x.shutdown());
+    const ps = _.values(this.refs).map(async x => {
+      try {
+        await x.shutdown();
+      } catch (e) {
+        Log.error(e);
+      }
+    });
     return Promise.all(ps);
   }
 

@@ -670,8 +670,14 @@ export class Bootstrap {
       await (<IShutdown>bootstrap).shutdown();
     }
 
+
     await this.getStorage().shutdown();
-    await LockFactory.$().shutdown(500);
+    try {
+      await LockFactory.$().shutdown(500);
+    } catch (e) {
+
+    }
+
     LockFactory.reset();
     TypeOrmEntityRegistry.reset();
     process.removeAllListeners('exit');

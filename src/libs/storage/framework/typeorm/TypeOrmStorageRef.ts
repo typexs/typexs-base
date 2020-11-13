@@ -444,7 +444,7 @@ export class TypeOrmStorageRef extends StorageRef {
     while (this.connections.length > 0) {
       ps.push(this.connections.shift().close());
     }
-    return Promise.all(ps);
+    return Promise.all(ps).catch(x => {});
   }
 
 
@@ -460,7 +460,11 @@ export class TypeOrmStorageRef extends StorageRef {
     if (!this.isOnlyMemory() || full) {
       await this.closeConnections();
     }
-    await this.closeConnection();
+    try {
+      await this.closeConnection();
+    } catch (e) {
+    }
+
     if (full) {
       this.removeFromConnectionManager();
       this.emit(EVENT_STORAGE_REF_SHUTDOWN);

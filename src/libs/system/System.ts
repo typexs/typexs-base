@@ -265,7 +265,6 @@ export class System {
     const interval = Config.get(APP_SYSTEM_UPDATE_INTERVAL, 1000);
     this.updateTimer = setInterval(this.updateNodeRuntimeInfo.bind(this), interval);
     await EventBus.postAndForget(this.node);
-
     await this.idle();
   }
 
@@ -281,8 +280,12 @@ export class System {
     this.node.state = 'unregister';
     this.node.finished = new Date();
     if (this.controller) {
-      await this.controller.remove(SystemNodeInfo,
-        {$or: [{state: 'unregister'}, {state: 'offline'}, {key: this.node.key}]});
+      try {
+        await this.controller.remove(SystemNodeInfo,
+          {$or: [{state: 'unregister'}, {state: 'offline'}, {key: this.node.key}]});
+      } catch (e) {
+        this.logger.error(e);
+      }
     }
     await EventBus.unregister(this);
     await EventBus.postAndForget(this.node);
@@ -291,18 +294,22 @@ export class System {
 
   async idle() {
     this.node.state = 'idle';
-
-    if (this.controller) {
-      await this.controller.save(this.node);
-    }
+    await this.save();
   }
 
 
   async offline() {
     this.node.state = 'offline';
+    await this.save();
+  }
 
+  private async save() {
     if (this.controller) {
-      await this.controller.save(this.node);
+      try {
+        await this.controller.save(this.node);
+      } catch (e) {
+        this.logger.error(e);
+      }
     }
   }
 

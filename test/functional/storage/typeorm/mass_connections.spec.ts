@@ -42,7 +42,7 @@ class StorageGeneralSpec {
           username: 'txsbase',
           password: '',
           host: '127.0.0.1',
-          port: 5432,
+          port: 5436,
         } as any
       }
     }).prepareRuntime();

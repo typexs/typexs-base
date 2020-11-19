@@ -17,7 +17,7 @@ import {Invoker} from '../../../src/base/Invoker';
 import {getMetadataArgsStorage} from 'typeorm';
 
 
-const LOG_EVENT = TestHelper.logEnable(false);
+const LOG_EVENT = TestHelper.logEnable(true);
 let bootstrap: Bootstrap;
 
 @suite('functional/system/system_on_single_backend')

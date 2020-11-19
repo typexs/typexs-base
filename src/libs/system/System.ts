@@ -163,13 +163,14 @@ export class System {
       const nodes = _.remove(this.nodes, n => n.eqNode(nodeInfo));
       this.logger.debug(`remove remote node ${nodeInfo.hostname}:${nodeInfo.nodeId}--${nodeInfo.instNr}`);
       await this.invoker.use(SystemApi).onNodeUnregister(nodeInfo);
-      try {
-        await this.controller.remove(SystemNodeInfo, {key: {$in: nodes.map(x => x.key)}});
-      } catch (e) {
-        this.logger.error(e);
+      if (nodes.length > 0) {
+        try {
+          await this.controller.remove(SystemNodeInfo, {key: {$in: nodes.map(x => x.key)}});
+        } catch (e) {
+          this.logger.error(e);
+        }
       }
     }
-
     return this.node;
   }
 
@@ -294,12 +295,14 @@ export class System {
 
   async idle() {
     this.node.state = 'idle';
+    this.node.updated_at = new Date();
     await this.save();
   }
 
 
   async offline() {
     this.node.state = 'offline';
+    this.node.updated_at = new Date();
     await this.save();
   }
 

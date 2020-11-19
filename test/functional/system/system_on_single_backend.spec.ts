@@ -17,7 +17,7 @@ import {Invoker} from '../../../src/base/Invoker';
 import {getMetadataArgsStorage} from 'typeorm';
 
 
-const LOG_EVENT = TestHelper.logEnable(true);
+const LOG_EVENT = TestHelper.logEnable(false);
 let bootstrap: Bootstrap;
 
 @suite('functional/system/system_on_single_backend')
@@ -109,7 +109,6 @@ class SystemOnSingleBackendSpec {
     remoteNode = remoteNodes.pop();
     expect(remoteNode.nodeId).to.be.eq('fakeapp01');
     expect(remoteNode.state).to.be.eq('unregister');
-    expect(system.nodes).to.have.length(0);
     expect(system.nodes).to.have.length(0);
 
     nodeInfos = await bootstrap.getStorage().get().getController().find(SystemNodeInfo);

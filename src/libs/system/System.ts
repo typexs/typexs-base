@@ -98,9 +98,7 @@ export class System {
     if (this.storageRef) {
       this.controller = this.storageRef.getController();
       // check if instance number exists
-      this.nodes = await this.controller.find(SystemNodeInfo,
-        {$and: [{state: {$ne: 'unregister'}}, {state: {$ne: 'offline'}}, {state: {$ne: 'startup'}}]}, {limit: 0});
-
+      this.nodes = await this.getNodes();
       const filtered = this.nodes.filter(c => c.nodeId === nodeId && !['unregister', 'offline', 'startup'].includes(c.state));
       if (!_.isEmpty(filtered)) {
         instNr = _.max(filtered.map(x => x.instNr)) + 1;
@@ -120,6 +118,14 @@ export class System {
     this.updateNodeRuntimeInfo();
   }
 
+  getNodes() {
+    if (this.controller) {
+      return this.controller.find(SystemNodeInfo,
+        {$and: [{state: {$ne: 'unregister'}}, {state: {$ne: 'offline'}}, {state: {$ne: 'startup'}}]}, {limit: 0});
+    } else {
+      return this.nodes;
+    }
+  }
 
   getNodeId() {
     return this.node.nodeId;
@@ -140,6 +146,7 @@ export class System {
     // clear local info
     delete nodeInfo.isBackend;
 
+    this.nodes = await this.getNodes();
     const node = _.find(this.nodes, n => n.eqNode(nodeInfo));
     this.logger.debug(`system node: ${nodeInfo.hostname}:${nodeInfo.nodeId}-${nodeInfo.instNr} ` +
       `state=${nodeInfo.state} [${this.node.nodeId}] already exists=${!!node}`);

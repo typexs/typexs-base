@@ -98,7 +98,8 @@ export class System {
     if (this.storageRef) {
       this.controller = this.storageRef.getController();
       // check if instance number exists
-      this.nodes = await this.getNodes();
+      this.nodes = await this.controller.find(SystemNodeInfo,
+        {$and: [{state: {$ne: 'unregister'}}, {state: {$ne: 'offline'}}, {state: {$ne: 'startup'}}]}, {limit: 0});
       const filtered = this.nodes.filter(c => c.nodeId === nodeId && !['unregister', 'offline', 'startup'].includes(c.state));
       if (!_.isEmpty(filtered)) {
         instNr = _.max(filtered.map(x => x.instNr)) + 1;
@@ -116,15 +117,6 @@ export class System {
     this.node.isBackend = true;
     this.node.updated_at = this.node.started_at;
     this.updateNodeRuntimeInfo();
-  }
-
-  getNodes() {
-    if (this.controller) {
-      return this.controller.find(SystemNodeInfo,
-        {$and: [{state: {$ne: 'unregister'}}, {state: {$ne: 'offline'}}, {state: {$ne: 'startup'}}]}, {limit: 0});
-    } else {
-      return this.nodes;
-    }
   }
 
   getNodeId() {
@@ -146,7 +138,6 @@ export class System {
     // clear local info
     delete nodeInfo.isBackend;
 
-    this.nodes = await this.getNodes();
     const node = _.find(this.nodes, n => n.eqNode(nodeInfo));
     this.logger.debug(`system node: ${nodeInfo.hostname}:${nodeInfo.nodeId}-${nodeInfo.instNr} ` +
       `state=${nodeInfo.state} [${this.node.nodeId}] already exists=${!!node}`);
@@ -161,11 +152,7 @@ export class System {
       } catch (e) {
         this.logger.error(e);
       }
-      try {
-        await this.controller.save(nodeInfo);
-      } catch (e) {
-        this.logger.error(e);
-      }
+      await this.save(nodeInfo);
     } else if (nodeInfo.state === 'unregister') {
       const nodes = _.remove(this.nodes, n => n.eqNode(nodeInfo));
       this.logger.debug(`remove remote node ${nodeInfo.hostname}:${nodeInfo.nodeId}--${nodeInfo.instNr}`);
@@ -303,24 +290,25 @@ export class System {
   async idle() {
     this.node.state = 'idle';
     this.node.updated_at = new Date();
-    await this.save();
+    await this.save(this.node);
   }
 
 
   async offline() {
     this.node.state = 'offline';
     this.node.updated_at = new Date();
-    await this.save();
+    await this.save(this.node);
   }
 
-  private async save() {
+  private async save(node: SystemNodeInfo) {
     if (this.controller) {
       try {
-        await this.controller.save(this.node);
+        await this.controller.save(node);
       } catch (e) {
         this.logger.error(e);
       }
     }
   }
+
 
 }

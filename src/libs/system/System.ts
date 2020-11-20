@@ -303,7 +303,13 @@ export class System {
   private async save(node: SystemNodeInfo) {
     if (this.controller) {
       try {
-        await this.controller.save(node);
+        let r = await this.controller.findOne(SystemNodeInfo, {key: node.key});
+        if (r) {
+          _.assign(r, node);
+        } else {
+          r = node;
+        }
+        await this.controller.save(r);
       } catch (e) {
         this.logger.error(e);
       }

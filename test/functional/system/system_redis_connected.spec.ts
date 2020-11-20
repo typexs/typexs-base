@@ -65,6 +65,9 @@ class SystemRedisConnectedSpec {
     expect(system.node.state).to.eq('unregister');
     expect(system.node.contexts).to.have.length.gt(0);
     expect(system.node.contexts.map(x => x.context)).to.deep.eq(['config', 'tasks', 'workers']);
+
+    const nodes = system.getNodesWith('workers');
+    expect(nodes).to.have.length(1);
   }
 
 
@@ -127,6 +130,9 @@ class SystemRedisConnectedSpec {
       }]
     );
     expect(system.nodes).to.have.length(0);
+
+    const nodes = system.getNodesWith('workers');
+    expect(nodes).to.have.length(1);
   }
 
 

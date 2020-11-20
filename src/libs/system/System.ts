@@ -23,6 +23,8 @@ import {Invoker} from '../../base/Invoker';
 import {SystemInfoResponse} from './SystemInfoResponse';
 import {ILoggerApi} from '../logging/ILoggerApi';
 import {IEntityController} from '../storage/IEntityController';
+import {inspect} from 'util';
+import {LockFactory} from '../LockFactory';
 
 export class System {
 
@@ -36,6 +38,7 @@ export class System {
   @Inject(C_STORAGE_DEFAULT)
   storageRef: StorageRef;
 
+  semaphore = LockFactory.$().semaphore(1);
 
   /**
    * Use entity controller to handle values
@@ -131,6 +134,8 @@ export class System {
       return null;
     }
 
+    await this.semaphore.acquire();
+
     if (nodeInfo instanceof SystemNodeInfo) {
       nodeInfo.restore();
     }
@@ -142,6 +147,7 @@ export class System {
     this.logger.debug(`system node: ${nodeInfo.hostname}:${nodeInfo.nodeId}-${nodeInfo.instNr} ` +
       `state=${nodeInfo.state} [${this.node.nodeId}] already exists=${!!node}`);
     if ((nodeInfo.state === 'register' || (nodeInfo.state === 'idle' && !node))) {
+      console.log(inspect(nodeInfo, false, 1));
       if (!node) {
         this.nodes.push(nodeInfo);
       }
@@ -156,7 +162,12 @@ export class System {
     } else if (nodeInfo.state === 'unregister') {
       const nodes = _.remove(this.nodes, n => n.eqNode(nodeInfo));
       this.logger.debug(`remove remote node ${nodeInfo.hostname}:${nodeInfo.nodeId}--${nodeInfo.instNr}`);
-      await this.invoker.use(SystemApi).onNodeUnregister(nodeInfo);
+      try {
+        await this.invoker.use(SystemApi).onNodeUnregister(nodeInfo);
+      } catch (e) {
+        this.logger.error(e);
+      }
+
       if (nodes.length > 0) {
         try {
           await this.controller.remove(SystemNodeInfo, {key: {$in: nodes.map(x => x.key)}});
@@ -165,6 +176,7 @@ export class System {
         }
       }
     }
+    this.semaphore.release();
     return this.node;
   }
 

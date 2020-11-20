@@ -22,7 +22,7 @@ export class ConfigSystemExtension implements ISystemApi {
   cache: Cache;
 
 
-  async getNodeInfos() {
+  getNodeInfos() {
     const data = ConfigUtils.clone();
     const nodeTaskContext: INodeInfo = {
       context: C_CONFIG,
@@ -34,7 +34,7 @@ export class ConfigSystemExtension implements ISystemApi {
 
   async onNodeRegister(x: SystemNodeInfo) {
     if (x && _.has(x, 'contexts')) {
-      const found = _.remove(x.contexts, x => x.context === C_CONFIG).shift();
+      const found = _.find(x.contexts, x => x.context === C_CONFIG);
       if (found) {
         let c = _.get(found, 'config', {});
         if (_.isArray(c)) {

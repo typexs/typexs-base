@@ -237,7 +237,6 @@ class BootstrapGeneralSpec {
     await bootstrap.activateLogger();
     await bootstrap.activateErrorHandling();
     bootstrap = await bootstrap.prepareRuntime();
-    // console.log(inspect(Config.get('modules'),false,10));
     await bootstrap.activateStorage();
     await bootstrap.startup();
     const activators = bootstrap.getActivators();

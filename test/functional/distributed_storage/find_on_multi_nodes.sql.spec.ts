@@ -92,7 +92,6 @@ class DistributedQuerySpec {
   async 'findOne single entity'() {
     const controller = Container.get(DistributedStorageEntityController);
     const entity = await controller.findOne(DataRow, {id: 10}, {hint: 'remote02'});
-    // console.log(entity);
     expect(entity).to.deep.include({
       id: 10,
       someNumber: 100,
@@ -109,7 +108,6 @@ class DistributedQuerySpec {
   async 'findOne single entity by target'() {
     const controller = Container.get(DistributedStorageEntityController);
     const entity = await controller.findOne(DataRow, {id: 11}, {targetIds: ['remote01']});
-    // console.log(entity);
     expect(entity).to.deep.include({
       id: 11,
       someNumber: 110,

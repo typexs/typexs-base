@@ -23,7 +23,6 @@ import {Invoker} from '../../base/Invoker';
 import {SystemInfoResponse} from './SystemInfoResponse';
 import {ILoggerApi} from '../logging/ILoggerApi';
 import {IEntityController} from '../storage/IEntityController';
-import {inspect} from 'util';
 import {LockFactory} from '../LockFactory';
 
 export class System {

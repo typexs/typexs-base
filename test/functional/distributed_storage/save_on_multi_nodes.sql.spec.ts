@@ -90,7 +90,6 @@ class DistributedStorageSaveSpec {
     testEntry.someAny = JSON.stringify({hallo: 'welt'});
 
     const saved = await controller.save(testEntry);
-    // console.log(inspect(saved, false, 10));
     const results = await controller.find(DataRow, {});
 
     expect(saved).to.have.length(1);
@@ -123,7 +122,6 @@ class DistributedStorageSaveSpec {
     }
 
     const saved = await controller.save(toSave);
-    // console.log(inspect(saved, false, 10));
     const results = await controller.find(DataRow, {someString: 'saveMany'});
 
     expect(saved).to.have.length(10);
@@ -231,7 +229,6 @@ class DistributedStorageSaveSpec {
     }
 
     const saved = await controller.save(toSave, {targetIds: ['remote01']});
-    // console.log(inspect(saved, false, 10));
     const results = await controller.find(DataRow, {someString: 'saveManyOnTarget'});
 
     expect(saved).to.have.length(10);

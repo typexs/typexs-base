@@ -4,7 +4,6 @@ import {expect} from 'chai';
 import {Bootstrap} from '../../../src/Bootstrap';
 import {TEST_STORAGE_OPTIONS} from '../config';
 import {IEventBusConfiguration} from 'commons-eventbus/browser';
-import {Container} from 'typedi';
 import {System} from '../../../src/libs/system/System';
 import {SystemApi} from '../../../src/api/System.api';
 import {ISystemApi} from '../../../src/api/ISystemApi';
@@ -14,7 +13,7 @@ import {SpawnHandle} from '../SpawnHandle';
 import {SystemNodeInfo} from '../../../src/entities/SystemNodeInfo';
 import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
 import {Invoker} from '../../../src/base/Invoker';
-import {getMetadataArgsStorage} from 'typeorm';
+import {Injector} from '../../../src/libs/di/Injector';
 
 
 const LOG_EVENT = TestHelper.logEnable(false);
@@ -58,13 +57,14 @@ class SystemRedisConnectedSpec {
   @test
   async 'check own node info'() {
     // const x = getMetadataArgsStorage();
-    const system: System = Container.get(System.NAME);
+    const system: System = Injector.get(System.NAME);
     expect(system.node.state).to.eq('idle');
-
     await bootstrap.shutdown();
     bootstrap = null;
     expect(system.node.nodeId).to.eq('system');
     expect(system.node.state).to.eq('unregister');
+    expect(system.node.contexts).to.have.length.gt(0);
+    expect(system.node.contexts.map(x => x.context)).to.deep.eq(['config', 'tasks', 'workers']);
   }
 
 
@@ -86,10 +86,10 @@ class SystemRedisConnectedSpec {
       }
     }
 
-    const invoker: Invoker = Container.get(Invoker.NAME);
+    const invoker: Invoker = Injector.get(Invoker.NAME);
     invoker.register(SystemApi, OnSystem);
 
-    const system: System = Container.get(System.NAME);
+    const system: System = Injector.get(System.NAME);
 
     const p = SpawnHandle.do(__dirname + '/fake_app/node.ts').start(LOG_EVENT);
     await p.started;
@@ -98,8 +98,12 @@ class SystemRedisConnectedSpec {
     let remoteNode = remoteNodes.shift();
     expect(remoteNode.nodeId).to.be.eq('fakeapp01');
     expect(remoteNode.state).to.be.eq('register');
+    expect(remoteNode.contexts).to.have.length.gt(0);
+    expect(remoteNode.contexts.map(x => x.context)).to.deep.eq(['config', 'tasks', 'workers']);
+
     expect(system.nodes).to.have.length(1);
     expect(system.nodes[0].nodeId).to.be.eq('fakeapp01');
+    expect(system.nodes[0].contexts.map(x => x.context)).to.deep.eq(['config', 'tasks', 'workers']);
 
     let nodeInfos = await bootstrap.getStorage().get().getController().find(SystemNodeInfo);
     expect(nodeInfos).to.have.length(2);
@@ -128,7 +132,7 @@ class SystemRedisConnectedSpec {
 
   @test
   async 'check system information'() {
-    const system: System = Container.get(System.NAME);
+    const system: System = Injector.get(System.NAME);
 
     expect(system.info).to.not.be.null;
     expect(system.info.networks).to.not.be.null;

@@ -19,7 +19,6 @@ import {ITypexsOptions} from '../../../../src/libs/ITypexsOptions';
       logging: {enable: LOG_EVENT, level: 'debug', loggers: [{name: '*', level: 'debug'}]},
       modules: {paths: [__dirname + '/../../../..']},
       storage: {default: TEST_STORAGE_OPTIONS},
-      // cache: {bins: {default: 'redis1'}, adapter: {redis1: {type: 'redis', host: '127.0.0.1', port: 6379}}},
       eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}}
     });
   bootstrap.activateLogger();
@@ -30,12 +29,6 @@ import {ITypexsOptions} from '../../../../src/libs/ITypexsOptions';
   process.send('startup');
 
   const timeout = parseInt(Config.get('argv.timeout', 20000), 0);
-  /*
-  let commands = bootstrap.getCommands();
-  expect(commands.length).to.be.gt(0);
-  let command = _.find(commands, e => e.command == 'worker');
-  command.handler({});
-  */
 
   const t = setTimeout(async () => {
     await bootstrap.shutdown();
@@ -43,7 +36,6 @@ import {ITypexsOptions} from '../../../../src/libs/ITypexsOptions';
 
   let running = true;
   process.on(<any>'message', async (m: string) => {
-
     if (m === 'shutdown') {
       running = false;
       clearTimeout(t);
@@ -51,6 +43,7 @@ import {ITypexsOptions} from '../../../../src/libs/ITypexsOptions';
       process.exit(0);
     }
   });
+
   process.on('exit', async () => {
     if (running) {
       running = false;

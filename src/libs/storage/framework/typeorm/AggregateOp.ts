@@ -274,9 +274,6 @@ export class AggregateOp<T> implements IAggregateOp, IMangoWalker {
 
       }
 
-      results[XS_P_$LIMIT] = this.limit;
-      results[XS_P_$OFFSET] = this.offset;
-      results[XS_P_$COUNT] = count;
 
       const r = repo.aggregate(pipeline);
       if (options && options.limit) {
@@ -289,6 +286,12 @@ export class AggregateOp<T> implements IAggregateOp, IMangoWalker {
       while (n = await r.next()) {
         results.push(n);
       }
+
+
+      results[XS_P_$LIMIT] = this.limit;
+      results[XS_P_$OFFSET] = this.offset;
+      results[XS_P_$COUNT] = count;
+
     } catch (e) {
       this.error = e;
     } finally {

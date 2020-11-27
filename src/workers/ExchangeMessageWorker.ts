@@ -82,8 +82,6 @@ export class ExchangeMessageWorker implements IQueueProcessor<IMessageWorkload>,
         this.logger.debug('skipping event: ' + event.id + ' ' + event.reqEventId + ' ' + event.targetIds);
         return;
       }
-
-
       const q: IMessageWorkload = {
         event: event
       };

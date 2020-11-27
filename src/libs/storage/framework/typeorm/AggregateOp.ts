@@ -96,6 +96,18 @@ export class AggregateOp<T> implements IAggregateOp, IMangoWalker {
     this.entityRef = TypeOrmEntityRegistry.$().getEntityRefFor(cls);
     let results: any[] = [];
 
+
+    this.limit = 0;
+    if (options && options.limit) {
+      this.limit = options.limit;
+    }
+
+    this.offset = 0;
+    if (options && options.offset) {
+      this.limit = options.offset;
+    }
+
+
     await this.controller.invoker.use(StorageApi).doBeforeAggregate(this);
 
     if (this.controller.storageRef.dbType === 'mongodb') {
@@ -140,17 +152,6 @@ export class AggregateOp<T> implements IAggregateOp, IMangoWalker {
       }
       // const _alias = 'aggr';
       this.queryBuilder = repo.createQueryBuilder(this.alias) as SelectQueryBuilder<T>;
-
-
-      this.limit = 0;
-      if (options && options.limit) {
-        this.limit = options.limit;
-      }
-
-      this.offset = 0;
-      if (options && options.offset) {
-        this.limit = options.offset;
-      }
 
       const pipelineExp = new MangoExpression(pipeline);
       pipelineExp.visit(this);
@@ -263,9 +264,26 @@ export class AggregateOp<T> implements IAggregateOp, IMangoWalker {
         });
       }
 
+      const countPipeline = _.clone(pipeline);
+      countPipeline.push({$count: 'count'});
+      let count = -1;
+      try {
+        const countAll = await repo.aggregate(countPipeline).next();
+        count = _.get(countAll, 'count', count);
+      } catch (e) {
+
+      }
+
+      results[XS_P_$LIMIT] = this.limit;
+      results[XS_P_$OFFSET] = this.offset;
+      results[XS_P_$COUNT] = count;
+
       const r = repo.aggregate(pipeline);
       if (options && options.limit) {
         r.limit(options.limit);
+      }
+      if (options && options.offset) {
+        r.skip(options.offset);
       }
       let n: any = null;
       while (n = await r.next()) {

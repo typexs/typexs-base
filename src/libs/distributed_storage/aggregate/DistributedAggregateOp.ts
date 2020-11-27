@@ -13,6 +13,7 @@ import {DistributedQueryWorker} from '../../../workers/DistributedQueryWorker';
 import {ClassUtils} from 'commons-base';
 import {__NODE_ID__} from '../Constants';
 import {C_WORKERS} from '../../worker/Constants';
+import {XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '../../Constants';
 
 
 export class DistributedAggregateOp
@@ -89,7 +90,7 @@ export class DistributedAggregateOp
     let count = 0;
     const errors: string[] = [];
     responses.map(x => {
-      count += x.results.length;
+      count += x.count;
       if (x.error) {
         errors.push(x.nodeId + ': ' + x.error.message);
       }
@@ -107,6 +108,9 @@ export class DistributedAggregateOp
         results.push(r);
       }
     }
+    results[XS_P_$COUNT] = count;
+    results[XS_P_$LIMIT] = this.request.options.limit;
+    results[XS_P_$OFFSET] = this.request.options.offset;
     return results;
   }
 

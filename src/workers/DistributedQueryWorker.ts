@@ -592,8 +592,20 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
       const entityController = o.entityController;
 
       response.results = await entityController.aggregate(classRef.getClass(), o.pipeline, o.options);
+
+      response.results.forEach(x => {
+        _.set(x, __CLASS__, classRef.name);
+        _.set(x, __REGISTRY__, _.get(classRef, 'lookupRegistry'));
+        _.set(x, __NODE_ID__, this.nodeId);
+      });
+
+      response.count = response.results[XS_P_$COUNT];
+      response.limit = response.results[XS_P_$LIMIT];
+      response.offset = response.results[XS_P_$OFFSET];
+
       this.logger.debug('distributed query worker: aggregate  ' + classRef.name + ' amount of ' + response.results.length +
         '[qId: ' + response.reqEventId + ']');
+
     } catch (err) {
       response.error = err;
       this.logger.error(err);

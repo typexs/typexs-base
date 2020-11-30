@@ -181,12 +181,12 @@ export class AggregateOp<T> implements IAggregateOp, IMangoWalker {
         count = -2;
       }
 
-      if (this.limit > 0) {
-        this.queryBuilder.limit(this.limit);
-      }
-
       if (this.offset > 0) {
         this.queryBuilder.offset(this.offset);
+      }
+
+      if (this.limit > 0) {
+        this.queryBuilder.limit(this.limit);
       }
 
       if (this.sort) {
@@ -264,7 +264,7 @@ export class AggregateOp<T> implements IAggregateOp, IMangoWalker {
         });
       }
 
-      if (this.sort) {
+      if (!_.isEmpty(this.sort)) {
         const sort = {};
         _.keys(this.sort).forEach(x => {
           sort[x] = this.sort[x] === 'asc' ? 1 : -1;

@@ -46,6 +46,9 @@ export class DistributedAggregateOp
     this.pipeline = pipeline;
     options = options || {};
     _.defaults(options, {
+      limit: 50,
+      offset: null,
+      sort: null,
       timeout: 10000
     });
     this.options = options;

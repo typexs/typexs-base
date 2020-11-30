@@ -90,6 +90,11 @@ export class AggregateOp<T> implements IAggregateOp, IMangoWalker {
       throw new Error('aggregate: pipeline is not an array or is empty');
     }
 
+    this.limit = 0;
+    this.offset = 0;
+    this.sort = _.get(options, 'sort', {});
+
+
     this.entityType = cls;
     this.pipeline = pipeline;
     this.options = options;
@@ -97,14 +102,12 @@ export class AggregateOp<T> implements IAggregateOp, IMangoWalker {
     let results: any[] = [];
 
 
-    this.limit = 0;
     if (options && options.limit) {
       this.limit = options.limit;
     }
 
-    this.offset = 0;
     if (options && options.offset) {
-      this.limit = options.offset;
+      this.offset = options.offset;
     }
 
 
@@ -130,9 +133,6 @@ export class AggregateOp<T> implements IAggregateOp, IMangoWalker {
     this.cacheFields = [];
     this.firstSelect = false;
     this.alias = 'aggr';
-    this.limit = 0;
-    this.offset = 0;
-    this.sort = _.get(options, 'sort', {});
 
     // throw new NotYetImplementedError('interpretation of aggregate array in pending ... ');
     let results: any[] = [];
@@ -262,6 +262,14 @@ export class AggregateOp<T> implements IAggregateOp, IMangoWalker {
             }
           }
         });
+      }
+
+      if (this.sort) {
+        const sort = {};
+        _.keys(this.sort).forEach(x => {
+          sort[x] = this.sort[x] === 'asc' ? 1 : -1;
+        });
+        pipeline.push({$sort: sort});
       }
 
       const countPipeline = _.clone(pipeline);

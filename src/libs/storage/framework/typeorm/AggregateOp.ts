@@ -284,11 +284,12 @@ export class AggregateOp<T> implements IAggregateOp, IMangoWalker {
 
 
       const r = repo.aggregate(pipeline);
-      if (options && options.limit) {
-        r.limit(options.limit);
+
+      if (this.offset) {
+        r.skip(this.offset);
       }
-      if (options && options.offset) {
-        r.skip(options.offset);
+      if (this.limit) {
+        r.limit(this.limit);
       }
       let n: any = null;
       while (n = await r.next()) {

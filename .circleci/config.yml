@@ -1,0 +1,40 @@
+version: 2
+jobs:
+  test:
+    docker:
+      - image: circleci/node:14
+    working_directory: ~/app
+
+    steps:
+      - checkout
+      - run:
+          name: Update npm
+          command: 'sudo npm install -g npm@latest'
+
+      - run:
+          name: Install npm wee
+          command: npm install
+
+      - setup_remote_docker
+
+      - run:
+          name: Install Docker Compose
+          command: |
+            set -x
+            curl -L https://github.com/docker/compose/releases/download/1.25.1/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
+            chmod +x /usr/local/bin/docker-compose
+
+      - run:
+          name: Start container
+          command: |
+            set -x
+            docker-compose -f docker/testing/docker-compose.yml up -d
+      - run:
+          name: Test
+          command: npm test
+
+# Orchestrate our job run sequence
+workflows:
+  test:
+    jobs:
+      - test

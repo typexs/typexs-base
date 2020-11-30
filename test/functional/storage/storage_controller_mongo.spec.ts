@@ -332,5 +332,101 @@ class StorageControllerMongoSpec {
     expect(driver_removed_count).to.deep.eq([{_id: 'count', sum: 50}]);
   }
 
+
+  @test
+  async 'aggregate with sort / offset / limit'() {
+
+    const car1 = new MdbPerson();
+    car1.id = 'person-10';
+    car1.firstName = 'Green';
+    car1.lastName = 'Pink';
+    car1.age = 100;
+
+    const car2 = new MdbPerson();
+    car2.id = 'person-20';
+    car2.firstName = 'Yellow';
+    car2.lastName = 'Pink';
+    car2.age = 200;
+
+    const car3 = new MdbPerson();
+    car3.id = 'person-30';
+    car3.firstName = 'Blue';
+    car3.lastName = 'Pink';
+    car3.age = 300;
+
+    const driver_save_res = await controller.save([car1, car2, car3]);
+
+    const driver_found = await controller.find(MdbPerson);
+    expect(driver_found).to.have.length(3);
+
+    const driver_removed_count = await controller.aggregate(MdbPerson, [
+        {$match: {lastName: 'Pink'}},
+        {
+          $project: {
+            last: '$lastName',
+            age: '$age'
+          }
+        },
+      ],
+      {sort: {age: 'desc'}});
+    expect(driver_removed_count).to.deep.eq([
+      {
+        '_id': 'person-30',
+        'age': 300,
+        'last': 'Pink',
+      },
+      {
+        '_id': 'person-20',
+        'age': 200,
+        'last': 'Pink',
+      },
+      {
+        '_id': 'person-10',
+        'age': 100,
+        'last': 'Pink'
+      }
+    ]);
+
+    const driver_removed_offset = await controller.aggregate(MdbPerson, [
+        {$match: {lastName: 'Pink'}},
+        {
+          $project: {
+            last: '$lastName',
+            age: '$age'
+          }
+        },
+      ],
+      {sort: {age: 'desc'}, offset: 0, limit: 1});
+    expect(driver_removed_offset).to.deep.eq([
+      {
+        '_id': 'person-30',
+        'age': 300,
+        'last': 'Pink',
+      }
+    ]);
+    const driver_removed_offset_rest = await controller.aggregate(MdbPerson, [
+        {$match: {lastName: 'Pink'}},
+        {
+          $project: {
+            last: '$lastName',
+            age: '$age'
+          }
+        },
+      ],
+      {sort: {age: 'desc'}, offset: 1, limit: 2});
+    expect(driver_removed_offset_rest).to.deep.eq([
+      {
+        '_id': 'person-20',
+        'age': 200,
+        'last': 'Pink',
+      },
+      {
+        '_id': 'person-10',
+        'age': 100,
+        'last': 'Pink'
+      }
+    ]);
+  }
+
 }
 

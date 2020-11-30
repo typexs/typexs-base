@@ -110,7 +110,10 @@ class DistributedStorageSaveSpec {
 
     expect(results).to.have.length(1);
     results = _.orderBy(results, [__NODE_ID__]);
-    expect(results[0]).to.be.deep.eq({sum: 10, __nodeId__: 'remote01'});
+    expect(results[0]).to.be.deep.eq({
+      sum: 10, __nodeId__: 'remote01', '__registry__': 'typeorm',
+      '__class__': 'DataRow'
+    });
 
     const nodeIds = _.uniq(results.map(x => {
       return x[__NODE_ID__];
@@ -130,9 +133,18 @@ class DistributedStorageSaveSpec {
     expect(results).to.have.length(3);
     results = _.orderBy(results, [__NODE_ID__, 'someFlag']);
     expect(results).to.be.deep.eq([
-      {someFlag: '0', sum: 3, __nodeId__: 'remote01'},
-      {someFlag: '10', sum: 3, __nodeId__: 'remote01'},
-      {someFlag: '20', sum: 4, __nodeId__: 'remote01'}
+      {
+        someFlag: '0', sum: 3, __nodeId__: 'remote01', '__registry__': 'typeorm',
+        '__class__': 'DataRow'
+      },
+      {
+        someFlag: '10', sum: 3, __nodeId__: 'remote01', '__registry__': 'typeorm',
+        '__class__': 'DataRow'
+      },
+      {
+        someFlag: '20', sum: 4, __nodeId__: 'remote01', '__registry__': 'typeorm',
+        '__class__': 'DataRow'
+      }
     ]);
 
     const nodeIds = _.uniq(results.map(x => {
@@ -152,7 +164,10 @@ class DistributedStorageSaveSpec {
     ]) as any[];
 
     expect(results).to.have.length(1);
-    expect(results[0]).to.be.deep.eq({someFlag: '10', sum: 7, __nodeId__: 'remote01'});
+    expect(results[0]).to.be.deep.eq({
+      someFlag: '10', sum: 7, __nodeId__: 'remote01', '__registry__': 'typeorm',
+      '__class__': 'DataRow'
+    });
 
     const nodeIds = _.uniq(results.map(x => {
       return x[__NODE_ID__];

@@ -193,7 +193,7 @@ export class AggregateOp<T> implements IAggregateOp, IMangoWalker {
         const nullSupport = this.controller.storageRef.getSchemaHandler().supportsSortNull();
         const alias = this.queryBuilder.alias;
         _.keys(this.sort).forEach(k => {
-          const _k = this.queryBuilder.escape(alias) + '.' + k;
+          const _k = this.queryBuilder.escape(alias) + '.' + this.queryBuilder.escape(k);
           if (nullSupport) {
             this.queryBuilder.addOrderBy(_k, this.sort[k] === 'asc' ? 'ASC' : 'DESC',
               this.sort[k] === 'asc' ? 'NULLS FIRST' : 'NULLS LAST'

@@ -132,14 +132,15 @@ export class FindOp<T> implements IFindOp<T> {
         qb.offset(this.options.offset);
       }
 
+
       if (_.isNull(this.options.sort)) {
         entityRef.getPropertyRefs().filter(x => x.isIdentifier()).forEach(x => {
-          qb.addOrderBy(qb.alias + '.' + x.storingName, 'ASC');
+          qb.addOrderBy(qb.escape(qb.alias) + '.' + qb.escape(x.storingName), 'ASC');
         });
       } else {
         _.keys(this.options.sort).forEach(sortKey => {
           const v: string = this.options.sort[sortKey];
-          qb.addOrderBy(qb.alias + '.' + sortKey, <'ASC' | 'DESC'>v.toUpperCase());
+          qb.addOrderBy(qb.escape(qb.alias) + '.' + qb.escape(sortKey), <'ASC' | 'DESC'>v.toUpperCase());
         });
       }
 

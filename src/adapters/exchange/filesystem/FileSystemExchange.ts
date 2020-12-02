@@ -119,6 +119,10 @@ export class FileSystemExchange extends AbstractExchange<FileSystemRequest, File
 
 
   async handleRequest(request: FileSystemRequest, res: FileSystemResponse) {
+    if (_.isEmpty(this.allowedPaths)) {
+      res.error = new Error('access to path not allowed [0]');
+      return;
+    }
     res.options = request.options;
     if (_.isEmpty(request) || _.isEmpty(_.get(request, 'options.path', null))) {
       res.error = new Error('no path in request');
@@ -131,7 +135,7 @@ export class FileSystemExchange extends AbstractExchange<FileSystemRequest, File
 
     const allowed = !!this.allowedPaths.find(x => x.match ? MatchUtils.miniMatch(x.path, path) : path.startsWith(x.path));
     if (!allowed) {
-      res.error = new Error('access to path not allowed');
+      res.error = new Error('access to path not allowed [1]');
       return;
     }
 

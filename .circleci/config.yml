@@ -11,10 +11,10 @@ jobs:
       - run:
           name: NVM
           command: |
-#            curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
             nvm install 14 && nvm use 14 && nvm alias default 14
             node -v
             npm -v
+
 #            echo '[ -s "$HOME/.bashrc" ] && \. "$HOME/.bashrc"' >> $HOME/.bash_profile
 #            echo 'export NVM_DIR=$HOME/.nvm' >> $BASH_ENV
 #            echo 'source $NVM_DIR/nvm.sh' >> $BASH_ENV

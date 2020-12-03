@@ -21,7 +21,7 @@ export class Message<REQ extends AbstractEvent, RES extends AbstractEvent>
   async beforeSend(req: REQ) {
     if (_.isUndefined(this.options.skipLocal) ||
       !_.get(this.options, 'skipLocal', false)) {
-      if (!_.isEmpty(this.targetIds) && !this.targetIds.includes(this.getLocalNodeId())) {
+      if (!this.detectTargets && !_.isEmpty(this.targetIds) && !this.targetIds.includes(this.getLocalNodeId())) {
         // concrete targets are given, were the local node aren't part of it
         return;
       }

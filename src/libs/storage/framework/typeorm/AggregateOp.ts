@@ -29,6 +29,7 @@ import {
 } from '@allgemein/mango-expressions';
 import {TypeOrmEntityController} from './TypeOrmEntityController';
 import {convertPropertyValueJsonToString} from './Helper';
+import {TypeOrmUtils} from './TypeOrmUtils';
 
 
 export interface ISqlAggregateParam {
@@ -191,9 +192,9 @@ export class AggregateOp<T> implements IAggregateOp, IMangoWalker {
 
       if (this.sort) {
         const nullSupport = this.controller.storageRef.getSchemaHandler().supportsSortNull();
-        const alias = this.queryBuilder.alias;
+        // const alias = this.queryBuilder.alias;
         _.keys(this.sort).forEach(k => {
-          const _k = this.queryBuilder.escape(alias) + '.' + this.queryBuilder.escape(k);
+          const _k = TypeOrmUtils.aliasKey(this.queryBuilder, k);
           if (nullSupport) {
             this.queryBuilder.addOrderBy(_k, this.sort[k] === 'asc' ? 'ASC' : 'DESC',
               this.sort[k] === 'asc' ? 'NULLS FIRST' : 'NULLS LAST'

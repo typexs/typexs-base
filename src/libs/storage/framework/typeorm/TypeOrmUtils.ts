@@ -1,11 +1,38 @@
 import {TypeOrmEntityRef} from './schema/TypeOrmEntityRef';
 import {ColumnType} from 'typeorm/browser';
-
+import * as _ from 'lodash';
 import {TypeOrmEntityRegistry} from './schema/TypeOrmEntityRegistry';
 import {JS_DATA_TYPES} from 'commons-schema-api/browser';
+import {QueryBuilder} from 'typeorm';
 
 
 export class TypeOrmUtils {
+
+  static aliasKey(qb: QueryBuilder<any>, k: string, sep: string = '.') {
+    const keyIsAlias = qb.expressionMap.selects.find(x => x.aliasName === k);
+    if (keyIsAlias) {
+      return qb.escape(k);
+    }
+    const keyIsSelect = qb.expressionMap.selects.find(x => _.last(x.selection.split('.')) === k);
+    if (keyIsSelect) {
+      return keyIsSelect.selection;
+      // if (keyIsSelect.aliasName) {
+      //   return keyIsSelect.aliasName;
+      // } else {
+      //   return keyIsSelect.selection;
+      // }
+    }
+
+    const kSplit = k.split(sep).map(x => x.replace(/^\"+|\"+$|^\'+|\'+$/g, '').trim());
+    if (kSplit.length === 1) {
+      kSplit.unshift(qb.alias);
+    } else if (kSplit.length === 0) {
+      throw new Error('key not found: ' + k + ' [' + JSON.stringify(kSplit) + ']');
+    } else if (kSplit[0] !== qb.alias) {
+      throw new Error('key not the same: ' + k + ' [' + JSON.stringify(kSplit) + ']');
+    }
+    return kSplit.map(x => qb.escape(x)).join(sep);
+  }
 
   static resolveName(instance: any): string {
     const xsdef: TypeOrmEntityRef = TypeOrmEntityRegistry.$().getEntityRefFor(instance);

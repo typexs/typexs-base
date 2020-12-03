@@ -20,6 +20,13 @@ export abstract class AbstractMessage<REQ extends AbstractEvent, RES extends Abs
 
   protected targetIds: string[];
 
+  /**
+   * Detect targets
+   *
+   * @protected
+   */
+  protected detectTargets: boolean;
+
   protected results: any | any[];
 
   protected active = true;
@@ -48,9 +55,12 @@ export abstract class AbstractMessage<REQ extends AbstractEvent, RES extends Abs
     this.resClass = resClass;
     this.logger = _.get(options, 'logger', Log.getLogger());
     if (options.targetIds && _.isArray(options.targetIds)) {
+      this.detectTargets = false;
       options.targetIds.forEach(x => {
         this.target(x);
       });
+    } else {
+      this.detectTargets = true;
     }
     this.options = options;
     _.defaults(this.options, {

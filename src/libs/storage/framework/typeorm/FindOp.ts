@@ -17,6 +17,7 @@ import {Injector} from '../../../di/Injector';
 import {Cache} from '../../../cache/Cache';
 import {TypeOrmConnectionWrapper} from './TypeOrmConnectionWrapper';
 import {convertPropertyValueStringToJson} from './Helper';
+import {TypeOrmUtils} from './TypeOrmUtils';
 
 
 export class FindOp<T> implements IFindOp<T> {
@@ -135,12 +136,12 @@ export class FindOp<T> implements IFindOp<T> {
 
       if (_.isNull(this.options.sort)) {
         entityRef.getPropertyRefs().filter(x => x.isIdentifier()).forEach(x => {
-          qb.addOrderBy(qb.escape(qb.alias) + '.' + qb.escape(x.storingName), 'ASC');
+          qb.addOrderBy(TypeOrmUtils.aliasKey(qb, x.storingName), 'ASC');
         });
       } else {
         _.keys(this.options.sort).forEach(sortKey => {
           const v: string = this.options.sort[sortKey];
-          qb.addOrderBy(qb.escape(qb.alias) + '.' + qb.escape(sortKey), <'ASC' | 'DESC'>v.toUpperCase());
+          qb.addOrderBy(TypeOrmUtils.aliasKey(qb, sortKey), <'ASC' | 'DESC'>v.toUpperCase());
         });
       }
 

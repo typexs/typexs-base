@@ -100,7 +100,7 @@ class MessagingSpec {
 
     expect(results).to.have.length(1);
     expect(results[0]).to.be.instanceOf(Error);
-    expect(results[0].message).to.be.eq('access to path not allowed');
+    expect(results[0].message).to.be.eq('access to path not allowed [1]');
   }
 
 

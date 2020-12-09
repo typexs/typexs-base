@@ -1,6 +1,6 @@
 {
   "name": "@typexs/base",
-  "version": "1.2.46",
+  "version": "1.2.34",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -64,7 +64,7 @@
   },
   "dependencies": {
     "@cezaryrk/minimatch": "3.0.4",
-    "@allgemein/mango-expressions": "~1.0.0",
+    "@allgemein/mango-expressions": "~1.0.1",
     "class-validator": "^0.12.2",
     "commons-base": "~1.2.2",
     "commons-config": "^0.4.19",

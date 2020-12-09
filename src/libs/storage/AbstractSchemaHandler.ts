@@ -19,6 +19,8 @@ export abstract class AbstractSchemaHandler {
 
   static operations: { [type: string]: { [op: string]: (...args: any[]) => string } } = {};
 
+  static values: { [type: string]: { [op: string]: (...args: any[]) => string } } = {};
+
   static typeMap: { [type: string]: { [type: string]: string } } = {};
 
 
@@ -112,6 +114,8 @@ export abstract class AbstractSchemaHandler {
     _.keys(fn).forEach(x => {
       this.registerOperationHandle(x, fn[x]);
     });
+
+    this.registerValueHandle('like', (x: string) => x.replace(/%/g, '%%').replace(/\*/g, '%'));
   }
 
 
@@ -281,6 +285,12 @@ export abstract class AbstractSchemaHandler {
     AbstractSchemaHandler.operations[this.type][name.toLowerCase()] = op;
   }
 
+  registerValueHandle(name: string, op: (...args: any[]) => string) {
+    if (!AbstractSchemaHandler.values[this.type]) {
+      AbstractSchemaHandler.values[this.type] = {};
+    }
+    AbstractSchemaHandler.values[this.type][name.toLowerCase()] = op;
+  }
 
   getOperationHandle(name: string): (...args: any[]) => string {
     if (AbstractSchemaHandler.operations[this.type][name.toLowerCase()]) {
@@ -290,4 +300,12 @@ export abstract class AbstractSchemaHandler {
     }
   }
 
+
+  getValueHandle(name: string): (...args: any[]) => string {
+    if (AbstractSchemaHandler.values[this.type][name.toLowerCase()]) {
+      return AbstractSchemaHandler.values[this.type][name.toLowerCase()];
+    } else {
+      return (x: any) => x;
+    }
+  }
 }

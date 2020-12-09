@@ -132,6 +132,19 @@ class StorageSqlConditionsBuilderSpec {
     ]);
   }
 
+  // @test
+  // async 'condition $like'() {
+  //   let query2 = await getQuery({'name': {$like: '*asd*'}}, CarCond, 'car');
+  //   expect(query2).to.deep.eq([
+  //     'SELECT "car"."id" AS "car_id", "car"."name" AS "car_name" ' +
+  //     'FROM "car_cond" "car" WHERE "car"."name" LIKE $1',
+  //     [
+  //       '%asd%'
+  //     ]
+  //   ]);
+  //
+  // }
+
   @test
   async 'condition $gt'() {
     const query2 = await getQuery({'id': {$gt: 1}}, CarCond, 'car');

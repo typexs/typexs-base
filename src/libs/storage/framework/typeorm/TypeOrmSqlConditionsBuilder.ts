@@ -253,19 +253,20 @@ export class TypeOrmSqlConditionsBuilder<T> implements IMangoWalker {
 
   private handleOperation(op: string, key: string = null, value: any = null) {
     const handle = this.handler.getOperationHandle(op.toLowerCase());
+    const vhandle = this.handler.getValueHandle(op.toLowerCase());
     const _key = this.lookupKeys(key);
     if (!_.isUndefined(value)) {
       const p = this.paramName();
       if (_.isArray(value)) {
         return {
           q: handle(_key, ':...' + p), // `${_key} ${op} (:...${p})`,
-          p: this.paramValue(p, value, _key)
+          p: this.paramValue(p, value, _key, vhandle)
         };
       } else if (value instanceof MultiArgs) {
         const paramNames = value.args.map(x => this.paramName());
         const p = {};
         for (let i = 0; i < value.args.length; i++) {
-          _.assign(p, this.paramValue(paramNames[i], value.args[i], _key));
+          _.assign(p, this.paramValue(paramNames[i], value.args[i], _key, vhandle));
         }
         return {
           q: handle(_key, ...paramNames.map(x => ':' + x)),
@@ -274,7 +275,7 @@ export class TypeOrmSqlConditionsBuilder<T> implements IMangoWalker {
       } else {
         return {
           q: handle(_key, ':' + p),
-          p: this.paramValue(p, value, _key)
+          p: this.paramValue(p, value, _key, vhandle)
         };
       }
     } else {
@@ -291,16 +292,16 @@ export class TypeOrmSqlConditionsBuilder<T> implements IMangoWalker {
   }
 
 
-  private paramValue(p: string, v: any, columnName?: string) {
+  private paramValue(p: string, v: any, columnName?: string, vHandle?: (x: any) => any) {
     const q = {};
 
-    let ref = this.entityRef;
-    if (this.joins.length > 0) {
-      ref = _.last(this.joins).ref;
-    }
 
     // TODO make this more flexible
     if (v instanceof Date) {
+      let ref = this.entityRef;
+      if (this.joins.length > 0) {
+        ref = _.last(this.joins).ref;
+      }
       if (ref && this.mode === 'where') {
         const _columnName = columnName.split('.').pop();
         const entityMetadata = this.baseQueryBuilder.connection.getMetadata(ref.getClassRef().getClass());
@@ -311,7 +312,7 @@ export class TypeOrmSqlConditionsBuilder<T> implements IMangoWalker {
         q[p] = DateUtils.mixedDateToDatetimeString(v);
       }
     } else {
-      q[p] = v;
+      q[p] = vHandle ? vHandle(v) : v;
     }
     return q;
   }

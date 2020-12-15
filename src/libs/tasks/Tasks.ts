@@ -4,9 +4,12 @@ import {MetaArgs, NotYetImplementedError} from 'commons-base/browser';
 import {
   AbstractRef,
   Binding,
+  IEntityRef,
   IEntityRefMetadata,
   ILookupRegistry,
+  IPropertyRef,
   LookupRegistry,
+  XS_TYPE,
   XS_TYPE_ENTITY,
   XS_TYPE_PROPERTY
 } from 'commons-schema-api/browser';
@@ -67,7 +70,7 @@ export class Tasks implements ILookupRegistry {
   }
 
 
-  list(withRemote: boolean = false): string[] {
+  getNames(withRemote: boolean = false): string[] {
     return this.names(withRemote);
   }
 
@@ -333,6 +336,21 @@ export class Tasks implements ILookupRegistry {
 
   getPropertyRefsFor(fn: any): TaskExchangeRef[] {
     throw new NotYetImplementedError();
+  }
+
+
+  list<T>(type: XS_TYPE, filter?: (x: any) => boolean): T[] {
+    return this.registry.filter(type, filter);
+  }
+
+
+  listEntities(fn?: (x: IEntityRef) => boolean): TaskRef[] {
+    return this.registry.filter(XS_TYPE_ENTITY, fn);
+  }
+
+
+  listProperties(fn?: (x: IPropertyRef) => boolean): TaskExchangeRef[] {
+    return this.registry.filter(XS_TYPE_PROPERTY, fn);
   }
 
 }

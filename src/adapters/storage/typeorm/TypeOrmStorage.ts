@@ -9,6 +9,7 @@ import {AbstractSchemaHandler} from '../../../libs/storage/AbstractSchemaHandler
 import * as _ from 'lodash';
 import {TypeOrmStorageRef} from '../../../libs/storage/framework/typeorm/TypeOrmStorageRef';
 import {Injector} from '../../../libs/di/Injector';
+import {TypeOrmEntityRegistry} from '../../../libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry';
 
 useContainer(Injector.getContainer());
 
@@ -60,5 +61,10 @@ export class TypeOrmStorage implements IStorage {
       }
     }
     return Promise.resolve(true);
+  }
+
+
+  shutdown() {
+    TypeOrmEntityRegistry.reset();
   }
 }

@@ -23,4 +23,10 @@ export interface IStorage {
    * create new storage ref for connection to the backend
    */
   create(name: string, options: IStorageOptions): IStorageRef | Promise<IStorageRef>;
+
+
+  /**
+   * Shutdown of framework
+   */
+  shutdown?(): void;
 }

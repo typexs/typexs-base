@@ -79,7 +79,7 @@ export class Storage {
     return _.values(this.refs).map(ref => ref.getOptions());
   }
 
-  shutdown() {
+  async shutdown() {
     const ps = _.values(this.refs).map(async x => {
       try {
         await x.shutdown();
@@ -87,7 +87,20 @@ export class Storage {
         Log.error(e);
       }
     });
-    return Promise.all(ps);
+    const res = await Promise.all(ps);
+
+    for (const f of _.values(this.storageFramework)) {
+      try {
+        if (f.shutdown) {
+          await f.shutdown();
+        }
+
+      } catch (e) {
+        Log.error(e);
+      }
+
+    }
+    return res;
   }
 
 }

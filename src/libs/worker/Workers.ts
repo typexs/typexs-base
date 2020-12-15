@@ -10,6 +10,7 @@ import {MatchUtils} from '../utils/MatchUtils';
 import {RuntimeLoader} from '../../base/RuntimeLoader';
 import {Injector} from '../di/Injector';
 import {Log} from '../logging/Log';
+import {IEntityRef, XS_TYPE} from 'commons-schema-api/browser';
 
 
 const DEFAULT_OPTIONS: IWorkerConfig = {access: [{access: 'deny', name: '*'}]};
@@ -175,6 +176,19 @@ export class Workers implements ILookupRegistry {
   }
 
   getPropertyRefsFor(fn: any): IPropertyRef[] {
+    throw new NotYetImplementedError();
+  }
+
+
+  list<X>(type: XS_TYPE, filter?: (x: any) => boolean): X[] {
+    return this.registry.filter(type, filter);
+  }
+
+  listEntities(filter?: (x: IEntityRef) => boolean): IEntityRef[] {
+    return this.registry.filter(XS_TYPE_ENTITY, filter);
+  }
+
+  listProperties(filter?: (x: IPropertyRef) => boolean): IPropertyRef[] {
     throw new NotYetImplementedError();
   }
 }

@@ -13,6 +13,7 @@ import {
   IPropertyRef,
   LookupRegistry,
   SchemaUtils,
+  XS_TYPE,
   XS_TYPE_ENTITY,
   XS_TYPE_PROPERTY
 } from 'commons-schema-api/browser';
@@ -417,13 +418,17 @@ export class TypeOrmEntityRegistry extends EventEmitter implements ILookupRegist
     return entityRef;
   }
 
+  list<T>(type: XS_TYPE, filter?: (x: any) => boolean): T[] {
+    return this.lookupRegistry.filter(type, filter);
+  }
 
-  listEntities(fn?: (x: IEntityRef) => boolean) {
+
+  listEntities(fn?: (x: IEntityRef) => boolean): TypeOrmEntityRef[] {
     return this.lookupRegistry.filter(XS_TYPE_ENTITY, fn);
   }
 
 
-  listProperties(fn?: (x: IPropertyRef) => boolean) {
+  listProperties(fn?: (x: IPropertyRef) => boolean): TypeOrmPropertyRef[] {
     return this.lookupRegistry.filter(XS_TYPE_PROPERTY, fn);
   }
 

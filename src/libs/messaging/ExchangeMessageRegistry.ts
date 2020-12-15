@@ -1,4 +1,4 @@
-import {IEntityRef, ILookupRegistry, IPropertyRef, LookupRegistry} from 'commons-schema-api/browser';
+import {IEntityRef, ILookupRegistry, IPropertyRef, LookupRegistry, XS_TYPE} from 'commons-schema-api/browser';
 import {C_EXCHANGE_MESSAGE} from './Constants';
 import {NotYetImplementedError} from 'commons-base/browser';
 import {ClassUtils} from 'commons-base';
@@ -100,6 +100,18 @@ export class ExchangeMessageRegistry implements ILookupRegistry {
   }
 
   getPropertyRefsFor(fn: any): IPropertyRef[] {
+    throw new NotYetImplementedError();
+  }
+
+  list<X>(type: XS_TYPE, filter?: (x: any) => boolean): X[] {
+    return this.registry.filter(type, filter);
+  }
+
+  listEntities(filter?: (x: IEntityRef) => boolean): IEntityRef[] {
+    return this.registry.filter(XS_TYPE_ENTITY, filter);
+  }
+
+  listProperties(filter?: (x: IPropertyRef) => boolean): IPropertyRef[] {
     throw new NotYetImplementedError();
   }
 

@@ -40,6 +40,7 @@ import {ICommand} from './libs/commands/ICommand';
 import {LockFactory} from './libs/LockFactory';
 import {Injector} from './libs/di/Injector';
 import {EntityControllerRegistry} from './libs/storage/EntityControllerRegistry';
+import {LookupRegistry} from 'commons-schema-api/browser';
 import {TypeOrmEntityRegistry} from './libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry';
 
 
@@ -678,6 +679,11 @@ export class Bootstrap {
 
     }
     LockFactory.reset();
+
+    LookupRegistry.getRegistryNames().map(x => {
+      LookupRegistry.reset(x);
+    });
+
     process.removeAllListeners('exit');
     process.removeAllListeners('SIGINT');
     process.removeAllListeners('SIGTERM');

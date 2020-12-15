@@ -677,13 +677,10 @@ export class Bootstrap {
     } catch (e) {
 
     }
-
     LockFactory.reset();
-    TypeOrmEntityRegistry.reset();
     process.removeAllListeners('exit');
     process.removeAllListeners('SIGINT');
     process.removeAllListeners('SIGTERM');
-
   }
 
   getActivators(): IActivator[] {

@@ -18,7 +18,7 @@ import {StorageRef} from '../../../src/libs/storage/StorageRef';
 import {generateSqlDataRows} from './helper';
 
 
-const LOG_EVENT = TestHelper.logEnable(false);
+const LOG_EVENT = TestHelper.logEnable(true);
 
 let bootstrap: Bootstrap;
 

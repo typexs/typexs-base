@@ -3,6 +3,7 @@ import {AbstractRef, IBuildOptions, IEntityRef, IPropertyRef, XS_TYPE_ENTITY} fr
 import {ClassUtils, NotSupportedError} from 'commons-base/browser';
 import {AbstractExchange} from './AbstractExchange';
 import {Injector} from '../di/Injector';
+import {C_EXCHANGE_MESSAGE} from './Constants';
 
 
 export class ExchangeMessageRef extends AbstractRef implements IEntityRef {
@@ -12,7 +13,7 @@ export class ExchangeMessageRef extends AbstractRef implements IEntityRef {
   private isActive: boolean;
 
   constructor(fn: Function = null, options: any = null) {
-    super(XS_TYPE_ENTITY, ClassUtils.getClassName(fn), fn);
+    super(XS_TYPE_ENTITY, ClassUtils.getClassName(fn), fn, C_EXCHANGE_MESSAGE);
     this.setOptions(options || {});
   }
 

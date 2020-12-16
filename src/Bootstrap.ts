@@ -42,6 +42,7 @@ import {Injector} from './libs/di/Injector';
 import {EntityControllerRegistry} from './libs/storage/EntityControllerRegistry';
 import {LookupRegistry} from 'commons-schema-api/browser';
 import {TypeOrmEntityRegistry} from './libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry';
+import {XS_TYPE_ENTITY} from 'commons-schema-api';
 
 
 /**
@@ -676,13 +677,16 @@ export class Bootstrap {
     try {
       await LockFactory.$().shutdown(500);
     } catch (e) {
-
     }
     LockFactory.reset();
 
-    LookupRegistry.getRegistryNames().map(x => {
-      LookupRegistry.reset(x);
-    });
+    // TODO cleanup registry destroys testing with new starts
+    // LookupRegistry.getRegistryNames().map(x => {
+    //   // LookupRegistry.reset(x);
+    //   console.log(x);
+    //   const y = LookupRegistry.$(x).list(XS_TYPE_ENTITY);
+    //   console.log(y.map(z => z.name));
+    // });
 
     process.removeAllListeners('exit');
     process.removeAllListeners('SIGINT');

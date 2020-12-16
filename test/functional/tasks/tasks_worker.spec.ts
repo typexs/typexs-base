@@ -55,7 +55,7 @@ class TasksWorkerSpec {
       .configure(<ITypexsOptions & any>{
         app: {name: 'test', nodeId: NODEID},
         logging: {enable: LOG_EVENT, level: 'debug'},
-        modules: {paths: [__dirname + '/../../..']},
+        modules: {paths: [__dirname + '/../../..'], disableCache: true},
         storage: {default: TEST_STORAGE_OPTIONS},
         eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}},
         // workers: {access: [{name: 'TaskMonitorWorker', access: 'allow'}]}
@@ -158,7 +158,7 @@ class TasksWorkerSpec {
       .configure(<ITypexsOptions & any>{
         app: {name: 'test', nodeId: 'worker'},
         logging: {enable: LOG_EVENT, level: 'debug'},
-        modules: {paths: [__dirname + '/../../..']},
+        modules: {paths: [__dirname + '/../../..'], disableCache: true},
         storage: {default: TEST_STORAGE_OPTIONS},
         eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}},
         workers: {access: [{name: 'TaskQueueWorker', access: 'allow'}]}
@@ -239,7 +239,7 @@ class TasksWorkerSpec {
       .configure(<ITypexsOptions & any>{
         app: {name: 'test', nodeId: 'system', path: __dirname + '/fake_app'},
         logging: {enable: LOG_EVENT, level: 'debug'},
-        modules: {paths: [__dirname + '/../../..']},
+        modules: {paths: [__dirname + '/../../..'], disableCache: true},
         storage: {default: TEST_STORAGE_OPTIONS},
         eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}}
       });
@@ -319,7 +319,7 @@ class TasksWorkerSpec {
       .configure(<ITypexsOptions & any>{
         app: {name: 'test', nodeId: 'system', path: __dirname + '/fake_app'},
         logging: {enable: LOG_EVENT, level: 'debug'},
-        modules: {paths: [__dirname + '/../../..']},
+        modules: {paths: [__dirname + '/../../..'], disableCache: true},
         storage: {default: TEST_STORAGE_OPTIONS},
         eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}}
       });
@@ -390,7 +390,7 @@ class TasksWorkerSpec {
       .configure(<ITypexsOptions & any>{
         app: {name: 'test', nodeId: 'system', path: __dirname + '/fake_app'},
         logging: {enable: LOG_EVENT, level: 'debug'},
-        modules: {paths: [__dirname + '/../../..']},
+        modules: {paths: [__dirname + '/../../..'], disableCache: true},
         storage: {default: TEST_STORAGE_OPTIONS},
         eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}}
       });
@@ -502,7 +502,7 @@ class TasksWorkerSpec {
       .configure(<ITypexsOptions & any>{
         app: {name: 'test', nodeId: 'event', path: __dirname + '/fake_app'},
         logging: {enable: LOG_EVENT, level: 'debug', loggers: [{name: '*', level: 'debug'}]},
-        modules: {paths: [__dirname + '/../../..']},
+        modules: {paths: [__dirname + '/../../..'], disableCache: true},
         storage: {default: TEST_STORAGE_OPTIONS},
         // cache: {bins: {default: 'redis1'}, adapter: {redis1: {type: 'redis', host: '127.0.0.1', port: 6379}}},
         eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}}
@@ -558,7 +558,7 @@ class TasksWorkerSpec {
       .configure(<ITypexsOptions & any>{
         app: {name: 'test', nodeId: 'worker'},
         logging: {enable: LOG_EVENT, level: 'debug'},
-        modules: {paths: [__dirname + '/../../..']},
+        modules: {paths: [__dirname + '/../../..'], disableCache: true},
         storage: {default: TEST_STORAGE_OPTIONS},
         eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}},
         workers: {access: [{name: 'Task*Worker', access: 'allow'}]}

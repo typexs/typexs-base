@@ -2,18 +2,17 @@ import * as _ from 'lodash';
 import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 import {Bootstrap} from '../../../src/Bootstrap';
-import {Config} from 'commons-config';
 import {TEST_STORAGE_OPTIONS} from '../config';
 import {IEventBusConfiguration} from 'commons-eventbus';
-import {Container} from 'typedi';
 import {System} from '../../../src/libs/system/System';
 import {C_TASKS} from '../../../src/libs/tasks/Constants';
 import {TestHelper} from '../TestHelper';
 import {SpawnHandle} from '../SpawnHandle';
 import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
 import {Tasks} from '../../../src/libs/tasks/Tasks';
+import {Injector} from '../../../src';
 
-const LOG_EVENT = TestHelper.logEnable(false);
+const LOG_EVENT = TestHelper.logEnable(true);
 
 
 @suite('functional/tasks/tasks_system')
@@ -22,9 +21,7 @@ class TasksSystemSpec {
 
   async before() {
     await TestHelper.clearCache();
-    Container.reset();
     Bootstrap.reset();
-    Config.clear();
   }
 
 
@@ -36,7 +33,7 @@ class TasksSystemSpec {
       .configure(<ITypexsOptions & any>{
         app: {name: 'test', nodeId: nodeId, path: __dirname + '/fake_app'},
         logging: {enable: LOG_EVENT, level: 'debug'},
-        modules: {paths: [__dirname + '/../../..']},
+        modules: {paths: [__dirname + '/../../..'], disableCache: true},
         storage: {default: TEST_STORAGE_OPTIONS},
         eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}}
       });
@@ -46,7 +43,7 @@ class TasksSystemSpec {
     bootstrap = await bootstrap.activateStorage();
     bootstrap = await bootstrap.startup();
 
-    const system: System = Container.get(System.NAME);
+    const system: System = Injector.get(System.NAME);
     const n = _.cloneDeep(system.node);
 
     await bootstrap.shutdown();
@@ -78,7 +75,7 @@ class TasksSystemSpec {
       .configure(<ITypexsOptions & any>{
         app: {name: 'test', nodeId: nodeId, path: __dirname + '/fake_app'},
         logging: {enable: LOG_EVENT, level: 'debug'},
-        modules: {paths: [__dirname + '/../../..']},
+        modules: {paths: [__dirname + '/../../..'], disableCache: true},
         storage: {default: TEST_STORAGE_OPTIONS},
         eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}}
       });
@@ -88,8 +85,8 @@ class TasksSystemSpec {
     bootstrap = await bootstrap.activateStorage();
     bootstrap = await bootstrap.startup();
 
-    const system: System = Container.get(System.NAME);
-    const tasks: Tasks = Container.get(Tasks.NAME);
+    const system: System = Injector.get(System.NAME);
+    const tasks: Tasks = Injector.get(Tasks.NAME);
 
     let taskInfos = tasks.infos(true);
 
@@ -167,7 +164,7 @@ class TasksSystemSpec {
       .configure(<ITypexsOptions & any>{
         app: {name: 'test', nodeId: nodeId, path: __dirname + '/fake_app_main'},
         logging: {enable: LOG_EVENT, level: 'debug'},
-        modules: {paths: [__dirname + '/../../..']},
+        modules: {paths: [__dirname + '/../../..'], disableCache: true},
         storage: {default: TEST_STORAGE_OPTIONS},
         eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}}
       });
@@ -177,8 +174,8 @@ class TasksSystemSpec {
     bootstrap = await bootstrap.activateStorage();
     bootstrap = await bootstrap.startup();
 
-    const system: System = Container.get(System.NAME);
-    const tasks: Tasks = Container.get(Tasks.NAME);
+    const system: System = Injector.get(System.NAME);
+    const tasks: Tasks = Injector.get(Tasks.NAME);
     let taskInfos = tasks.infos(true);
 
     expect(system.nodes).to.have.length(0);

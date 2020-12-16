@@ -27,7 +27,7 @@ import {Bootstrap} from '../../../../src/Bootstrap';
           name: '*', level: 'debug', transports: [{console: {}}]
         }]
       },
-      modules: {paths: [__dirname + '/../../../..']},
+      modules: {paths: [__dirname + '/../../../..'], disableCache: true},
       storage: {default: TEST_STORAGE_OPTIONS},
       eventbus: {
         default: <IEventBusConfiguration>{

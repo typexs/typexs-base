@@ -178,6 +178,7 @@ export class FindOp<T> implements IFindOp<T> {
         });
       }
 
+      const recordCount = await repo.count(findConditions);
       const qb = this.options.raw ? repo.createCursor(findConditions) : repo.createEntityCursor(findConditions);
 
       if (!_.isNull(this.options.limit) && _.isNumber(this.options.limit)) {
@@ -197,9 +198,7 @@ export class FindOp<T> implements IFindOp<T> {
         qb.sort(s);
       }
 
-      const recordCount = await qb.count(false);
-
-
+      // const recordCount = await qb.count(false);
       while (await qb.hasNext()) {
         results.push(await qb.next());
       }

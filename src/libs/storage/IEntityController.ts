@@ -4,8 +4,9 @@ import {ClassType, IClassRef, IEntityRef} from 'commons-schema-api/browser';
 import {IUpdateOptions} from './framework/IUpdateOptions';
 import {IAggregateOptions} from './framework/IAggregateOptions';
 import {IDeleteOptions} from './framework/IDeleteOptions';
+import {CLS_DEF} from '../Constants';
 
-type CLS_DEF<T> = ClassType<T> | Function | string;
+
 
 export interface IEntityController {
 

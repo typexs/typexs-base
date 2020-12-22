@@ -60,7 +60,7 @@ export class TypeOrmStorage implements IStorage {
         this.schemaHandler[obj.type] = cls;
       }
     }
-    return Promise.resolve(true);
+    return true;
   }
 
 

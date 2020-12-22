@@ -6,7 +6,7 @@ import {Injector} from '../libs/di/Injector';
 
 export class Invoker {
 
-  static NAME: string = 'Invoker';
+  static NAME: string = Invoker.name;
 
 
   private apiImpls: IAPIDef[] = [];

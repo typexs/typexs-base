@@ -1,3 +1,5 @@
+import {ClassType} from 'commons-schema-api/browser';
+
 export const K_CLS_USE_API = 'use_api';
 export const K_CLS_API = 'api';
 export const TYPEXS_NAME = 'typexs';
@@ -43,3 +45,5 @@ export const C_CONFIG_FILTER_KEYS = [
   'secret',
   'token'
 ];
+
+export type CLS_DEF<T> = string | Function | ClassType<T>;

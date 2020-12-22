@@ -45,7 +45,7 @@ export interface IStorageRef {
    *
    * @param cls
    */
-  hasEntityClass(cls: Function | string | IClassRef): boolean;
+  hasEntityClass(cls: string | Function | IClassRef): boolean;
 
 
   /**
@@ -88,7 +88,7 @@ export interface IStorageRef {
    *
    * @param name
    */
-  getEntityRef(name: string | Function): IEntityRef;
+  getEntityRef(name: string | Function): IEntityRef | IEntityRef[];
 
   /**
    * Return all handled entities

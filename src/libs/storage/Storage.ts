@@ -17,7 +17,7 @@ export class Storage {
 
   storageFramework: { [key: string]: IStorage } = {};
 
-  private refs: { [key: string]: IStorageRef } = {};
+  private storageRefs: { [key: string]: IStorageRef } = {};
 
 
   /**
@@ -32,7 +32,7 @@ export class Storage {
     const useFramework = options.framework || this.getDefaultFramework();
     if (this.storageFramework[useFramework]) {
       const ref = await this.storageFramework[useFramework].create(name, options);
-      this.refs[name] = ref;
+      this.storageRefs[name] = ref;
       return ref;
     } else {
       throw new Error('not framework with ' + useFramework + ' exists');
@@ -55,10 +55,10 @@ export class Storage {
    * Returns storage ref for the given classRef or machineName
    * @param classRef
    */
-  forClass<X extends IStorageRef>(classRef: IClassRef | string): X {
-    for (const k in this.refs) {
-      if (this.refs[k].hasEntityClass(classRef)) {
-        return this.refs[k] as X;
+  forClass<X extends IStorageRef>(classRef: string | Function | IClassRef): X {
+    for (const k in this.storageRefs) {
+      if (this.storageRefs[k].hasEntityClass(classRef)) {
+        return this.storageRefs[k] as X;
       }
     }
     return null;
@@ -66,21 +66,21 @@ export class Storage {
 
 
   get<X extends IStorageRef>(name: string = 'default'): X {
-    return this.refs[name] as X;
+    return this.storageRefs[name] as X;
   }
 
 
   getNames() {
-    return _.keys(this.refs);
+    return _.keys(this.storageRefs);
   }
 
 
   getAllOptions() {
-    return _.values(this.refs).map(ref => ref.getOptions());
+    return _.values(this.storageRefs).map(ref => ref.getOptions());
   }
 
   async shutdown() {
-    const ps = _.values(this.refs).map(async x => {
+    const ps = _.values(this.storageRefs).map(async x => {
       try {
         await x.shutdown();
       } catch (e) {

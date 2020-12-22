@@ -11,9 +11,8 @@ import {DistributedStorageEntityController} from '../../../src/libs/distributed_
 import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
 import {DataRow} from './fake_app_mongo/entities/DataRow';
 import * as _ from 'lodash';
-import {__NODE_ID__} from '../../../src/libs/distributed_storage/Constants';
 import {Injector} from '../../../src/libs/di/Injector';
-import {C_STORAGE_DEFAULT} from '../../../src/libs/Constants';
+import {__NODE_ID__, C_STORAGE_DEFAULT} from '../../../src/libs/Constants';
 import {StorageRef} from '../../../src/libs/storage/StorageRef';
 import {generateSqlDataRows} from './helper';
 

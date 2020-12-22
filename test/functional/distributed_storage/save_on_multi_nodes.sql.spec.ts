@@ -12,12 +12,12 @@ import {SpawnHandle} from '../SpawnHandle';
 import {DistributedStorageEntityController} from '../../../src/libs/distributed_storage/DistributedStorageEntityController';
 import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
 import {DataRow} from './fake_app/entities/DataRow';
-import {__NODE_ID__, __REMOTE_IDS__, XS_P_$ERRORED, XS_P_$SAVED} from '../../../src/libs/distributed_storage/Constants';
+import {__REMOTE_IDS__, XS_P_$ERRORED, XS_P_$SAVED} from '../../../src/libs/distributed_storage/Constants';
 import {IEntityController} from '../../../src/libs/storage/IEntityController';
 import {generateSqlDataRows} from './helper';
 import {Injector} from '../../../src/libs/di/Injector';
 import {StorageRef} from '../../../src/libs/storage/StorageRef';
-import {C_STORAGE_DEFAULT} from '../../../src/libs/Constants';
+import {__NODE_ID__, C_STORAGE_DEFAULT} from '../../../src/libs/Constants';
 
 // process.env.SQL_LOG = '1';
 

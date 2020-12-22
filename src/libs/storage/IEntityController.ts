@@ -12,7 +12,7 @@ export interface IEntityController {
 
   name(): string;
 
-  forClass(cls: CLS_DEF<any> | IClassRef): IEntityRef;
+  forClass(cls: CLS_DEF<any>): IEntityRef;
 
   findOne<T>(fn: CLS_DEF<T>, conditions?: any, options?: IFindOptions): Promise<T>;
 

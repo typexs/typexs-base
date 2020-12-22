@@ -29,8 +29,6 @@ export const APP_SYSTEM_UPDATE_INTERVAL = 'app.system.updateInterval';
 export const XS_P_$COUNT = '$count';
 export const XS_P_$LIMIT = '$limit';
 export const XS_P_$OFFSET = '$offset';
-export const XS_P_$URL = '$url';
-export const XS_P_$LABEL = '$label';
 export const XS_P_$CLASS = '$cls';
 export const XS_P_$REGISTRY = '$reg';
 

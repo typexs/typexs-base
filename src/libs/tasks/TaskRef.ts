@@ -404,6 +404,11 @@ export class TaskRef extends AbstractRef implements IEntityRef {
     return Injector.create(this.object.getClass());
   }
 
+  isOf(instance: any): boolean {
+    throw new NotSupportedError('isOf is not supported');
+  }
+
+
 
   getPropertyRef(name: string): TaskExchangeRef {
     return this.getPropertyRefs().find(x => x.name === name);

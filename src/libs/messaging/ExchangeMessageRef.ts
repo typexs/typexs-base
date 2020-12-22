@@ -54,6 +54,9 @@ export class ExchangeMessageRef extends AbstractRef implements IEntityRef {
     throw new NotSupportedError('create is not supported');
   }
 
+  isOf(instance: any): boolean {
+    throw new NotSupportedError('isOf is not supported');
+  }
 
   reset() {
     this.exchange = null;

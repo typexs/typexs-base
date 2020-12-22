@@ -15,6 +15,7 @@ import {
 import {ClassUtils} from 'commons-base/browser';
 import {REGISTRY_TYPEORM} from './TypeOrmConstants';
 import {getFromContainer, MetadataStorage} from 'class-validator';
+import {__CLASS__} from '../../../../Constants';
 
 export class TypeOrmEntityRef extends AbstractRef implements IEntityRef {
 
@@ -51,6 +52,23 @@ export class TypeOrmEntityRef extends AbstractRef implements IEntityRef {
   id() {
     return this.getSourceRef().id().toLowerCase();
     // _.snakeCase(_.isString(this.metadata.target) ? this.metadata.target : this.metadata.target.name)
+  }
+
+  isOf(instance: any): boolean {
+    const name = ClassUtils.getClassName(instance);
+    // if(name)
+    if (name && name === this.name) {
+      return true;
+    } else if (_.has(instance, __CLASS__) && instance[__CLASS__] === this.name) {
+      return true;
+    } else {
+      return this.getPropertyRefs()
+        .map(x => _.has(instance, x.name))
+        .reduce((previousValue, currentValue) => previousValue && currentValue, true);
+    }
+
+
+    return false;
   }
 
 

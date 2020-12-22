@@ -1,7 +1,7 @@
 import {AbstractRef, IClassRef, IPropertyRef, XS_TYPE_PROPERTY} from 'commons-schema-api/browser';
 import {TaskRef} from './TaskRef';
 import {C_TASKS} from './Constants';
-import {ClassUtils, NotYetImplementedError, TreeUtils, WalkValues} from 'commons-base/browser';
+import {ClassUtils, NotSupportedError, NotYetImplementedError, TreeUtils, WalkValues} from 'commons-base/browser';
 import {ITaskPropertyDesc} from './ITaskPropertyDesc';
 
 import * as _ from 'lodash';
@@ -50,6 +50,10 @@ export class TaskExchangeRef extends AbstractRef implements IPropertyRef {
 
   get(instance: any): any {
     throw new NotYetImplementedError();
+  }
+
+  isOf(instance: any): boolean {
+    throw new NotSupportedError('isOf is not supported');
   }
 
   getEntityRef(): TaskRef {

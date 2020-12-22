@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import {EventBus, subscribe} from 'commons-eventbus';
-import {XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '../libs/Constants';
+import {__CLASS__, __NODE_ID__, __REGISTRY__, XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '../libs/Constants';
 import {Bootstrap} from './../Bootstrap';
 import {Inject} from 'typedi';
 import {System} from '../libs/system/System';
@@ -19,10 +19,7 @@ import {ILoggerApi} from '../libs/logging/ILoggerApi';
 import {DistributedFindResponse} from '../libs/distributed_storage/find/DistributedFindResponse';
 import {DistributedSaveResponse} from '../libs/distributed_storage/save/DistributedSaveResponse';
 import {
-  __CLASS__,
   __DISTRIBUTED_ID__,
-  __NODE_ID__,
-  __REGISTRY__,
   DS_OPERATION
 } from '../libs/distributed_storage/Constants';
 import {EntityControllerRegistry} from '../libs/storage/EntityControllerRegistry';

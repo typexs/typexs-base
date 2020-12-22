@@ -9,7 +9,7 @@ import {NotSupportedError} from 'commons-base';
 import {IDistributedRemoveOptions} from './remove/IDistributedRemoveOptions';
 import {IDistributedUpdateOptions} from './update/IDistributedUpdateOptions';
 import {IDistributedAggregateOptions} from './aggregate/IDistributedAggregateOptions';
-import {__NODE_ID__} from './Constants';
+import {__NODE_ID__} from '../Constants';
 
 
 export class DistributedStorageEntityController implements IEntityController {

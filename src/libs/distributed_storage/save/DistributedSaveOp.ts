@@ -5,7 +5,7 @@ import {ClassRef} from 'commons-schema-api';
 import {ISaveOp} from '../../storage/framework/ISaveOp';
 import {DistributedSaveRequest} from './DistributedSaveRequest';
 import {DistributedSaveResponse} from './DistributedSaveResponse';
-import {__CLASS__, __DISTRIBUTED_ID__, __REGISTRY__, __REMOTE_IDS__, XS_P_$ERRORED, XS_P_$SAVED} from './../Constants';
+import { __DISTRIBUTED_ID__,  __REMOTE_IDS__, XS_P_$ERRORED, XS_P_$SAVED} from './../Constants';
 import {IDistributedSaveOptions} from './IDistributedSaveOptions';
 import {AbstractMessage} from '../../messaging/AbstractMessage';
 import {IMessageOptions} from '../../messaging/IMessageOptions';
@@ -14,6 +14,7 @@ import {DistributedQueryWorker} from '../../../workers/DistributedQueryWorker';
 import {IWorkerInfo} from '../../worker/IWorkerInfo';
 import {EntityControllerRegistry} from '../../storage/EntityControllerRegistry';
 import {BaseUtils} from '../../utils/BaseUtils';
+import {__CLASS__, __REGISTRY__} from '../../Constants';
 
 
 export class DistributedSaveOp<T>

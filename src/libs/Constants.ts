@@ -29,9 +29,10 @@ export const APP_SYSTEM_UPDATE_INTERVAL = 'app.system.updateInterval';
 export const XS_P_$COUNT = '$count';
 export const XS_P_$LIMIT = '$limit';
 export const XS_P_$OFFSET = '$offset';
-export const XS_P_$CLASS = '$cls';
-export const XS_P_$REGISTRY = '$reg';
 
+export const __NODE_ID__ = '__nodeId__';
+export const __CLASS__ = '__class__';
+export const __REGISTRY__ = '__registry__';
 
 export const C_KEY_SEPARATOR = ':';
 export const C_STORAGE_DEFAULT = 'storage.default';

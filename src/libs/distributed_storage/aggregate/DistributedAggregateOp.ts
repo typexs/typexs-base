@@ -11,9 +11,8 @@ import * as _ from 'lodash';
 import {IWorkerInfo} from '../../worker/IWorkerInfo';
 import {DistributedQueryWorker} from '../../../workers/DistributedQueryWorker';
 import {ClassUtils} from 'commons-base';
-import {__NODE_ID__} from '../Constants';
 import {C_WORKERS} from '../../worker/Constants';
-import {XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '../../Constants';
+import {__NODE_ID__, XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '../../Constants';
 
 
 export class DistributedAggregateOp

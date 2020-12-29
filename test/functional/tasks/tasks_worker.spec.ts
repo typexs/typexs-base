@@ -423,7 +423,7 @@ class TasksWorkerSpec {
 
     const tasks: Tasks = Container.get(Tasks.NAME);
     const infos = tasks.infos(true);
-    Log.debug(infos);
+    // Log.debug(infos);
 
     const taskEvent = new TaskEvent();
     taskEvent.nodeId = bootstrap.getNodeId();

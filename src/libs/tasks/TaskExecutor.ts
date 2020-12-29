@@ -202,8 +202,9 @@ export class TaskExecutor extends EventEmitter {
       // add parameters
       const parameters: any = {};
       _.keys(this.params).map(k => {
+        // TODO why this check?
         if (!/^_/.test(k)) {
-          parameters[_.snakeCase(k)] = this.options[k];
+          parameters[_.snakeCase(k)] = this.params[k];
         }
       });
 

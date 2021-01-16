@@ -2,7 +2,7 @@ import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 import * as _ from 'lodash';
 import {Bootstrap} from '../../../src/Bootstrap';
-import {Config} from 'commons-config';
+import {Config} from '@allgemein/config';
 import {TEST_STORAGE_OPTIONS} from '../config';
 import {EventBus, IEventBusConfiguration} from 'commons-eventbus';
 import {Container} from 'typedi';
@@ -13,7 +13,7 @@ import {SystemNodeInfo} from '../../../src/entities/SystemNodeInfo';
 import {DistributedStorageEntityController} from '../../../src/libs/distributed_storage/DistributedStorageEntityController';
 import {DistributedQueryWorker} from '../../../src/workers/DistributedQueryWorker';
 import {Workers} from '../../../src/libs/worker/Workers';
-import {C_DEFAULT} from 'commons-base';
+import {C_DEFAULT} from '@allgemein/base';
 import {subscribe} from 'commons-eventbus';
 
 

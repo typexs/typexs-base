@@ -2,7 +2,7 @@ import * as path from 'path';
 import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 import {Bootstrap} from '../../../src/Bootstrap';
-import {Config} from 'commons-config';
+import {Config} from '@allgemein/config';
 import {ClassType} from 'commons-schema-api/browser';
 import {XS_P_$COUNT} from '../../../src/libs/Constants';
 import {TypeOrmEntityController} from '../../../src/libs/storage/framework/typeorm/TypeOrmEntityController';

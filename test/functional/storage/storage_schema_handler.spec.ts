@@ -4,7 +4,7 @@ import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 
 import {Bootstrap} from '../../../src/Bootstrap';
-import {Config} from 'commons-config';
+import {Config} from '@allgemein/config';
 import {TypeOrmStorageRef} from '../../../src/libs/storage/framework/typeorm/TypeOrmStorageRef';
 
 

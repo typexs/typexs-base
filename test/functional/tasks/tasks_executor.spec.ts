@@ -24,7 +24,6 @@ let bootstrap: Bootstrap;
 const p: SpawnHandle[] = [];
 
 
-@timeout(120000)
 @suite('functional/tasks/task_executor')
 class TasksSpec {
 

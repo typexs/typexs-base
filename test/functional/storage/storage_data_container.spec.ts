@@ -3,7 +3,7 @@ import {expect} from 'chai';
 import {TypeOrmEntityRegistry} from '../../../src/libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry';
 
 import * as _ from 'lodash';
-import {TreeUtils, WalkValues} from 'commons-base';
+import {TreeUtils, WalkValues} from '@allgemein/base';
 import {DataContainer} from '../../../src/libs/storage/DataContainer';
 
 

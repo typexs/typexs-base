@@ -1,7 +1,7 @@
 import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 import {FileReadUtils} from '../../../src/libs/filesystem/FileReadUtils';
-import {FileUtils} from 'commons-base';
+import {FileUtils} from '@allgemein/base';
 
 
 @suite('functional/filesystem/file_read_utils')

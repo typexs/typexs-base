@@ -2,7 +2,7 @@
 import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 import {Bootstrap} from '../../../src/Bootstrap';
-import {Config} from 'commons-config';
+import {Config} from '@allgemein/config';
 import {TEST_STORAGE_OPTIONS} from '../config';
 import {IEventBusConfiguration} from 'commons-eventbus';
 import {TestHelper} from '../TestHelper';

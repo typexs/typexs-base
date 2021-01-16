@@ -6,7 +6,7 @@ import {expect} from 'chai';
 import {Invoker} from '../../../src/base/Invoker';
 import {IStorageOptions} from '../../../src/libs/storage/IStorageOptions';
 import {Bootstrap} from '../../../src/Bootstrap';
-import {Config} from 'commons-config';
+import {Config} from '@allgemein/config';
 import {BeforeInsert, Column, PrimaryColumn} from 'typeorm';
 import {X1} from './entities/X1';
 import {Y1} from './entities/Y1';

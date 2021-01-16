@@ -1,7 +1,7 @@
 import {suite, test} from "@testdeck/mocha";
 
 import {Bootstrap} from "../../../src/Bootstrap";
-import {Config} from "commons-config";
+import {Config} from "@allgemein/config";
 
 
 @suite('functional/storage/storage_dump')

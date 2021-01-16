@@ -11,7 +11,7 @@ export class SimpleWorkerTask implements ITask {
   async exec() {
     await new Promise((resolve, reject) => {
       setTimeout(() => {
-        resolve();
+        resolve(null);
       }, 100);
     });
     return 'test';

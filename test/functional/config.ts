@@ -3,6 +3,8 @@ import {IStorageOptions} from '../../src/libs/storage/IStorageOptions';
 import {MongoConnectionOptions} from 'typeorm/driver/mongodb/MongoConnectionOptions';
 import {PostgresConnectionOptions} from 'typeorm/driver/postgres/PostgresConnectionOptions';
 
+export const SPAWN_TIMEOUT = 120000;
+
 export const TEST_STORAGE_OPTIONS: IStorageOptions = process.env.SQL_LOG ?
   <SqliteConnectionOptions & IStorageOptions>{
     name: 'default',

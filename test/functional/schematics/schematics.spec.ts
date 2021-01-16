@@ -1,12 +1,12 @@
 // import {suite, test, timeout} from "@testdeck/mocha";
 // import {expect} from "chai";
 // import {Log, MetaArgs, SchematicsExecutor} from "../../../src";
-// import {Config} from "commons-config";
+// import {Config} from "@allgemein/config";
 // import {Bootstrap} from "../../../src/Bootstrap";
 // import * as path from "path";
 // import * as os from "os";
 // import * as _ from "lodash";
-// import {PlatformUtils} from "commons-base";
+// import {PlatformUtils} from "@allgemein/base";
 //
 //
 // const TMPDIR = os.tmpdir();

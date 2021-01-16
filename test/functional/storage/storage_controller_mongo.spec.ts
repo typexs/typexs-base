@@ -2,11 +2,8 @@ import * as path from 'path';
 import * as _ from 'lodash';
 import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
-
 import {Bootstrap} from '../../../src/Bootstrap';
-import {Config} from 'commons-config';
-// import {MdbCar} from "./fake_app_mongo/entities/MdbCar";
-// import {MdbDriver} from "./fake_app_mongo/entities/MdbDriver";
+import {Config} from '@allgemein/config';
 import {ClassType} from 'commons-schema-api/browser';
 import {TypeOrmEntityController} from '../../../src/libs/storage/framework/typeorm/TypeOrmEntityController';
 import {TypeOrmStorageRef} from '../../../src/libs/storage/framework/typeorm/TypeOrmStorageRef';

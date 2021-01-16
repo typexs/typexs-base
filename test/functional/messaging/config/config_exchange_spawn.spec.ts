@@ -3,7 +3,7 @@ import * as _ from 'lodash';
 import * as path from 'path';
 import {expect} from 'chai';
 import {Bootstrap} from '../../../../src/Bootstrap';
-import {Config} from 'commons-config';
+import {Config} from '@allgemein/config';
 import {TestHelper} from '../../TestHelper';
 import {SpawnHandle} from '../../SpawnHandle';
 import {Injector} from '../../../../src/libs/di/Injector';

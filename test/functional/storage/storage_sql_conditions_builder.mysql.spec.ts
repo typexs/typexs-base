@@ -6,7 +6,7 @@ import {Bootstrap} from '../../../src/Bootstrap';
 import {TypeOrmSqlConditionsBuilder} from '../../../src/libs/storage/framework/typeorm/TypeOrmSqlConditionsBuilder';
 import {TypeOrmEntityRegistry} from '../../../src/libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry';
 import {SelectQueryBuilder} from 'typeorm';
-import {Config} from 'commons-config';
+import {Config} from '@allgemein/config';
 import {TypeOrmStorageRef} from '../../../src/libs/storage/framework/typeorm/TypeOrmStorageRef';
 
 let bootstrap: Bootstrap;

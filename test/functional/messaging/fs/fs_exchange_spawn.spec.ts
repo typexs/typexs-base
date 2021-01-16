@@ -1,11 +1,11 @@
 import {suite, test} from '@testdeck/mocha';
 import * as path from 'path';
 import {Bootstrap} from '../../../../src/Bootstrap';
-import {Config} from 'commons-config';
+import {Config} from '@allgemein/config';
 import {TestHelper} from '../../TestHelper';
 import {SpawnHandle} from '../../SpawnHandle';
 import {Injector} from '../../../../src/libs/di/Injector';
-import {FileUtils} from 'commons-base';
+import {FileUtils} from '@allgemein/base';
 import {expect} from 'chai';
 import {FileSystemExchange} from '../../../../src/adapters/exchange/filesystem/FileSystemExchange';
 
@@ -223,7 +223,7 @@ class MessagingSpec {
       {
         'isFile': true,
         'path': 'node_01.ts',
-        'size': 2003,
+        'size': 2028,
       },
       {
         'isFile': true,

@@ -3,12 +3,11 @@ import * as _ from 'lodash';
 import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 import {Bootstrap} from '../../../src/Bootstrap';
-import {Config} from 'commons-config';
+import {Config} from '@allgemein/config';
 import {TEST_STORAGE_OPTIONS} from '../config';
 import {IEventBusConfiguration} from 'commons-eventbus';
 import {Container} from 'typedi';
 import {TestHelper} from '../TestHelper';
-
 import {DistributedStorageEntityController} from '../../../src/libs/distributed_storage/DistributedStorageEntityController';
 import {DistributedQueryWorker} from '../../../src/workers/DistributedQueryWorker';
 import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';

@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 import {getMetadataArgsStorage} from 'typeorm';
 import {SystemNodeInfo} from '../../src/entities/SystemNodeInfo';
 import {TaskLog} from '../../src/entities/TaskLog';
-import {PlatformUtils} from 'commons-base';
+import {PlatformUtils} from '@allgemein/base';
 
 export class TestHelper {
 
@@ -53,7 +53,7 @@ export class TestHelper {
           const r = fn();
           if (r) {
             clearInterval(i);
-            resolve();
+            resolve(null);
           }
         } catch (err) {
           clearInterval(i);

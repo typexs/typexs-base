@@ -1,6 +1,6 @@
 import {TEST_STORAGE_OPTIONS} from '../../config';
 import {IEventBusConfiguration} from 'commons-eventbus';
-import {Config} from 'commons-config';
+import {Config} from '@allgemein/config';
 import {ITypexsOptions} from '../../../../src/libs/ITypexsOptions';
 import {Bootstrap} from '../../../../src/Bootstrap';
 

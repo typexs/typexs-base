@@ -2,7 +2,7 @@ import * as path from 'path';
 import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 import {Bootstrap} from '../../../src/Bootstrap';
-import {Config} from 'commons-config';
+import {Config} from '@allgemein/config';
 import {TestEntity} from './fake_app/entities/TestEntity';
 import {TestHelper} from '../TestHelper';
 

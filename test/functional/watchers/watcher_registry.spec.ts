@@ -1,13 +1,13 @@
 // import * as chai from 'chai';
 // import {expect, use} from 'chai';
 // import * as chaiSpies from 'chai-spies';
-// import {Config} from 'commons-config';
+// import {Config} from '@allgemein/config';
 // import {slow, suite, test, timeout} from '@testdeck/mocha';
 // import {Bootstrap} from '../../../src/Bootstrap';
 // import {WatcherRegistry} from '../../../src/libs/watchers/WatcherRegistry';
 // import {TEST_STORAGE_OPTIONS} from '../config';
 // import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
-// import {PlatformUtils} from 'commons-base';
+// import {PlatformUtils} from '@allgemein/base';
 // import Sandbox = ChaiSpies.Sandbox;
 // import {Injector} from '../../../src/libs/di/Injector';
 //

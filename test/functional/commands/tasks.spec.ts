@@ -3,7 +3,7 @@ import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 import * as path from 'path';
 import {Bootstrap} from '../../../src/Bootstrap';
-import {Config} from 'commons-config';
+import {Config} from '@allgemein/config';
 import * as _ from 'lodash';
 import {TaskCommand} from '../../../src/commands/TaskCommand';
 import {TEST_STORAGE_OPTIONS} from '../config';

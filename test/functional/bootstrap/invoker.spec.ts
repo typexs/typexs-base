@@ -3,7 +3,7 @@ import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 
 import {Bootstrap} from '../../../src/Bootstrap';
-import {Config} from 'commons-config';
+import {Config} from '@allgemein/config';
 import {RuntimeLoader} from '../../../src/base/RuntimeLoader';
 import {Container} from 'typedi';
 import {Invoker} from '../../../src/base/Invoker';

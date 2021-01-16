@@ -4,7 +4,7 @@ import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 
 import {Bootstrap} from '../../../src/Bootstrap';
-import {Config} from 'commons-config';
+import {Config} from '@allgemein/config';
 import {RuntimeLoader} from '../../../src/base/RuntimeLoader';
 import {K_CLS_WORKERS} from '../../../src/libs/worker/Constants';
 import {

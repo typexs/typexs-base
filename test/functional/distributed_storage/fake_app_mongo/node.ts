@@ -1,7 +1,7 @@
-import {TEST_MONGO_STORAGE_OPTIONS} from '../../config';
+import {SPAWN_TIMEOUT, TEST_MONGO_STORAGE_OPTIONS} from '../../config';
 import * as _ from 'lodash';
 import {IEventBusConfiguration} from 'commons-eventbus';
-import {Config} from 'commons-config';
+import {Config} from '@allgemein/config';
 import {ITypexsOptions} from '../../../../src/libs/ITypexsOptions';
 import {Bootstrap} from '../../../../src/Bootstrap';
 import {generateMongoDataRows} from '../helper';
@@ -44,7 +44,7 @@ import {StorageRef} from '../../../../src/libs/storage/StorageRef';
   const controllerRef = storageRef.getController();
   await controllerRef.save(entries);
 
-  const timeout = parseInt(Config.get('argv.timeout', 20000), 0);
+  const timeout = parseInt(Config.get('argv.timeout', SPAWN_TIMEOUT), 0);
   /*
   let commands = bootstrap.getCommands();
   expect(commands.length).to.be.gt(0);

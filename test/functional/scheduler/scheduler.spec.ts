@@ -1,7 +1,7 @@
 import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 import {Bootstrap} from '../../../src/Bootstrap';
-import {Config} from 'commons-config';
+import {Config} from '@allgemein/config';
 import {Scheduler} from '../../../src/libs/schedule/Scheduler';
 import {EventBus, subscribe} from 'commons-eventbus';
 import {TestHelper} from '../TestHelper';

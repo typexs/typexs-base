@@ -50,19 +50,19 @@ export class SpawnHandle {
     this.started = new Promise(resolve => {
       this.process.on('message', d => {
         if (d === 'startup') {
-          resolve();
+          resolve(null);
         }
       });
       this.process.stderr.on('data', d => {
         const x = d.toString().trim();
         if (/startup finished/.test(x)) {
-          resolve();
+          resolve(null);
         }
       });
       this.process.stdout.on('data', d => {
         const x = d.toString().trim();
         if (/startup finished/.test(x)) {
-          resolve();
+          resolve(null);
         }
       });
     });

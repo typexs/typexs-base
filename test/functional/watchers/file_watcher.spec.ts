@@ -5,10 +5,10 @@
 // import {unlinkSync, writeFileSync} from 'fs';
 // import {slow, suite, test, timeout} from '@testdeck/mocha';
 // import {FileWatcher} from '../../../src/libs/watchers/FileWatcher';
-// import {Config} from 'commons-config';
+// import {Config} from '@allgemein/config';
 // import Sandbox = ChaiSpies.Sandbox;
 // import {Log} from '../../../src/libs/logging/Log';
-// import {PlatformUtils} from 'commons-base';
+// import {PlatformUtils} from '@allgemein/base';
 //
 // async function sleep(duration: number): Promise<void> {
 //   return new Promise((resolve) => {

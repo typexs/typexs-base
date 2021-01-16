@@ -5,7 +5,7 @@ import {expect} from 'chai';
 import {Bootstrap} from '../../../src/Bootstrap';
 import {Log} from '../../../src/libs/logging/Log';
 import {Container} from 'typedi';
-import {Config} from 'commons-config';
+import {Config} from '@allgemein/config';
 import {TEST_STORAGE_OPTIONS} from '../config';
 import {EventBus, IEventBusConfiguration, subscribe} from 'commons-eventbus';
 import {TaskQueueWorker} from '../../../src/workers/TaskQueueWorker';
@@ -29,7 +29,7 @@ import {Injector} from '../../../src/libs/di/Injector';
 const LOG_EVENT = TestHelper.logEnable(false);
 let bootstrap: Bootstrap = null;
 
-@suite('functional/tasks/tasks_worker') @timeout(120000)
+@suite('functional/tasks/tasks_worker')
 class TasksWorkerSpec {
 
 

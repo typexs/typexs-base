@@ -11,7 +11,7 @@ import * as _ from 'lodash';
 import {IWorkerInfo} from '../../worker/IWorkerInfo';
 import {DistributedQueryWorker} from '../../../workers/DistributedQueryWorker';
 import {__DISTRIBUTED_ID__} from '../Constants';
-import {ClassUtils} from 'commons-base';
+import {ClassUtils} from '@allgemein/base';
 import {C_WORKERS} from '../../worker/Constants';
 import {BaseUtils} from '../../utils/BaseUtils';
 

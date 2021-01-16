@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import {NotYetImplementedError} from 'commons-base/browser';
+import {NotYetImplementedError} from '@allgemein/base/browser';
 import {RelationMetadataArgs} from 'typeorm/metadata-args/RelationMetadataArgs';
 import {IConditionJoin} from '../IConditionJoin';
 import {TypeOrmPropertyRef} from './schema/TypeOrmPropertyRef';

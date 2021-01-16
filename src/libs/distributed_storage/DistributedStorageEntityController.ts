@@ -5,7 +5,7 @@ import {IDistributedFindOptions} from './find/IDistributedFindOptions';
 import {IDistributedSaveOptions} from './save/IDistributedSaveOptions';
 import {IEntityController} from '../storage/IEntityController';
 import {ClassType, IEntityRef} from 'commons-schema-api';
-import {NotSupportedError} from 'commons-base';
+import {NotSupportedError} from '@allgemein/base';
 import {IDistributedRemoveOptions} from './remove/IDistributedRemoveOptions';
 import {IDistributedUpdateOptions} from './update/IDistributedUpdateOptions';
 import {IDistributedAggregateOptions} from './aggregate/IDistributedAggregateOptions';

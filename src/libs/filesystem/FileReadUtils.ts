@@ -64,7 +64,7 @@ export class FileReadUtils {
         if (_.includes(NEW_LINE_CHARACTERS, lines.substring(0, 1))) {
           lines = lines.substring(1);
         }
-        await new Promise((resolve, reject) => fs.close(file, err => err ? reject(err) : resolve()));
+        await new Promise((resolve, reject) => fs.close(file, err => err ? reject(err) : resolve(null)));
         if (encoding === 'binary') {
           return Buffer.from(lines, 'binary');
         }
@@ -122,7 +122,7 @@ export class FileReadUtils {
 
     const do_while_loop = async (): Promise<Buffer | string> => {
       if ((!started && lines.length > 0) || chars >= stat.size) {
-        await new Promise((resolve, reject) => fs.close(file, err => err ? reject(err) : resolve()));
+        await new Promise((resolve, reject) => fs.close(file, err => err ? reject(err) : resolve(null)));
         lines = lines.substring(0, lines.length - 1);
         if (encoding === 'binary') {
           return Buffer.from(lines, 'binary');

@@ -1,4 +1,4 @@
-import {Config} from 'commons-config';
+import {Config} from '@allgemein/config';
 import {EventBus, IEventBusConfiguration} from 'commons-eventbus';
 import * as _ from 'lodash';
 import {Inject} from 'typedi';

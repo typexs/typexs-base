@@ -1,6 +1,6 @@
 import {ClassType, IEntityRef} from 'commons-schema-api';
 import {TypeOrmEntityRegistry} from './schema/TypeOrmEntityRegistry';
-import {NotSupportedError, TreeUtils} from 'commons-base';
+import {NotSupportedError, TreeUtils} from '@allgemein/base';
 import * as _ from 'lodash';
 import {IAggregateOp} from '../IAggregateOp';
 import {IAggregateOptions} from '../IAggregateOptions';

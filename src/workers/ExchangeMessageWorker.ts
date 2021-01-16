@@ -17,7 +17,7 @@ import {Bootstrap} from '../Bootstrap';
 import {Log} from '../libs/logging/Log';
 import {IMessageWorkload} from '../libs/messaging/IMessageWorkload';
 import {ExchangeMessageRegistry} from '../libs/messaging/ExchangeMessageRegistry';
-import {ClassUtils} from 'commons-base';
+import {ClassUtils} from '@allgemein/base';
 
 
 export class ExchangeMessageWorker implements IQueueProcessor<IMessageWorkload>, IWorker {

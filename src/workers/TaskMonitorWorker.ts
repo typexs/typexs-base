@@ -1,8 +1,8 @@
 import {Inject} from 'typedi';
 import {EventBus, subscribe} from 'commons-eventbus';
-import {Config} from 'commons-config';
+import {Config} from '@allgemein/config';
 import * as fs from 'fs';
-import {PlatformUtils} from 'commons-base';
+import {PlatformUtils} from '@allgemein/base';
 
 import {IQueueProcessor} from '../libs/queue/IQueueProcessor';
 import {Tasks} from '../libs/tasks/Tasks';
@@ -88,7 +88,7 @@ export class TaskMonitorWorker implements IQueueProcessor<TaskEvent>, IWorker {
             if (err) {
               this.logger.error('appending log to file ' + filename, err);
             }
-            resolve();
+            resolve(null);
           });
         });
       }

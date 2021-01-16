@@ -1,6 +1,6 @@
 import {ILookupRegistry, IPropertyRef, LookupRegistry, XS_TYPE_ENTITY} from 'commons-schema-api';
 import {C_WORKERS, K_CLS_WORKERS} from './Constants';
-import {ClassUtils, NotYetImplementedError} from 'commons-base';
+import {ClassUtils, NotYetImplementedError} from '@allgemein/base';
 import {WorkerRef} from './WorkerRef';
 import {IWorkerConfig} from './IWorkerConfig';
 import * as _ from 'lodash';

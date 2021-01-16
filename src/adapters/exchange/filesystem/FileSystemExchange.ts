@@ -1,13 +1,13 @@
 import * as _ from 'lodash';
 import * as fs from 'fs';
 import {join, resolve} from 'path';
-import {FileUtils} from 'commons-base';
+import {FileUtils} from '@allgemein/base';
 import {AbstractExchange} from '../../../libs/messaging/AbstractExchange';
 import {FileSystemRequest} from './FileSystemRequest';
 import {FileSystemResponse} from './FileSystemResponse';
 import {IFileOptions} from './IFileOptions';
 import {FileReadUtils} from '../../../libs/filesystem/FileReadUtils';
-import {Config} from 'commons-config';
+import {Config} from '@allgemein/config';
 import {CFG_KEY_APP_PATH, CFG_KEY_FILESYSTEM} from '../../../libs/filesystem/Constants';
 import {IFileSystemConfig} from '../../../libs/filesystem/IFileSystemConfig';
 import {MatchUtils} from '../../../libs/utils/MatchUtils';

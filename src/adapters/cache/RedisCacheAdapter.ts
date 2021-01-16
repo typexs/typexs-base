@@ -1,5 +1,5 @@
 import {ICacheAdapter} from '../../libs/cache/ICacheAdapter';
-import {CryptUtils, PlatformUtils} from 'commons-base';
+import {CryptUtils, PlatformUtils} from '@allgemein/base';
 import {ICacheBinConfig} from '../../libs/cache/ICacheBinConfig';
 import {ICacheSetOptions} from '../../libs/cache/ICacheOptions';
 import {IRedisCacheClient} from './redis/IRedisCacheClient';

@@ -3,7 +3,7 @@ import {TaskRef} from './TaskRef';
 import {TaskRuntimeContainer} from './TaskRuntimeContainer';
 import {TaskRunner} from './TaskRunner';
 import {TaskExchangeRef} from './TaskExchangeRef';
-import {ClassUtils, NotSupportedError} from 'commons-base';
+import {ClassUtils, NotSupportedError} from '@allgemein/base';
 import {ITaskRunResult} from './ITaskRunResult';
 import {TaskState} from './TaskState';
 

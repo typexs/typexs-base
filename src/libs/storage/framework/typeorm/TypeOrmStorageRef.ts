@@ -1,8 +1,8 @@
 import {IStorageOptions} from '../../IStorageOptions';
 import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
 import * as _ from 'lodash';
-import {ClassUtils, PlatformUtils, TodoException} from 'commons-base';
-import {Config} from 'commons-config';
+import {ClassUtils, PlatformUtils, TodoException} from '@allgemein/base';
+import {Config} from '@allgemein/config';
 import {K_WORKDIR} from '../../../Constants';
 import {BaseUtils} from '../../../utils/BaseUtils';
 import {Log} from '../../../logging/Log';

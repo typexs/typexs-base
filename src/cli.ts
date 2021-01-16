@@ -2,7 +2,7 @@
 
 // index.ts ignore
 
-import "reflect-metadata";
-import {cli} from "./base/cli";
+import 'reflect-metadata';
+import {cli} from './base/cli';
 
 cli();

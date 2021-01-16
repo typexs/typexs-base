@@ -44,7 +44,7 @@ export class Progress extends EventEmitter {
       const timer = setTimeout(reject, 1000);
       this.once('empty', function () {
         clearTimeout(timer);
-        resolve();
+        resolve(null);
       });
     });
   }

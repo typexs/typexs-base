@@ -1,9 +1,9 @@
 import * as _ from 'lodash';
 import {ILoggerOptions} from './ILoggerOptions';
-import {C_DEFAULT, ClassUtils} from 'commons-base';
+import {C_DEFAULT, ClassUtils} from '@allgemein/base';
 import {WinstonLoggerJar} from './WinstonLoggerJar';
 import {BaseUtils} from '../../libs/utils/BaseUtils';
-import {InterpolationSupport} from 'commons-config';
+import {InterpolationSupport} from '@allgemein/config';
 import {ILoggerApi} from './ILoggerApi';
 import {MatchUtils} from '../utils/MatchUtils';
 import {ConsoleTransportOptions} from 'winston/lib/winston/transports';

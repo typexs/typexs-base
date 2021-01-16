@@ -103,7 +103,7 @@ export class DataContainer<T> {
     try {
 //      const validator = await import('class-validator');
 
-      results = <IValidationError[]>await validate(this.instance, {validationError: {target: false}});
+      results = <IValidationError[]>await validate(this.instance as any, {validationError: {target: false}});
     } catch (e) {
       // TODO log no validator
     }

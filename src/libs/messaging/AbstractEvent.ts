@@ -1,4 +1,4 @@
-import {CryptUtils} from 'commons-base/browser';
+import {CryptUtils} from '@allgemein/base/browser';
 
 
 export abstract class AbstractEvent {

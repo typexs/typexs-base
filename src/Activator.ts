@@ -1,7 +1,5 @@
-import {Config} from 'commons-config';
-import {Container, Inject} from 'typedi';
+import {Config} from '@allgemein/config';
 import {IActivator} from './api/IActivator';
-import {RuntimeLoader} from './base/RuntimeLoader';
 import {Bootstrap} from './Bootstrap';
 import {Cache} from './libs/cache/Cache';
 import {Scheduler} from './libs/schedule/Scheduler';
@@ -16,10 +14,6 @@ import {C_EXCHANGE_MESSAGE} from './libs/messaging/Constants';
 import {Injector} from './libs/di/Injector';
 
 export class Activator implements IActivator {
-
-
-  // @Inject(RuntimeLoader.NAME)
-  // loader: RuntimeLoader;
 
 
   startup(): void {

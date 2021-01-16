@@ -1,4 +1,4 @@
-import {C_DEFAULT, ILogLevel, TodoException} from 'commons-base';
+import {C_DEFAULT, ILogLevel, TodoException} from '@allgemein/base';
 import * as winston from 'winston';
 import {createLogger, Logger, LoggerOptions} from 'winston';
 import {ILoggerOptions} from './ILoggerOptions';

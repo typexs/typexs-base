@@ -1,4 +1,4 @@
-import {MetaArgs} from 'commons-base/browser';
+import {MetaArgs} from '@allgemein/base/browser';
 import {K_CLS_TASK_DESCRIPTORS} from '../Constants';
 import {ITaskPropertyDesc} from '../ITaskPropertyDesc';
 

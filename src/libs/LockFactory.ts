@@ -47,7 +47,7 @@ export class LockFactory extends EventEmitter {
     } else {
       return new Promise(resolve => {
         this.once('empty', () => {
-          resolve();
+          resolve(null);
         });
       });
     }

@@ -20,7 +20,7 @@ import {DistributedFindRequest} from './DistributedFindRequest';
 import {IDistributedFindOptions} from './IDistributedFindOptions';
 import {AbstractMessage} from '../../messaging/AbstractMessage';
 import {EntityControllerRegistry} from '../../storage/EntityControllerRegistry';
-import {ClassUtils} from 'commons-base';
+import {ClassUtils} from '@allgemein/base';
 
 
 export class DistributedFindOp<T>

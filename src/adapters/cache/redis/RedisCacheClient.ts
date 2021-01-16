@@ -114,8 +114,7 @@ export class RedisCacheClient implements IRedisCacheClient {
               }
             });
           } else {
-
-            resolve();
+            resolve(null);
           }
         })
         .then(x => {

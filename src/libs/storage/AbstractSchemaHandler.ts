@@ -3,9 +3,9 @@ import {IDBType} from './IDBType';
 import {JS_DATA_TYPES} from 'commons-schema-api/browser';
 import {ICollection} from './ICollection';
 import {ICollectionProperty} from './ICollectionProperty';
-import {NotSupportedError} from 'commons-base/browser';
+import {NotSupportedError} from '@allgemein/base/browser';
 import {TypeOrmStorageRef} from './framework/typeorm/TypeOrmStorageRef';
-import {Config} from 'commons-config/index';
+import {Config} from '@allgemein/config/index';
 
 
 export abstract class AbstractSchemaHandler {

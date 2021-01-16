@@ -1,8 +1,8 @@
 import * as _ from 'lodash';
 import {TaskRef} from './TaskRef';
 import {TaskExchangeRef} from './TaskExchangeRef';
-import {ClassLoader, PlatformUtils} from 'commons-base';
-import {Config} from 'commons-config';
+import {ClassLoader, PlatformUtils} from '@allgemein/base';
+import {Config} from '@allgemein/config';
 import {ITaskRunnerOptions} from './ITaskRunnerOptions';
 import {TaskRequestFactory} from './worker/TaskRequestFactory';
 import {ITaskExectorOptions} from './ITaskExectorOptions';

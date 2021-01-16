@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
-import {InterpolationSupport, Utils} from 'commons-config';
-import {TreeUtils, WalkValues} from 'commons-base/browser';
-import {ClassUtils} from 'commons-base';
+import {InterpolationSupport, Utils} from '@allgemein/config';
+import {TreeUtils, WalkValues} from '@allgemein/base/browser';
+import {ClassUtils} from '@allgemein/base';
 
 
 export class BaseUtils {
@@ -24,7 +24,7 @@ export class BaseUtils {
   static wait(time: number): Promise<any> {
     return new Promise(resolve => {
       setTimeout(function () {
-        resolve();
+        resolve(null);
       }, time);
     });
   }

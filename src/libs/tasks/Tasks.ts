@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import {TaskRef} from './TaskRef';
-import {MetaArgs, NotYetImplementedError} from 'commons-base/browser';
+import {MetaArgs, NotYetImplementedError} from '@allgemein/base/browser';
 import {
   AbstractRef,
   Binding,

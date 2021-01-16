@@ -18,7 +18,7 @@ import {
   XS_TYPE_PROPERTY
 } from 'commons-schema-api/browser';
 import {REGISTRY_TYPEORM} from './TypeOrmConstants';
-import {ClassUtils, NotYetImplementedError} from 'commons-base/browser';
+import {ClassUtils, NotYetImplementedError} from '@allgemein/base/browser';
 import {TypeOrmPropertyRef} from './TypeOrmPropertyRef';
 import {RelationMetadataArgs} from 'typeorm/browser/metadata-args/RelationMetadataArgs';
 import {ColumnMetadataArgs} from 'typeorm/browser/metadata-args/ColumnMetadataArgs';

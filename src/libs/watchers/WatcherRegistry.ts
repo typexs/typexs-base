@@ -1,4 +1,4 @@
-import {Config} from 'commons-config';
+import {Config} from '@allgemein/config';
 import {AbstractWatcher} from './AbstractWatcher';
 import {FileWatcher} from './FileWatcher';
 import {isFileWatcherConfig} from './FileWatcherConfig';

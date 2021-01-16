@@ -7,7 +7,7 @@ import {XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '../../../Constants';
 
 import {TypeOrmSqlConditionsBuilder} from './TypeOrmSqlConditionsBuilder';
 import {TypeOrmEntityRegistry} from './schema/TypeOrmEntityRegistry';
-import {ClassUtils, TreeUtils} from 'commons-base';
+import {ClassUtils, TreeUtils} from '@allgemein/base';
 import {SelectQueryBuilder} from 'typeorm';
 import {ClassType} from 'commons-schema-api';
 import {StorageApi} from '../../../../api/Storage.api';

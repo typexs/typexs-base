@@ -8,7 +8,7 @@ import * as _ from 'lodash';
 import {ITaskRunnerResult} from '../libs/tasks/ITaskRunnerResult';
 import {TasksHelper} from '../libs/tasks/TasksHelper';
 import {IError} from '../libs/exceptions/IError';
-import {ClassUtils} from 'commons-base';
+import {ClassUtils} from '@allgemein/base';
 import {TASKRUN_STATE_UPDATE} from '../libs/tasks/Constants';
 import {IWorker} from '../libs/worker/IWorker';
 import {IWorkerStatisitic} from '../libs/worker/IWorkerStatisitic';

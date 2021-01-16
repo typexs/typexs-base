@@ -1,4 +1,4 @@
-import {ILoggerApi} from 'commons-base';
+import {ILoggerApi} from '@allgemein/base';
 import {TaskState} from './TaskState';
 import {Counter} from '../helper/Counter';
 

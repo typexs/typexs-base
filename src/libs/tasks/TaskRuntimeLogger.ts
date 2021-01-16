@@ -1,4 +1,4 @@
-import {ILogLevel} from 'commons-base';
+import {ILogLevel} from '@allgemein/base';
 import {ILoggerApi} from '../logging/ILoggerApi';
 import {ILoggerOptions} from '../logging/ILoggerOptions';
 import {LogEvent} from '../logging/LogEvent';

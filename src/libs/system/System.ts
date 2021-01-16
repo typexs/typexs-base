@@ -18,7 +18,7 @@ import * as os from 'os';
 import {SystemInfoRequestEvent} from './SystemInfoRequestEvent';
 import {SystemInfoRequest} from './SystemInfoRequest';
 import * as machineId from 'node-machine-id';
-import {Config} from 'commons-config';
+import {Config} from '@allgemein/config';
 import {Invoker} from '../../base/Invoker';
 import {SystemInfoResponse} from './SystemInfoResponse';
 import {ILoggerApi} from '../logging/ILoggerApi';

@@ -1,6 +1,6 @@
 import {AbstractSchemaHandler} from '../../../libs/storage/AbstractSchemaHandler';
 import * as _ from 'lodash';
-import {NotYetImplementedError} from 'commons-base/browser';
+import {NotYetImplementedError} from '@allgemein/base/browser';
 
 
 export class SqliteSchemaHandler extends AbstractSchemaHandler {

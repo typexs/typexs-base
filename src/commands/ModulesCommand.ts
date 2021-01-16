@@ -1,4 +1,4 @@
-import {Config} from 'commons-config';
+import {Config} from '@allgemein/config';
 import {Bootstrap} from '../Bootstrap';
 import {ICommand} from '../libs/commands/ICommand';
 import {IModule} from '../api/IModule';

@@ -6,8 +6,8 @@
 //
 // import {apply, chain, filter, mergeWith, Rule, SchematicContext, template, Tree, url} from '@angular-devkit/schematics';
 // import {Schema as ApplicationOptions} from './schema';
-// import {Config} from "commons-config";
-// import {PlatformUtils} from "commons-base";
+// import {Config} from "@allgemein/config";
+// import {PlatformUtils} from "@allgemein/base";
 //
 // export default function (options: ApplicationOptions): Rule {
 //   return (host: Tree, context: SchematicContext) => {

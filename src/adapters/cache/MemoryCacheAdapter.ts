@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 import {ICacheAdapter} from '../../libs/cache/ICacheAdapter';
 import {ICacheBinConfig} from '../../libs/cache/ICacheBinConfig';
 import {ICacheGetOptions, ICacheSetOptions} from '../../libs/cache/ICacheOptions';
-import {CryptUtils} from 'commons-base';
+import {CryptUtils} from '@allgemein/base';
 
 
 export class MemoryCacheAdapter implements ICacheAdapter {

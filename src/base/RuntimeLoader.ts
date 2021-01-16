@@ -4,7 +4,7 @@ import {ClassesLoader, ModuleDescriptor} from 'commons-moduls';
 import {IRuntimeLoaderOptions} from './IRuntimeLoaderOptions';
 import {DEFAULT_RUNTIME_OPTIONS} from '../Bootstrap';
 import {TYPEXS_NAME} from '../libs/Constants';
-import {CryptUtils, PlatformUtils} from 'commons-base';
+import {CryptUtils, PlatformUtils} from '@allgemein/base';
 import {Log} from './../libs/logging/Log';
 import {MatchUtils} from '../libs/utils/MatchUtils';
 import {ModulRegistryCache} from '../libs/cache/ModulRegistryCache';

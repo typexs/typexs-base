@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import {AbstractRef, IBuildOptions, IEntityRef, IPropertyRef, XS_TYPE_ENTITY} from 'commons-schema-api/browser';
-import {ClassUtils, NotSupportedError} from 'commons-base/browser';
+import {ClassUtils, NotSupportedError} from '@allgemein/base/browser';
 import {AbstractExchange} from './AbstractExchange';
 import {Injector} from '../di/Injector';
 import {C_EXCHANGE_MESSAGE} from './Constants';

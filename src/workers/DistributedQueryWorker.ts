@@ -26,7 +26,7 @@ import {EntityControllerRegistry} from '../libs/storage/EntityControllerRegistry
 import {DistributedUpdateResponse} from '../libs/distributed_storage/update/DistributedUpdateResponse';
 import {DistributedRemoveResponse} from '../libs/distributed_storage/remove/DistributedRemoveResponse';
 import {DistributedAggregateResponse} from '../libs/distributed_storage/aggregate/DistributedAggregateResponse';
-import {NotSupportedError} from 'commons-base';
+import {NotSupportedError} from '@allgemein/base';
 import {DistributedAggregateRequest} from '../libs/distributed_storage/aggregate/DistributedAggregateRequest';
 import {DistributedUpdateRequest} from '../libs/distributed_storage/update/DistributedUpdateRequest';
 import {DistributedRemoveRequest} from '../libs/distributed_storage/remove/DistributedRemoveRequest';

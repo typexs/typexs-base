@@ -2,9 +2,9 @@ export * from './browser';
 
 // extern exports
 export {Inject, Service} from 'typedi';
-export {Config, IConfigOptions, IConfigData, IFileConfigOptions} from 'commons-config';
+export {Config, IConfigOptions, IConfigData, IFileConfigOptions} from '@allgemein/config';
 export {ClassesLoader, ModuleRegistry} from 'commons-moduls';
-export {PlatformUtils, FileUtils, ClassLoader} from 'commons-base';
+export {PlatformUtils, FileUtils, ClassLoader} from '@allgemein/base';
 
 
 export * from './api/Tasks.api';

@@ -1,16 +1,14 @@
 import * as _ from 'lodash';
 import {Log} from './libs/logging/Log';
-import {IOptions} from 'commons-config';
+import {IOptions, Config} from '@allgemein/config';
 import {RuntimeLoader} from './base/RuntimeLoader';
 import {IRuntimeLoaderOptions} from './base/IRuntimeLoaderOptions';
 import {IActivator} from './api/IActivator';
-import {Config} from 'commons-config/config/Config';
 import {IModule} from './api/IModule';
 import {IStorageOptions, K_STORAGE} from './libs/storage/IStorageOptions';
 import {Storage} from './libs/storage/Storage';
-import * as os from 'os';
 import {BaseUtils} from './libs/utils/BaseUtils';
-import {CryptUtils, MetaArgs, PlatformUtils} from 'commons-base';
+import {CryptUtils, MetaArgs, PlatformUtils} from '@allgemein/base';
 import {
   CONFIG_NAMESPACE,
   K_CLS_ACTIVATOR,
@@ -26,12 +24,11 @@ import {
   K_CLS_STORAGE_TYPES,
   K_CLS_USE_API
 } from './libs/Constants';
-import {IConfigOptions} from 'commons-config/config/IConfigOptions';
+import {IConfigOptions} from '@allgemein/config/config/IConfigOptions';
 import {IBootstrap} from './api/IBootstrap';
 import {ClassesLoader} from 'commons-moduls';
 import {ITypexsOptions} from './libs/ITypexsOptions';
 import {Invoker} from './base/Invoker';
-
 import {IShutdown} from './api/IShutdown';
 import {System} from './libs/system/System';
 import {K_CLS_WORKERS} from './libs/worker/Constants';
@@ -40,9 +37,6 @@ import {ICommand} from './libs/commands/ICommand';
 import {LockFactory} from './libs/LockFactory';
 import {Injector} from './libs/di/Injector';
 import {EntityControllerRegistry} from './libs/storage/EntityControllerRegistry';
-import {LookupRegistry} from 'commons-schema-api/browser';
-import {TypeOrmEntityRegistry} from './libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry';
-import {XS_TYPE_ENTITY} from 'commons-schema-api';
 
 
 /**
@@ -581,6 +575,7 @@ export class Bootstrap {
 
 
   private async createSystemInfo() {
+    const os = PlatformUtils.load('os');
     const system = Injector.create(System);
     await system.initialize(os.hostname(), this.getNodeId());
     Injector.getContainer().set(System.NAME, system);

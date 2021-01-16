@@ -10,7 +10,7 @@ import {IUpdateOp} from '../../storage/framework/IUpdateOp';
 import {IWorkerInfo} from '../../worker/IWorkerInfo';
 import {DistributedQueryWorker} from '../../../workers/DistributedQueryWorker';
 import * as _ from 'lodash';
-import {ClassUtils} from 'commons-base';
+import {ClassUtils} from '@allgemein/base';
 import {C_WORKERS} from '../../worker/Constants';
 
 

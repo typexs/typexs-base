@@ -1,4 +1,4 @@
-import {Config} from 'commons-config';
+import {Config} from '@allgemein/config';
 import {Inject} from 'typedi';
 import {Invoker} from '../base/Invoker';
 import {Tasks} from '../libs/tasks/Tasks';

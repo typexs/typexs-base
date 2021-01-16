@@ -1,5 +1,4 @@
 import {IClassesLib} from 'commons-moduls';
-import {ICache} from 'commons-moduls/registry/ICache';
 
 export interface IRuntimeLoaderOptions {
 

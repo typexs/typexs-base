@@ -43,7 +43,7 @@ export class Semaphore extends EventEmitter {
     if (this.counter < this.max) {
       this.counter++;
       return new Promise(resolve => {
-        resolve();
+        resolve(null);
       });
     } else {
       return new Promise((resolve, err) => {
@@ -97,7 +97,7 @@ export class Semaphore extends EventEmitter {
         const fn = () => {
           clearTimeout(timer);
           this.removeAllListeners();
-          resolve();
+          resolve(null);
         };
         this.once('empty', fn);
         timer = setTimeout(() => {

@@ -13,7 +13,7 @@
 // import {FileSystemEngineHostBase} from '@angular-devkit/schematics/tools/file-system-engine-host-base';
 // import {readJsonFile} from '@angular-devkit/schematics/tools/file-system-utility';
 // import {IFileSystemEngineHost} from "./IFileSystemEngineHost";
-// import {PlatformUtils} from "commons-base";
+// import {PlatformUtils} from "@allgemein/base";
 // import {Log} from "../../";
 //
 //

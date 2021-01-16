@@ -1,4 +1,4 @@
-import {StringOrFunction} from 'commons-base';
+import {StringOrFunction} from '@allgemein/base';
 import {EntitySchema} from 'typeorm/entity-schema/EntitySchema';
 
 

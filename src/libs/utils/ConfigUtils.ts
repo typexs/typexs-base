@@ -1,7 +1,7 @@
-import {Config} from 'commons-config';
+import {Config} from '@allgemein/config';
 import * as _ from 'lodash';
-import {TreeUtils, WalkValues} from 'commons-base/browser';
-import {ClassLoader} from 'commons-base';
+import {TreeUtils, WalkValues} from '@allgemein/base/browser';
+import {ClassLoader} from '@allgemein/base';
 import {C_CONFIG, C_CONFIG_FILTER_KEYS, C_CONFIGURATION_FILTER_KEYS_KEY, C_KEY_SEPARATOR} from '../Constants';
 import {Cache} from '../../libs/cache/Cache';
 import {Injector} from '../../libs/di/Injector';

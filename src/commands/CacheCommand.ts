@@ -14,6 +14,9 @@ export class CacheCommand implements ICommand {
 
   describe = 'Clear cache bins';
 
+  @Inject(Cache.NAME)
+  cache: Cache;
+
 
   builder(yargs: any) {
     return yargs;
@@ -26,9 +29,6 @@ export class CacheCommand implements ICommand {
   beforeStorage(): void {
     Log.options({enable: false, loggers: [{name: '*', enable: false}]}, false);
   }
-
-  @Inject(Cache.NAME)
-  cache: Cache;
 
 
   async handler(argv: any) {

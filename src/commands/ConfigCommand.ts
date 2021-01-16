@@ -1,4 +1,4 @@
-import {Config} from 'commons-config';
+import {Config} from '@allgemein/config';
 import {ICommand} from '../libs/commands/ICommand';
 import {System} from '../libs/system/System';
 import {Log} from '../libs/logging/Log';

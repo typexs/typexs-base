@@ -4,7 +4,7 @@ import {RuntimeLoader} from '../../base/RuntimeLoader';
 import {K_CLS_STORAGE_TYPES} from '../Constants';
 import {IClassRef} from 'commons-schema-api';
 import {IStorage} from './IStorage';
-import {Config} from 'commons-config';
+import {Config} from '@allgemein/config';
 import {IStorageRef} from './IStorageRef';
 import {Log} from '../..';
 

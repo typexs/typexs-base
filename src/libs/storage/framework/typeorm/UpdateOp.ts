@@ -1,7 +1,7 @@
 import {ClassType, IEntityRef} from 'commons-schema-api';
 import {IUpdateOp} from '../IUpdateOp';
 import {TypeOrmEntityRegistry} from './schema/TypeOrmEntityRegistry';
-import {TreeUtils} from 'commons-base';
+import {TreeUtils} from '@allgemein/base';
 import * as _ from 'lodash';
 import {IUpdateOptions} from '../IUpdateOptions';
 import {TypeOrmSqlConditionsBuilder} from './TypeOrmSqlConditionsBuilder';

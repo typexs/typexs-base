@@ -1,4 +1,4 @@
-import {NotYetImplementedError} from 'commons-base';
+import {NotYetImplementedError} from '@allgemein/base';
 import {AbstractSchemaHandler} from '../../../libs/storage/AbstractSchemaHandler';
 import {ICollection} from '../../../libs/storage/ICollection';
 import {__DEFAULT__} from '../../../libs/Constants';

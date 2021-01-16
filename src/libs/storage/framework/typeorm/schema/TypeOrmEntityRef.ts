@@ -12,7 +12,7 @@ import {
   XS_TYPE_ENTITY,
   XS_TYPE_PROPERTY
 } from 'commons-schema-api/browser';
-import {ClassUtils} from 'commons-base/browser';
+import {ClassUtils} from '@allgemein/base/browser';
 import {REGISTRY_TYPEORM} from './TypeOrmConstants';
 import {getFromContainer, MetadataStorage} from 'class-validator';
 import {__CLASS__} from '../../../../Constants';
@@ -80,7 +80,7 @@ export class TypeOrmEntityRef extends AbstractRef implements IEntityRef {
     }
 
     const storage = getFromContainer(MetadataStorage);
-    const metadata = storage.getTargetValidationMetadatas(this.object.getClass(), null);
+    const metadata = storage.getTargetValidationMetadatas(this.object.getClass(), null, false, false);
 
     metadata.forEach(m => {
       const prop = _.find(o.properties, p => p.name === m.propertyName);

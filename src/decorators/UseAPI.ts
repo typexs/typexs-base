@@ -1,5 +1,5 @@
 import {K_CLS_USE_API} from '../libs/Constants';
-import {MetaArgs} from 'commons-base/browser';
+import {MetaArgs} from '@allgemein/base/browser';
 
 interface ApiProviderEntry {
   target: Function;

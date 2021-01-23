@@ -5,7 +5,7 @@ import {ICollection} from './ICollection';
 import {ICollectionProperty} from './ICollectionProperty';
 import {NotSupportedError} from '@allgemein/base/browser';
 import {TypeOrmStorageRef} from './framework/typeorm/TypeOrmStorageRef';
-import {Config} from '@allgemein/config/index';
+import {Config} from '@allgemein/config';
 
 
 export abstract class AbstractSchemaHandler {

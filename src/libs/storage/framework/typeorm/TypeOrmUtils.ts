@@ -16,11 +16,6 @@ export class TypeOrmUtils {
     const keyIsSelect = qb.expressionMap.selects.find(x => _.last(x.selection.split('.')) === k);
     if (keyIsSelect) {
       return keyIsSelect.selection;
-      // if (keyIsSelect.aliasName) {
-      //   return keyIsSelect.aliasName;
-      // } else {
-      //   return keyIsSelect.selection;
-      // }
     }
 
     const kSplit = k.split(sep).map(x => x.replace(/^\"+|\"+$|^\'+|\'+$/g, '').trim());

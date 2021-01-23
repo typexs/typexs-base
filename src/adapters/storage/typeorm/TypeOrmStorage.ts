@@ -4,12 +4,13 @@ import {TableMetadataArgs} from 'typeorm/metadata-args/TableMetadataArgs';
 import {DefaultSchemaHandler} from './DefaultSchemaHandler';
 import {__DEFAULT__, K_CLS_STORAGE_SCHEMAHANDLER} from '../../../libs/Constants';
 import {IStorageOptions} from '../../../libs/storage/IStorageOptions';
-import {RuntimeLoader} from '../../../base/RuntimeLoader';
 import {AbstractSchemaHandler} from '../../../libs/storage/AbstractSchemaHandler';
 import * as _ from 'lodash';
 import {TypeOrmStorageRef} from '../../../libs/storage/framework/typeorm/TypeOrmStorageRef';
 import {Injector} from '../../../libs/di/Injector';
 import {TypeOrmEntityRegistry} from '../../../libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry';
+import {IRuntimeLoader} from '../../../libs/core/IRuntimeLoader';
+import {ClassType} from 'commons-schema-api/browser';
 
 useContainer(Injector.getContainer());
 
@@ -47,17 +48,24 @@ export class TypeOrmStorage implements IStorage {
     return ref;
   }
 
+  registerSchemaHandler<T extends AbstractSchemaHandler>(cls: ClassType<T> | Function): T {
+    const obj = <AbstractSchemaHandler>Reflect.construct(cls, []);
+    if (obj) {
+      this.schemaHandler[obj.type] = cls;
+    }
+    return obj as any;
+  }
+
   /**
    * Implmentation of IStorage.prepare
    *
    * @param loader
    */
-  async prepare(loader: RuntimeLoader) {
-    const classes = await loader.getClasses(K_CLS_STORAGE_SCHEMAHANDLER);
-    for (const cls of classes) {
-      const obj = <AbstractSchemaHandler>Reflect.construct(cls, []);
-      if (obj) {
-        this.schemaHandler[obj.type] = cls;
+  async prepare(loader: IRuntimeLoader) {
+    if (loader) {
+      const classes = await loader.getClasses(K_CLS_STORAGE_SCHEMAHANDLER);
+      for (const cls of classes) {
+        this.registerSchemaHandler(cls);
       }
     }
     return true;

@@ -373,6 +373,7 @@ export class Bootstrap {
     Injector.set(EntityControllerRegistry, entityControllerRegistry);
 
     this.storage.getRefs().forEach(x => {
+      Injector.set([K_STORAGE, x.getName()].join('.'), x);
       entityControllerRegistry.add(x.getController());
     });
 

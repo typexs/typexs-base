@@ -1,10 +1,7 @@
 import * as _ from 'lodash';
 import {IFindOp} from '../IFindOp';
 import {IFindOptions} from '../IFindOptions';
-
-
 import {XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '../../../Constants';
-
 import {TypeOrmSqlConditionsBuilder} from './TypeOrmSqlConditionsBuilder';
 import {TypeOrmEntityRegistry} from './schema/TypeOrmEntityRegistry';
 import {ClassUtils, TreeUtils} from '@allgemein/base';

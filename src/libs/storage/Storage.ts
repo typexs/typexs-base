@@ -7,7 +7,7 @@ import {Config} from '@allgemein/config';
 import {IStorageRef} from './IStorageRef';
 import {Log} from '../../libs/logging/Log';
 import {IRuntimeLoader} from '../core/IRuntimeLoader';
-import {Injector} from '../di/Injector';
+import {ClassType} from 'commons-schema-api/browser';
 
 
 export class Storage {
@@ -40,15 +40,21 @@ export class Storage {
     }
   }
 
+  async registerFramework<T extends IStorage>(cls: ClassType<T> | Function, loader?: IRuntimeLoader): Promise<T> {
+    const obj = <IStorage>Reflect.construct(cls, []);
+    if (obj && await obj.prepare(loader)) {
+      this.storageFramework[obj.getType()] = obj;
+    }
+    return obj as any;
+
+  }
+
 
   async prepare(config: { [name: string]: IStorageOptions }, loader?: IRuntimeLoader) {
     if (loader) {
       const classes = await loader.getClasses(K_CLS_STORAGE_TYPES);
       for (const cls of classes) {
-        const obj = <IStorage>Reflect.construct(cls, []);
-        if (obj && await obj.prepare(loader)) {
-          this.storageFramework[obj.getType()] = obj;
-        }
+        await this.registerFramework(cls, loader);
       }
     }
 
@@ -87,7 +93,7 @@ export class Storage {
       if (storageRef.getOptions().connectOnStartup) {
         await storageRef.prepare();
       }
-      Injector.set([K_STORAGE, name].join('.'), storageRef);
+
     }
 
     for (const ref of this.getRefs()) {

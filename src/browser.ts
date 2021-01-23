@@ -1,4 +1,3 @@
-
 export {
   NestedException,
   TodoException,
@@ -11,6 +10,8 @@ export {
 export * from './libs/di/Injector';
 
 export * from './base/Invoker';
+export * from './base/IRuntimeLoaderOptions';
+export * from './libs/core/IRuntimeLoader';
 
 export * from './api/IActivator';
 export * from './api/IBootstrap';
@@ -18,6 +19,11 @@ export * from './api/IModule';
 export * from './api/IShutdown';
 
 export * from './decorators/UseAPI';
+
+export * from './libs/IHttpHeaders';
+export * from './libs/IKeyValuePair';
+export * from './libs/IUrlBase';
+
 
 export * from './entities/SystemNodeInfo';
 export * from './entities/TaskLog';
@@ -62,10 +68,14 @@ export * from './libs/storage/framework/typeorm/schema/TypeOrmEntityRef';
 export * from './libs/storage/framework/typeorm/schema/TypeOrmPropertyRef';
 export * from './libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry';
 
+
+export * from './libs/system/INodeInfo';
+
 export * from './libs/tasks/Tasks';
 export * from './libs/tasks/TaskExchangeRef';
 export * from './libs/tasks/TaskRef';
 export * from './libs/tasks/ITasksConfig';
+export * from './libs/tasks/ITask';
 export * from './libs/tasks/ITaskInfo';
 export * from './libs/tasks/ITaskRefOptions';
 export * from './libs/tasks/ITaskPropertyDesc';

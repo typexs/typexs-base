@@ -1,4 +1,4 @@
-import {ITaskInfo} from "./ITaskInfo";
+import {ITaskInfo} from './ITaskInfo';
 
 export interface ITask extends ITaskInfo {
 

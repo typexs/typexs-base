@@ -29,7 +29,7 @@ class BootstrapGeneralSpec {
     });
 
     await loader.rebuild();
-    const modules = loader.registry.modules();
+    const modules = loader.registry.getModules();
     expect(modules).to.have.length(3);
     expect(_.find(modules, {name: 'module1'})).to.exist;
     expect(_.find(modules, {name: 'module2'})).to.not.exist;
@@ -64,7 +64,7 @@ class BootstrapGeneralSpec {
     });
 
     await loader.rebuild();
-    const modules = loader.registry.modules();
+    const modules = loader.registry.getModules();
     expect(modules).to.have.length(2);
     expect(_.find(modules, {name: 'module1'})).to.not.exist;
     expect(modules.map(x => x.name)).to.be.deep.eq(['module3', 'fake_app']);
@@ -85,7 +85,7 @@ class BootstrapGeneralSpec {
     });
 
     await loader.rebuild();
-    const modules = loader.registry.modules();
+    const modules = loader.registry.getModules();
     expect(modules).to.have.length(1);
     expect(modules.map(x => x.name)).to.be.deep.eq(['fake_app']);
     loader = null;
@@ -105,7 +105,7 @@ class BootstrapGeneralSpec {
     });
 
     await loader.rebuild();
-    const modules = loader.registry.modules();
+    const modules = loader.registry.getModules();
     expect(modules).to.have.length(2);
     expect(modules.map(x => x.name)).to.be.deep.eq(['module1', 'fake_app']);
     loader = null;

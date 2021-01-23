@@ -72,7 +72,7 @@ class BootstrapGeneralSpec {
     });
 
     await loader.rebuild();
-    const modules = loader.registry.modules();
+    const modules = loader.registry.getModules();
     expect(modules).to.have.length(3);
     expect(_.find(modules, {name: 'module1'})).to.exist;
     expect(_.find(modules, {name: 'module2'})).to.not.exist;

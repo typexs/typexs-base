@@ -1,6 +1,5 @@
 import * as _ from 'lodash';
-import {ModuleRegistry} from 'commons-moduls/registry/ModuleRegistry';
-import {ClassesLoader, ModuleDescriptor} from 'commons-moduls';
+import {ICache, IClassesLoader, IModuleRegistry, ModuleDescriptor} from '@allgemein/moduls';
 import {IRuntimeLoaderOptions} from './IRuntimeLoaderOptions';
 import {DEFAULT_RUNTIME_OPTIONS} from '../Bootstrap';
 import {TYPEXS_NAME} from '../libs/Constants';
@@ -8,20 +7,20 @@ import {CryptUtils, PlatformUtils} from '@allgemein/base';
 import {Log} from './../libs/logging/Log';
 import {MatchUtils} from '../libs/utils/MatchUtils';
 import {ModulRegistryCache} from '../libs/cache/ModulRegistryCache';
-import {ICache} from 'commons-moduls/registry/ICache';
+import {IRuntimeLoader} from '../libs/core/IRuntimeLoader';
 
 
-export class RuntimeLoader {
+export class RuntimeLoader implements IRuntimeLoader {
 
   static NAME = 'RuntimeLoader';
 
   _options: IRuntimeLoaderOptions;
 
-  registry: ModuleRegistry;
+  registry: IModuleRegistry;
 
   settings: { [moduleName: string]: any };
 
-  classesLoader: ClassesLoader;
+  classesLoader: IClassesLoader;
 
   cache: ICache;
 
@@ -61,6 +60,17 @@ export class RuntimeLoader {
     await this.rebuild();
   }
 
+  getOptions() {
+    return this._options;
+  }
+
+  getRegistry() {
+    return this.registry;
+  }
+
+  getDisabledModuleNames(): string[] {
+    return this.disabledModuleNames;
+  }
 
   async rebuild() {
     let modulePackageJsonKeys = [TYPEXS_NAME];
@@ -141,7 +151,7 @@ export class RuntimeLoader {
   }
 
 
-  async getSettings(key: string) {
+  async getSettings(key: string): Promise<any> {
     const settingsLoader = await this.registry.createSettingsLoader({
       ref: 'package.json',
       path: key
@@ -155,7 +165,7 @@ export class RuntimeLoader {
 
 
   getModule(modulName: string): ModuleDescriptor {
-    return this.registry.modules().find(m => m.name === modulName);
+    return this.registry.getModules().find(m => m.name === modulName);
   }
 
 

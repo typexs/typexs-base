@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import {Log} from './libs/logging/Log';
-import {IOptions, Config} from '@allgemein/config';
+import {Config, IOptions} from '@allgemein/config';
 import {RuntimeLoader} from './base/RuntimeLoader';
 import {IRuntimeLoaderOptions} from './base/IRuntimeLoaderOptions';
 import {IActivator} from './api/IActivator';
@@ -26,7 +26,7 @@ import {
 } from './libs/Constants';
 import {IConfigOptions} from '@allgemein/config/config/IConfigOptions';
 import {IBootstrap} from './api/IBootstrap';
-import {ClassesLoader} from 'commons-moduls';
+import {ClassesLoader} from '@allgemein/moduls';
 import {ITypexsOptions} from './libs/ITypexsOptions';
 import {Invoker} from './base/Invoker';
 import {IShutdown} from './api/IShutdown';
@@ -37,6 +37,7 @@ import {ICommand} from './libs/commands/ICommand';
 import {LockFactory} from './libs/LockFactory';
 import {Injector} from './libs/di/Injector';
 import {EntityControllerRegistry} from './libs/storage/EntityControllerRegistry';
+import {IRuntimeLoader} from './libs/core/IRuntimeLoader';
 
 
 /**
@@ -244,13 +245,11 @@ export class Bootstrap {
 
   private VERBOSE_DONE = false;
 
-  private runtimeLoader: RuntimeLoader = null;
+  private runtimeLoader: IRuntimeLoader = null;
 
   private activators: IActivator[] = null;
 
   private bootstraps: IBootstrap[] = null;
-
-  private commands: ICommand[] = null;
 
   private storage: Storage;
 
@@ -322,7 +321,7 @@ export class Bootstrap {
   }
 
 
-  static prepareInvoker(i: Invoker, loader: RuntimeLoader) {
+  static prepareInvoker(i: Invoker, loader: IRuntimeLoader) {
     // lade klassen mit erweiterung, jedoch welche erweiterung implementieren diese
     const apiClasses = loader.getClasses(K_CLS_API);
     loader.getClasses(K_CLS_USE_API);
@@ -357,80 +356,26 @@ export class Bootstrap {
   async activateStorage(): Promise<Bootstrap> {
     this.storage = new Storage();
     this.storage.nodeId = this.getNodeId();
-    await this.storage.prepare(this.runtimeLoader);
 
     Injector.set(Storage, this.storage);
     Injector.set(Storage.NAME, this.storage);
     Injector.set(K_STORAGE, this.storage);
 
+
     // get configurated storages
     const o_storage: { [name: string]: IStorageOptions } = Config.get(K_STORAGE, CONFIG_NAMESPACE, {});
 
-    // keys starting with undercore or dollar are reserved for generic configuration
-    const storageNames = _.keys(o_storage).filter(x => !/^(_|\$)/.test(x));
+    await this.storage.prepare(o_storage, this.runtimeLoader);
 
     // create registry for entity controller which maybe loaded per dependency injection
     const entityControllerRegistry = Injector.create(EntityControllerRegistry);
     Injector.set(EntityControllerRegistry.NAME, entityControllerRegistry);
     Injector.set(EntityControllerRegistry, entityControllerRegistry);
 
-    const storageRefs = [];
-    // iterate over storage configurations
-    for (const name of storageNames) {
-      const settings: any = o_storage[name];
-      let entities: Function[] = [];
-      if (this.runtimeLoader) {
-        // load entities handled by storage
-        entities = this.runtimeLoader.getClasses(['entity', name].join('.'));
-        // check if classes are realy for typeorm
-        if (_.has(settings, 'extends')) {
-          // if extends property is set
-          let _extends = [];
-          if (_.isString(settings.extends)) {
-            _extends.push(settings.extends);
-          } else {
-            _extends = settings.extends;
-          }
-          _extends.forEach((x: string) => {
-            const __entities = this.runtimeLoader.getClasses(['entity', x].join('.'));
-            if (__entities.length > 0) {
-              entities.push(...__entities);
-            }
-          });
-        }
-      }
+    this.storage.getRefs().forEach(x => {
+      entityControllerRegistry.add(x.getController());
+    });
 
-      const _settings: IStorageOptions = _.merge(settings, {entities: entities}, {name: name});
-      Log.debug('storage register ' + name + ' with ' + entities.length + ' entities');
-      const storageRef = await this.storage.register(name, _settings);
-      if (storageRef.getOptions().connectOnStartup) {
-        await storageRef.prepare();
-      }
-      storageRefs.push(storageRef);
-
-      // register the storage controller
-      entityControllerRegistry.add(storageRef.getController());
-
-      Injector.set([K_STORAGE, name].join('.'), storageRef);
-    }
-
-    for (const ref of storageRefs) {
-      let _extended = [];
-      const extended = ref.getOptions().extends;
-      if (_.isString(extended)) {
-        _extended.push(extended);
-      } else {
-        _extended = extended;
-      }
-
-      if (!_.isEmpty(_extended)) {
-        for (const ext of _extended) {
-          const extRef = this.storage.get(ext);
-          extRef.addExtendedStorageRef(ref);
-          ref.addExtendingStorageRef(extRef);
-        }
-      }
-    }
 
     return this;
   }
@@ -453,11 +398,6 @@ export class Bootstrap {
   setConfigSources(sources: IConfigOptions[]) {
     this.cfgOptions.configs = sources;
     return this;
-  }
-
-
-  detectCommand() {
-    const commands = this.getCommands(false).map(c => c.command);
   }
 
 
@@ -551,7 +491,7 @@ export class Bootstrap {
     Bootstrap.prepareInvoker(invoker, this.runtimeLoader);
 
     // update config
-    Config.jar(CONFIG_NAMESPACE).set('modules', this.runtimeLoader._options);
+    Config.jar(CONFIG_NAMESPACE).set('modules', this.runtimeLoader.getOptions());
     this.addShutdownEvents();
     return this;
   }
@@ -722,20 +662,19 @@ export class Bootstrap {
 
 
   getModules(): IModule[] {
-    const regModules = this.getLoader().registry.modules();
+    const regModules = this.getLoader().getRegistry().getModules();
     const modules: IModule[] = [];
     for (const _module of regModules) {
       const moduleInfo: IModule = _module;
-      moduleInfo.settings = this.runtimeLoader.getSettings(_module.name);
-      moduleInfo.enabled = this.runtimeLoader.disabledModuleNames.indexOf(_module.name) === -1;
+      moduleInfo.settings = this.getLoader().getSettings(_module.name);
+      moduleInfo.enabled = this.getLoader().getDisabledModuleNames().indexOf(_module.name) === -1;
       modules.push(moduleInfo);
     }
-
     return modules;
   }
 
 
-  getLoader(): RuntimeLoader {
+  getLoader(): IRuntimeLoader {
     return this.runtimeLoader;
   }
 

@@ -1,9 +1,9 @@
 /**
  * Abstract interface for storage declaration
  */
-import {RuntimeLoader} from '../../base/RuntimeLoader';
 import {IStorageOptions} from './IStorageOptions';
 import {IStorageRef} from './IStorageRef';
+import {IRuntimeLoader} from '../core/IRuntimeLoader';
 
 export interface IStorage {
 
@@ -17,7 +17,7 @@ export interface IStorage {
    *
    * @param loader
    */
-  prepare(loader: RuntimeLoader): boolean | Promise<boolean>;
+  prepare(loader: IRuntimeLoader): boolean | Promise<boolean>;
 
   /**
    * create new storage ref for connection to the backend

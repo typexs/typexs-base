@@ -3,7 +3,7 @@ export * from './browser';
 // extern exports
 export {Inject, Service} from 'typedi';
 export {Config, IConfigOptions, IConfigData, IFileConfigOptions} from '@allgemein/config';
-export {ClassesLoader, ModuleRegistry} from 'commons-moduls';
+export {ClassesLoader, ModuleRegistry} from '@allgemein/moduls';
 export {PlatformUtils, FileUtils, ClassLoader} from '@allgemein/base';
 
 

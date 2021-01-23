@@ -1,4 +1,4 @@
-import {ICache} from 'commons-moduls/registry/ICache';
+import {ICache} from '@allgemein/moduls/registry/ICache';
 import {FileUtils, NotYetImplementedError, PlatformUtils} from '@allgemein/base';
 import {Config} from '@allgemein/config';
 

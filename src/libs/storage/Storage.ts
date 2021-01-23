@@ -1,12 +1,13 @@
 import {IStorageOptions, K_STORAGE} from './IStorageOptions';
 import * as _ from 'lodash';
-import {RuntimeLoader} from '../../base/RuntimeLoader';
 import {K_CLS_STORAGE_TYPES} from '../Constants';
 import {IClassRef} from 'commons-schema-api';
 import {IStorage} from './IStorage';
 import {Config} from '@allgemein/config';
 import {IStorageRef} from './IStorageRef';
-import {Log} from '../..';
+import {Log} from '../../libs/logging/Log';
+import {IRuntimeLoader} from '../core/IRuntimeLoader';
+import {Injector} from '../di/Injector';
 
 
 export class Storage {
@@ -40,14 +41,74 @@ export class Storage {
   }
 
 
-  async prepare(loader: RuntimeLoader) {
-    const classes = await loader.getClasses(K_CLS_STORAGE_TYPES);
-    for (const cls of classes) {
-      const obj = <IStorage>Reflect.construct(cls, []);
-      if (obj && await obj.prepare(loader)) {
-        this.storageFramework[obj.getType()] = obj;
+  async prepare(config: { [name: string]: IStorageOptions }, loader?: IRuntimeLoader) {
+    if (loader) {
+      const classes = await loader.getClasses(K_CLS_STORAGE_TYPES);
+      for (const cls of classes) {
+        const obj = <IStorage>Reflect.construct(cls, []);
+        if (obj && await obj.prepare(loader)) {
+          this.storageFramework[obj.getType()] = obj;
+        }
       }
     }
+
+    // keys starting with undercore or dollar are reserved for generic configuration
+    const storageNames = _.keys(config).filter(x => !/^(_|\$)/.test(x));
+
+    // const storageRefs = [];
+    // iterate over storage configurations
+    for (const name of storageNames) {
+      const settings: any = config[name];
+      let entities: Function[] = [];
+      if (loader) {
+        // load entities handled by storage
+        entities = loader.getClasses(['entity', name].join('.'));
+        // check if classes are realy for typeorm
+        if (_.has(settings, 'extends')) {
+          // if extends property is set
+          let _extends = [];
+          if (_.isString(settings.extends)) {
+            _extends.push(settings.extends);
+          } else {
+            _extends = settings.extends;
+          }
+          _extends.forEach((x: string) => {
+            const __entities = loader.getClasses(['entity', x].join('.'));
+            if (__entities.length > 0) {
+              entities.push(...__entities);
+            }
+          });
+        }
+      }
+
+      const _settings: IStorageOptions = _.merge(settings, {entities: entities}, {name: name});
+      Log.debug('storage register ' + name + ' with ' + entities.length + ' entities');
+      const storageRef = await this.register(name, _settings);
+      if (storageRef.getOptions().connectOnStartup) {
+        await storageRef.prepare();
+      }
+      Injector.set([K_STORAGE, name].join('.'), storageRef);
+    }
+
+    for (const ref of this.getRefs()) {
+      let _extended = [];
+      const extended = ref.getOptions().extends;
+      if (_.isString(extended)) {
+        _extended.push(extended);
+      } else {
+        _extended = extended;
+      }
+
+      if (!_.isEmpty(_extended)) {
+        for (const ext of _extended) {
+          const extRef = this.get(ext);
+          extRef.addExtendedStorageRef(ref);
+          ref.addExtendingStorageRef(extRef);
+        }
+      }
+    }
+
+
   }
 
 
@@ -67,6 +128,10 @@ export class Storage {
 
   get<X extends IStorageRef>(name: string = 'default'): X {
     return this.storageRefs[name] as X;
+  }
+
+  getRefs(): IStorageRef[] {
+    return _.values(this.storageRefs);
   }
 
 

@@ -1,4 +1,4 @@
-import {ISubModule} from "commons-moduls/registry/ISubModule";
+import {ISubModule} from '@allgemein/moduls/registry/ISubModule';
 
 export interface IModule {
   name: string;

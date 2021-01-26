@@ -1,8 +1,6 @@
 import * as _ from 'lodash';
-
 import {TypeOrmEntityRef} from './TypeOrmEntityRef';
 import {TableMetadataArgs} from 'typeorm/browser/metadata-args/TableMetadataArgs';
-
 import {
   AbstractRef,
   Binding,

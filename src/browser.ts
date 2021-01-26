@@ -52,10 +52,11 @@ export * from './libs/storage/IStorageOptions';
 export * from './libs/storage/ICollection';
 export * from './libs/storage/ICollectionProperty';
 export * from './libs/storage/IDBType';
-
 export * from './libs/storage/IValidationError';
 export * from './libs/storage/IValidationMessage';
 export * from './libs/storage/IValidationResult';
+export * from './libs/storage/Storage';
+export * from './libs/storage/StorageRef';
 
 export * from './libs/storage/framework/IFindOptions';
 export * from './libs/storage/framework/ISaveOptions';

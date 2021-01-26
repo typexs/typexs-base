@@ -1,9 +1,9 @@
 import {IStorageOptions, K_STORAGE} from './IStorageOptions';
 import * as _ from 'lodash';
 import {K_CLS_STORAGE_TYPES} from '../Constants';
-import {IClassRef} from 'commons-schema-api';
+import {IClassRef} from 'commons-schema-api/browser';
 import {IStorage} from './IStorage';
-import {Config} from '@allgemein/config';
+import {Config} from '@allgemein/config/browser';
 import {IStorageRef} from './IStorageRef';
 import {Log} from '../../libs/logging/Log';
 import {IRuntimeLoader} from '../core/IRuntimeLoader';

@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 
 import {IDeleteOp} from '../IDeleteOp';
 import {TypeOrmUtils} from './TypeOrmUtils';
-import {ClassType} from 'commons-schema-api';
+import {ClassType} from 'commons-schema-api/browser';
 import {TypeOrmSqlConditionsBuilder} from './TypeOrmSqlConditionsBuilder';
 import {TypeOrmEntityRegistry} from './schema/TypeOrmEntityRegistry';
 import {IDeleteOptions} from '../IDeleteOptions';

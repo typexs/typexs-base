@@ -1,9 +1,10 @@
-import {ICollectionProperty} from "./ICollectionProperty";
+import {ICollectionProperty} from './ICollectionProperty';
 
 export interface ICollection {
   framework: string;
   name: string;
-  properties: ICollectionProperty[]
+  properties: ICollectionProperty[];
+
   [k: string]: any;
 }
 

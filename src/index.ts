@@ -70,8 +70,8 @@ export * from './libs/storage/framework/typeorm/TypeOrmEntityController';
 export * from './libs/storage/framework/typeorm/TypeOrmStorageRef';
 
 
-export * from './libs/storage/EntitySchemaColumnOptions';
-export * from './libs/storage/EntitySchemaRelationOptions';
+// export * from './libs/storage/EntitySchemaColumnOptions';
+// export * from './libs/storage/EntitySchemaRelationOptions';
 export * from './libs/storage/IStorageOptions';
 export * from './libs/storage/IDBType';
 export * from './libs/storage/Storage';

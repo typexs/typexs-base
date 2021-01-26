@@ -1,31 +1,14 @@
 import * as _ from 'lodash';
 import {ILoggerOptions} from './ILoggerOptions';
-import {C_DEFAULT, ClassUtils} from '@allgemein/base';
-import {WinstonLoggerJar} from './WinstonLoggerJar';
+import {C_DEFAULT, ClassUtils} from '@allgemein/base/browser';
+// import {WinstonLoggerJar} from './WinstonLoggerJar';
 import {BaseUtils} from '../../libs/utils/BaseUtils';
-import {InterpolationSupport} from '@allgemein/config';
+import {InterpolationSupport} from '@allgemein/config/supports/InterpolationSupport';
 import {ILoggerApi} from './ILoggerApi';
 import {MatchUtils} from '../utils/MatchUtils';
-import {ConsoleTransportOptions} from 'winston/lib/winston/transports';
+import {ClassType} from 'commons-schema-api/browser';
+import {ConsoleLogger} from './ConsoleLogger';
 
-
-const DEFAULT_OPTIONS: ILoggerOptions = {
-  enable: true,
-
-  level: 'info',
-
-  transports: [
-    {
-      console: <ConsoleTransportOptions>{
-        name: 'console',
-        // stderrLevels: [],
-        timestamp: true,
-        json: false,
-
-      }
-    }
-  ]
-};
 
 export class Log {
 
@@ -36,10 +19,14 @@ export class Log {
 
   get logger(): ILoggerApi {
     if (!this.initial) {
-      this.options(DEFAULT_OPTIONS);
+      this.options(Log.DEFAULT_OPTIONS);
     }
     return this.getLogger();
   }
+
+  static DEFAULT_OPTIONS = {};
+
+  static LOGGER_CLASS: ClassType<ILoggerApi> = ConsoleLogger;
 
   static self: Log = null;
 
@@ -48,10 +35,6 @@ export class Log {
   static prefix = '';
 
   static inc = 0;
-
-//  static enableEvents: boolean = false;
-
-  // static console: boolean = false;
 
   /**
    * check if configuration was loaded
@@ -81,6 +64,7 @@ export class Log {
   static getLogger(name: string = C_DEFAULT) {
     return this._().getLogger(name);
   }
+
 
   static getLoggerFor(fn: Function, opts: any = {}) {
     const name = ClassUtils.getClassName(fn);
@@ -171,7 +155,7 @@ export class Log {
     if (l) {
       (<any>l).build(name, opts, append);
     } else {
-      l = new WinstonLoggerJar(name, opts);
+      l = Reflect.construct(Log.LOGGER_CLASS, [name, opts]);
       this.loggers[name] = l;
     }
     return l;
@@ -181,10 +165,10 @@ export class Log {
   createLogger(name: string, params: any = {}, options: ILoggerOptions = {}) {
     let defaultOptions = this.getLoggerOptionsFor(name);
     if (!defaultOptions) {
-      defaultOptions = DEFAULT_OPTIONS;
+      defaultOptions = Log.DEFAULT_OPTIONS;
       defaultOptions.name = 'logger_' + Log.inc++;
     } else {
-      _.defaults(defaultOptions, DEFAULT_OPTIONS);
+      _.defaults(defaultOptions, Log.DEFAULT_OPTIONS);
     }
 
 
@@ -214,7 +198,7 @@ export class Log {
     if (append && this.globalOptions) {
       options = BaseUtils.merge(this.globalOptions, options);
     }
-    this.globalOptions = _.defaults(options, DEFAULT_OPTIONS);
+    this.globalOptions = _.defaults(options, Log.DEFAULT_OPTIONS);
     Log.enable = this.globalOptions.enable;
     //  Log.enableEvents = this.globalOptions.events;
     this.initial = true;

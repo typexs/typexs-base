@@ -1,5 +1,5 @@
 export interface IValidationMessage {
-  type: string,
-  content: string
+  type: string;
+  content: string;
 
 }

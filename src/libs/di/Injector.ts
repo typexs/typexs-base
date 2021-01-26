@@ -1,7 +1,7 @@
 import {Container, ObjectType, ServiceIdentifier, ServiceMetadata, Token} from 'typedi';
 import {MissingProvidedServiceTypeError} from 'typedi/error/MissingProvidedServiceTypeError';
 import {ServiceNotFoundError} from 'typedi/error/ServiceNotFoundError';
-import {ClassType} from 'commons-schema-api';
+import {ClassType} from 'commons-schema-api/browser';
 
 export class Injector {
 

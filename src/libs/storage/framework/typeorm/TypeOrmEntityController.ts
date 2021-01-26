@@ -8,7 +8,7 @@ import {TypeOrmStorageRef} from './TypeOrmStorageRef';
 import {Invoker} from '../../../../base/Invoker';
 import {TypeOrmConnectionWrapper} from './TypeOrmConnectionWrapper';
 import {Injector} from '../../../di/Injector';
-import {ClassType, IClassRef, IEntityRef} from 'commons-schema-api';
+import {ClassType, IClassRef, IEntityRef} from 'commons-schema-api/browser';
 import {IFindOptions} from '../IFindOptions';
 import {FindOp} from './FindOp';
 import {ISaveOptions} from '../ISaveOptions';

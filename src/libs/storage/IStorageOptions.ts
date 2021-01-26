@@ -1,5 +1,4 @@
-import {StringOrFunction} from '@allgemein/base';
-import {EntitySchema} from 'typeorm/entity-schema/EntitySchema';
+import {StringOrFunction} from '@allgemein/base/browser';
 
 
 export const K_STORAGE = 'storage';

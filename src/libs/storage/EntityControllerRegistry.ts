@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import {IEntityController} from './IEntityController';
-import {ClassUtils} from '@allgemein/base';
-import {ClassType, IClassRef} from 'commons-schema-api';
+import {ClassUtils} from '@allgemein/base/browser';
+import {ClassType, IClassRef} from 'commons-schema-api/browser';
 
 const CONTROLLER_REGISTRY = 'entity_controller_registry';
 

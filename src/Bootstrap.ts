@@ -38,6 +38,8 @@ import {LockFactory} from './libs/LockFactory';
 import {Injector} from './libs/di/Injector';
 import {EntityControllerRegistry} from './libs/storage/EntityControllerRegistry';
 import {IRuntimeLoader} from './libs/core/IRuntimeLoader';
+import {WinstonLoggerJar} from './libs/logging/WinstonLoggerJar';
+import {DEFAULT_LOGGER_OPTIONS} from './libs/logging/Constants';
 
 
 /**
@@ -403,6 +405,10 @@ export class Bootstrap {
 
 
   configure(c: any = null) {
+    // set logger class
+    Log.DEFAULT_OPTIONS = DEFAULT_LOGGER_OPTIONS;
+    Log.LOGGER_CLASS = WinstonLoggerJar;
+
     if (this.CONFIG_LOADED) {
       Log.warn('already configured');
       return this;

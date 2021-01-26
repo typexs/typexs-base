@@ -1,6 +1,6 @@
-import {ClassType, IEntityRef} from 'commons-schema-api';
+import {ClassType, IEntityRef} from 'commons-schema-api/browser';
 import {TypeOrmEntityRegistry} from './schema/TypeOrmEntityRegistry';
-import {NotSupportedError, TreeUtils} from '@allgemein/base';
+import {NotSupportedError, TreeUtils} from '@allgemein/base/browser';
 import * as _ from 'lodash';
 import {IAggregateOp} from '../IAggregateOp';
 import {IAggregateOptions} from '../IAggregateOptions';
@@ -26,7 +26,7 @@ import {
   Sort,
   Value,
   ValueRef
-} from '@allgemein/mango-expressions';
+} from '@allgemein/mango-expressions/browser';
 import {TypeOrmEntityController} from './TypeOrmEntityController';
 import {convertPropertyValueJsonToString} from './Helper';
 import {TypeOrmUtils} from './TypeOrmUtils';

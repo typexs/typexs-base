@@ -1,11 +1,10 @@
 import {ISaveOptions} from './framework/ISaveOptions';
 import {IFindOptions} from './framework/IFindOptions';
-import {ClassType, IClassRef, IEntityRef} from 'commons-schema-api/browser';
+import {IEntityRef} from 'commons-schema-api/browser';
 import {IUpdateOptions} from './framework/IUpdateOptions';
 import {IAggregateOptions} from './framework/IAggregateOptions';
 import {IDeleteOptions} from './framework/IDeleteOptions';
 import {CLS_DEF} from '../Constants';
-
 
 
 export interface IEntityController {

@@ -5,9 +5,8 @@ import {Storage} from '../../../src/libs/storage/Storage';
 import {Invoker} from '../../../src/base/Invoker';
 import {Injector} from '../../../src/libs/di/Injector';
 import {TypeOrmStorage} from '../../../src/adapters/storage/typeorm/TypeOrmStorage';
-import {K_CLS_USE_API, SqliteSchemaHandler} from '../../../src';
+import {SqliteSchemaHandler} from '../../../src/adapters/storage/typeorm/SqliteSchemaHandler';
 import {StorageApi} from '../../../src/api/Storage.api';
-import {MetaArgs} from '@allgemein/base';
 
 @suite('functional/storage/standalone/configuration')
 class StorageStandaloneConfigurationSpec {

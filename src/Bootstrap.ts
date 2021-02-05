@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import {Log} from './libs/logging/Log';
-import {Config, IOptions} from '@allgemein/config';
+import {Config, IConfigOptions, IOptions} from '@allgemein/config/browser';
 import {RuntimeLoader} from './base/RuntimeLoader';
 import {IRuntimeLoaderOptions} from './base/IRuntimeLoaderOptions';
 import {IActivator} from './api/IActivator';
@@ -24,7 +24,6 @@ import {
   K_CLS_STORAGE_TYPES,
   K_CLS_USE_API
 } from './libs/Constants';
-import {IConfigOptions} from '@allgemein/config/config/IConfigOptions';
 import {IBootstrap} from './api/IBootstrap';
 import {ClassesLoader} from '@allgemein/moduls';
 import {ITypexsOptions} from './libs/ITypexsOptions';

@@ -17,14 +17,11 @@ import {ITaskRunnerResult} from './ITaskRunnerResult';
 import {Bootstrap} from '../../Bootstrap';
 import {Invoker} from '../../base/Invoker';
 import {TasksHelper} from './TasksHelper';
-import {Container} from 'typedi';
 import {ILoggerApi} from '../logging/ILoggerApi';
 import * as moment from 'moment';
 import {WinstonLoggerJar} from '../logging/WinstonLoggerJar';
-
 import * as winston from 'winston';
 import {DefaultJsonFormat} from '../logging/DefaultJsonFormat';
-
 import {Stream} from 'stream';
 import {ITaskRunnerOptions} from './ITaskRunnerOptions';
 import {CryptUtils} from '@allgemein/base/browser';

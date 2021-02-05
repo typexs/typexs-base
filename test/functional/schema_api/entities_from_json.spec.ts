@@ -3,7 +3,8 @@ import {expect} from 'chai';
 import * as _ from 'lodash';
 import {TypeOrmEntityRegistry} from '../../../src/libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry';
 import {Car} from './entities/Car';
-import {TreeUtils, WalkValues} from '@allgemein/base';
+import {TreeUtils} from '@allgemein/base';
+import {WalkValues} from '@allgemein/base/libs/utils/TreeUtils';
 
 
 @suite('functional/entity_from_json')

@@ -1,8 +1,9 @@
 import * as _ from 'lodash';
 import {Utils} from '@allgemein/config/browser';
 import {InterpolationSupport} from '@allgemein/config/supports/InterpolationSupport';
-import {TreeUtils, WalkValues} from '@allgemein/base/browser';
+import {TreeUtils} from '@allgemein/base/browser';
 import {ClassUtils} from '@allgemein/base/browser';
+import {WalkValues} from '@allgemein/base/libs/utils/TreeUtils';
 
 
 export class BaseUtils {

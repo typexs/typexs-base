@@ -3,9 +3,9 @@ import {expect} from 'chai';
 import {TypeOrmEntityRegistry} from '../../../src/libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry';
 
 import * as _ from 'lodash';
-import {TreeUtils, WalkValues} from '@allgemein/base';
+import {TreeUtils} from '@allgemein/base';
 import {DataContainer} from '../../../src/libs/storage/DataContainer';
-
+import {WalkValues} from '@allgemein/base/libs/utils/TreeUtils';
 
 @suite('functional/storage/storage_data_container')
 class StorageDataContainerSpec {

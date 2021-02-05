@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import {ICache, IClassesLoader, IModuleRegistry, ModuleDescriptor} from '@allgemein/moduls';
+import {ICache, IClassesLoader, IModuleRegistry, ModuleDescriptor, ModuleRegistry} from '@allgemein/moduls';
 import {IRuntimeLoaderOptions} from './IRuntimeLoaderOptions';
 import {DEFAULT_RUNTIME_OPTIONS} from '../Bootstrap';
 import {TYPEXS_NAME} from '../libs/Constants';

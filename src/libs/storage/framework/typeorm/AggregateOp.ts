@@ -12,9 +12,7 @@ import {
   AbstractOperator,
   Count,
   Group,
-  GROUP_ID,
   IMangoWalker,
-  IMangoWalkerControl,
   Limit,
   MangoExpression,
   Match,
@@ -30,6 +28,8 @@ import {
 import {TypeOrmEntityController} from './TypeOrmEntityController';
 import {convertPropertyValueJsonToString} from './Helper';
 import {TypeOrmUtils} from './TypeOrmUtils';
+import {IMangoWalkerControl} from '@allgemein/mango-expressions/IMangoWalker';
+import {GROUP_ID} from '@allgemein/mango-expressions/operators/stage/Group';
 
 
 export interface ISqlAggregateParam {

@@ -1,4 +1,5 @@
-import {IClassesLib} from '@allgemein/moduls';
+import {IClassesLib} from '@allgemein/moduls/loader/classes/IClassesOptions';
+
 
 export interface IRuntimeLoaderOptions {
 

@@ -4,7 +4,7 @@ import {ColumnMetadataArgs} from 'typeorm/browser/metadata-args/ColumnMetadataAr
 import {RelationMetadataArgs} from 'typeorm/browser/metadata-args/RelationMetadataArgs';
 import {EmbeddedMetadataArgs} from 'typeorm/browser/metadata-args/EmbeddedMetadataArgs';
 
-import {ClassUtils, NotYetImplementedError, TreeUtils, WalkValues} from '@allgemein/base/browser';
+import {ClassUtils, NotYetImplementedError, TreeUtils} from '@allgemein/base/browser';
 import {
   AbstractRef,
   ClassRef,
@@ -17,7 +17,7 @@ import {TypeOrmEntityRef} from './TypeOrmEntityRef';
 import {TypeOrmUtils} from '../TypeOrmUtils';
 import {REGISTRY_TYPEORM} from './TypeOrmConstants';
 import {classRefGet} from '../Helper';
-
+import {WalkValues} from '@allgemein/base/libs/utils/TreeUtils';
 
 export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
 

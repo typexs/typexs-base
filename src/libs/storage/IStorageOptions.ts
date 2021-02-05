@@ -1,4 +1,4 @@
-import {StringOrFunction} from '@allgemein/base/browser';
+import {StringOrFunction} from '@allgemein/base';
 
 
 export const K_STORAGE = 'storage';

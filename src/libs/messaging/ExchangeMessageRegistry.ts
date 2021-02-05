@@ -1,6 +1,6 @@
 import {IEntityRef, ILookupRegistry, IPropertyRef, LookupRegistry, XS_TYPE} from 'commons-schema-api/browser';
 import {C_EXCHANGE_MESSAGE} from './Constants';
-import {NotYetImplementedError} from '@allgemein/base/browser';
+import {NotYetImplementedError} from '@allgemein/base';
 import {ClassUtils} from '@allgemein/base';
 import {XS_TYPE_ENTITY} from 'commons-schema-api';
 import {WorkerRef} from '../worker/WorkerRef';

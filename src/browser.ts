@@ -5,7 +5,7 @@ export {
   NotSupportedError,
   StringOrFunction,
   MetaArgs
-} from '@allgemein/base/browser';
+} from '@allgemein/base';
 
 export * from './libs/di/Injector';
 

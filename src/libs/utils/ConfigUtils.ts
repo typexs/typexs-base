@@ -1,6 +1,6 @@
 import {Config} from '@allgemein/config';
 import * as _ from 'lodash';
-import {TreeUtils} from '@allgemein/base/browser';
+import {TreeUtils} from '@allgemein/base';
 import {ClassLoader} from '@allgemein/base';
 import {C_CONFIG, C_CONFIG_FILTER_KEYS, C_CONFIGURATION_FILTER_KEYS_KEY, C_KEY_SEPARATOR} from '../Constants';
 import {Cache} from '../../libs/cache/Cache';

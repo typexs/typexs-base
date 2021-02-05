@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import {ILoggerOptions} from './ILoggerOptions';
-import {C_DEFAULT, ClassUtils} from '@allgemein/base/browser';
+import {C_DEFAULT, ClassUtils} from '@allgemein/base';
 // import {WinstonLoggerJar} from './WinstonLoggerJar';
 import {BaseUtils} from '../../libs/utils/BaseUtils';
 import {InterpolationSupport} from '@allgemein/config/supports/InterpolationSupport';

@@ -13,7 +13,6 @@ import {Y1} from './entities/Y1';
 import {TEST_STORAGE_OPTIONS} from '../config';
 import {Container} from 'typedi';
 import {ClassRef, XS_DEFAULT} from 'commons-schema-api';
-// import {ITypeOrmStorageOptions} from '../../../src/libs/storage/framework/typeorm/ITypeOrmStorageOptions';
 import {TypeOrmStorageRef} from '../../../src/libs/storage/framework/typeorm/TypeOrmStorageRef';
 import {BaseConnectionOptions} from 'typeorm/connection/BaseConnectionOptions';
 

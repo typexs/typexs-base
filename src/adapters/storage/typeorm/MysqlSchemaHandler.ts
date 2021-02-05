@@ -3,7 +3,7 @@ import * as _ from 'lodash';
 import {MysqlConnectionOptions} from 'typeorm/driver/mysql/MysqlConnectionOptions';
 import {IDBType} from '../../../libs/storage/IDBType';
 import {JS_DATA_TYPES} from 'commons-schema-api/browser';
-import {NotYetImplementedError} from '@allgemein/base/browser';
+import {NotYetImplementedError} from '@allgemein/base';
 
 
 export class MysqlSchemaHandler extends AbstractSchemaHandler {

@@ -1,6 +1,6 @@
 import {ILoggerApi} from './ILoggerApi';
 import {ILoggerOptions} from './ILoggerOptions';
-import {ILogLevel} from '@allgemein/base/browser';
+import {ILogLevel} from '@allgemein/base';
 
 export class ConsoleLogger implements ILoggerApi {
   name: string;

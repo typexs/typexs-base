@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import {Log} from './libs/logging/Log';
-import {Config, IConfigOptions, IOptions} from '@allgemein/config/browser';
+import {Config, IConfigOptions, IOptions} from '@allgemein/config';
 import {RuntimeLoader} from './base/RuntimeLoader';
 import {IRuntimeLoaderOptions} from './base/IRuntimeLoaderOptions';
 import {IActivator} from './api/IActivator';

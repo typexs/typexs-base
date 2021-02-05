@@ -4,7 +4,7 @@ import {ColumnMetadataArgs} from 'typeorm/browser/metadata-args/ColumnMetadataAr
 import {RelationMetadataArgs} from 'typeorm/browser/metadata-args/RelationMetadataArgs';
 import {EmbeddedMetadataArgs} from 'typeorm/browser/metadata-args/EmbeddedMetadataArgs';
 
-import {ClassUtils, NotYetImplementedError, TreeUtils} from '@allgemein/base/browser';
+import {ClassUtils, NotYetImplementedError, TreeUtils} from '@allgemein/base';
 import {
   AbstractRef,
   ClassRef,

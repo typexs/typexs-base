@@ -12,7 +12,7 @@ import {
   XS_TYPE_ENTITY,
   XS_TYPE_PROPERTY
 } from 'commons-schema-api/browser';
-import {ClassUtils} from '@allgemein/base/browser';
+import {ClassUtils} from '@allgemein/base';
 import {REGISTRY_TYPEORM} from './TypeOrmConstants';
 import {getFromContainer, MetadataStorage} from 'class-validator';
 import {__CLASS__} from '../../../../Constants';

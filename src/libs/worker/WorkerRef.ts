@@ -1,6 +1,6 @@
 import {AbstractRef, IBuildOptions, IEntityRef, IPropertyRef, XS_TYPE_ENTITY} from 'commons-schema-api';
 import {ClassUtils} from '@allgemein/base';
-import {NotSupportedError} from '@allgemein/base/browser';
+import {NotSupportedError} from '@allgemein/base';
 
 
 export class WorkerRef extends AbstractRef implements IEntityRef {

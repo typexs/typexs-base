@@ -24,7 +24,7 @@ import * as winston from 'winston';
 import {DefaultJsonFormat} from '../logging/DefaultJsonFormat';
 import {Stream} from 'stream';
 import {ITaskRunnerOptions} from './ITaskRunnerOptions';
-import {CryptUtils} from '@allgemein/base/browser';
+import {CryptUtils} from '@allgemein/base';
 import {TasksApi} from '../../api/Tasks.api';
 import {TaskRunnerRegistry} from './TaskRunnerRegistry';
 import {TaskRunnerEvent} from './TaskRunnerEvent';

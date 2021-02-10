@@ -4,11 +4,9 @@ import {IValidationError} from './IValidationError';
 import {IValidationResult} from './IValidationResult';
 import {ILookupRegistry} from 'commons-schema-api/browser';
 import {IValidationMessage} from './IValidationMessage';
+import {STATE_KEY} from './Constants';
+import {IEntityRef} from 'commons-schema-api';
 
-
-
-
-export const STATE_KEY = '$state';
 
 export class DataContainer<T> {
 
@@ -27,9 +25,10 @@ export class DataContainer<T> {
   instance: T;
 
 
-  constructor(instance: T, registry: ILookupRegistry) {
+  constructor(instance: T, registry: ILookupRegistry | IEntityRef) {
     this.instance = instance;
-    const entityDef = registry.getEntityRefFor(this.instance);
+    const entityDef: IEntityRef = _.isFunction((<ILookupRegistry>registry).getEntityRefFor) ?
+      (<ILookupRegistry>registry).getEntityRefFor(instance) : registry as IEntityRef;
     if (!entityDef) {
       throw new Error('none definition found for instance ' + JSON.stringify(instance));
     }
@@ -115,7 +114,7 @@ export class DataContainer<T> {
       type: 'validate'
     }));
     this.isSuccessValidated = true;
-    Object.keys(this.validation).forEach(key => {
+    _.keys(this.validation).forEach(key => {
       if (this.validation[key]) {
         const valid = this.validation[key];
         const found = _.find(this.errors, {property: key});

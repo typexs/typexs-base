@@ -6,7 +6,6 @@ import {Scheduler} from '../../../src/libs/schedule/Scheduler';
 import {EventBus, subscribe} from 'commons-eventbus';
 import {TestHelper} from '../TestHelper';
 import {IScheduleFactory} from '../../../src/libs/schedule/IScheduleFactory';
-import {Container} from 'typedi';
 import {SimpleTask} from '../tasks/tasks/SimpleTask';
 import {RuntimeLoader} from '../../../src/base/RuntimeLoader';
 import {Log} from '../../../src/libs/logging/Log';
@@ -16,6 +15,8 @@ import {TasksApi} from '../../../src/api/Tasks.api';
 import {Tasks} from '../../../src/libs/tasks/Tasks';
 import * as moment from 'moment';
 import {TaskRunnerRegistry} from '../../../src/libs/tasks/TaskRunnerRegistry';
+import {C_TASKS, Injector} from '../../../src';
+import {RegistryFactory} from '@allgemein/schema-api';
 
 let loader: RuntimeLoader = null;
 let factories: IScheduleFactory[] = [];
@@ -24,7 +25,7 @@ let factories: IScheduleFactory[] = [];
 class SchedulerSpec {
 
   static after() {
-    Container.reset();
+    Injector.reset();
   }
 
 
@@ -42,15 +43,22 @@ class SchedulerSpec {
       }]
     });
     await loader.prepare();
-    factories = loader.getClasses(K_CLS_SCHEDULE_ADAPTER_FACTORIES).map(x => Container.get(x));
+    factories = loader.getClasses(K_CLS_SCHEDULE_ADAPTER_FACTORIES).map(x => Injector.get(x));
 
 
     const i = new Invoker();
-    Container.set(Invoker.NAME, i);
+    Injector.set(Invoker.NAME, i);
     i.register(TasksApi, []);
 
+
+    RegistryFactory.remove(C_TASKS);
+    RegistryFactory.register(/^tasks\.?/, Tasks);
+
+    const tasks = RegistryFactory.get(C_TASKS) as Tasks;
+    Injector.set(Tasks.NAME, tasks);
+
     const registry = new TaskRunnerRegistry();
-    Container.set(TaskRunnerRegistry.NAME, registry);
+    Injector.set(TaskRunnerRegistry.NAME, registry);
 
   }
 
@@ -233,9 +241,10 @@ class SchedulerSpec {
 
   @test
   async 'execute task'() {
-    const tasks = new Tasks('testnode');
+    const tasks = RegistryFactory.get(C_TASKS) as Tasks;
+    tasks.setNodeId('testnode');
     const taskRef = tasks.addTask(SimpleTask);
-    Container.set(Tasks.NAME, tasks);
+    Injector.set(Tasks.NAME, tasks);
 
     const scheduler = new Scheduler();
     await scheduler.prepare(factories);
@@ -250,10 +259,9 @@ class SchedulerSpec {
     await schedule.runSchedule();
     expect(schedule.lastResults).to.not.be.null;
     expect(schedule.lastResults.tasks).to.be.deep.eq(['simple_task']);
-
-
   }
 
 
 }
+
 

@@ -8,7 +8,7 @@ export class SimpleTaskWithRuntimeLog implements ITask {
   runtime: ITaskRuntimeContainer;
 
   async exec() {
-    let logger = this.runtime.logger();
+    const logger = this.runtime.logger();
 
     logger.info('doing something');
     logger.warn('doing something wrong');

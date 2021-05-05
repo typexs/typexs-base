@@ -16,8 +16,9 @@ import {__REMOTE_IDS__, XS_P_$ERRORED, XS_P_$SAVED} from '../../../src/libs/dist
 import {IEntityController} from '../../../src/libs/storage/IEntityController';
 import {generateSqlDataRows} from './helper';
 import {Injector} from '../../../src/libs/di/Injector';
-import {C_STORAGE_DEFAULT} from '../../../src/libs/Constants';
+import {__NODE_ID__, __REGISTRY__, C_STORAGE_DEFAULT} from '../../../src/libs/Constants';
 import {StorageRef} from '../../../src/libs/storage/StorageRef';
+import {__CLASS__} from '@allgemein/schema-api';
 
 // process.env.SQL_LOG = '1';
 
@@ -154,9 +155,9 @@ class DistributedStorageSaveSpec {
     expect(results2).to.have.length(1);
     const entry = results2.shift();
     expect(entry).to.be.deep.eq({
-      '__class__': 'DataRow',
-      '__nodeId__': 'system',
-      '__registry__': 'typeorm',
+      [__NODE_ID__]: 'system',
+      [__CLASS__]: 'DataRow',
+      [__REGISTRY__]: 'typeorm',
       'id': 10,
       'someAny': '{"hallo":"editedWelt"}',
       'someBool': true,
@@ -192,9 +193,10 @@ class DistributedStorageSaveSpec {
     expect(results2).to.have.length(10);
     const entry = _.first(results2);
     expect(entry).to.be.deep.include({
-      '__class__': 'DataRow',
-      '__nodeId__': 'system',
-      '__registry__': 'typeorm',
+      [__NODE_ID__]: 'system',
+      [__CLASS__]: 'DataRow',
+      [__REGISTRY__]: 'typeorm',
+
       'id': 1,
       'someBool': false,
       'someNumber': 456,

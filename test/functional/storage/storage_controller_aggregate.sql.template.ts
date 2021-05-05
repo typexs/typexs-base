@@ -6,7 +6,7 @@ import {expect} from 'chai';
 
 import {Bootstrap} from '../../../src/Bootstrap';
 import {Config} from '@allgemein/config';
-import {ClassType} from 'commons-schema-api/browser';
+import {ClassType} from '@allgemein/schema-api';
 import {XS_P_$COUNT, XS_P_$LIMIT} from '../../../src/libs/Constants';
 import {TypeOrmEntityController} from '../../../src/libs/storage/framework/typeorm/TypeOrmEntityController';
 import {TypeOrmStorageRef} from '../../../src/libs/storage/framework/typeorm/TypeOrmStorageRef';

@@ -1,9 +1,8 @@
 import * as _ from 'lodash';
-import {suite, test, timeout} from '@testdeck/mocha';
+import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 
 import {Bootstrap} from '../../../src/Bootstrap';
-import {Log} from '../../../src/libs/logging/Log';
 import {Container} from 'typedi';
 import {Config} from '@allgemein/config';
 import {TEST_STORAGE_OPTIONS} from '../config';

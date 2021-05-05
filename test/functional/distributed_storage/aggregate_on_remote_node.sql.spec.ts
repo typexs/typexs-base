@@ -12,10 +12,11 @@ import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
 import {DataRow} from './fake_app/entities/DataRow';
 import * as _ from 'lodash';
 import {Injector} from '../../../src/libs/di/Injector';
-import {__NODE_ID__, C_STORAGE_DEFAULT} from '../../../src/libs/Constants';
+import {__NODE_ID__, __REGISTRY__, C_STORAGE_DEFAULT} from '../../../src/libs/Constants';
 import {StorageRef} from '../../../src/libs/storage/StorageRef';
 import {SpawnHandle} from '../SpawnHandle';
 import {generateSqlDataRows} from './helper';
+import {__CLASS__} from '@allgemein/schema-api';
 
 
 const LOG_EVENT = TestHelper.logEnable(false);
@@ -42,7 +43,11 @@ class DistributedStorageSaveSpec {
         logging: {enable: LOG_EVENT, level: 'debug'},
         modules: {paths: [__dirname + '/../../..'], disableCache: true},
         storage: {default: DB_OPTIONS},
-        eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}},
+        eventbus: {
+          default: <IEventBusConfiguration>{
+            adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}
+          }
+        },
         // workers: {access: [{name: 'DistributedQueryWorker', access: 'allow'}]}
       });
     bootstrap.activateLogger();
@@ -110,8 +115,10 @@ class DistributedStorageSaveSpec {
     expect(results).to.have.length(1);
     results = _.orderBy(results, [__NODE_ID__]);
     expect(results[0]).to.be.deep.eq({
-      sum: 10, __nodeId__: 'remote01', '__registry__': 'typeorm',
-      '__class__': 'DataRow'
+      sum: 10,
+      [__NODE_ID__]: 'remote01',
+      [__CLASS__]: 'DataRow',
+      [__REGISTRY__]: 'typeorm'
     });
 
     const nodeIds = _.uniq(results.map(x => {
@@ -133,16 +140,22 @@ class DistributedStorageSaveSpec {
     results = _.orderBy(results, [__NODE_ID__, 'someFlag']);
     expect(results).to.be.deep.eq([
       {
-        someFlag: '0', sum: 3, __nodeId__: 'remote01', '__registry__': 'typeorm',
-        '__class__': 'DataRow'
+        someFlag: '0', sum: 3,
+        [__NODE_ID__]: 'remote01',
+        [__CLASS__]: 'DataRow',
+        [__REGISTRY__]: 'typeorm'
       },
       {
-        someFlag: '10', sum: 3, __nodeId__: 'remote01', '__registry__': 'typeorm',
-        '__class__': 'DataRow'
+        someFlag: '10', sum: 3,
+        [__NODE_ID__]: 'remote01',
+        [__CLASS__]: 'DataRow',
+        [__REGISTRY__]: 'typeorm'
       },
       {
-        someFlag: '20', sum: 4, __nodeId__: 'remote01', '__registry__': 'typeorm',
-        '__class__': 'DataRow'
+        someFlag: '20', sum: 4,
+        [__NODE_ID__]: 'remote01',
+        [__CLASS__]: 'DataRow',
+        [__REGISTRY__]: 'typeorm'
       }
     ]);
 
@@ -164,8 +177,10 @@ class DistributedStorageSaveSpec {
 
     expect(results).to.have.length(1);
     expect(results[0]).to.be.deep.eq({
-      someFlag: '10', sum: 7, __nodeId__: 'remote01', '__registry__': 'typeorm',
-      '__class__': 'DataRow'
+      someFlag: '10', sum: 7,
+      [__NODE_ID__]: 'remote01',
+      [__CLASS__]: 'DataRow',
+      [__REGISTRY__]: 'typeorm'
     });
 
     const nodeIds = _.uniq(results.map(x => {

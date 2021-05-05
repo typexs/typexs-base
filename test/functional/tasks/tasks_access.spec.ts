@@ -4,8 +4,11 @@ import {Log} from '../../../src/libs/logging/Log';
 
 import {TestHelper} from '../TestHelper';
 import {Tasks} from '../../../src/libs/tasks/Tasks';
+import {RegistryFactory} from '@allgemein/schema-api';
+import {C_TASKS} from '../../../src';
 
 const LOG_EVENT = TestHelper.logEnable(false);
+let t: Tasks;
 
 @suite('functional/tasks/access')
 class TasksAccessSpec {
@@ -14,12 +17,26 @@ class TasksAccessSpec {
   static async before() {
     await TestHelper.clearCache();
     Log.options({level: 'debug', enable: LOG_EVENT});
+    RegistryFactory.remove(C_TASKS);
+    RegistryFactory.register(/^tasks\.?/, Tasks);
+
+  }
+
+
+
+  before() {
+    t = RegistryFactory.get(C_TASKS) as Tasks;
+    t.setNodeId('testaccess');
+  }
+
+  after() {
+    t.reset();
+    RegistryFactory.remove(C_TASKS);
   }
 
 
   @test
   async 'allow all by default'() {
-    const t = new Tasks('testaccess');
     t.setConfig({
       access: []
     });
@@ -35,7 +52,6 @@ class TasksAccessSpec {
 
   @test
   async 'deny all '() {
-    const t = new Tasks('testaccess');
     t.setConfig({
       access: [{task: '*', access: 'deny'}]
     });
@@ -50,7 +66,6 @@ class TasksAccessSpec {
 
   @test
   async 'allow one task explicit the other is by default allowed'() {
-    const t = new Tasks('testaccess');
     t.setConfig({
       access: [{task: 'hallo', access: 'allow'}]
     });
@@ -73,7 +88,6 @@ class TasksAccessSpec {
 
   @test
   async 'deny one task explicit the other is by default allowed'() {
-    const t = new Tasks('testaccess');
     t.setConfig({
       access: [{task: 'hallo', access: 'deny'}]
     });
@@ -98,7 +112,6 @@ class TasksAccessSpec {
 
   @test
   async 'deny all allow one'() {
-    const t = new Tasks('testaccess');
     t.setConfig({
       access: [{task: '*', access: 'deny'}, {task: 'hallo_*', access: 'allow'}]
     });

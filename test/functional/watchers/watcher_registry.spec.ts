@@ -82,7 +82,7 @@
 //     // const stopAllSpy = WatcherRegistrySpec.sandbox.on(watcherRegistry, 'stopAll');
 //     //
 //     // expect(stopAllSpy).not.to.have.been.called();
-//     await WatcherRegistrySpec.bootstrap.shutdown();
+//     await WatcherRegistrySpec.bootstrap.onShutdown();
 //     // expect(stopAllSpy).to.have.been.called();
 //   }
 //

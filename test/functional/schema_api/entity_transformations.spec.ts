@@ -1,33 +1,41 @@
 import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
-
 import * as _ from 'lodash';
-import {TypeOrmEntityRegistry} from "../../../src/libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry";
-import {Driver} from "./entities/Driver";
-import {Car} from "./entities/Car";
-import {Truth} from "./entities/Truth";
+import {TypeOrmEntityRegistry} from '../../../src/libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry';
+import {Driver} from './entities/Driver';
+import {Car} from './entities/Car';
+import {Truth} from './entities/Truth';
+import {__CLASS__, RegistryFactory} from '@allgemein/schema-api';
+import {REGISTRY_TYPEORM} from '../../../src/libs/storage/framework/typeorm/schema/TypeOrmConstants';
+import {__REGISTRY__} from '../../../src/libs/Constants';
 
 
 @suite('functional/entity_transformations')
-class Entity_transformationsSpec {
+class EntityTransformationsSpec {
+
+  static before() {
+    RegistryFactory.register(REGISTRY_TYPEORM, TypeOrmEntityRegistry);
+    RegistryFactory.register(/^typeorm\..*/, TypeOrmEntityRegistry);
+  }
 
 
   @test
   async 'simple transformations'() {
-    let registry = TypeOrmEntityRegistry.$();
-    let data = {id: 1, lastName: 'Engels', firstName: 'Friedrich'};
-    let entityDef = registry.getEntityRefFor(Driver);
-    let author = entityDef.build(data);
-    expect(author).to.deep.eq(data);
+    const registry = TypeOrmEntityRegistry.$();
+    const data = {id: 1, lastName: 'Engels', firstName: 'Friedrich'};
+    const entityDef = registry.getEntityRefFor(Driver);
+    const author = entityDef.build(data);
+    expect(author).to.be.instanceOf(Driver);
+    expect(author).to.deep.eq(_.assign(data, {[__CLASS__]: 'Driver', [__REGISTRY__]: 'typeorm'}));
   }
 
 
   @test
   async 'array transformations'() {
-    let p = new Car();
+    const p = new Car();
     p.id = 1;
     p.name = 'permission;)';
-    p.driver = [new Driver(),new Driver()];
+    p.driver = [new Driver(), new Driver()];
     p.driver[0].id = 1;
     p.driver[0].firstName = 'test';
     p.driver[0].lastName = 'test2';
@@ -35,22 +43,21 @@ class Entity_transformationsSpec {
     p.driver[1].firstName = 'test2';
     p.driver[1].lastName = 'test3';
 
-    let registry = TypeOrmEntityRegistry.$();
-    let entityDef = registry.getEntityRefFor(Car);
-    let permission: any = entityDef.build(p);
+    const registry = TypeOrmEntityRegistry.$();
+    const entityDef = registry.getEntityRefFor(Car);
+    const permission: any = entityDef.build(p);
     expect(_.isArray(permission.driver)).to.be.true;
     expect(permission.driver).to.have.length(2);
   }
 
   @test
   async 'boolean transformations'() {
-
     let p = new Truth();
     p.id = 1;
     p.isTrue = false;
 
-    let registry = TypeOrmEntityRegistry.$();
-    let entityDef = registry.getEntityRefFor('Truth');
+    const registry = TypeOrmEntityRegistry.$();
+    const entityDef = registry.getEntityRefFor('Truth');
     let permission: any = entityDef.build(p);
     expect(_.isBoolean(permission.isTrue)).to.be.true;
     expect(permission.isTrue).to.be.false;

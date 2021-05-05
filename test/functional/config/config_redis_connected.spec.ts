@@ -57,7 +57,7 @@ class ConfigRedisSpec {
   //   const system: System = Container.get(System.NAME);
   //   expect(system.node.state).to.eq('idle');
   //
-  //   await bootstrap.shutdown();
+  //   await bootstrap.onShutdown();
   //   expect(system.node.nodeId).to.eq('system');
   //   expect(system.node.state).to.eq('unregister');
   // }
@@ -168,7 +168,7 @@ class ConfigRedisSpec {
   //   expect(results).to.have.length(1);
   //   expect(results[0].machineId).to.be.eq(system.info.machineId);
   //
-  //   p.shutdown();
+  //   p.onShutdown();
   //   await p.done;
   //
   // }

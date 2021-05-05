@@ -13,9 +13,10 @@ import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
 import {DataRow} from './fake_app/entities/DataRow';
 import {IEntityController} from '../../../src/libs/storage/IEntityController';
 import {generateSqlDataRows} from './helper';
-import {C_STORAGE_DEFAULT, XS_P_$COUNT} from '../../../src/libs/Constants';
+import {__NODE_ID__, __REGISTRY__, C_STORAGE_DEFAULT, XS_P_$COUNT} from '../../../src/libs/Constants';
 import {StorageRef} from '../../../src/libs/storage/StorageRef';
 import {Injector} from '../../../src/libs/di/Injector';
+import {__CLASS__} from '@allgemein/schema-api';
 
 
 const LOG_EVENT = TestHelper.logEnable(false);
@@ -74,8 +75,8 @@ class DistributedQuerySpec {
       someNumber: 100,
       someString: 'test 10',
       someBool: true,
-      __class__: 'DataRow',
-      __registry__: 'typeorm'
+      [__CLASS__]: 'DataRow',
+      [__REGISTRY__]: 'typeorm'
     });
   }
 
@@ -91,8 +92,8 @@ class DistributedQuerySpec {
       someNumber: 100,
       someString: 'test 10',
       someBool: true,
-      __class__: 'DataRow',
-      __registry__: 'typeorm'
+      [__CLASS__]: 'DataRow',
+      [__REGISTRY__]: 'typeorm'
     });
   }
 

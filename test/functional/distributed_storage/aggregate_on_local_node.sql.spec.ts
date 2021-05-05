@@ -4,7 +4,6 @@ import {Bootstrap} from '../../../src/Bootstrap';
 import {Config} from '@allgemein/config';
 import {TEST_STORAGE_OPTIONS} from '../config';
 import {IEventBusConfiguration} from 'commons-eventbus';
-import {Container} from 'typedi';
 import {TestHelper} from '../TestHelper';
 
 import {DistributedStorageEntityController} from '../../../src/libs/distributed_storage/DistributedStorageEntityController';
@@ -12,9 +11,10 @@ import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
 import {DataRow} from './fake_app_mongo/entities/DataRow';
 import * as _ from 'lodash';
 import {Injector} from '../../../src/libs/di/Injector';
-import {__NODE_ID__, C_STORAGE_DEFAULT} from '../../../src/libs/Constants';
+import {__NODE_ID__, __REGISTRY__, C_STORAGE_DEFAULT} from '../../../src/libs/Constants';
 import {StorageRef} from '../../../src/libs/storage/StorageRef';
 import {generateSqlDataRows} from './helper';
+import {__CLASS__} from '@allgemein/schema-api';
 
 
 const LOG_EVENT = TestHelper.logEnable(true);
@@ -65,7 +65,7 @@ class DistributedStorageSaveSpec {
 
   @test
   async 'simple match aggregation'() {
-    const controller = Container.get(DistributedStorageEntityController);
+    const controller = Injector.get(DistributedStorageEntityController);
     const results = await controller.aggregate(DataRow, [{$match: {someBool: true}}]);
 
     // console.log(results);
@@ -84,7 +84,7 @@ class DistributedStorageSaveSpec {
 
   @test
   async 'match and group aggregation'() {
-    const controller = Container.get(DistributedStorageEntityController);
+    const controller = Injector.get(DistributedStorageEntityController);
     const results = await controller.aggregate(DataRow, [
       {$match: {someBool: true}},
       {$group: {_id: null, sum: {$sum: 1}}}
@@ -94,9 +94,9 @@ class DistributedStorageSaveSpec {
     expect(results).to.have.length(1);
     expect(results[0]).to.be.deep.eq({
       sum: 10,
-      __nodeId__: 'system',
-      '__class__': 'DataRow',
-      '__registry__': 'typeorm'
+      [__NODE_ID__]: 'system',
+      [__CLASS__]: 'DataRow',
+      [__REGISTRY__]: 'typeorm'
     });
 
     const nodeIds = _.uniq(results.map(x => {
@@ -108,7 +108,7 @@ class DistributedStorageSaveSpec {
 
   @test
   async 'match and group by key aggregation'() {
-    const controller = Container.get(DistributedStorageEntityController);
+    const controller = Injector.get(DistributedStorageEntityController);
     let results = await controller.aggregate(DataRow, [
       {$match: {someBool: true}},
       {$group: {_id: 'someFlag', sum: {$sum: 1}}}
@@ -118,19 +118,22 @@ class DistributedStorageSaveSpec {
     results = _.orderBy(results, [__NODE_ID__, 'someFlag']);
     expect(results).to.be.deep.eq([
       {
-        someFlag: '0', sum: 3, '__class__': 'DataRow',
-        '__nodeId__': 'system',
-        '__registry__': 'typeorm'
+        someFlag: '0', sum: 3,
+        [__NODE_ID__]: 'system',
+        [__CLASS__]: 'DataRow',
+        [__REGISTRY__]: 'typeorm'
       },
       {
-        someFlag: '10', sum: 3, '__class__': 'DataRow',
-        '__nodeId__': 'system',
-        '__registry__': 'typeorm'
+        someFlag: '10', sum: 3,
+        [__NODE_ID__]: 'system',
+        [__CLASS__]: 'DataRow',
+        [__REGISTRY__]: 'typeorm'
       },
       {
-        someFlag: '20', sum: 4, '__class__': 'DataRow',
-        '__nodeId__': 'system',
-        '__registry__': 'typeorm'
+        someFlag: '20', sum: 4,
+        [__NODE_ID__]: 'system',
+        [__CLASS__]: 'DataRow',
+        [__REGISTRY__]: 'typeorm'
       }
     ]);
 
@@ -143,7 +146,7 @@ class DistributedStorageSaveSpec {
 
   @test
   async 'limit and offset'() {
-    const controller = Container.get(DistributedStorageEntityController);
+    const controller = Injector.get(DistributedStorageEntityController);
     const results = await controller.aggregate(DataRow, [
       {$group: {_id: 'someFlag', sum: {$sum: 1}}},
       {$skip: 1},
@@ -153,9 +156,10 @@ class DistributedStorageSaveSpec {
     // console.log(results);
     expect(results).to.have.length(1);
     expect(results[0]).to.be.deep.eq({
-      sum: 7, someFlag: '10', '__class__': 'DataRow',
-      '__nodeId__': 'system',
-      '__registry__': 'typeorm'
+      sum: 7, someFlag: '10',
+      [__NODE_ID__]: 'system',
+      [__CLASS__]: 'DataRow',
+      [__REGISTRY__]: 'typeorm'
     });
 
     const nodeIds = _.uniq(results.map(x => {
@@ -167,7 +171,7 @@ class DistributedStorageSaveSpec {
 
   @test
   async 'causing remote exception'() {
-    const controller = Container.get(DistributedStorageEntityController);
+    const controller = Injector.get(DistributedStorageEntityController);
     try {
       const results = await controller.aggregate(DataRow, [
         {$group: {_id: 'do_not_exists', sum: {$sum: 1}}}

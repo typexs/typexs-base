@@ -6,10 +6,10 @@ import {Bootstrap} from '../../../src/Bootstrap';
 import {Config} from '@allgemein/config';
 import {TEST_STORAGE_OPTIONS} from '../config';
 import {Container} from 'typedi';
-import {XS_DEFAULT} from 'commons-schema-api';
 import {Cache} from '../../../src/libs/cache/Cache';
 import {MemoryCacheAdapter} from '../../../src/adapters/cache/MemoryCacheAdapter';
 import {TestHelper} from '../TestHelper';
+import {C_DEFAULT} from '@allgemein/base';
 
 let bootstrap: Bootstrap = null;
 
@@ -56,13 +56,13 @@ class CacheMemorySpec {
 
     const adapters = cache.getAdapters();
     const instances = _.keys(adapters);
-    expect(instances).to.be.deep.eq([XS_DEFAULT]);
-    expect(adapters[XS_DEFAULT]).to.be.instanceOf(MemoryCacheAdapter);
+    expect(instances).to.be.deep.eq([C_DEFAULT]);
+    expect(adapters[C_DEFAULT]).to.be.instanceOf(MemoryCacheAdapter);
 
     const bins = cache.getBins();
     const binKeys = _.keys(bins);
-    expect(binKeys).to.be.deep.eq([XS_DEFAULT]);
-    expect(bins[XS_DEFAULT].name).to.be.eq(XS_DEFAULT);
+    expect(binKeys).to.be.deep.eq([C_DEFAULT]);
+    expect(bins[C_DEFAULT].name).to.be.eq(C_DEFAULT);
 
     let noValue = await cache.get('test');
     expect(noValue).to.be.eq(null);
@@ -123,15 +123,15 @@ class CacheMemorySpec {
     const instances = _.keys(adapters);
     expect(instances).to.be.deep.eq(['mem1', 'default', 'mem2']);
 
-    expect(adapters[XS_DEFAULT]).to.be.eq(adapters['mem1']);
+    expect(adapters[C_DEFAULT]).to.be.eq(adapters['mem1']);
     expect(adapters['mem1']).to.be.instanceOf(MemoryCacheAdapter);
     expect(adapters['mem2']).to.be.instanceOf(MemoryCacheAdapter);
 
     const bins = cache.getBins();
     const binKeys = _.keys(bins);
 
-    expect(binKeys).to.be.deep.eq([XS_DEFAULT, 'test']);
-    expect(bins[XS_DEFAULT].store.name).to.be.eq('mem1');
+    expect(binKeys).to.be.deep.eq([C_DEFAULT, 'test']);
+    expect(bins[C_DEFAULT].store.name).to.be.eq('mem1');
     expect(bins['test'].store.name).to.be.eq('mem2');
 
     let noValue = await cache.get('test');

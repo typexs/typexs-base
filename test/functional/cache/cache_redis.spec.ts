@@ -6,10 +6,10 @@ import {Bootstrap} from '../../../src/Bootstrap';
 import {Config} from '@allgemein/config';
 import {TEST_STORAGE_OPTIONS} from '../config';
 import {Container} from 'typedi';
-import {XS_DEFAULT} from 'commons-schema-api';
 import {Cache} from '../../../src/libs/cache/Cache';
 import {RedisCacheAdapter} from '../../../src/adapters/cache/RedisCacheAdapter';
 import {TestHelper} from '../TestHelper';
+import {C_DEFAULT} from '@allgemein/base';
 
 let bootstrap: Bootstrap = null;
 
@@ -64,18 +64,18 @@ class CacheRedisSpec {
     const instances = _.keys(adapters);
     expect(instances).to.be.deep.eq(['redis1', 'default']);
 
-    expect(adapters[XS_DEFAULT]).to.be.eq(adapters['redis1']);
+    expect(adapters[C_DEFAULT]).to.be.eq(adapters['redis1']);
     expect(adapters['redis1']).to.be.instanceOf(RedisCacheAdapter);
 
 
     const bins = cache.getBins();
     const binKeys = _.keys(bins);
 
-    expect(binKeys).to.be.deep.eq([XS_DEFAULT]);
-    expect(bins[XS_DEFAULT].store.name).to.be.eq('redis1');
+    expect(binKeys).to.be.deep.eq([C_DEFAULT]);
+    expect(bins[C_DEFAULT].store.name).to.be.eq('redis1');
 
-    await bins[XS_DEFAULT].store.clearBin('default');
-    await bins[XS_DEFAULT].store.clearBin('test');
+    await bins[C_DEFAULT].store.clearBin('default');
+    await bins[C_DEFAULT].store.clearBin('test');
 
 
     let noValue = await cache.get('test');

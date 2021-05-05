@@ -1,12 +1,12 @@
 import * as path from 'path';
 import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
-import {Bootstrap} from '../../../src/Bootstrap';
+import {Bootstrap} from '../../../../src/Bootstrap';
 import {Config} from '@allgemein/config';
-import {ClassType} from 'commons-schema-api/browser';
-import {XS_P_$COUNT} from '../../../src/libs/Constants';
-import {TypeOrmEntityController} from '../../../src/libs/storage/framework/typeorm/TypeOrmEntityController';
-import {TypeOrmStorageRef} from '../../../src/libs/storage/framework/typeorm/TypeOrmStorageRef';
+import {ClassType} from '@allgemein/schema-api';
+import {XS_P_$COUNT} from '../../../../src/libs/Constants';
+import {TypeOrmStorageRef} from '../../../../src/libs/storage/framework/typeorm/TypeOrmStorageRef';
+import {IEntityController} from '../../../../src/libs/storage/IEntityController';
 
 let bootstrap: Bootstrap;
 let storageRef: TypeOrmStorageRef;
@@ -15,10 +15,10 @@ let CarSql: ClassType<any> = null;
 let DriverSql: ClassType<any> = null;
 let CarParam: ClassType<any> = null;
 let ObjectWithJson: ClassType<any> = null;
-let controller: TypeOrmEntityController = null;
+let controller: IEntityController = null;
 
 
-@suite('functional/storage/controller_sql')
+@suite('functional/storage/typeorm/entity_controller.sql')
 class StorageControllerSqlSpec {
 
 
@@ -27,19 +27,19 @@ class StorageControllerSqlSpec {
     Bootstrap.reset();
     Config.clear();
 
-    CarSql = require('./fake_app_sql/entities/CarSql').CarSql;
-    DriverSql = require('./fake_app_sql/entities/DriverSql').DriverSql;
-    CarParam = require('./fake_app_sql/entities/CarParam').CarParam;
-    ObjectWithJson = require('./fake_app_sql/entities/ObjectWithJson').ObjectWithJson;
+    CarSql = require('./apps/sql/entities/CarSql').CarSql;
+    DriverSql = require('./apps/sql/entities/DriverSql').DriverSql;
+    CarParam = require('./apps/sql/entities/CarParam').CarParam;
+    ObjectWithJson = require('./apps/sql/entities/ObjectWithJson').ObjectWithJson;
 
-    const appdir = path.join(__dirname, 'fake_app_sql');
+    const appdir = path.join(__dirname, 'apps/sql');
     bootstrap = await Bootstrap
       .configure({
         app: {
           path: appdir
         },
         modules: {
-          paths: [__dirname + '/../../..']
+          paths: [__dirname + '/../../../..']
         }
       })
       .prepareRuntime();
@@ -206,12 +206,12 @@ class StorageControllerSqlSpec {
     const obj = new ObjectWithJson();
     obj.firstName = 'JsonTest';
     obj.lastName = subObj;
-    const saved_obj = await controller.save(obj);
-    delete saved_obj['$state'];
-    const saved_obj1 = await controller.findOne(ObjectWithJson, {id: saved_obj.id});
-    expect(saved_obj.lastName).to.be.deep.eq(subObj);
-    expect(saved_obj).to.be.deep.eq(saved_obj1);
-    expect(saved_obj1.lastName).to.be.deep.eq(subObj);
+    const savedObject = await controller.save(obj);
+    delete savedObject['$state'];
+    const foundObject = await controller.findOne(ObjectWithJson, {id: savedObject.id});
+    expect(savedObject.lastName).to.be.deep.eq(subObj);
+    expect(savedObject).to.be.deep.eq(foundObject);
+    expect(foundObject.lastName).to.be.deep.eq(subObj);
   }
 
 

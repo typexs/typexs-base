@@ -17,7 +17,8 @@ import {IEntityController} from '../../../src/libs/storage/IEntityController';
 import {generateSqlDataRows} from './helper';
 import {Injector} from '../../../src/libs/di/Injector';
 import {StorageRef} from '../../../src/libs/storage/StorageRef';
-import {__NODE_ID__, C_STORAGE_DEFAULT} from '../../../src/libs/Constants';
+import {__NODE_ID__, __REGISTRY__, C_STORAGE_DEFAULT} from '../../../src/libs/Constants';
+import {__CLASS__} from '@allgemein/schema-api';
 
 // process.env.SQL_LOG = '1';
 
@@ -159,9 +160,10 @@ class DistributedStorageSaveSpec {
     expect(results2).to.have.length(3);
     const entry = results2.find(x => x[__NODE_ID__] === 'system');
     expect(entry).to.be.deep.eq({
-      '__class__': 'DataRow',
-      '__nodeId__': 'system',
-      '__registry__': 'typeorm',
+      [__NODE_ID__]: 'system',
+      [__CLASS__]: 'DataRow',
+      [__REGISTRY__]: 'typeorm',
+
       'id': 10,
       'someAny': '{"hallo":"editedWelt"}',
       'someBool': true,
@@ -197,9 +199,10 @@ class DistributedStorageSaveSpec {
     expect(results2).to.have.length(30);
     const entry = results2.find(x => x[__NODE_ID__] === 'remote01');
     expect(entry).to.be.deep.include({
-      '__class__': 'DataRow',
-      '__nodeId__': 'remote01',
-      '__registry__': 'typeorm',
+      [__NODE_ID__]: 'remote01',
+      [__CLASS__]: 'DataRow',
+      [__REGISTRY__]: 'typeorm',
+
       'id': 1,
       'someBool': false,
       'someNumber': 456,

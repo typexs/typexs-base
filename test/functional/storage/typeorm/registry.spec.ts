@@ -4,7 +4,7 @@ import {suite, test} from '@testdeck/mocha';
 import {TypeOrmEntityRegistry} from '../../../../src/libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry';
 import {House} from './entities/House';
 import {Column, Entity, getMetadataArgsStorage} from 'typeorm';
-import {SchemaUtils} from 'commons-schema-api';
+import {SchemaUtils} from '@allgemein/schema-api';
 
 let registry: TypeOrmEntityRegistry = null;
 

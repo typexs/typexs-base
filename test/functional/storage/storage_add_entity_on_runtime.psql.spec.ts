@@ -5,7 +5,7 @@ import {suite, test} from '@testdeck/mocha';
 import {Bootstrap} from '../../../src/Bootstrap';
 import {Config} from '@allgemein/config';
 import {C_DEFAULT} from '@allgemein/base';
-import {SchemaUtils} from 'commons-schema-api';
+import {SchemaUtils} from '@allgemein/schema-api';
 import {Column, Entity, getMetadataArgsStorage, PrimaryGeneratedColumn} from 'typeorm';
 import {TypeOrmConnectionWrapper} from '../../../src/libs/storage/framework/typeorm/TypeOrmConnectionWrapper';
 import {TypeOrmStorageRef} from '../../../src';

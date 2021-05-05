@@ -1,0 +1,10 @@
+app:
+  name: fake_app_sql
+
+#storage:
+#  default:
+#    synchronize: true
+#    type: sqlite
+#    database: ':memory:'
+#    logger: simple-console
+#    logging: all

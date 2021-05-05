@@ -16,8 +16,9 @@ import {IEntityController} from '../../../src/libs/storage/IEntityController';
 import {SpawnHandle} from '../SpawnHandle';
 import {generateSqlDataRows} from './helper';
 import {Injector} from '../../../src/libs/di/Injector';
-import {__NODE_ID__, C_STORAGE_DEFAULT, XS_P_$COUNT} from '../../../src/libs/Constants';
+import {__NODE_ID__, __REGISTRY__, C_STORAGE_DEFAULT, XS_P_$COUNT} from '../../../src/libs/Constants';
 import {StorageRef} from '../../../src/libs/storage/StorageRef';
+import {__CLASS__} from '@allgemein/schema-api';
 
 
 const LOG_EVENT = TestHelper.logEnable(false);
@@ -92,9 +93,9 @@ class DistributedQuerySpec {
       someNumber: 100,
       someString: 'test 10',
       someBool: true,
-      __class__: 'DataRow',
-      __nodeId__: 'remote01',
-      __registry__: 'typeorm'
+      [__NODE_ID__]: 'remote01',
+      [__CLASS__]: 'DataRow',
+      [__REGISTRY__]: 'typeorm',
     });
   }
 
@@ -108,9 +109,9 @@ class DistributedQuerySpec {
       someNumber: 110,
       someString: 'test 11',
       someBool: false,
-      __class__: 'DataRow',
-      __nodeId__: 'remote01',
-      __registry__: 'typeorm'
+      [__NODE_ID__]: 'remote01',
+      [__CLASS__]: 'DataRow',
+      [__REGISTRY__]: 'typeorm',
     });
 
     expect(entity.someDate).to.be.instanceOf(Date);
@@ -125,9 +126,9 @@ class DistributedQuerySpec {
     expect(entities[XS_P_$COUNT]).to.be.eq(1);
     expect(_.orderBy(entities, [__NODE_ID__])).to.deep.eq([
       {
-        '__class__': 'DataRow',
-        '__nodeId__': 'remote01',
-        '__registry__': 'typeorm',
+        [__NODE_ID__]: 'remote01',
+        [__CLASS__]: 'DataRow',
+        [__REGISTRY__]: 'typeorm',
         'id': 10,
         'someBool': true,
         'someDate': new Date(2020, 10, 10),
@@ -216,9 +217,9 @@ class DistributedQuerySpec {
     expect(entities['remote01'][XS_P_$COUNT]).to.be.eq(3);
     expect(entities['remote01']).to.be.deep.eq([
       {
-        '__class__': 'DataRow',
-        '__nodeId__': 'remote01',
-        '__registry__': 'typeorm',
+        [__NODE_ID__]: 'remote01',
+        [__CLASS__]: 'DataRow',
+        [__REGISTRY__]: 'typeorm',
         'id': 2,
         'someBool': true,
         'someFlag': '20',
@@ -227,9 +228,9 @@ class DistributedQuerySpec {
         'someString': 'test 2',
       },
       {
-        '__class__': 'DataRow',
-        '__nodeId__': 'remote01',
-        '__registry__': 'typeorm',
+        [__NODE_ID__]: 'remote01',
+        [__CLASS__]: 'DataRow',
+        [__REGISTRY__]: 'typeorm',
         'id': 4,
         'someBool': true,
         'someFlag': '10',
@@ -238,9 +239,9 @@ class DistributedQuerySpec {
         'someString': 'test 4',
       },
       {
-        '__class__': 'DataRow',
-        '__nodeId__': 'remote01',
-        '__registry__': 'typeorm',
+        [__NODE_ID__]: 'remote01',
+        [__CLASS__]: 'DataRow',
+        [__REGISTRY__]: 'typeorm',
         'id': 6,
         'someBool': true,
         'someFlag': '0',

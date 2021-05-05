@@ -6,7 +6,7 @@ import {TypeOrmEntityRegistry} from '../../../src/libs/storage/framework/typeorm
 import {Car} from './entities/Car';
 
 import {ComplexIdsKeys} from './entities/ComplexIdsKeys';
-import {Expressions} from 'commons-expressions';
+import {Expressions} from '@allgemein/expressions';
 
 
 @suite('functional/entity_id_handling')

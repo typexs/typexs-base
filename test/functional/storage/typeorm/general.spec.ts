@@ -3,18 +3,19 @@ import * as path from 'path';
 import * as _ from 'lodash';
 import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
-import {Invoker} from '../../../src/base/Invoker';
-import {IStorageOptions} from '../../../src/libs/storage/IStorageOptions';
-import {Bootstrap} from '../../../src/Bootstrap';
+import {Invoker} from '../../../../src/base/Invoker';
+import {IStorageOptions} from '../../../../src/libs/storage/IStorageOptions';
+import {Bootstrap} from '../../../../src/Bootstrap';
 import {Config} from '@allgemein/config';
 import {BeforeInsert, Column, PrimaryColumn} from 'typeorm';
-import {X1} from './entities/X1';
-import {Y1} from './entities/Y1';
-import {TEST_STORAGE_OPTIONS} from '../config';
-import {Container} from 'typedi';
-import {ClassRef, XS_DEFAULT} from 'commons-schema-api';
-import {TypeOrmStorageRef} from '../../../src/libs/storage/framework/typeorm/TypeOrmStorageRef';
+import {X1} from './../entities/X1';
+import {Y1} from './../entities/Y1';
+import {TEST_STORAGE_OPTIONS} from '../../config';
+import {ClassRef} from '@allgemein/schema-api';
+import {TypeOrmStorageRef} from '../../../../src/libs/storage/framework/typeorm/TypeOrmStorageRef';
 import {BaseConnectionOptions} from 'typeorm/connection/BaseConnectionOptions';
+import {C_DEFAULT} from '@allgemein/base';
+import {Injector} from '../../../../src/libs/di/Injector';
 
 
 let bootstrap: Bootstrap;
@@ -44,18 +45,23 @@ class StorageGeneralSpec {
       entityPrefix: 'test',
       connectOnStartup: true
     };
-    const opt2: IStorageOptions & BaseConnectionOptions = {name: 'default2', type: 'postgres', connectOnStartup: true};
+    const opt2: IStorageOptions & BaseConnectionOptions = {
+      name: 'default2', type: 'postgres', connectOnStartup: true
+    };
     const options: IStorageOptions = _.merge(opt1, opt2);
-    expect(options).to.be.deep.eq({name: 'default2', type: 'postgres', entityPrefix: 'test', connectOnStartup: true});
+    expect(options).to.be.deep.eq({
+      name: 'default2', type: 'postgres',
+      entityPrefix: 'test', connectOnStartup: true
+    });
   }
 
 
   @test
   async 'storage bootstrap'() {
-    const appdir = path.join(__dirname, 'fake_app');
+    const appdir = path.join(__dirname, '../fake_app');
     bootstrap = await Bootstrap.configure({
       app: {path: appdir},
-      modules: {paths: [__dirname + '/../../..']}
+      modules: {paths: [__dirname + '/../../../..']}
     }).prepareRuntime();
     bootstrap = await bootstrap.activateStorage();
 
@@ -77,12 +83,12 @@ class StorageGeneralSpec {
     ].sort());
 
     let storageRef: TypeOrmStorageRef = storageManager.forClass('module_entity');
-    expect(storageRef.name).to.eq(XS_DEFAULT);
+    expect(storageRef.name).to.eq(C_DEFAULT);
 
-    const TestEntity = require('./fake_app/entities/TestEntity').TestEntity;
+    const TestEntity = require('./../fake_app/entities/TestEntity').TestEntity;
     const classRef = ClassRef.get(TestEntity, 'dummy');
     storageRef = storageManager.forClass(classRef);
-    expect(storageRef.name).to.eq(XS_DEFAULT);
+    expect(storageRef.name).to.eq(C_DEFAULT);
 
 
     const classRef2 = storageRef.getClassRef('TestEntity');
@@ -118,7 +124,7 @@ class StorageGeneralSpec {
     }
 
     const invoker = new Invoker();
-    Container.set(Invoker.NAME, invoker);
+    Injector.set(Invoker.NAME, invoker);
 
     const storage = new TypeOrmStorageRef(TEST_STORAGE_OPTIONS as IStorageOptions & BaseConnectionOptions);
     await storage.prepare();
@@ -128,7 +134,8 @@ class StorageGeneralSpec {
     expect(storage['options'].entities).has.length(1);
 
     const c = await storage.connect();
-    const q = await c.manager.query('SELECT * FROM sqlite_master WHERE type=\'table\';');
+    // WHERE type='table'
+    const q = await c.manager.query('SELECT * FROM sqlite_master WHERE type = \'table\' ;');
     expect(q).has.length(1);
   }
 
@@ -141,12 +148,12 @@ class StorageGeneralSpec {
       id: number;
     }
 
-    const dbfile = path.join(__dirname, 'testdb01.sqlite');
+    const dbfile = path.join(__dirname, '/tmp/testdb01.sqlite');
     const opts = _.merge(_.clone(TEST_STORAGE_OPTIONS), {database: dbfile});
 
 
     const invoker = new Invoker();
-    Container.set(Invoker.NAME, invoker);
+    Injector.set(Invoker.NAME, invoker);
 
     const storage = new TypeOrmStorageRef(opts as any);
     await storage.prepare();
@@ -192,7 +199,7 @@ class StorageGeneralSpec {
     }
 
     const invoker = new Invoker();
-    Container.set(Invoker.NAME, invoker);
+    Injector.set(Invoker.NAME, invoker);
 
     const storage = new TypeOrmStorageRef(TEST_STORAGE_OPTIONS as any);
     await storage.prepare();
@@ -225,7 +232,7 @@ class StorageGeneralSpec {
     const opts = _.merge(_.clone(TEST_STORAGE_OPTIONS), {entities: [X1, Y1]});
 
     const invoker = new Invoker();
-    Container.set(Invoker.NAME, invoker);
+    Injector.set(Invoker.NAME, invoker);
 
     const storage = new TypeOrmStorageRef(opts as any);
     await storage.prepare();

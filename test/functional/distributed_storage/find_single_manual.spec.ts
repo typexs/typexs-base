@@ -1,23 +1,19 @@
 import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
-import * as _ from 'lodash';
 import {Bootstrap} from '../../../src/Bootstrap';
 import {Config} from '@allgemein/config';
 import {TEST_STORAGE_OPTIONS} from '../config';
 import {IEventBusConfiguration} from 'commons-eventbus';
 import {Container} from 'typedi';
 import {TestHelper} from '../TestHelper';
-import {SpawnHandle} from '../SpawnHandle';
 import {SystemNodeInfo} from '../../../src/entities/SystemNodeInfo';
 
 import {DistributedStorageEntityController} from '../../../src/libs/distributed_storage/DistributedStorageEntityController';
 import {DistributedQueryWorker} from '../../../src/workers/DistributedQueryWorker';
-import {Workers} from '../../../src/libs/worker/Workers';
 import {IWorkerInfo} from '../../../src/libs/worker/IWorkerInfo';
 import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
 import {System} from '../../../src/libs/system/System';
 import {C_WORKERS} from '../../../src/libs/worker/Constants';
-import {XS_P_$COUNT} from '../../../src/libs/Constants';
 
 
 const LOG_EVENT = TestHelper.logEnable(false);

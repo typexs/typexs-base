@@ -26,6 +26,10 @@
       "./node_modules/@types"
     ]
   },
+  "include": [
+    "src/**/*.ts",
+    "test/**/*.ts"
+  ],
   "exclude": [
     "**/files/*.ts",
     "archive",

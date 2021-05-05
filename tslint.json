@@ -108,7 +108,7 @@
       "check-decl",
       "check-operator",
       "check-separator",
-      "check-type"
+      "check-propertyType"
     ]
     // ,"completed-docs": true
   }

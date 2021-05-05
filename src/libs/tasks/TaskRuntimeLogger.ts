@@ -6,12 +6,19 @@ import {LogEvent} from '../logging/LogEvent';
 export class TaskRuntimeLogger implements ILoggerApi {
 
   name: string;
+
   private taskId: string;
+
   private taskName: string;
+
   private taskNr: number;
+
   private baseLogger: ILoggerApi;
 
-  constructor(taskId: string, taskName: string, taskNr: number, baseLogger: ILoggerApi) {
+  constructor(taskId: string,
+              taskName: string,
+              taskNr: number,
+              baseLogger: ILoggerApi) {
     this.taskId = taskId;
     this.taskName = taskName;
     this.taskNr = taskNr;
@@ -21,8 +28,7 @@ export class TaskRuntimeLogger implements ILoggerApi {
 
 
   log(level: string, ...msg: any[]): void {
-    const l = new LogEvent({args: msg, level: level, prefix: [this.taskId, this.taskName, this.taskNr].join(':')});
-    this.baseLogger.log(level, l);
+    this.baseLogger.log(level, ...msg);
   }
 
 

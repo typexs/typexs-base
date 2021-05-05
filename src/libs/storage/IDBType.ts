@@ -1,4 +1,4 @@
-import {JS_DATA_TYPES} from 'commons-schema-api/browser';
+import {JS_DATA_TYPES} from '@allgemein/schema-api';
 
 
 export interface IDBType {

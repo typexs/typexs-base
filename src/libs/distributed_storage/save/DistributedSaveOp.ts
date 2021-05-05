@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import {DistributedStorageEntityController} from './../DistributedStorageEntityController';
 import {System} from '../../system/System';
-import {ClassRef} from 'commons-schema-api';
+import {ClassRef} from '@allgemein/schema-api';
 import {ISaveOp} from '../../storage/framework/ISaveOp';
 import {DistributedSaveRequest} from './DistributedSaveRequest';
 import {DistributedSaveResponse} from './DistributedSaveResponse';

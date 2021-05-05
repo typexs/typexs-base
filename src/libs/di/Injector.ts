@@ -1,7 +1,7 @@
 import {Container, ObjectType, ServiceIdentifier, ServiceMetadata, Token} from 'typedi';
 import {MissingProvidedServiceTypeError} from 'typedi/error/MissingProvidedServiceTypeError';
 import {ServiceNotFoundError} from 'typedi/error/ServiceNotFoundError';
-import {ClassType} from 'commons-schema-api/browser';
+import {ClassType} from '@allgemein/schema-api';
 
 export class Injector {
 
@@ -35,6 +35,9 @@ export class Injector {
     return this.__self__;
   }
 
+  static remove(...id: any) {
+    Container.remove(id);
+  }
 
   static reset(id?: any) {
     Container.reset(id);

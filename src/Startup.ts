@@ -1,6 +1,6 @@
+import {isArray} from 'lodash';
 import {Config} from '@allgemein/config';
 import {EventBus, IEventBusConfiguration} from 'commons-eventbus';
-import * as _ from 'lodash';
 import {Inject} from 'typedi';
 import {IBootstrap} from './api/IBootstrap';
 import {IShutdown} from './api/IShutdown';
@@ -61,7 +61,7 @@ export class Startup implements IBootstrap, IShutdown {
     const scheduler: Scheduler = Injector.get(Scheduler.NAME);
     await scheduler.prepare(this.loader.getClasses(K_CLS_SCHEDULE_ADAPTER_FACTORIES).map(x => Injector.get(x)));
     const schedules: IScheduleDef[] = Config.get('schedules', []);
-    if (_.isArray(schedules)) {
+    if (isArray(schedules)) {
       for (const s of schedules) {
         await scheduler.register(s);
       }
@@ -87,9 +87,9 @@ export class Startup implements IBootstrap, IShutdown {
      */
     this.eventbus();
 
-    await this.workers.prepare(this.loader);
+    await this.workers.onStartup(this.loader);
     TasksHelper.prepare(this.tasks, this.loader, this.workers.contains('TaskQueueWorker'));
-    await this.taskRunnerRegistry.prepare();
+    await this.taskRunnerRegistry.onStartup();
 
 
     for (const cls of this.loader.getClasses(K_CLS_CACHE_ADAPTER)) {
@@ -101,7 +101,7 @@ export class Startup implements IBootstrap, IShutdown {
 
 
     for (const cls of this.loader.getClasses(K_CLS_EXCHANGE_MESSAGE)) {
-      await this.exchangeMessages.add(<any>cls);
+      await this.exchangeMessages.addExchangeMessage(<any>cls);
     }
 
     await this.watcherRegistry.init();
@@ -131,7 +131,7 @@ export class Startup implements IBootstrap, IShutdown {
   }
 
   /**
-   * impl. shutdown function, shutdowns following components:
+   * impl. onShutdown function, shutdowns following components:
    * - cache
    * - distributed system
    * - EventBus
@@ -140,7 +140,7 @@ export class Startup implements IBootstrap, IShutdown {
    * - watchers
    */
   async shutdown() {
-    await this.taskRunnerRegistry.shutdown();
+    await this.taskRunnerRegistry.onShutdown();
     const nodes = this.system
       .getAllNodes()
       .filter(x => x.nodeId === this.system.node.nodeId);

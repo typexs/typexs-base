@@ -4,7 +4,7 @@ import {DistributedOperationFactory} from './DistributedOperationFactory';
 import {IDistributedFindOptions} from './find/IDistributedFindOptions';
 import {IDistributedSaveOptions} from './save/IDistributedSaveOptions';
 import {IEntityController} from '../storage/IEntityController';
-import {ClassType, IEntityRef} from 'commons-schema-api';
+import {ClassType, IEntityRef} from '@allgemein/schema-api';
 import {NotSupportedError} from '@allgemein/base';
 import {IDistributedRemoveOptions} from './remove/IDistributedRemoveOptions';
 import {IDistributedUpdateOptions} from './update/IDistributedUpdateOptions';

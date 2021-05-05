@@ -1,4 +1,4 @@
-import {ClassType, IEntityRef} from 'commons-schema-api/browser';
+import {ClassType, IEntityRef} from '@allgemein/schema-api';
 import {IUpdateOp} from '../IUpdateOp';
 import {TypeOrmEntityRegistry} from './schema/TypeOrmEntityRegistry';
 import {TreeUtils} from '@allgemein/base';

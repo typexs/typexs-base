@@ -1,6 +1,6 @@
 import {AbstractEvent} from '../../messaging/AbstractEvent';
 import {IDistributedSaveOptions} from './IDistributedSaveOptions';
-import {IEntityRef} from 'commons-schema-api';
+import {IEntityRef} from '@allgemein/schema-api';
 import {IEntityController} from '../../storage/IEntityController';
 
 export class DistributedSaveRequest extends AbstractEvent {

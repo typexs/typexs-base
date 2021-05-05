@@ -1,5 +1,5 @@
 import {IAggregateOptions} from './IAggregateOptions';
-import {ClassType} from 'commons-schema-api/browser';
+import {ClassType} from '@allgemein/schema-api';
 
 export interface IAggregateOp {
 

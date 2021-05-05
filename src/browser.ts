@@ -27,7 +27,8 @@ export {IUrlBase} from './libs/IUrlBase';
 
 export {SystemNodeInfo} from './entities/SystemNodeInfo';
 export {TaskLog} from './entities/TaskLog';
-
+export {K_INST_ID, K_NODE_ID, C_EXCHANGE_MESSAGE} from './libs/messaging/Constants';
+export {IFileOptions, IFileSelectOptions} from './adapters/exchange/filesystem/IFileOptions';
 export * from './libs/Constants';
 export {Semaphore} from './libs/Semaphore';
 export {ITypexsOptions} from './libs/ITypexsOptions';
@@ -47,7 +48,7 @@ export {ICommand} from './libs/commands/ICommand';
 export {IStorageRef} from './libs/storage/IStorageRef';
 export {IEntityController} from './libs/storage/IEntityController';
 export {IConnection} from './libs/storage/IConnection';
-export {DataContainer} from './libs/storage/DataContainer';
+export {DataContainer} from '@allgemein/schema-api';
 export {IStorageOptions} from './libs/storage/IStorageOptions';
 export {ICollection} from './libs/storage/ICollection';
 export {ICollectionProperty} from './libs/storage/ICollectionProperty';
@@ -59,8 +60,16 @@ export {Storage} from './libs/storage/Storage';
 export {StorageRef} from './libs/storage/StorageRef';
 
 export {IFindOptions} from './libs/storage/framework/IFindOptions';
+export {IUpdateOptions} from './libs/storage/framework/IUpdateOptions';
 export {ISaveOptions} from './libs/storage/framework/ISaveOptions';
 export {IConditionJoin} from './libs/storage/framework/IConditionJoin';
+
+export {IDistributedFindOptions} from './libs/distributed_storage/find/IDistributedFindOptions';
+export {IDistributedAggregateOptions} from './libs/distributed_storage/aggregate/IDistributedAggregateOptions';
+export {IDistributedSaveOptions} from './libs/distributed_storage/save/IDistributedSaveOptions';
+export {IDistributedUpdateOptions} from './libs/distributed_storage/update/IDistributedUpdateOptions';
+export {IDistributedRemoveOptions} from './libs/distributed_storage/remove/IDistributedRemoveOptions';
+
 
 // export {ITypeOrmStorageOptions} from './libs/storage/framework/typeorm/ITypeOrmStorageOptions';
 
@@ -76,7 +85,7 @@ export {ITasksConfig} from './libs/tasks/ITasksConfig';
 export {ITask} from './libs/tasks/ITask';
 export {ITaskInfo} from './libs/tasks/ITaskInfo';
 export {ITaskRefOptions} from './libs/tasks/ITaskRefOptions';
-export {ITaskPropertyDesc} from './libs/tasks/ITaskPropertyDesc';
+export {ITaskPropertyRefOptions} from './libs/tasks/ITaskPropertyRefOptions';
 export {IValueProvider} from './libs/tasks/decorators/IValueProvider';
 export {IIncomingOptions} from './libs/tasks/decorators/IIncomingOptions';
 export {IOutgoingOptions} from './libs/tasks/decorators/IOutgoingOptions';

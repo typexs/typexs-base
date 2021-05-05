@@ -1,13 +1,13 @@
 import {IStorageOptions, K_STORAGE} from './IStorageOptions';
 import * as _ from 'lodash';
 import {K_CLS_STORAGE_TYPES} from '../Constants';
-import {IClassRef} from 'commons-schema-api/browser';
+import {IClassRef} from '@allgemein/schema-api';
 import {IStorage} from './IStorage';
 import {Config} from '@allgemein/config';
 import {IStorageRef} from './IStorageRef';
 import {Log} from '../../libs/logging/Log';
 import {IRuntimeLoader} from '../core/IRuntimeLoader';
-import {ClassType} from 'commons-schema-api/browser';
+import {ClassType} from '@allgemein/schema-api';
 
 
 export class Storage {

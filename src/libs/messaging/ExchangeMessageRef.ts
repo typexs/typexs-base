@@ -1,10 +1,30 @@
-import * as _ from 'lodash';
-import {AbstractRef, IBuildOptions, IEntityRef, IPropertyRef, XS_TYPE_ENTITY} from 'commons-schema-api/browser';
+import {get, isUndefined} from 'lodash';
+import {
+  AbstractRef,
+  ClassRef,
+  IBuildOptions,
+  IClassRef,
+  IEntityOptions,
+  IEntityRef,
+  ILookupRegistry,
+  IPropertyRef,
+  ISchemaRef,
+  METADATA_TYPE,
+  METATYPE_ENTITY,
+  METATYPE_PROPERTY,
+  RegistryFactory
+} from '@allgemein/schema-api';
 import {ClassUtils, NotSupportedError} from '@allgemein/base';
 import {AbstractExchange} from './AbstractExchange';
 import {Injector} from '../di/Injector';
 import {C_EXCHANGE_MESSAGE} from './Constants';
+import {isClassRef} from '@allgemein/schema-api/api/IClassRef';
 
+
+// tslint:disable-next-line:no-empty-interface
+export interface IExchangeMessageRefOptions extends IEntityOptions {
+
+}
 
 export class ExchangeMessageRef extends AbstractRef implements IEntityRef {
 
@@ -12,8 +32,11 @@ export class ExchangeMessageRef extends AbstractRef implements IEntityRef {
 
   private isActive: boolean;
 
-  constructor(fn: Function = null, options: any = null) {
-    super(XS_TYPE_ENTITY, ClassUtils.getClassName(fn), fn, C_EXCHANGE_MESSAGE);
+  constructor(options: IExchangeMessageRefOptions) {
+    super(METATYPE_ENTITY,
+      ClassUtils.getClassName(options.target),
+      options.target,
+      get(options, 'namespace', C_EXCHANGE_MESSAGE));
     this.setOptions(options || {});
   }
 
@@ -24,7 +47,7 @@ export class ExchangeMessageRef extends AbstractRef implements IEntityRef {
 
 
   async initExchange(opts: any = {}) {
-    if (!_.isUndefined(this.isActive)) {
+    if (!isUndefined(this.isActive)) {
       return this.exchange;
     }
 
@@ -73,6 +96,40 @@ export class ExchangeMessageRef extends AbstractRef implements IEntityRef {
 
   id(): string {
     return this.name;
+  }
+
+
+  /**
+   * TODO implement
+   *
+   * @param object
+   * @param type
+   */
+  getRegistry(): ILookupRegistry {
+    return RegistryFactory.get(this.namespace);
+  }
+
+  /**
+   * TODO implement
+   *
+   * @param object
+   * @param type
+   */
+  getSchemaRefs(): ISchemaRef[] {
+    return [];
+  }
+
+  /**
+   * Return a class ref for passing string, Function or class ref
+   *
+   * @param object
+   * @param type
+   */
+  getClassRefFor(object: string | Function | IClassRef, type: METADATA_TYPE): IClassRef {
+    if (isClassRef(object)) {
+      return object;
+    }
+    return ClassRef.get(object as string | Function, this.namespace, type === METATYPE_PROPERTY);
   }
 
 

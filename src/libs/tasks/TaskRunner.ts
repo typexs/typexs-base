@@ -19,18 +19,15 @@ import {Invoker} from '../../base/Invoker';
 import {TasksHelper} from './TasksHelper';
 import {ILoggerApi} from '../logging/ILoggerApi';
 import * as moment from 'moment';
-import {WinstonLoggerJar} from '../logging/WinstonLoggerJar';
-import * as winston from 'winston';
-import {DefaultJsonFormat} from '../logging/DefaultJsonFormat';
-import {Stream} from 'stream';
+import {Readable, Writable} from 'stream';
 import {ITaskRunnerOptions} from './ITaskRunnerOptions';
 import {CryptUtils} from '@allgemein/base';
 import {TasksApi} from '../../api/Tasks.api';
 import {TaskRunnerRegistry} from './TaskRunnerRegistry';
 import {TaskRunnerEvent} from './TaskRunnerEvent';
 import {EventBus} from 'commons-eventbus';
-import {ILoggerOptions} from '../../libs/logging/ILoggerOptions';
 import {Injector} from '../di/Injector';
+import {StreamLogger} from '../logging/StreamLogger';
 
 /**
  * Container for single or multiple task execution
@@ -93,11 +90,9 @@ export class TaskRunner extends EventEmitter {
 
   private taskLogger: ILoggerApi;
 
-//  private taskLoggerFile: string;
+  writeStream: Writable;
 
-  writeStream: NodeJS.WritableStream;
-
-  readStream: NodeJS.ReadableStream;
+  readStream: Readable;
 
 
   constructor(registry: Tasks, names: TASK_RUNNER_SPEC[], options: ITaskRunnerOptions = null) {
@@ -120,9 +115,7 @@ export class TaskRunner extends EventEmitter {
 
     this.$registry = registry;
     this.$parallel = this.$options['parallel'] || 5;
-    // this.$inital = names;
     this.$dry_mode = this.$options['dryMode'] || false;
-
 
     this.todoNrs = [];
     this.runningNrs = [];
@@ -131,65 +124,50 @@ export class TaskRunner extends EventEmitter {
     this.resolveDeps(names);
     this.$tasks = _.orderBy(this.$tasks, ['$weight', 1]);
 
-
     this.$finished = false;
 
     this.todoNrs = this.$tasks.map(x => x.nr);
     this.loggerName = 'task-runner-' + this.id;
     const startDate = moment(this.$start).toISOString();
 
-    const overrideOptions: ILoggerOptions = Log._().getLoggerOptionsFor(this.loggerName) || {};
-    _.assign(overrideOptions,
+    this.initStreams();
+
+    // const overrideOptions: ILoggerOptions =
+    //   Log._().getLoggerOptionsFor(this.loggerName) || {};
+    // _.assign(overrideOptions,
+    //   {
+    //     enable: true,
+    //     prefix: this.loggerName,
+    //     force: true
+    //   });
+    // if (!Log.enable) {
+    //   // disable transports when general logs are disabled
+    //   overrideOptions.transports = [];
+    // }
+    //
+    //
+    // this.taskLogger = Log._().createLogger(this.loggerName,
+    //   {
+    //     taskStart: startDate,
+    //     taskId: this.id,
+    //     taskNames: this.todoNrs.join('--')
+    //   },
+    //   overrideOptions);
+
+    this.taskLogger = new StreamLogger(
+      this.loggerName,
       {
+        writeStream: this.getWriteStream(),
         enable: true,
         prefix: this.loggerName,
-        force: true
-      });
-    if (!Log.enable) {
-      // disable transports when general logs are disabled
-      overrideOptions.transports = [];
-    }
-
-    this.taskLogger = Log._().createLogger(this.loggerName,
-      {
-        taskStart: startDate,
-        taskId: this.id,
-        taskNames: this.todoNrs.join('--')
-      },
-      overrideOptions);
-    this.taskLogger.info('execute tasks: ' + this.$tasks.map(t => t.taskRef().name).join(', '));
-
-    const self = this;
-    this.readStream = new Stream.Readable({
-      read(size: number) {
-        return size > 0;
+        force: true,
+        parameters: {
+          taskStart: startDate,
+          taskId: this.id,
+          taskNames: this.todoNrs.join('--')
+        }
       }
-    });
-
-    this.writeStream = new Stream.Writable({
-      write(chunk: any, encoding: any, next: any) {
-        (<any>self.readStream).push(chunk, encoding);
-        next();
-      }
-    });
-
-    (<WinstonLoggerJar>this.taskLogger).logger().add(
-      new winston.transports.Stream({
-        stream: this.writeStream,
-        format: new DefaultJsonFormat()
-      }));
-
-    if (!this.$options.disableLogFile) {
-      const filename = TasksHelper.getTaskLogFile(this.id, this.$options.nodeId);
-      (<WinstonLoggerJar>this.taskLogger).logger().add(
-        new winston.transports.File({
-          filename: filename,
-          format: new DefaultJsonFormat()
-        }));
-    }
-
-
-    // this.$todo = _.keys(this.$tasks);
+    );
 
     this.on(TASKRUN_STATE_FINISHED, this.finish.bind(this));
     this.on(TASKRUN_STATE_NEXT, this.next.bind(this));
@@ -209,7 +187,26 @@ export class TaskRunner extends EventEmitter {
       }
     }
 
+    this.api().onInit(this);
+    this.getLogger().info('execute tasks: ' + this.$tasks.map(t => t.taskRef().name).join(', '));
     this.fireStateEvent();
+  }
+
+
+  private initStreams() {
+    const self = this;
+    this.readStream = new Readable({
+      read(size: number) {
+        return size > 0;
+      }
+    });
+
+    this.writeStream = new Writable({
+      write(chunk: any, encoding: any, next: any) {
+        (<any>self.readStream).push(chunk, encoding);
+        next();
+      }
+    });
   }
 
 
@@ -236,7 +233,6 @@ export class TaskRunner extends EventEmitter {
         Log.error(e);
       }
     }, 0);
-
   }
 
 
@@ -244,6 +240,9 @@ export class TaskRunner extends EventEmitter {
     return _.get(this.$options, key, defaultValue);
   }
 
+  getId() {
+    return this.id;
+  }
 
   getOptions() {
     return this.$options;
@@ -264,6 +263,9 @@ export class TaskRunner extends EventEmitter {
     return this.readStream;
   }
 
+  getWriteStream() {
+    return this.writeStream;
+  }
 
   getTaskNames(): string[] {
     return this.$tasks.map(x => x.getTaskName());
@@ -346,7 +348,7 @@ export class TaskRunner extends EventEmitter {
 
 
   enqueue(taskRun: TaskRun) {
-    this.taskLogger.debug('enqueue task at runtime ' + taskRun.taskRef().name);
+    this.getLogger().debug('enqueue task at runtime ' + taskRun.taskRef().name);
     this.todoNrs.push(taskRun.nr);
     this.next();
   }
@@ -526,8 +528,16 @@ export class TaskRunner extends EventEmitter {
     if (this.$finish) {
       this.$finish(status);
     }
-    this.taskLogger.close();
+    this.getLogger().close();
+
     this.writeStream.end();
+
+    if (this.writeStream) {
+      this.writeStream.destroy();
+    }
+    if (this.readStream) {
+      this.readStream.destroy();
+    }
     this.fireStateEvent();
     this.emit(TASKRUN_STATE_FINISH_PROMISE, status);
   }
@@ -558,6 +568,21 @@ export class TaskRunner extends EventEmitter {
 
   async finalize() {
     // TODO ...
+
+    if (this.readStream) {
+      this.readStream.removeAllListeners();
+    }
+    if (this.writeStream) {
+      this.writeStream.removeAllListeners();
+    }
+
+    if (this.writeStream) {
+      this.writeStream.destroy();
+    }
+    if (this.readStream) {
+      this.readStream.destroy();
+    }
+
     this.removeAllListeners();
   }
 

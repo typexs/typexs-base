@@ -15,10 +15,11 @@
  */
 import * as _ from 'lodash';
 import {ICacheAdapter} from './ICacheAdapter';
-import {ClassType, XS_DEFAULT} from 'commons-schema-api/browser';
+import {ClassType} from '@allgemein/schema-api';
 import {ICacheConfig} from './ICacheConfig';
 import {ICacheGetOptions, ICacheSetOptions} from './ICacheOptions';
 import {CacheBin} from './CacheBin';
+import {C_DEFAULT} from '@allgemein/base';
 
 
 export const DEFAULT_OPTIONS: ICacheConfig = {
@@ -43,17 +44,17 @@ export class Cache {
     if (this.bins[name]) {
       return this.bins[name];
     }
-    return this.bins[XS_DEFAULT];
+    return this.bins[C_DEFAULT];
   }
 
 
-  async get(key: string, bin: string = XS_DEFAULT, options?: ICacheGetOptions) {
+  async get(key: string, bin: string = C_DEFAULT, options?: ICacheGetOptions) {
     const cacheBin = this.getBin(bin);
     return cacheBin.get(key, bin, options);
   }
 
 
-  async set(key: string, value: any, bin: string = XS_DEFAULT, options?: ICacheSetOptions) {
+  async set(key: string, value: any, bin: string = C_DEFAULT, options?: ICacheSetOptions) {
     const cacheBin = this.getBin(bin);
     return cacheBin.set(key, value, bin, options);
   }
@@ -82,17 +83,17 @@ export class Cache {
         this.adapters[key] = adapter;
       }
 
-      if (this.options.bins[XS_DEFAULT] === key) {
-        this.adapters[XS_DEFAULT] = adapter;
+      if (this.options.bins[C_DEFAULT] === key) {
+        this.adapters[C_DEFAULT] = adapter;
       }
     }
 
-    if (!this.adapters[XS_DEFAULT]) {
+    if (!this.adapters[C_DEFAULT]) {
       const entry = this.adapterClasses.find(c => c.type === 'memory');
       if (entry) {
         const adapter: ICacheAdapter = Reflect.construct(entry.clazz, []);
-        await adapter.configure(XS_DEFAULT, {type: 'memory', nodeId: nodeId});
-        this.adapters[XS_DEFAULT] = adapter;
+        await adapter.configure(C_DEFAULT, {type: 'memory', nodeId: nodeId});
+        this.adapters[C_DEFAULT] = adapter;
       }
     }
 
@@ -101,12 +102,12 @@ export class Cache {
       if (this.adapters[adapterKey]) {
         this.bins[binKey] = new CacheBin(binKey, this.adapters[adapterKey]);
       } else {
-        this.bins[binKey] = new CacheBin(binKey, this.adapters[XS_DEFAULT]);
+        this.bins[binKey] = new CacheBin(binKey, this.adapters[C_DEFAULT]);
       }
     }
 
-    if (!this.bins[XS_DEFAULT]) {
-      this.bins[XS_DEFAULT] = new CacheBin(XS_DEFAULT, this.adapters[XS_DEFAULT]);
+    if (!this.bins[C_DEFAULT]) {
+      this.bins[C_DEFAULT] = new CacheBin(C_DEFAULT, this.adapters[C_DEFAULT]);
     }
   }
 

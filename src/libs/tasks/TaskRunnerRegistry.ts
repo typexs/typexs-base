@@ -29,11 +29,11 @@ export class TaskRunnerRegistry {
   private globalTaskRunner: ITaskRunnerStatus[] = [];
 
 
-  async prepare() {
+  async onStartup() {
     await EventBus.register(this);
   }
 
-  async shutdown() {
+  async onShutdown() {
     await EventBus.unregister(this);
   }
 

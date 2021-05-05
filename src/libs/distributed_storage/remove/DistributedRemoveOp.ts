@@ -1,6 +1,6 @@
 import {DistributedStorageEntityController} from './../DistributedStorageEntityController';
 import {System} from '../../system/System';
-import {ClassType} from 'commons-schema-api';
+import {ClassType} from '@allgemein/schema-api';
 import {AbstractMessage} from '../../messaging/AbstractMessage';
 import {EntityControllerRegistry} from '../../storage/EntityControllerRegistry';
 import {DistributedRemoveRequest} from './DistributedRemoveRequest';

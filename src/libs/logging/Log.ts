@@ -6,7 +6,7 @@ import {BaseUtils} from '../../libs/utils/BaseUtils';
 import {InterpolationSupport} from '@allgemein/config/supports/InterpolationSupport';
 import {ILoggerApi} from './ILoggerApi';
 import {MatchUtils} from '../utils/MatchUtils';
-import {ClassType} from 'commons-schema-api/browser';
+import {ClassType} from '@allgemein/schema-api';
 import {ConsoleLogger} from './ConsoleLogger';
 
 
@@ -189,7 +189,10 @@ export class Log {
 
 
   removeLogger(name: string) {
-    this.getLogger(name).close();
+    const logger = this.getLogger(name);
+    if (logger && logger.close) {
+      logger.close();
+    }
     delete this.loggers[name];
   }
 

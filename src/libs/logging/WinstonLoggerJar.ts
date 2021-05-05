@@ -10,6 +10,7 @@ import {DefaultFormat} from './DefaultFormat';
 import {LogEvent} from './LogEvent';
 import {ILoggerApi} from './ILoggerApi';
 import {DefaultJsonFormat} from './DefaultJsonFormat';
+import {isLogEntry} from './ILogEntry';
 
 
 const DEFAULT_TRANSPORT_OPTIONS: ConsoleTransportOptions = {};
@@ -144,12 +145,15 @@ export class WinstonLoggerJar implements ILoggerApi {
       return;
     }
 
-    if (msg[0] instanceof LogEvent) {
-      this._logger.log(level, msg[0].message(), {event: msg[0]});
+    let l: LogEvent = null;
+    if (isLogEntry(msg[0])) {
+      l = new LogEvent(msg[0]);
+    } else if (msg[0] instanceof LogEvent) {
+      l = msg[0];
     } else {
-      const l = new LogEvent({args: msg, level: level, prefix: this.prefix});
-      this._logger.log(level, l.message(), {event: l});
+      l = new LogEvent({args: msg, level: level, prefix: this.prefix});
     }
+    this._logger.log(level, l.message(), {event: l});
   }
 
 

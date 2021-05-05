@@ -1,7 +1,7 @@
-import {ILookupRegistry, IPropertyRef, LookupRegistry, XS_TYPE_ENTITY} from 'commons-schema-api';
-import {C_WORKERS, K_CLS_WORKERS} from './Constants';
-import {ClassUtils, NotYetImplementedError} from '@allgemein/base';
-import {WorkerRef} from './WorkerRef';
+import {IEntityRef, METATYPE_ENTITY} from '@allgemein/schema-api';
+import {K_CLS_WORKERS} from './Constants';
+import {ClassUtils} from '@allgemein/base';
+import {IWorkerRefOptions, WorkerRef} from './WorkerRef';
 import {IWorkerConfig} from './IWorkerConfig';
 import * as _ from 'lodash';
 import {IWorker} from './IWorker';
@@ -10,27 +10,31 @@ import {MatchUtils} from '../utils/MatchUtils';
 import {RuntimeLoader} from '../../base/RuntimeLoader';
 import {Injector} from '../di/Injector';
 import {Log} from '../logging/Log';
-import {IEntityRef, XS_TYPE} from 'commons-schema-api/browser';
+import {AbstractRegistry} from '@allgemein/schema-api/lib/registry/AbstractRegistry';
 
 
 const DEFAULT_OPTIONS: IWorkerConfig = {access: [{access: 'deny', name: '*'}]};
 
 
-export class Workers implements ILookupRegistry {
+export class Workers extends AbstractRegistry {
 
   static NAME = 'Workers';
-
-  registry: LookupRegistry = LookupRegistry.$(C_WORKERS);
 
   config: IWorkerConfig = DEFAULT_OPTIONS;
 
   workers: IWorker[] = [];
 
 
-  prepare(loader: RuntimeLoader) {
+  /**
+   * Execute on bootstrap startup. Get all worker classes from runtime enviroment
+   * an register them.
+   *
+   * @param loader
+   */
+  onStartup(loader?: RuntimeLoader) {
     const klasses = loader.getClasses(K_CLS_WORKERS);
     for (const klass of klasses) {
-      this.add(klass);
+      this.addWorkerClass(klass);
     }
   }
 
@@ -49,12 +53,12 @@ export class Workers implements ILookupRegistry {
 
   get(name: string) {
     const snakeCase = _.snakeCase(name);
-    return this.registry.find(XS_TYPE_ENTITY, (w: WorkerRef) => w.name === name || _.snakeCase(w.name) === snakeCase);
+    return this.find(METATYPE_ENTITY, (w: WorkerRef) => w.name === name || _.snakeCase(w.name) === snakeCase);
   }
 
 
   async startup() {
-    const refs: WorkerRef[] = this.registry.list(XS_TYPE_ENTITY);
+    const refs: WorkerRef[] = this.list(METATYPE_ENTITY);
     for (const ref of refs) {
       Log.debug('worker name ' + ref.name);
       try {
@@ -74,7 +78,7 @@ export class Workers implements ILookupRegistry {
 
 
   metadata() {
-    return _.map(this.getEntries(), (x: IWorker) => {
+    return _.map(this.getEntities(), (x: IWorker) => {
       return <IWorkerInfo>{
         name: x.name,
       };
@@ -142,53 +146,34 @@ export class Workers implements ILookupRegistry {
   }
 
 
-  add(fn: Function) {
+  addWorkerClass(fn: Function): WorkerRef {
     const name = ClassUtils.getClassName(fn);
     if (this.access(name)) {
-      let exists = this.registry.find(XS_TYPE_ENTITY, (d: WorkerRef) => d.name === name);
+      let exists = this.find(METATYPE_ENTITY, (d: WorkerRef) => d.getClassRef().getClass() === fn) as WorkerRef;
       if (!exists) {
-        exists = new WorkerRef(fn);
-        this.registry.add(XS_TYPE_ENTITY, exists);
+        exists = this.create(METATYPE_ENTITY, <IWorkerRefOptions>{
+          metaType: METATYPE_ENTITY,
+          namespace: this.namespace,
+          target: fn,
+        });
       }
       return exists;
     }
     return null;
   }
 
-
-  reset() {
-    LookupRegistry.reset(C_WORKERS);
-    this.registry = LookupRegistry.$(C_WORKERS);
+  create<T>(context: string, options: any): T {
+    if (context === METATYPE_ENTITY) {
+      const entry = new WorkerRef(options);
+      this.add(METATYPE_ENTITY, entry);
+      return entry as any;
+    }
+    return null;
   }
 
-  fromJson(json: any): WorkerRef {
-    throw new NotYetImplementedError();
-  }
-
-
-  private getEntries() {
-    return this.registry.list(XS_TYPE_ENTITY);
-  }
-
-
-  getEntityRefFor(fn: any): WorkerRef {
-    throw new NotYetImplementedError();
-  }
-
-  getPropertyRefsFor(fn: any): IPropertyRef[] {
-    throw new NotYetImplementedError();
+  getEntities(filter?: (x: IEntityRef) => boolean): IEntityRef[] {
+    return this.filter(METATYPE_ENTITY, filter);
   }
 
 
-  list<X>(type: XS_TYPE, filter?: (x: any) => boolean): X[] {
-    return this.registry.filter(type, filter);
-  }
-
-  listEntities(filter?: (x: IEntityRef) => boolean): IEntityRef[] {
-    return this.registry.filter(XS_TYPE_ENTITY, filter);
-  }
-
-  listProperties(filter?: (x: IPropertyRef) => boolean): IPropertyRef[] {
-    throw new NotYetImplementedError();
-  }
 }

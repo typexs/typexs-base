@@ -1,6 +1,6 @@
 import {IEntityController} from './IEntityController';
 import {IStorageOptions} from './IStorageOptions';
-import {ClassType, IClassRef, IEntityRef} from 'commons-schema-api/browser';
+import {ClassType, IClassRef, IEntityRef} from '@allgemein/schema-api';
 import {IConnection} from './IConnection';
 import {ICollection} from './ICollection';
 
@@ -62,9 +62,9 @@ export interface IStorageRef {
 
 
   /**
-   * shutdown function to finalize this storage ref (close opened connection and release resources)
+   * onShutdown function to finalize this storage ref (close opened connection and release resources)
    *
-   * @param full - marks if shutdown is soft (close on runtime) or hard (shutdown of program)
+   * @param full - marks if onShutdown is soft (close on runtime) or hard (onShutdown of program)
    */
   shutdown(full?: boolean): void;
 

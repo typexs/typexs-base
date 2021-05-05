@@ -1,7 +1,7 @@
 import {IStorageOptions} from './IStorageOptions';
 import {IStorageRef} from './IStorageRef';
 import {IEntityController} from './IEntityController';
-import {ClassType, IClassRef, IEntityRef} from 'commons-schema-api/browser';
+import {ClassType, IClassRef, IEntityRef} from '@allgemein/schema-api';
 import {IConnection} from './IConnection';
 import {ICollection} from './ICollection';
 import {EventEmitter} from 'events';

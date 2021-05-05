@@ -2,11 +2,39 @@ import {TypeOrmEntityRef} from './schema/TypeOrmEntityRef';
 import {ColumnType} from 'typeorm/browser';
 import * as _ from 'lodash';
 import {TypeOrmEntityRegistry} from './schema/TypeOrmEntityRegistry';
-import {JS_DATA_TYPES} from 'commons-schema-api/browser';
+import {JS_DATA_TYPES} from '@allgemein/schema-api';
 import {QueryBuilder} from 'typeorm';
 
 
 export class TypeOrmUtils {
+
+  /**
+   * Return object class for primative string representation
+   * @param name
+   */
+  static getJsObjectType(name: string) {
+    if (['string', 'number', 'boolean', 'date', 'float', 'array', 'object'].includes(name.toLowerCase())) {
+      switch (name.toLowerCase()) {
+        case 'string':
+          return String;
+        case 'number':
+          return Number;
+        case 'boolean':
+          return Boolean;
+        case 'date':
+          return Date;
+        case 'float':
+          return Number;
+        case 'array':
+          return Array;
+        case 'object':
+          return Object;
+      }
+
+
+    }
+    return null;
+  }
 
   static aliasKey(qb: QueryBuilder<any>, k: string, sep: string = '.') {
     const keyIsAlias = qb.expressionMap.selects.find(x => x.aliasName === k);

@@ -101,7 +101,12 @@ export class System {
       this.controller = this.storageRef.getController();
       // check if instance number exists
       const nodes = await this.controller.find(SystemNodeInfo,
-        {$and: [{state: {$ne: 'unregister'}}, {state: {$ne: 'offline'}}, {state: {$ne: 'startup'}}]}, {limit: 0});
+        {
+          $and: [
+            {state: {$ne: 'unregister'}},
+            {state: {$ne: 'offline'}},
+            {state: {$ne: 'startup'}}]
+        }, {limit: 0});
       const filtered = nodes.filter(c => c.nodeId === nodeId && !['unregister', 'offline', 'startup'].includes(c.state));
       if (!_.isEmpty(filtered)) {
         instNr = _.max(filtered.map(x => x.instNr)) + 1;
@@ -275,7 +280,7 @@ export class System {
 
 
   /**
-   * Method for unregister blocking objects on system shutdown
+   * Method for unregister blocking objects on system onShutdown
    */
   async unregister() {
     if (!this._registered) {

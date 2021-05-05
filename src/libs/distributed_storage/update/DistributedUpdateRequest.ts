@@ -1,6 +1,6 @@
 import {AbstractEvent} from '../../messaging/AbstractEvent';
 import {IDistributedUpdateOptions} from './IDistributedUpdateOptions';
-import {IEntityRef} from 'commons-schema-api';
+import {IEntityRef} from '@allgemein/schema-api';
 import {IEntityController} from '../../storage/IEntityController';
 
 export class DistributedUpdateRequest extends AbstractEvent {

@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import {IDBType} from './IDBType';
-import {JS_DATA_TYPES} from 'commons-schema-api/browser';
+import {JS_DATA_TYPES} from '@allgemein/schema-api';
 import {ICollection} from './ICollection';
 import {ICollectionProperty} from './ICollectionProperty';
 import {NotSupportedError} from '@allgemein/base';

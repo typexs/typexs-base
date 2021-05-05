@@ -1,8 +1,8 @@
-import {IExchange} from './IExchange';
-import {ClassType} from 'commons-schema-api/browser';
+import {ClassType} from '@allgemein/schema-api';
 import {IValueProvider} from './IValueProvider';
+import {ITaskPropertyRefOptions} from '../ITaskPropertyRefOptions';
 
-export interface IIncomingOptions extends IExchange {
+export interface IIncomingOptions extends ITaskPropertyRefOptions {
 
   /**
    * Define an array or value provider which defines/provides the possible values

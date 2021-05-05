@@ -1,4 +1,4 @@
-import {ClassType} from 'commons-schema-api/browser';
+import {ClassType} from '@allgemein/schema-api';
 import {IDeleteOptions} from './IDeleteOptions';
 
 export interface IDeleteOp<T> {

@@ -4,9 +4,11 @@ import {TaskRun} from '../libs/tasks/TaskRun';
 
 export interface ITasksApi {
 
-  onInit?(): void;
+  onStartup?(): void;
 
   onShutdown?(): void;
+
+  onInit?(run: TaskRun | TaskRunner): void;
 
   onBefore?(runner: TaskRunner): void;
 

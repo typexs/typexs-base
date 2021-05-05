@@ -10,16 +10,17 @@ import {AbstractSchemaHandler} from '../../AbstractSchemaHandler';
 import {EntitySchema} from 'typeorm/entity-schema/EntitySchema';
 import {Connection, ConnectionOptions, EntityOptions, getConnectionManager, getMetadataArgsStorage} from 'typeorm';
 import {TableMetadataArgs} from 'typeorm/metadata-args/TableMetadataArgs';
-import {ClassType, IClassRef, IEntityRef} from 'commons-schema-api/browser';
+import {ClassRef, ClassType, IClassRef, IEntityRef} from '@allgemein/schema-api';
 import {TypeOrmEntityRegistry} from './schema/TypeOrmEntityRegistry';
 import {DEFAULT_STORAGEREF_OPTIONS} from '../../Constants';
-import {classRefGet} from './Helper';
 import {TypeOrmEntityController} from './TypeOrmEntityController';
 import {TypeOrmConnectionWrapper} from './TypeOrmConnectionWrapper';
 import {StorageRef} from '../../StorageRef';
 import {ICollection} from '../../ICollection';
+import {REGISTRY_TYPEORM} from './schema/TypeOrmConstants';
 import {BaseConnectionOptions} from 'typeorm/connection/BaseConnectionOptions';
 import {EVENT_STORAGE_ENTITY_ADDED, EVENT_STORAGE_REF_PREPARED, EVENT_STORAGE_REF_SHUTDOWN} from './Constants';
+import {ColumnMetadataArgs} from 'typeorm/metadata-args/ColumnMetadataArgs';
 
 
 export class TypeOrmStorageRef extends StorageRef {
@@ -42,6 +43,8 @@ export class TypeOrmStorageRef extends StorageRef {
   private _prepared = false;
 
   private _isActive = false;
+
+  private namespace = REGISTRY_TYPEORM;
   //
   // private reloadTimout: NodeJS.Timeout;
 
@@ -143,14 +146,7 @@ export class TypeOrmStorageRef extends StorageRef {
     return this.dbType;
   }
 
-
-  registerEntityRef(type: string | Function | EntitySchema) {
-    const entityRef = this.getEntityRef(type instanceof EntitySchema ? type.options.target : type);
-    const cls = entityRef.getClassRef().getClass();
-    const columns = getMetadataArgsStorage().filterColumns(cls);
-    // convert unknown types
-
-    // change unknown types to convert json
+  applyObjectToStringifiedJsonConversion(columns: ColumnMetadataArgs[]) {
     columns.map(x => {
       if (_.isFunction(x.options.type)) {
         if (x.options.type.name === Object.name) {
@@ -162,6 +158,17 @@ export class TypeOrmStorageRef extends StorageRef {
         }
       }
     });
+  }
+
+
+  registerEntityRef(type: string | Function | EntitySchema) {
+    const entityRef = this.getEntityRef(type instanceof EntitySchema ? type.options.target : type);
+    const cls = entityRef.getClassRef().getClass();
+    const columns = getMetadataArgsStorage().filterColumns(cls);
+    // convert unknown types
+
+    // change unknown types to convert json
+    this.applyObjectToStringifiedJsonConversion(columns);
 
     if (this.dbType === 'mongodb') {
       /**
@@ -300,7 +307,7 @@ export class TypeOrmStorageRef extends StorageRef {
   getClassRef(name: string | Function): IClassRef {
     const clazz = this.getEntityClass(name);
     if (clazz) {
-      return classRefGet(clazz instanceof EntitySchema ? clazz.options.target : clazz);
+      return ClassRef.get(clazz instanceof EntitySchema ? clazz.options.target : clazz, this.namespace);
     }
     return null;
   }
@@ -316,7 +323,7 @@ export class TypeOrmStorageRef extends StorageRef {
       const _ref = _.snakeCase(ref);
       return this.getOptions().entities.find((x: any) => _ref === TypeOrmStorageRef.machineName(x));
     } else if (_.isFunction(ref)) {
-      const _ref = classRefGet(ref);
+      const _ref = ClassRef.get(ref, this.namespace);
       return this.getOptions().entities.find((x: any) => _ref.machineName === TypeOrmStorageRef.machineName(x));
     } else {
       return this.getOptions().entities.find((x: any) => (<IClassRef>ref).machineName === TypeOrmStorageRef.machineName(x));
@@ -444,7 +451,8 @@ export class TypeOrmStorageRef extends StorageRef {
     while (this.connections.length > 0) {
       ps.push(this.connections.shift().close());
     }
-    return Promise.all(ps).catch(x => {});
+    return Promise.all(ps).catch(x => {
+    });
   }
 
 

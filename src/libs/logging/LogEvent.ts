@@ -2,6 +2,7 @@ import * as _ from 'lodash';
 
 import * as moment from 'moment';
 import {Log} from './Log';
+import {ILogEntry} from './ILogEntry';
 
 export class LogEvent {
 
@@ -16,7 +17,7 @@ export class LogEvent {
   private time: Date;
 
 
-  constructor(opts: { level?: string, message?: string, args?: any[], time?: Date, [k: string]: any }) {
+  constructor(opts: ILogEntry) {
     if (opts.time) {
       opts.time = new Date();
     }

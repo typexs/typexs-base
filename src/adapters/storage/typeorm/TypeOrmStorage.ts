@@ -10,7 +10,8 @@ import {TypeOrmStorageRef} from '../../../libs/storage/framework/typeorm/TypeOrm
 import {Injector} from '../../../libs/di/Injector';
 import {TypeOrmEntityRegistry} from '../../../libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry';
 import {IRuntimeLoader} from '../../../libs/core/IRuntimeLoader';
-import {ClassType} from 'commons-schema-api/browser';
+import {ClassType, RegistryFactory} from '@allgemein/schema-api';
+import {REGISTRY_TYPEORM} from '../../../libs/storage/framework/typeorm/schema/TypeOrmConstants';
 
 useContainer(Injector.getContainer());
 
@@ -57,11 +58,14 @@ export class TypeOrmStorage implements IStorage {
   }
 
   /**
-   * Implmentation of IStorage.prepare
+   * Implmentation of IStorage.onStartup
    *
    * @param loader
    */
   async prepare(loader: IRuntimeLoader) {
+    RegistryFactory.register(REGISTRY_TYPEORM, TypeOrmEntityRegistry);
+    RegistryFactory.register(/^typeorm\..*/, TypeOrmEntityRegistry);
+
     if (loader) {
       const classes = await loader.getClasses(K_CLS_STORAGE_SCHEMAHANDLER);
       for (const cls of classes) {

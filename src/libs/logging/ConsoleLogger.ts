@@ -53,4 +53,8 @@ export class ConsoleLogger implements ILoggerApi {
     console.warn(...msg);
   }
 
+  build(name: string, options: ILoggerOptions, append?: boolean): ILoggerApi {
+    throw new Error('Method not implemented.');
+  }
+
 }

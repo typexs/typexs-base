@@ -1,5 +1,5 @@
 import {IFindOptions} from './IFindOptions';
-import {ClassType} from 'commons-schema-api/browser';
+import {ClassType} from '@allgemein/schema-api';
 
 export interface IFindOp<T> {
 

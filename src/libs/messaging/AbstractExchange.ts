@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import {ClassType} from 'commons-schema-api';
+import {ClassType} from '@allgemein/schema-api';
 import {AbstractEvent} from './AbstractEvent';
 import {System} from '../../libs/system/System';
 import {Inject} from 'typedi';

@@ -1,13 +1,12 @@
 import * as _ from 'lodash';
 import {ISaveOp} from '../ISaveOp';
 import {ISaveOptions} from '../ISaveOptions';
-import {DataContainer} from '../../DataContainer';
 import {TypeOrmUtils} from './TypeOrmUtils';
 import {ObjectsNotValidError} from '../../../exceptions/ObjectsNotValidError';
 import {TypeOrmEntityRegistry} from './schema/TypeOrmEntityRegistry';
 import {StorageApi} from '../../../../api/Storage.api';
 import {TypeOrmEntityController} from './TypeOrmEntityController';
-import {IEntityRef} from 'commons-schema-api/browser';
+import {DataContainer, IEntityRef} from '@allgemein/schema-api';
 import {convertPropertyValueJsonToString, convertPropertyValueStringToJson} from './Helper';
 
 

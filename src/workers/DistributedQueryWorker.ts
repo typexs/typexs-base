@@ -4,7 +4,7 @@ import {__CLASS__, __NODE_ID__, __REGISTRY__, XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OF
 import {Bootstrap} from './../Bootstrap';
 import {Inject} from 'typedi';
 import {System} from '../libs/system/System';
-import {IEntityRef} from 'commons-schema-api';
+import {IEntityRef} from '@allgemein/schema-api';
 import {IWorker} from '../libs/worker/IWorker';
 import {IWorkerStatisitic} from '../libs/worker/IWorkerStatisitic';
 import {IQueueWorkload} from '../libs/queue/IQueueWorkload';
@@ -445,7 +445,7 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
               // keep the remote id
               _.set(to, __DISTRIBUTED_ID__, _.get(from, __DISTRIBUTED_ID__));
               _.set(to, __CLASS__, classRef.name);
-              _.set(to, __REGISTRY__, _.get(classRef, 'lookupRegistry'));
+              _.set(to, __REGISTRY__, classRef.getNamespace());
             }
           }));
           response.results[entityType] = await entityController.remove(build, o.options);
@@ -536,7 +536,7 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
 
       response.results.forEach(x => {
         _.set(x, __CLASS__, classRef.name);
-        _.set(x, __REGISTRY__, _.get(classRef, 'lookupRegistry'));
+        _.set(x, __REGISTRY__, classRef.getNamespace());
         _.set(x, __NODE_ID__, this.nodeId);
       });
 
@@ -566,7 +566,7 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
             // keep the remote id
             _.set(to, __DISTRIBUTED_ID__, _.get(from, __DISTRIBUTED_ID__));
             _.set(to, __CLASS__, classRef.name);
-            _.set(to, __REGISTRY__, _.get(classRef, 'lookupRegistry'));
+            _.set(to, __REGISTRY__, classRef.getNamespace());
           }
         }));
         response.results[entityType] = await entityController.save(build, o.options);
@@ -592,7 +592,7 @@ export class DistributedQueryWorker implements IQueueProcessor<IQueryWorkload>, 
 
       response.results.forEach(x => {
         _.set(x, __CLASS__, classRef.name);
-        _.set(x, __REGISTRY__, _.get(classRef, 'lookupRegistry'));
+        _.set(x, __REGISTRY__, classRef.getNamespace());
         _.set(x, __NODE_ID__, this.nodeId);
       });
 

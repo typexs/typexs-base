@@ -1,5 +1,5 @@
 import {IStorageApi} from './IStorageApi';
-import {ClassType} from 'commons-schema-api/browser';
+import {ClassType} from '@allgemein/schema-api';
 import {IFindOptions} from '../libs/storage/framework/IFindOptions';
 import {IUpdateOptions} from '../libs/storage/framework/IUpdateOptions';
 import {ISaveOptions} from '../libs/storage/framework/ISaveOptions';

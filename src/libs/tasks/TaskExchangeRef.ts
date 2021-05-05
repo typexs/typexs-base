@@ -1,33 +1,55 @@
-import {AbstractRef, IClassRef, IPropertyRef, XS_TYPE_PROPERTY} from 'commons-schema-api/browser';
-import {TaskRef} from './TaskRef';
-import {C_TASKS} from './Constants';
-import {ClassUtils, NotSupportedError, NotYetImplementedError, TreeUtils} from '@allgemein/base';
-import {ITaskPropertyDesc} from './ITaskPropertyDesc';
-import {WalkValues} from '@allgemein/base/libs/utils/TreeUtils';
+import {
+  AbstractRef,
+  ClassRef,
+  IClassRef,
+  ILookupRegistry, IMinMax,
+  IPropertyRef,
+  METADATA_TYPE,
+  METATYPE_PROPERTY,
+  RegistryFactory
+} from '@allgemein/schema-api';
+import {C_TASKS, K_EXCHANGE_REF_TYPE, TASK_PROPERTY_TYPE} from './Constants';
+import {NotYetImplementedError} from '@allgemein/base';
+import {ITaskPropertyRefOptions} from './ITaskPropertyRefOptions';
 import * as _ from 'lodash';
+import {get} from 'lodash';
+import {isClassRef} from '@allgemein/schema-api/api/IClassRef';
 
 
 export class TaskExchangeRef extends AbstractRef implements IPropertyRef {
 
+  cardinality: IMinMax | number = 1;
 
-  descriptor: ITaskPropertyDesc;
+  targetRef: IClassRef;
 
+  constructor(desc: ITaskPropertyRefOptions) {
+    super(METATYPE_PROPERTY, desc.propertyName, desc.target, get(desc, 'namespace', C_TASKS));
+    this.setOptions(_.defaults(desc || {}, {type: 'object'}));
+    // if (desc.propertyType) {
+    //   this.setOption(K_EXCHANGE_REF_TYPE, desc.propertyType);
+    // }
 
-  constructor(desc: ITaskPropertyDesc) {
-    super(XS_TYPE_PROPERTY, desc.propertyName, desc.target, C_TASKS);
-    this.setOptions(desc.options);
-    this.descriptor = desc;
+    let ret = this.getType();
+    if (_.isFunction(ret)) {
+      ret = ClassRef.getClassName(ret);
+    }
+
+    if (!['string', 'number', 'boolean', 'date', 'float', 'array', 'object'].includes(ret.toLowerCase())) {
+      this.targetRef = this.getClassRefFor(this.getType(), METATYPE_PROPERTY);
+    }
+
+    this.cardinality = _.has(desc, 'cardinality') ? desc.cardinality : 1;
+
   }
 
-
   isOptional(): boolean {
-    return this.getOptions('optional');
+    return this.getOptions('optional', false);
   }
 
   /**
    * Check if the option is set
    *
-   * TODO move to commons-schema-api
+   * TODO move to @allgemein/schema-api
    *
    * @param name
    */
@@ -42,8 +64,9 @@ export class TaskExchangeRef extends AbstractRef implements IPropertyRef {
    * @param value
    */
   async convert(value: any): Promise<any> {
-    if (this.descriptor.options && this.descriptor.options.handle) {
-      return await this.descriptor.options.handle(value);
+    const opts = this.getOptions();
+    if (opts && opts.handle) {
+      return await opts.handle(value);
     }
     return value;
   }
@@ -52,16 +75,18 @@ export class TaskExchangeRef extends AbstractRef implements IPropertyRef {
     throw new NotYetImplementedError();
   }
 
-  isOf(instance: any): boolean {
-    throw new NotSupportedError('isOf is not supported');
-  }
-
-  getEntityRef(): TaskRef {
-    throw new NotYetImplementedError();
-  }
-
+  /**
+   * Return
+   */
   getTargetRef(): IClassRef {
-    throw new NotYetImplementedError();
+    return this.getTargetRef();
+  }
+
+  /**
+   * Returns the propertyType of property runtime, incoming or outgoing
+   */
+  getPropertyType(): TASK_PROPERTY_TYPE {
+    return this.getOptions(K_EXCHANGE_REF_TYPE);
   }
 
   getType(): string {
@@ -77,16 +102,13 @@ export class TaskExchangeRef extends AbstractRef implements IPropertyRef {
     return _.isNumber(cardinality) && (cardinality === 0 || cardinality > 1);
   }
 
-  isEntityReference(): boolean {
-    throw new NotYetImplementedError();
-  }
 
   isIdentifier(): boolean {
-    throw new NotYetImplementedError();
+    return false;
   }
 
   isReference(): boolean {
-    throw new NotYetImplementedError();
+    return !!this.targetRef;
   }
 
   label(): string {
@@ -94,28 +116,44 @@ export class TaskExchangeRef extends AbstractRef implements IPropertyRef {
   }
 
 
-  toJson() {
-    const o = super.toJson();
-    o.descriptor = _.cloneDeep(this.descriptor);
-    TreeUtils.walk(o.descriptor, (v: WalkValues) => {
-      if (_.isString(v.key) && _.isFunction(v.value)) {
-        v.parent[v.key] = ClassUtils.getClassName(v.value);
-        if (v.key === 'type' && _.isEmpty(v.parent[v.key])) {
-          v.parent[v.key] = ClassUtils.getClassName(v.value());
-        } else if (v.key === 'valueProvider') {
-          if (!_.isFunction(v.value)) {
-            // if value provider contains only of values, pass this
-            v.parent[v.key] = v.value;
-          } else {
-            // backend returned data, set classname
+  // toJson() {
+  //   const o = super.toJson();
+  //   o.descriptor = _.cloneDeep(this.descriptor);
+  //   TreeUtils.walk(o.descriptor, (v: WalkValues) => {
+  //     if (_.isString(v.key) && _.isFunction(v.value)) {
+  //       v.parent[v.key] = ClassUtils.getClassName(v.value);
+  //       if (v.key === 'propertyType' && _.isEmpty(v.parent[v.key])) {
+  //         v.parent[v.key] = ClassUtils.getClassName(v.value());
+  //       } else if (v.key === 'valueProvider') {
+  //         if (!_.isFunction(v.value)) {
+  //           // if value provider contains only of values, pass this
+  //           v.parent[v.key] = v.value;
+  //         } else {
+  //           // backend returned data, set classname
+  //
+  //         }
+  //       }
+  //     } else if (_.isString(v.key) && _.isUndefined(v.value)) {
+  //       delete v.parent[v.key];
+  //     }
+  //   });
+  //   return o;
+  // }
+  /**
+   * Return a class ref for passing string, Function or class ref
+   *
+   * @param object
+   * @param type
+   */
+  getClassRefFor(object: string | Function | IClassRef, type: METADATA_TYPE): IClassRef {
+    if (isClassRef(object)) {
+      return object;
+    }
+    return ClassRef.get(object as string | Function, this.namespace, type === METATYPE_PROPERTY);
+  }
 
-          }
-        }
-      } else if (_.isString(v.key) && _.isUndefined(v.value)) {
-        delete v.parent[v.key];
-      }
-    });
-    return o;
+  getRegistry(): ILookupRegistry {
+    return RegistryFactory.get(this.namespace);
   }
 
 }

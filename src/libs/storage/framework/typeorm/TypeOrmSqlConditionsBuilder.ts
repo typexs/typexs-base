@@ -3,7 +3,7 @@ import {NotYetImplementedError} from '@allgemein/base';
 import {RelationMetadataArgs} from 'typeorm/metadata-args/RelationMetadataArgs';
 import {IConditionJoin} from '../IConditionJoin';
 import {TypeOrmPropertyRef} from './schema/TypeOrmPropertyRef';
-import {IClassRef, IEntityRef} from 'commons-schema-api/browser';
+import {IClassRef, IEntityRef} from '@allgemein/schema-api';
 import {EntityManager, QueryBuilder, SelectQueryBuilder} from 'typeorm';
 import {DateUtils} from 'typeorm/util/DateUtils';
 import {AbstractSchemaHandler} from '../../AbstractSchemaHandler';
@@ -142,7 +142,7 @@ export class TypeOrmSqlConditionsBuilder<T> implements IMangoWalker {
           alias: this.createAlias(tmp),
           table: tmp.storingName,
           condition: null,
-          ref: tmp ? prop.getEntityRef() : null
+          ref: tmp ? prop.getClassRef().getEntityRef() : null
         };
 
         const conditions: string[] = [];

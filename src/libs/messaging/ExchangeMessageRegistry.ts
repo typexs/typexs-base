@@ -1,43 +1,53 @@
-import {IEntityRef, ILookupRegistry, IPropertyRef, LookupRegistry, XS_TYPE} from 'commons-schema-api/browser';
-import {C_EXCHANGE_MESSAGE} from './Constants';
-import {NotYetImplementedError} from '@allgemein/base';
+import {IEntityRef, METATYPE_ENTITY} from '@allgemein/schema-api';
 import {ClassUtils} from '@allgemein/base';
-import {XS_TYPE_ENTITY} from 'commons-schema-api';
 import {WorkerRef} from '../worker/WorkerRef';
 import * as _ from 'lodash';
 import {MatchUtils} from '../utils/MatchUtils';
 import {IExchangeMessageConfig} from './IExchangeMessageConfig';
-import {ExchangeMessageRef} from './ExchangeMessageRef';
+import {ExchangeMessageRef, IExchangeMessageRefOptions} from './ExchangeMessageRef';
+import {AbstractRegistry} from '@allgemein/schema-api/lib/registry/AbstractRegistry';
 
 const DEFAULT_OPTIONS: IExchangeMessageConfig = {access: []};
 
 
-export class ExchangeMessageRegistry implements ILookupRegistry {
+export class ExchangeMessageRegistry extends AbstractRegistry {
 
   static NAME = ExchangeMessageRegistry.name;
 
-  registry: LookupRegistry = LookupRegistry.$(C_EXCHANGE_MESSAGE);
-
   config: IExchangeMessageConfig = DEFAULT_OPTIONS;
+
 
   setConfig(config: IExchangeMessageConfig = DEFAULT_OPTIONS) {
     this.config = config;
   }
 
 
-  add(fn: Function) {
+  addExchangeMessage(fn: Function) {
     const name = ClassUtils.getClassName(fn);
     if (this.access(name)) {
-      let exists = this.registry.find(XS_TYPE_ENTITY, (d: WorkerRef) => d.name === name);
+      let exists = this.find(METATYPE_ENTITY, (d: WorkerRef) => d.name === name);
       if (!exists) {
-        exists = new ExchangeMessageRef(fn);
-        this.registry.add(XS_TYPE_ENTITY, exists);
+
+        exists = this.create(METATYPE_ENTITY, <IExchangeMessageRefOptions>{
+          metaType: METATYPE_ENTITY,
+          namespace: this.namespace,
+          target: fn,
+        });
+
       }
       return exists;
     }
     return null;
   }
 
+  create<T>(context: string, options: any): T {
+    if (context === METATYPE_ENTITY) {
+      const entry = new ExchangeMessageRef(options);
+      this.add(METATYPE_ENTITY, entry);
+      return entry as any;
+    }
+    return null;
+  }
 
   access(name: string) {
     if (_.has(this.config, 'access')) {
@@ -76,7 +86,7 @@ export class ExchangeMessageRegistry implements ILookupRegistry {
 
 
   findForRequest(x: any) {
-    for (const e of this.registry.list(XS_TYPE_ENTITY) as ExchangeMessageRef[]) {
+    for (const e of this.getEntities() as ExchangeMessageRef[]) {
       const exchange = e.getExchange();
       if (exchange && exchange.isActive() && x instanceof e.getExchange().getReqClass()) {
         return e;
@@ -86,33 +96,19 @@ export class ExchangeMessageRegistry implements ILookupRegistry {
   }
 
 
-  getEntries(): ExchangeMessageRef[] {
-    return this.registry.list(XS_TYPE_ENTITY);
+  // getEntries(): ExchangeMessageRef[] {
+  //   return this.list(METATYPE_ENTITY);
+  // }
+
+  getEntities(filter?: (x: ExchangeMessageRef) => boolean): ExchangeMessageRef[] {
+    return this.filter(METATYPE_ENTITY, filter);
   }
 
+  //
+  //
+  // fromJson(json: any): IEntityRef {
+  //   throw new NotYetImplementedError();
+  // }
 
-  fromJson(json: any): IEntityRef {
-    throw new NotYetImplementedError();
-  }
-
-  getEntityRefFor(fn: any): IEntityRef {
-    throw new NotYetImplementedError();
-  }
-
-  getPropertyRefsFor(fn: any): IPropertyRef[] {
-    throw new NotYetImplementedError();
-  }
-
-  list<X>(type: XS_TYPE, filter?: (x: any) => boolean): X[] {
-    return this.registry.filter(type, filter);
-  }
-
-  listEntities(filter?: (x: IEntityRef) => boolean): IEntityRef[] {
-    return this.registry.filter(XS_TYPE_ENTITY, filter);
-  }
-
-  listProperties(filter?: (x: IPropertyRef) => boolean): IPropertyRef[] {
-    throw new NotYetImplementedError();
-  }
 
 }

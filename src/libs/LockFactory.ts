@@ -1,4 +1,4 @@
-import * as _ from 'lodash';
+import {isEmpty, remove} from 'lodash';
 import {EventEmitter} from 'events';
 import {Semaphore} from './Semaphore';
 
@@ -34,15 +34,15 @@ export class LockFactory extends EventEmitter {
   }
 
   remove(s: Semaphore) {
-    _.remove(this.semaphores, s);
-    if (_.isEmpty(this.semaphores)) {
+    remove(this.semaphores, s);
+    if (isEmpty(this.semaphores)) {
       this.emit('empty');
     }
   }
 
 
   await(): Promise<any> {
-    if (_.isEmpty(this.semaphores)) {
+    if (isEmpty(this.semaphores)) {
       return Promise.resolve();
     } else {
       return new Promise(resolve => {

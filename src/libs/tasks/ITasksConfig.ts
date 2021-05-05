@@ -17,10 +17,16 @@ export interface ITaskAccess {
   /**
    * generate minimatch
    */
-  match?:any;
+  match?: any;
 }
 
 export interface ITasksConfig {
+
+  /**
+   * Id on node
+   */
+  nodeId?: string;
+
 
   /**
    * deny or allow tasks for current runtime

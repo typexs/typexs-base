@@ -1,9 +1,13 @@
-import {JS_DATA_TYPES} from 'commons-schema-api/browser';
+import {IPropertyOptions, JS_DATA_TYPES} from '@allgemein/schema-api';
 
-/**
- * Options describing incoming/outgoing parameters
- */
-export interface IExchange {
+export interface ITaskPropertyRefOptions extends IPropertyOptions{
+
+
+  /**
+   * Property propertyType
+   */
+  propertyType?: 'incoming' | 'outgoing' | 'runtime';
+
 
   /**
    * Other name then given propertyName to lookup parameter value in passed parameter object
@@ -26,7 +30,7 @@ export interface IExchange {
   handle?: (x: any) => any;
 
   /**
-   * Define type if primative
+   * Define propertyType if primative
    */
   type?: JS_DATA_TYPES | Function;
 

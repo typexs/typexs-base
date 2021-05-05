@@ -5,6 +5,9 @@ import {TaskRun} from '../libs/tasks/TaskRun';
 
 export class TasksApi implements ITasksApi {
 
+  onInit(run: TaskRun | TaskRunner) {
+  }
+
   onBefore(runner: TaskRunner) {
   }
 
@@ -24,7 +27,7 @@ export class TasksApi implements ITasksApi {
   }
 
 
-  onInit() {
+  onStartup() {
   }
 
 

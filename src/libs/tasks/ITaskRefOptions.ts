@@ -1,4 +1,10 @@
 export interface ITaskRefOptions {
+
+  /**
+   * Set namespace
+   */
+  namespace?: string;
+
   /**
    * say that task is a grouping task
    */

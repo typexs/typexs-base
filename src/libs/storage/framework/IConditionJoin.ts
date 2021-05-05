@@ -1,4 +1,4 @@
-import {IEntityRef} from 'commons-schema-api/browser';
+import {IEntityRef} from '@allgemein/schema-api';
 
 export interface IConditionJoin {
   alias: string;

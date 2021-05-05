@@ -43,4 +43,6 @@ export interface ILoggerOptions {
    * Log also if Log.enabled = false
    */
   force?: boolean;
+
+  parameters?: any;
 }

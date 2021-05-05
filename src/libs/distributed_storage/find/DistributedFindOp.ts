@@ -1,8 +1,8 @@
-import * as _ from 'lodash';
+import {assign, concat, defaults, get, intersection, isUndefined, keys, orderBy, remove} from 'lodash';
 import {DistributedStorageEntityController} from './../DistributedStorageEntityController';
 import {IFindOp} from '../../storage/framework/IFindOp';
 import {System} from '../../system/System';
-import {ClassRef, ClassType} from 'commons-schema-api';
+import {ClassRef, ClassType} from '@allgemein/schema-api';
 import {IWorkerInfo} from '../../worker/IWorkerInfo';
 import {DistributedQueryWorker} from '../../../workers/DistributedQueryWorker';
 import {C_WORKERS} from '../../worker/Constants';
@@ -21,6 +21,7 @@ import {IDistributedFindOptions} from './IDistributedFindOptions';
 import {AbstractMessage} from '../../messaging/AbstractMessage';
 import {EntityControllerRegistry} from '../../storage/EntityControllerRegistry';
 import {ClassUtils} from '@allgemein/base';
+import {inspect} from 'util';
 
 
 export class DistributedFindOp<T>
@@ -61,7 +62,7 @@ export class DistributedFindOp<T>
     this.entityType = ClassUtils.getClassName(entityType);
     this.options = options;
 
-    _.defaults(options, {
+    defaults(options, {
       limit: 50,
       offset: null,
       sort: null,
@@ -91,11 +92,11 @@ export class DistributedFindOp<T>
       .map(n => n.nodeId);
 
     if (this.options.targetIds) {
-      this.targetIds = _.intersection(this.targetIds, this.options.targetIds);
+      this.targetIds = intersection(this.targetIds, this.options.targetIds);
     }
 
     if (this.options.skipLocal) {
-      _.remove(this.targetIds, x => x === this.getSystem().getNodeId());
+      remove(this.targetIds, x => x === this.getSystem().getNodeId());
     }
 
     if (this.targetIds.length === 0) {
@@ -131,7 +132,7 @@ export class DistributedFindOp<T>
 
 
     const classRefs = {};
-    _.concat([], ...responses.map(x => x.results)).map(x => {
+    concat([], ...responses.map(x => x.results)).map(x => {
       const classRefName = x[__CLASS__];
       const registry = x[__REGISTRY__];
       const key = [classRefName, registry].join(C_KEY_SEPARATOR);
@@ -140,38 +141,38 @@ export class DistributedFindOp<T>
       }
     });
 
-    if (_.get(this.options, 'raw', false)) {
-      results = _.concat([], ...responses.map(x => x.results)).map(x => {
+    if (get(this.options, 'raw', false)) {
+      results = concat([], ...responses.map(x => x.results)).map(x => {
         const classRefName = x[__CLASS__];
         const registry = x[__REGISTRY__];
         const key = [classRefName, registry].join(C_KEY_SEPARATOR);
         const ref = classRefs[key];
         const e = ref.create();
-        _.assign(e, x);
+        assign(e, x);
         return e;
       });
     } else {
-      results = _.concat([], ...responses.map(x => x.results))
+      results = concat([], ...responses.map(x => x.results))
         .map(r => {
           const classRefName = r[__CLASS__];
           const registry = r[__REGISTRY__];
           const key = [classRefName, registry].join(C_KEY_SEPARATOR);
           const ref = classRefs[key];
           return ref.build(r, {
-            afterBuild: (c: any, f: any, t: any) => _.keys(f)
-              .filter(k => k.startsWith('__'))
+            afterBuild: (c: any, f: any, t: any) => keys(f)
+              .filter(k => k.startsWith('__') && isUndefined(t[k]))
               .map(k => t[k] = f[k])
           });
         });
     }
 
-    if (_.get(this.request.options, 'sort', false)) {
+    if (get(this.request.options, 'sort', false)) {
       const arr: string[][] = [];
       // order after concat
-      _.keys(this.request.options.sort).forEach(k => {
+      keys(this.request.options.sort).forEach(k => {
         arr.push([k, this.request.options.sort[k].toUpperCase() === 'ASC' ? 'asc' : 'desc']);
       });
-      _.orderBy(results, ...arr);
+      orderBy(results, ...arr);
     }
 
     if (this.options.outputMode === 'map') {
@@ -194,7 +195,6 @@ export class DistributedFindOp<T>
     results[XS_P_$COUNT] = count;
     results[XS_P_$LIMIT] = this.request.options.limit;
     results[XS_P_$OFFSET] = this.request.options.offset;
-
     return results;
   }
 

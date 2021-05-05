@@ -1,5 +1,5 @@
-import {ExprDesc} from 'commons-expressions/browser';
-import {IPropertyRef} from 'commons-schema-api/browser';
+import {ExprDesc} from '@allgemein/expressions';
+import {IPropertyRef} from '@allgemein/schema-api';
 
 export interface IValueProvider<T> {
 

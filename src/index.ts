@@ -108,7 +108,6 @@ export {TaskRunner} from './libs/tasks/TaskRunner';
 export * from './libs/tasks/Constants';
 export {Incoming} from './libs/tasks/decorators/Incoming';
 export {Outgoing} from './libs/tasks/decorators/Outgoing';
-export {IExchange} from './libs/tasks/decorators/IExchange';
 export {TaskRuntime} from './libs/tasks/decorators/TaskRuntime';
 export {TaskState} from './libs/tasks/TaskState';
 export {TaskRunnerRegistry} from './libs/tasks/TaskRunnerRegistry';

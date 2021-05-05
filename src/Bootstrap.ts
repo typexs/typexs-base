@@ -1,4 +1,4 @@
-import * as _ from 'lodash';
+import {cloneDeep, defaults, filter, has, isFunction, isObject, isString} from 'lodash';
 import {Log} from './libs/logging/Log';
 import {Config, IConfigOptions, IOptions} from '@allgemein/config';
 import {RuntimeLoader} from './base/RuntimeLoader';
@@ -39,6 +39,7 @@ import {EntityControllerRegistry} from './libs/storage/EntityControllerRegistry'
 import {IRuntimeLoader} from './libs/core/IRuntimeLoader';
 import {WinstonLoggerJar} from './libs/logging/WinstonLoggerJar';
 import {DEFAULT_LOGGER_OPTIONS} from './libs/logging/Constants';
+import {RegistryFactory} from '@allgemein/schema-api';
 
 
 /**
@@ -231,8 +232,8 @@ export class Bootstrap {
 
   private constructor(options: ITypexsOptions = {}) {
     options = options || {};
-    this._options = _.defaults(options, _.cloneDeep(DEFAULT_OPTIONS));
-    const config_load_order = _.cloneDeep(DEFAULT_CONFIG_LOAD_ORDER);
+    this._options = defaults(options, cloneDeep(DEFAULT_OPTIONS));
+    const config_load_order = cloneDeep(DEFAULT_CONFIG_LOAD_ORDER);
     this.setConfigSources(config_load_order);
   }
 
@@ -422,7 +423,7 @@ export class Bootstrap {
     try {
       let additionalData = null;
 
-      if (_.isString(c)) {
+      if (isString(c)) {
         // can be file or JSON with config
         try {
           additionalData = JSON.parse(c);
@@ -442,19 +443,19 @@ export class Bootstrap {
             // INFO that file couldn't be loaded, because it doesn't exist
           }
         }
-      } else if (_.isObject(c)) {
+      } else if (isObject(c)) {
         additionalData = c;
       }
 
       this.cfgOptions = Config.options(this.cfgOptions);
 
-      if (_.isObject(additionalData)) {
+      if (isObject(additionalData)) {
         Config.jar(CONFIG_NAMESPACE).merge(additionalData);
       }
 
       this.cfgOptions.configs.forEach(_c => {
         if (_c.state && _c.type !== 'system') {
-          Log.debug('Loaded configuration from ' + (_.isString(_c.file) ? _c.file : _c.file.dirname + '/' + _c.file.filename));
+          Log.debug('Loaded configuration from ' + (isString(_c.file) ? _c.file : _c.file.dirname + '/' + _c.file.filename));
         }
       });
 
@@ -479,7 +480,7 @@ export class Bootstrap {
   async prepareRuntime(): Promise<Bootstrap> {
 
     this._options.modules.appdir = this._options.app.path;
-    let cachePath = _.has(this._options.modules, 'cachePath') ?
+    let cachePath = has(this._options.modules, 'cachePath') ?
       this._options.modules.cachePath :
       PlatformUtils.join(Config.get('os.tmpdir', '/tmp'), '.txs', 'cache');
     cachePath = PlatformUtils.pathNormAndResolve(cachePath);
@@ -563,7 +564,7 @@ export class Bootstrap {
     await this.createSystemInfo();
 
     let activators = this.getActivators();
-    activators = _.filter(activators, a => _.isFunction(a['startup']));
+    activators = filter(activators, a => isFunction(a['startup']));
     for (const activator of activators) {
       Log.debug('activate ' + ClassesLoader.getModulName(activator.constructor));
       await activator.startup();
@@ -571,7 +572,7 @@ export class Bootstrap {
 
     // TODO how to handle dependencies?
     let bootstraps = this.getModulBootstraps();
-    bootstraps = _.filter(bootstraps, a => _.isFunction(a['bootstrap']));
+    bootstraps = filter(bootstraps, a => isFunction(a['bootstrap']));
     for (const bootstrap of bootstraps) {
       Log.debug('bootstrap ' + ClassesLoader.getModulName(bootstrap.constructor));
       await bootstrap.bootstrap();
@@ -604,12 +605,12 @@ export class Bootstrap {
       return;
     }
     this.running = false;
-    Log.debug('shutdown ... exitCode: ' + exitCode);
+    Log.debug('onShutdown ... exitCode: ' + exitCode);
 
     let bootstraps = this.getModulBootstraps();
-    bootstraps = _.filter(bootstraps, a => _.isFunction(a['shutdown']));
+    bootstraps = filter(bootstraps, a => isFunction(a['shutdown']));
     for (const bootstrap of bootstraps) {
-      Log.debug('shutdown of ' + ClassesLoader.getModulName(bootstrap.constructor));
+      Log.debug('onShutdown of ' + ClassesLoader.getModulName(bootstrap.constructor));
       await (<IShutdown>bootstrap).shutdown();
     }
 
@@ -625,9 +626,13 @@ export class Bootstrap {
     // LookupRegistry.getRegistryNames().map(x => {
     //   // LookupRegistry.reset(x);
     //   console.log(x);
-    //   const y = LookupRegistry.$(x).list(XS_TYPE_ENTITY);
+    //   const y = LookupRegistry.$(x).list(METATYPE_ENTITY);
     //   console.log(y.map(z => z.name));
     // });
+
+    RegistryFactory.getNamespaces().map(x => {
+      RegistryFactory.remove(x);
+    });
 
     process.removeAllListeners('exit');
     process.removeAllListeners('SIGINT');

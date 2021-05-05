@@ -1,6 +1,6 @@
 import {ISaveOptions} from './framework/ISaveOptions';
 import {IFindOptions} from './framework/IFindOptions';
-import {IEntityRef} from 'commons-schema-api/browser';
+import {IEntityRef} from '@allgemein/schema-api';
 import {IUpdateOptions} from './framework/IUpdateOptions';
 import {IAggregateOptions} from './framework/IAggregateOptions';
 import {IDeleteOptions} from './framework/IDeleteOptions';

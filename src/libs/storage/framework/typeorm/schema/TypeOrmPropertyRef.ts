@@ -1,29 +1,21 @@
-import * as _ from 'lodash';
+import {capitalize, defaults, get, isArray, isBoolean, isEmpty, isFunction, isNumber, isString} from 'lodash';
 
 import {ColumnMetadataArgs} from 'typeorm/browser/metadata-args/ColumnMetadataArgs';
 import {RelationMetadataArgs} from 'typeorm/browser/metadata-args/RelationMetadataArgs';
 import {EmbeddedMetadataArgs} from 'typeorm/browser/metadata-args/EmbeddedMetadataArgs';
-
-import {ClassUtils, NotYetImplementedError, TreeUtils} from '@allgemein/base';
-import {
-  AbstractRef,
-  ClassRef,
-  IBuildOptions,
-  IPropertyRef,
-  IPropertyRefMetadata,
-  XS_TYPE_PROPERTY
-} from 'commons-schema-api/browser';
+import {ClassUtils, NotYetImplementedError} from '@allgemein/base';
+import {DefaultPropertyRef, IBuildOptions, IClassRef, IPropertyOptions, METATYPE_PROPERTY} from '@allgemein/schema-api';
 import {TypeOrmEntityRef} from './TypeOrmEntityRef';
 import {TypeOrmUtils} from '../TypeOrmUtils';
 import {REGISTRY_TYPEORM} from './TypeOrmConstants';
-import {classRefGet} from '../Helper';
-import {WalkValues} from '@allgemein/base/libs/utils/TreeUtils';
 
-export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
+export interface ITypeOrmPropertyOptions extends IPropertyOptions {
+  metadata: ColumnMetadataArgs | RelationMetadataArgs | EmbeddedMetadataArgs;
+  tableType: 'column' | 'relation' | 'embedded';
+}
 
-  ormPropertyType: string = null;
 
-  targetRef: ClassRef = null;
+export class TypeOrmPropertyRef extends DefaultPropertyRef /*AbstractRef implements IPropertyRef*/ {
 
   column: ColumnMetadataArgs = null;
 
@@ -31,33 +23,51 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
 
   embedded: EmbeddedMetadataArgs = null;
 
-  constructor(c: ColumnMetadataArgs | RelationMetadataArgs | EmbeddedMetadataArgs, type: 'column' | 'relation' | 'embedded') {
-    super(XS_TYPE_PROPERTY, c.propertyName, c.target, REGISTRY_TYPEORM);
-    this.setOptions(c);
-    this.ormPropertyType = type;
-    if (type === 'column') {
-      this.column = <ColumnMetadataArgs>c;
+  get ormtype() {
+    return this.getOptions('tableType');
+  }
+
+  constructor(options: ITypeOrmPropertyOptions) {
+    // super(METATYPE_PROPERTY, c.propertyName, c.target, REGISTRY_TYPEORM);
+    super(defaults(options, <ITypeOrmPropertyOptions>{
+      metaType: METATYPE_PROPERTY,
+      namespace: REGISTRY_TYPEORM,
+      target: options.metadata.target,
+      propertyName: options.metadata.propertyName
+    }));
+    if (options && options.new) {
+      delete options.new;
+    }
+    this.setOptions(options);
+    if (this.ormtype === 'column') {
+      this.column = <ColumnMetadataArgs>options.metadata;
       if (this.column.options.name) {
         this.setOption('name', this.column.options.name);
       }
-      if (this.column.options.type && !_.isString(this.column.options.type)) {
+      if (this.column.options.type && !isString(this.column.options.type)) {
         const className = ClassUtils.getClassName(this.column.options.type);
         if (!['string', 'number', 'boolean', 'date', 'float', 'array'].includes(className.toLowerCase())) {
-          this.targetRef = classRefGet(this.column.options.type);
+          this.targetRef = this.getClassRefFor(this.column.options.type, METATYPE_PROPERTY);
         }
       }
-    } else if (type === 'embedded') {
-      this.embedded = <EmbeddedMetadataArgs>c;
-      this.targetRef = classRefGet(this.embedded.type());
-    } else if (type === 'relation') {
-      this.relation = <RelationMetadataArgs>c;
-      if ((_.isFunction(this.relation.type) && !_.isEmpty(this.relation.type.name)) || _.isString(this.relation.type)) {
-        this.targetRef = classRefGet(this.relation.type);
-      } else if (_.isFunction(this.relation.type)) {
-        this.targetRef = classRefGet(this.relation.type());
+    } else if (this.ormtype === 'embedded') {
+      this.embedded = <EmbeddedMetadataArgs>options.metadata;
+      this.targetRef = this.getClassRefFor((this.embedded.type()), METATYPE_PROPERTY);
+    } else if (this.ormtype === 'relation') {
+      this.relation = <RelationMetadataArgs>options.metadata;
+
+      this.cardinality = 0;
+      if (this.relation.relationType === 'one-to-one' || this.relation.relationType === 'many-to-one') {
+        this.cardinality = 1;
       }
 
-      this.targetRef.isEntity = true;
+      if ((isFunction(this.relation.type) && !isEmpty(this.relation.type.name)) || isString(this.relation.type)) {
+        this.targetRef = this.getClassRefFor(this.relation.type, METATYPE_PROPERTY);
+      } else if (isFunction(this.relation.type)) {
+        this.targetRef = this.getClassRefFor(this.relation.type(), METATYPE_PROPERTY);
+      }
+
+      // this.targetRef.isEntity = true;
     }
   }
 
@@ -72,7 +82,7 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
   }
 
 
-  getTargetRef(): ClassRef {
+  getTargetRef(): IClassRef {
     return this.targetRef;
   }
 
@@ -89,7 +99,7 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
 
   private convertRegular(data: any, options?: IBuildOptions) {
     const sourceType = this.getOptions('sourceType', <string>this.getType());
-    if (!sourceType || !_.isString(sourceType)) {
+    if (!sourceType || !isString(sourceType)) {
       return data;
     }
 
@@ -105,9 +115,9 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
       case 'time':
       case 'text':
       case 'string':
-        if (_.isString(data)) {
+        if (isString(data)) {
           return data;
-        } else if (_.isArray(data) && data.length === 1) {
+        } else if (isArray(data) && data.length === 1) {
           return data[0];
         } else if (data) {
           return JSON.stringify(data);
@@ -118,11 +128,11 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
 
       case 'boolean':
 
-        if (_.isBoolean(data)) {
+        if (isBoolean(data)) {
           return data;
-        } else if (_.isNumber(data)) {
+        } else if (isNumber(data)) {
           return data > 0;
-        } else if (_.isString(data)) {
+        } else if (isString(data)) {
           if (data.toLowerCase() === 'true' || data.toLowerCase() === '1') {
             return true;
           }
@@ -132,16 +142,16 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
 
       case 'double':
       case 'number':
-        if (_.isString(data)) {
+        if (isString(data)) {
           if (/^\d+\.|\,\d+$/.test(data)) {
             return parseFloat(data.replace(',', '.'));
           } else if (/^\d+$/.test(data)) {
             return parseInt(data, 0);
           } else {
           }
-        } else if (_.isNumber(data)) {
+        } else if (isNumber(data)) {
           return data;
-        } else if (_.isBoolean(data)) {
+        } else if (isBoolean(data)) {
           return data ? 1 : 0;
         } else {
           // Pass to exception
@@ -169,7 +179,7 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
    */
   isStructuredType() {
     const type = (<string>this.getType());
-    if (!type || !_.isString(type)) {
+    if (!type || !isString(type)) {
       return false;
     }
 
@@ -202,13 +212,17 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
   getType() {
     if (!this.isReference()) {
       const type = this.column.options.type;
-      if (_.isFunction(type)) {
-        return ClassUtils.getClassName(type);
+      if (isFunction(type)) {
+        const name = ClassUtils.getClassName(type);
+        if (['string', 'number', 'boolean', 'date', 'float', 'array', 'object'].includes(name.toLowerCase())) {
+          return name.toLowerCase();
+        }
+        return name;
       } else {
-        return <string>TypeOrmUtils.toJsonType(type);
+        return TypeOrmUtils.toJsonType(type) as any;
       }
     }
-    return null;
+    return this.getTargetRef().getClass();
   }
 
   id() {
@@ -222,7 +236,7 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
       label = options.label;
     }
     if (!label) {
-      label = _.capitalize(this.name);
+      label = capitalize(this.name);
     } else {
       label = 'None';
     }
@@ -235,41 +249,42 @@ export class TypeOrmPropertyRef extends AbstractRef implements IPropertyRef {
    */
   get(instance: any) {
     if (instance) {
-      return _.get(instance, this.name, null);
+      return get(instance, this.name, null);
     } else {
       return null;
     }
   }
 
 
-  toJson(): IPropertyRefMetadata {
-    const o = super.toJson();
+  // toJson(): IPropertyRefMetadata {
+  //   const o = super.toJson();
+  //
+  //   TreeUtils.walk(o.options, (v: WalkValues) => {
+  //     if (isString(v.key) && isFunction(v.value)) {
+  //       v.parent[v.key] = ClassUtils.getClassName(v.value);
+  //       if (v.key === 'type' && isEmpty(v.parent[v.key])) {
+  //         v.parent[v.key] = ClassUtils.getClassName(v.value());
+  //       }
+  //     } else if (isString(v.key) && isUndefined(v.value)) {
+  //       delete v.parent[v.key];
+  //     }
+  //   });
+  //
+  //   o.schema = this.getSourceRef().getSchema();
+  //   o.entityName = this.getSourceRef().name;
+  //   o.label = this.label();
+  //   o.dataType = this.getType();
+  //   o.generated = this.column ? this.column.options.generated : null;
+  //   o.identifier = this.isIdentifier();
+  //   o.cardinality = this.isCollection() ? 0 : 1;
+  //   o.ormtype = this.ormtype;
+  //
+  //   const targetRef = this.getTargetRef();
+  //   if (targetRef) {
+  //     o.targetRef = targetRef.toJson();
+  //   }
+  //
+  //   return o;
+  // }
 
-    TreeUtils.walk(o.options, (v: WalkValues) => {
-      if (_.isString(v.key) && _.isFunction(v.value)) {
-        v.parent[v.key] = ClassUtils.getClassName(v.value);
-        if (v.key === 'type' && _.isEmpty(v.parent[v.key])) {
-          v.parent[v.key] = ClassUtils.getClassName(v.value());
-        }
-      } else if (_.isString(v.key) && _.isUndefined(v.value)) {
-        delete v.parent[v.key];
-      }
-    });
-
-    o.schema = this.getSourceRef().getSchema();
-    o.entityName = this.getSourceRef().name;
-    o.label = this.label();
-    o.dataType = this.getType();
-    o.generated = this.column ? this.column.options.generated : null;
-    o.identifier = this.isIdentifier();
-    o.cardinality = this.isCollection() ? 0 : 1;
-    o.ormPropertyType = this.ormPropertyType;
-
-    const targetRef = this.getTargetRef();
-    if (targetRef) {
-      o.targetRef = targetRef.toJson();
-    }
-
-    return o;
-  }
 }

@@ -1,4 +1,4 @@
-import {ClassType, IEntityRef} from 'commons-schema-api/browser';
+import {ClassType, IEntityRef} from '@allgemein/schema-api';
 import {TypeOrmEntityRegistry} from './schema/TypeOrmEntityRegistry';
 import {NotSupportedError, TreeUtils} from '@allgemein/base';
 import * as _ from 'lodash';

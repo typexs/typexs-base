@@ -9,6 +9,8 @@ export interface ILoggerApi extends _ILoggerApi {
    */
   name: string;
 
+  build?(name: string, options: ILoggerOptions, append?: boolean): ILoggerApi;
+
   getOptions(): ILoggerOptions;
 
   close(): void;

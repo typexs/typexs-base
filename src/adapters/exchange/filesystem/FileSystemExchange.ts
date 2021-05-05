@@ -27,7 +27,7 @@ export class FileSystemExchange extends AbstractExchange<FileSystemRequest, File
   }
 
   /**
-   * using prepare to declare accessible system paths
+   * using onStartup to declare accessible system paths
    */
   async prepare() {
     this.basePath = resolve(Config.get(CFG_KEY_APP_PATH, '.'));

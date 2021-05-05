@@ -108,7 +108,7 @@ export class TaskCommand implements ICommand {
   }
 
   async init() {
-    await this.invoker.use(TasksApi).onInit();
+    await this.invoker.use(TasksApi).onStartup();
   }
 
   async shutdown() {

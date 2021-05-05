@@ -1,62 +1,65 @@
-import * as _ from 'lodash';
+import {assign, clone, defaults, get, has,
+  isObject, isArray, isBoolean, isFunction, isUndefined} from 'lodash';
 import {TaskRef} from './TaskRef';
 import {MetaArgs, NotYetImplementedError} from '@allgemein/base';
 import {
   AbstractRef,
-  Binding,
+  ClassRef,
+  IClassRef,
   IEntityRef,
-  IEntityRefMetadata,
-  ILookupRegistry,
   IPropertyRef,
-  LookupRegistry,
-  XS_TYPE,
-  XS_TYPE_ENTITY,
-  XS_TYPE_PROPERTY
-} from 'commons-schema-api/browser';
-import {
-  C_TASKS,
-  K_CLS_TASK_DESCRIPTORS,
-  XS_TYPE_BINDING_TASK_DEPENDS_ON,
-  XS_TYPE_BINDING_TASK_GROUP
-} from './Constants';
+  JsonSchema,
+  METADATA_TYPE,
+  METATYPE_ENTITY,
+  METATYPE_PROPERTY
+} from '@allgemein/schema-api';
+import {K_CLS_TASK_DESCRIPTORS, XS_TYPE_BINDING_TASK_DEPENDS_ON, XS_TYPE_BINDING_TASK_GROUP} from './Constants';
 import {TaskExchangeRef} from './TaskExchangeRef';
 import {ITasksConfig} from './ITasksConfig';
 import {ITaskRefOptions} from './ITaskRefOptions';
 import {ITaskInfo} from './ITaskInfo';
-import {ITaskPropertyDesc} from './ITaskPropertyDesc';
+import {ITaskPropertyRefOptions} from './ITaskPropertyRefOptions';
 import {NullTaskRef} from './NullTaskRef';
 import {MatchUtils} from '../utils/MatchUtils';
+import {Binding} from '@allgemein/schema-api/lib/registry/Binding';
+import {AbstractRegistry} from '@allgemein/schema-api/lib/registry/AbstractRegistry';
+import {isEntityRef} from '@allgemein/schema-api/api/IEntityRef';
+import {isClassRef} from '@allgemein/schema-api/api/IClassRef';
 
 
-export class Tasks implements ILookupRegistry {
+export class Tasks extends AbstractRegistry /*implements ILookupRegistry*/ {
 
-
-  constructor(nodeId: string) {
-    this.nodeId = nodeId;
-  }
 
   static NAME = Tasks.name;
 
   static taskId = 0;
 
-  readonly nodeId: string;
+  nodeId: string;
 
   config: ITasksConfig = {access: []};
 
-  registry: LookupRegistry = LookupRegistry.$(C_TASKS);
 
-  setConfig(config: ITasksConfig = {access: []}) {
+  setConfig(config: ITasksConfig = {nodeId: null, access: []}) {
     this.config = config;
+    this.nodeId = get(config, 'nodeId');
+  }
+
+  getNodeId() {
+    return this.nodeId;
+  }
+
+  setNodeId(nodeId: string) {
+    this.nodeId = nodeId;
   }
 
 
   private getEntries(withRemote: boolean = false): TaskRef[] {
-    return this.registry.list(XS_TYPE_ENTITY).filter(x => withRemote || !x.isRemote());
+    return this.filter(METATYPE_ENTITY, (x: TaskRef) => withRemote || !x.isRemote());
   }
 
 
   getTasks(names: string | string[]) {
-    if (!_.isArray(names)) {
+    if (!isArray(names)) {
       names = [names];
     }
     const _names: string[] = [];
@@ -89,27 +92,27 @@ export class Tasks implements ILookupRegistry {
 
   get(name: string): TaskRef {
     if (this.containsTask(name)) {
-      return this.registry.find(XS_TYPE_ENTITY, (t: TaskRef) => t.name === name);
+      return this.find(METATYPE_ENTITY, (t: TaskRef) => t.name === name);
     }
-    const task = this.addTask(name, null, {group: true});
+    const task = this.addTask(name, null, {group: true, namespace: this.namespace});
     return task;
   }
 
 
   access(name: string) {
-    if (_.has(this.config, 'access')) {
+    if (has(this.config, 'access')) {
       // if access empty then
       let allow = this.config.access.length > 0 ? false : true;
       let count = 0;
       for (const a of this.config.access) {
-        if (_.isUndefined(a.match)) {
+        if (isUndefined(a.match)) {
           if (/\+|\.|\(|\\||\)|\*/.test(a.task)) {
             a.match = a.task;
           } else {
             a.match = false;
           }
         }
-        if (_.isBoolean(a.match)) {
+        if (isBoolean(a.match)) {
           if (a.task === name) {
             count++;
             allow = a.access === 'allow';
@@ -132,37 +135,107 @@ export class Tasks implements ILookupRegistry {
   }
 
 
-  addTask(name: string | object | Function, fn: object | Function = null, options: ITaskRefOptions = null): TaskRef {
-    const task = new TaskRef(name, fn, options);
-    return this.addTaskRef(task, this.nodeId, _.get(options, 'worker', false));
+  createTaskRef(options: ITaskRefOptions & ITaskInfo & { title?: string, taskName?: string, nodeId?: string }) {
+    let ref: any = null;
+    const target = options.target;
+    delete options.target;
+    if (!options.remote) {
+      ref = new TaskRef(options.taskName, target, assign(options, {namespace: this.namespace}));
+    } else {
+      // TODO
+      // this.addRemoteTask(options.taskName, classRef.getClass(true), options);
+      ref = new TaskRef(options.taskName, null, assign(options, {remote: true, namespace: this.namespace}));
+    }
+    return ref;
   }
 
 
-  addRemoteTask(nodeId: string, info: ITaskInfo, hasWorker: boolean = false): TaskRef {
-    const task = new TaskRef(info, null, {remote: true});
-    return this.addTaskRef(task, nodeId, hasWorker);
+  create<T>(context: string,
+            options:
+              ITaskRefOptions &
+              ITaskInfo &
+              { title?: string, taskName?: string, nodeId?: string } | ITaskPropertyRefOptions): T {
+    let ref: any = null;
+    if (context === METATYPE_ENTITY) {
+      ref = this.createTaskRef(options) as TaskRef;
+      if (!ref.isRemote()) {
+        ref = this.addTaskRef(ref, this.nodeId, get(options, 'worker', false), false);
+      } else {
+        ref = this.addTaskRef(ref, (<any>options).nodeId, get(options, 'worker', false), false);
+      }
+    } else if (context === METATYPE_PROPERTY) {
+      ref = new TaskExchangeRef(<ITaskPropertyRefOptions>options);
+      this.add(METATYPE_PROPERTY, ref);
+    }
+    return ref; // super.create(context, options);
   }
 
 
-  addTaskRef(task: TaskRef, nodeId: string, hasWorker: boolean = false) {
+  addTask(name: string | object | Function,
+          fn: object | Function = null,
+          options: ITaskRefOptions = null,
+          withProperties: boolean = true): TaskRef {
+    // const task = new TaskRef(name, fn, defaults(options, {namespace: this.namespace}));
+    let opts = {};
+
+    if (isFunction(name) || isObject(name)) {
+      opts = {
+        taskName: TaskRef.getTaskName(name),
+        target: name,
+        namespace: this.namespace,
+        ...options
+      };
+    } else {
+      opts = {
+        taskName: TaskRef.getTaskName(name),
+        target: fn,
+        namespace: this.namespace,
+        ...options
+      };
+    }
+
+    const taskRef = this.createTaskRef(opts);
+    return this.addTaskRef(taskRef, this.nodeId, get(options, 'worker', false), withProperties);
+  }
+
+
+  addRemoteTask(nodeId: string,
+                info: ITaskInfo,
+                hasWorker: boolean = false,
+                withProperties: boolean = true
+  ): TaskRef {
+    // const task = new TaskRef(info, null, {remote: true, namespace: this.namespace});
+    const opts: any = {
+      taskName: info.name as any,
+      target: null,
+      remote: true,
+      namespace: this.namespace
+    };
+
+    const taskRef = this.createTaskRef(defaults(opts, info));
+    return this.addTaskRef(taskRef, nodeId, hasWorker, withProperties);
+  }
+
+
+  addTaskRef(task: TaskRef, nodeId: string, hasWorker: boolean = false, withProperties = true) {
     if (this.access(task.name) || task.isRemote()) {
-      const exists = <TaskRef>this.registry.find(XS_TYPE_ENTITY, (x: TaskRef) => x.name === task.name);
+      const exists = <TaskRef>this.find(METATYPE_ENTITY, (x: TaskRef) => x.name === task.name);
       if (!exists) {
         task.addNodeId(nodeId, hasWorker);
-        this.registry.add(XS_TYPE_ENTITY, task);
-        if (task.canHaveProperties()) {
+        this.add(METATYPE_ENTITY, task);
+        if (task.canHaveProperties() && withProperties) {
           const ref = task.getClassRef().getClass(false);
           if (ref) {
             const taskInstance = Reflect.construct(ref, []);
-            MetaArgs.key(K_CLS_TASK_DESCRIPTORS).filter(x => x.target === ref).map((desc: ITaskPropertyDesc) => {
+            MetaArgs.key(K_CLS_TASK_DESCRIPTORS).filter(x => x.target === ref).map((desc: ITaskPropertyRefOptions) => {
               // get default values
-              if (!_.has(desc.options, 'default')) {
-                if (!_.isUndefined(taskInstance[desc.propertyName])) {
-                  desc.options.default = _.clone(taskInstance[desc.propertyName]);
+              if (!has(desc, 'default')) {
+                if (!isUndefined(taskInstance[desc.propertyName])) {
+                  desc.default = clone(taskInstance[desc.propertyName]);
                 }
               }
-              const prop = new TaskExchangeRef(desc);
-              this.registry.add(XS_TYPE_PROPERTY, prop);
+              desc.namespace = this.namespace;
+              this.create(METATYPE_PROPERTY, desc);
             });
           }
         }
@@ -178,10 +251,10 @@ export class Tasks implements ILookupRegistry {
 
 
   removeTask(task: TaskRef) {
-    this.registry.remove(XS_TYPE_ENTITY, (x: TaskRef) => x.name === task.name);
-    this.registry.remove(XS_TYPE_PROPERTY, (x: TaskExchangeRef) => x.getClassRef() === task.getClassRef());
-    this.registry.remove(<any>XS_TYPE_BINDING_TASK_GROUP, (x: Binding) => x.source === task.name || x.target === task.name);
-    this.registry.remove(<any>XS_TYPE_BINDING_TASK_DEPENDS_ON, (x: Binding) => x.source === task.name || x.target === task.name);
+    this.remove(METATYPE_ENTITY, (x: TaskRef) => x.name === task.name);
+    this.remove(METATYPE_PROPERTY, (x: TaskExchangeRef) => x.getClassRef() === task.getClassRef());
+    this.remove(<any>XS_TYPE_BINDING_TASK_GROUP, (x: Binding) => x.source === task.name || x.target === task.name);
+    this.remove(<any>XS_TYPE_BINDING_TASK_DEPENDS_ON, (x: Binding) => x.source === task.name || x.target === task.name);
   }
 
 
@@ -203,11 +276,11 @@ export class Tasks implements ILookupRegistry {
 
 
   private containsTask(name: string) {
-    return !!this.registry.find(XS_TYPE_ENTITY, (t: TaskRef) => t.name === name);
+    return !!this.find(METATYPE_ENTITY, (t: TaskRef) => t.name === name);
   }
 
   private containsGroup(name: string) {
-    return !!this.registry.find(<any>XS_TYPE_BINDING_TASK_GROUP, (t: Binding) => t.source === name);
+    return !!this.find(<any>XS_TYPE_BINDING_TASK_GROUP, (t: Binding) => t.source === name);
   }
 
   /**
@@ -219,7 +292,7 @@ export class Tasks implements ILookupRegistry {
    * @param dest
    */
   group(src: string, dest: string) {
-    TaskRef.group(src, dest);
+    TaskRef.group(src, dest, this.namespace);
     return this;
   }
 
@@ -233,7 +306,7 @@ export class Tasks implements ILookupRegistry {
    * @param dest
    */
   dependsOn(src: string, dest: string) {
-    TaskRef.dependsOn(src, dest);
+    TaskRef.dependsOn(src, dest, this.namespace);
     return this;
   }
 
@@ -267,7 +340,7 @@ export class Tasks implements ILookupRegistry {
 
   task(name: string, fn: Function, options: any) {
     if (this.contains(name)) {
-      if (_.isUndefined(fn)) {
+      if (isUndefined(fn)) {
         return this.get(name);
       }
     }
@@ -279,56 +352,68 @@ export class Tasks implements ILookupRegistry {
   }
 
 
-  toJson() {
-    return this.getEntries(true).map((x: TaskRef) => x.toJson());
+  toJsonSchema() {
+    const entities = this.getEntries(true);
+    const serializer = JsonSchema.getSerializer({
+      namespace: this.namespace,
+      allowKeyOverride: true
+    });
+    entities.map(x => serializer.serialize(x));
+    return serializer.getJsonSchema();
   }
 
 
   reset() {
-    LookupRegistry.reset(C_TASKS);
-    this.registry = LookupRegistry.$(C_TASKS);
+    super.reset();
   }
 
 
-  fromJson(orgJson: IEntityRefMetadata): TaskRef {
-    const json = _.cloneDeep(orgJson);
-
-    let entityRef: TaskRef = this.getEntries(true).find(x => x.name === json.name);
-    if (!entityRef) {
-      entityRef = TaskRef.fromJson(json);
-      this.register(entityRef);
-    }
-
-    if (entityRef) {
-      for (const prop of json.properties) {
-        const classRef = entityRef.getClassRef();
-        let propRef: TaskExchangeRef = this.registry.find(XS_TYPE_PROPERTY,
-          (x: TaskExchangeRef) => x.name === prop.name && x.getClassRef() === classRef);
-        if (!propRef) {
-          const desc: ITaskPropertyDesc = (<any>prop).descriptor;
-          desc.target = classRef.getClass();
-          propRef = new TaskExchangeRef(desc);
-          this.register(propRef);
-        }
-      }
-    }
-
-    return entityRef;
+  fromJsonSchema(orgJson: any): Promise<TaskRef | TaskRef[]> {
+    return JsonSchema.unserialize(orgJson, {namespace: this.namespace}) as Promise<TaskRef | TaskRef[]>;
   }
+
+  // fromJson(orgJson: IEntityRefMetadata): TaskRef {
+  //   const json = cloneDeep(orgJson);
+  //
+  //   let entityRef: TaskRef = this.getEntries(true).find(x => x.name === json.name);
+  //   if (!entityRef) {
+  //     entityRef = TaskRef.fromJson(json);
+  //     this.register(entityRef);
+  //   }
+  //
+  //   if (entityRef) {
+  //     for (const prop of json.properties) {
+  //       const classRef = entityRef.getClassRef();
+  //       let propRef: TaskExchangeRef = this.registry.find(METATYPE_PROPERTY,
+  //         (x: TaskExchangeRef) => x.name === prop.name && x.getClassRef() === classRef);
+  //       if (!propRef) {
+  //         const desc: ITaskPropertyRefOptions = (<any>prop).descriptor;
+  //         desc.target = classRef.getClass();
+  //         propRef = new TaskExchangeRef(desc);
+  //         this.register(propRef);
+  //       }
+  //     }
+  //   }
+  //
+  //   return entityRef;
+  // }
 
 
   register(xsdef: AbstractRef | Binding): AbstractRef | Binding {
     if (xsdef instanceof TaskRef) {
-      return this.registry.add(XS_TYPE_ENTITY, xsdef);
+      return this.add(METATYPE_ENTITY, xsdef);
     } else if (xsdef instanceof TaskExchangeRef) {
-      return this.registry.add(XS_TYPE_PROPERTY, xsdef);
+      return this.add(METATYPE_PROPERTY, xsdef);
     } else if (xsdef instanceof Binding) {
-      return this.registry.add(xsdef.bindingType, xsdef);
+      return this.add(xsdef.bindingType, xsdef);
     } else {
       throw new NotYetImplementedError();
     }
   }
 
+  getEntities(filter?: (x: IEntityRef) => boolean): IEntityRef[] {
+    return this.filter(METATYPE_ENTITY, filter);
+  }
 
   getEntityRefFor(fn: any): TaskRef {
     throw new NotYetImplementedError();
@@ -338,19 +423,31 @@ export class Tasks implements ILookupRegistry {
     throw new NotYetImplementedError();
   }
 
-
-  list<T>(type: XS_TYPE, filter?: (x: any) => boolean): T[] {
-    return this.registry.filter(type, filter);
+  getPropertyRef(ref: IClassRef | IEntityRef, name: string): IPropertyRef {
+    if (isEntityRef(ref)) {
+      return this.find(METATYPE_PROPERTY, (x: IPropertyRef) => x.getClassRef() === ref.getClassRef() && x.name === name);
+    }
+    return this.find(METATYPE_PROPERTY, (x: IPropertyRef) => x.getClassRef() === ref && x.name === name);
   }
 
-
-  listEntities(fn?: (x: IEntityRef) => boolean): TaskRef[] {
-    return this.registry.filter(XS_TYPE_ENTITY, fn);
+  getPropertyRefs(ref: IClassRef | IEntityRef): IPropertyRef[] {
+    if (isEntityRef(ref)) {
+      return this.filter(METATYPE_PROPERTY, (x: IPropertyRef) => x.getClassRef() === ref.getClassRef());
+    }
+    return this.filter(METATYPE_PROPERTY, (x: IPropertyRef) => x.getClassRef() === ref);
   }
 
-
-  listProperties(fn?: (x: IPropertyRef) => boolean): TaskExchangeRef[] {
-    return this.registry.filter(XS_TYPE_PROPERTY, fn);
+  /**
+   * Return a class ref for passing string, Function or class ref
+   *
+   * @param object
+   * @param type
+   */
+  getClassRefFor(object: string | Function | IClassRef, type: METADATA_TYPE): IClassRef {
+    if (isClassRef(object)) {
+      return object;
+    }
+    return ClassRef.get(object as string | Function, this.namespace, type === METATYPE_PROPERTY);
   }
 
 }

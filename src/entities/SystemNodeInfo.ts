@@ -1,7 +1,8 @@
 import * as _ from 'lodash';
 import {Column, Entity, Index, PrimaryColumn} from 'typeorm';
 import {INodeInfo} from '../libs/system/INodeInfo';
-import {IsNotEmpty} from 'class-validator';
+import {IsNotEmpty} from '@allgemein/schema-api/decorators/validate/IsNotEmpty';
+import {Required} from '@allgemein/schema-api';
 
 
 @Entity()
@@ -13,17 +14,17 @@ export class SystemNodeInfo {
   @PrimaryColumn()
   key: string;
 
-  @IsNotEmpty()
+  @Required()
   @Index()
   @Column()
   machineId: string;
 
-  @IsNotEmpty()
+  @Required()
   @Index()
   @Column()
   hostname: string;
 
-  @IsNotEmpty()
+  @Required()
   @Index()
   @Column()
   nodeId: string;
@@ -31,7 +32,7 @@ export class SystemNodeInfo {
   /**
    * Instance number for multiple instance of same nodeId
    */
-  @IsNotEmpty()
+  @Required()
   @Index()
   @Column()
   instNr: number = 0;

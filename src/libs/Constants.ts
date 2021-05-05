@@ -1,4 +1,4 @@
-import {ClassType, IClassRef} from 'commons-schema-api/browser';
+import {__NS__, ClassType, IClassRef, __CLASS__ as __CLASS___} from '@allgemein/schema-api';
 
 export const K_CLS_USE_API = 'use_api';
 export const K_CLS_API = 'api';
@@ -31,8 +31,9 @@ export const XS_P_$LIMIT = '$limit';
 export const XS_P_$OFFSET = '$offset';
 
 export const __NODE_ID__ = '__nodeId__';
-export const __CLASS__ = '__class__';
-export const __REGISTRY__ = '__registry__';
+export const __CLASS__ = __CLASS___;
+// export const __REGISTRY__ = '__registry__';
+export const __REGISTRY__ = __NS__;
 
 export const C_KEY_SEPARATOR = ':';
 export const C_STORAGE_DEFAULT = 'storage.default';

@@ -17,3 +17,15 @@ export const K_CLS_TASK_DESCRIPTORS = 'task_descriptors';
 
 export type TASK_STATES = 'enqueue' | 'proposed' | 'started' | 'stopped' | 'running' | 'errored' | 'request_error';
 export type TASK_RUNNER_SPEC = string | { name: string, incomings: any };
+export type TASK_PROPERTY_TYPE = 'runtime' | 'incoming' | 'outgoing';
+
+
+export const K_TASK_TYPE = 'taskType';
+export const K_TASK_NAME = 'taskName';
+
+/**
+ * Use title for storing class name in json schema
+ */
+export const K_TASK_CLASS_NAME = 'title';
+export const K_EXCHANGE_REF_TYPE = 'propertyType';
+

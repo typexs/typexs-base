@@ -2,9 +2,9 @@
   "name": "@typexs/base",
   "version": "1.4.0",
   "description": "",
-  "main": "./src/index.ts",
+  "main": "./index.js",
   "browser": {
-    "./src/index.ts": "./src/browser.ts"
+    "./index.js": "./browser.js"
   },
   "scripts": {
     "test": "npx nyc mocha test/{**,**/**}/*.spec.ts",

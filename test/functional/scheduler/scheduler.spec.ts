@@ -15,8 +15,9 @@ import {TasksApi} from '../../../src/api/Tasks.api';
 import {Tasks} from '../../../src/libs/tasks/Tasks';
 import * as moment from 'moment';
 import {TaskRunnerRegistry} from '../../../src/libs/tasks/TaskRunnerRegistry';
-import {C_TASKS, Injector} from '../../../src';
 import {RegistryFactory} from '@allgemein/schema-api';
+import {Injector} from '../../../src/libs/di/Injector';
+import {C_TASKS} from '../../../src/libs/tasks/Constants';
 
 let loader: RuntimeLoader = null;
 let factories: IScheduleFactory[] = [];

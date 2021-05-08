@@ -5,7 +5,7 @@ import {Log} from '../../../src/libs/logging/Log';
 import {TestHelper} from '../TestHelper';
 import {Tasks} from '../../../src/libs/tasks/Tasks';
 import {RegistryFactory} from '@allgemein/schema-api';
-import {C_TASKS} from '../../../src';
+import {C_TASKS} from '../../../src/libs/tasks/Constants';
 
 const LOG_EVENT = TestHelper.logEnable(false);
 let t: Tasks;

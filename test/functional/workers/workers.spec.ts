@@ -5,8 +5,9 @@ import {TestHelper} from '../TestHelper';
 import {Log} from '../../../src/libs/logging/Log';
 import {Injector} from '../../../src/libs/di/Injector';
 import {RegistryFactory} from '@allgemein/schema-api';
-import {C_WORKERS, Workers} from '../../../src';
 import {DummyWorker} from './data/DummyWorker';
+import {Workers} from '../../../src/libs/worker/Workers';
+import {C_WORKERS} from '../../../src/libs/worker/Constants';
 
 
 const LOG_EVENT = TestHelper.logEnable(false);
@@ -19,9 +20,6 @@ class TasksSpec {
     await TestHelper.clearCache();
     Log.reset();
     Log.options({level: 'debug', enable: LOG_EVENT});
-    // const i = new Invoker();
-    // Injector.set(Invoker.NAME, i);
-    // i.register(TasksApi, []);
 
     RegistryFactory.remove(C_WORKERS);
     RegistryFactory.register(/^workers\.?/, Workers);

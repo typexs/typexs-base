@@ -1,12 +1,12 @@
 import {suite, test} from '@testdeck/mocha';
-import {TypeOrmEntityRegistry} from '../../../src/libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry';
 import {MultipleTypes} from './entities/MultipleTypes';
 import {expect} from 'chai';
 import {EmbeddedMultipleTypes} from './entities/EmbeddedMultipleTypes';
-import {REGISTRY_TYPEORM} from '../../../src';
 import {RegistryFactory} from '@allgemein/schema-api';
+import {TypeOrmEntityRegistry} from '../../../../src/libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry';
+import {REGISTRY_TYPEORM} from '../../../../src/libs/storage/framework/typeorm/Constants';
 
-@suite('functional/conversions')
+@suite('functional/storage/typeorm/conversions')
 class ConversionSpec {
 
   static before() {

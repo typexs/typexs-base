@@ -32,8 +32,9 @@ import {TasksHelper} from '../../../src/libs/tasks/TasksHelper';
 import {Injector} from '../../../src/libs/di/Injector';
 import {Config} from '@allgemein/config';
 import {RegistryFactory} from '@allgemein/schema-api';
-import {C_TASKS, TaskRef} from '../../../src';
 import moment = require('moment');
+import {C_TASKS} from '../../../src/libs/tasks/Constants';
+import {TaskRef} from '../../../src/libs/tasks/TaskRef';
 
 
 const LOG_EVENT = TestHelper.logEnable(false);

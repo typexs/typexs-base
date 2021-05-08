@@ -10,7 +10,7 @@ import {TestHelper} from '../TestHelper';
 import {SpawnHandle} from '../SpawnHandle';
 import {ITypexsOptions} from '../../../src/libs/ITypexsOptions';
 import {Tasks} from '../../../src/libs/tasks/Tasks';
-import {Injector} from '../../../src';
+import {Injector} from '../../../src/libs/di/Injector';
 
 const LOG_EVENT = TestHelper.logEnable(true);
 

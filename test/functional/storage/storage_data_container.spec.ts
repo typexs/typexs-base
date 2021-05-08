@@ -2,7 +2,7 @@ import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 import {TypeOrmEntityRegistry} from '../../../src/libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry';
 import {DataContainer, IEntityRef, RegistryFactory} from '@allgemein/schema-api';
-import {REGISTRY_TYPEORM} from '../../../src/libs/storage/framework/typeorm/schema/TypeOrmConstants';
+import {REGISTRY_TYPEORM} from '../../../src/libs/storage/framework/typeorm/Constants';
 
 let Person: any;
 let PersonWithRequired: any = null;

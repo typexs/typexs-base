@@ -4,23 +4,28 @@ import {suite, test} from '@testdeck/mocha';
 import {TypeOrmEntityRegistry} from '../../../../src/libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry';
 import {House} from './entities/House';
 import {Column, Entity, getMetadataArgsStorage} from 'typeorm';
-import {SchemaUtils} from '@allgemein/schema-api';
+import {RegistryFactory, SchemaUtils} from '@allgemein/schema-api';
+import {REGISTRY_TYPEORM} from '../../../../src/libs/storage/framework/typeorm/Constants';
 
 let registry: TypeOrmEntityRegistry = null;
 
 @suite('functional/storage/typeorm/registry')
 class StorageTypeormRegistrySpec {
 
+  static before() {
+    RegistryFactory.register(REGISTRY_TYPEORM, TypeOrmEntityRegistry);
+    RegistryFactory.register(/^typeorm\..*/, TypeOrmEntityRegistry);
+  }
 
   before() {
-    registry = new TypeOrmEntityRegistry();
+    registry = RegistryFactory.get(REGISTRY_TYPEORM) as TypeOrmEntityRegistry;
   }
 
   after() {
     if (registry) {
-      registry = null;
-      TypeOrmEntityRegistry.reset();
+      registry.reset();
     }
+    RegistryFactory.remove(REGISTRY_TYPEORM);
   }
 
   @test
@@ -58,8 +63,8 @@ class StorageTypeormRegistrySpec {
     expect(entities).to.have.length(2);
     expect(columns).to.have.length(6);
     expect(properties).to.have.length(6);
-
   }
+
 
   @test
   async 'register dynamically created entity'() {
@@ -100,4 +105,3 @@ class StorageTypeormRegistrySpec {
   }
 
 }
-

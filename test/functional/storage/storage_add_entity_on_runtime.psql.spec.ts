@@ -8,9 +8,9 @@ import {C_DEFAULT} from '@allgemein/base';
 import {SchemaUtils} from '@allgemein/schema-api';
 import {Column, Entity, getMetadataArgsStorage, PrimaryGeneratedColumn} from 'typeorm';
 import {TypeOrmConnectionWrapper} from '../../../src/libs/storage/framework/typeorm/TypeOrmConnectionWrapper';
-import {TypeOrmStorageRef} from '../../../src';
 import {EVENT_STORAGE_REF_PREPARED} from '../../../src/libs/storage/framework/typeorm/Constants';
 import {TestHelper} from '../TestHelper';
+import {TypeOrmStorageRef} from '../../../src/libs/storage/framework/typeorm/TypeOrmStorageRef';
 
 let bootstrap: Bootstrap;
 

@@ -1,5 +1,6 @@
-import {IWorker, Log} from '../../../../src';
 import {IWorkerStatisitic} from '../../../../src/libs/worker/IWorkerStatisitic';
+import {IWorker} from '../../../../src/libs/worker/IWorker';
+import {Log} from '../../../../src/libs/logging/Log';
 
 
 export class DummyWorker implements IWorker {

@@ -2,14 +2,14 @@ import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 
 import * as _ from 'lodash';
-import {TypeOrmEntityRegistry} from '../../../src/libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry';
 import {Car} from './entities/Car';
 
 import {ComplexIdsKeys} from './entities/ComplexIdsKeys';
 import {Expressions} from '@allgemein/expressions';
+import {TypeOrmEntityRegistry} from '../../../../src/libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry';
 
 
-@suite('functional/entity_id_handling')
+@suite('functional/storage/typeorm/entity_id_handling')
 class EntityIdHandlingSpec {
 
 

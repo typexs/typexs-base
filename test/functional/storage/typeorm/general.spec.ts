@@ -20,7 +20,7 @@ import {Injector} from '../../../../src/libs/di/Injector';
 
 let bootstrap: Bootstrap;
 
-@suite('functional/storage/general')
+@suite('functional/storage/typeorm/general')
 class StorageGeneralSpec {
 
 

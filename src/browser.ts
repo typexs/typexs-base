@@ -70,10 +70,15 @@ export {IDistributedSaveOptions} from './libs/distributed_storage/save/IDistribu
 export {IDistributedUpdateOptions} from './libs/distributed_storage/update/IDistributedUpdateOptions';
 export {IDistributedRemoveOptions} from './libs/distributed_storage/remove/IDistributedRemoveOptions';
 
-
-// export {ITypeOrmStorageOptions} from './libs/storage/framework/typeorm/ITypeOrmStorageOptions';
-
-export * from './libs/storage/framework/typeorm/schema/TypeOrmConstants';
+export {
+  REGISTRY_TYPEORM,
+  EVENT_STORAGE_ENTITY_ADDED,
+  EVENT_STORAGE_ENTITY_REMOVED,
+  EVENT_STORAGE_REF_PREPARED,
+  EVENT_STORAGE_REF_RELOADED,
+  EVENT_STORAGE_REF_SHUTDOWN,
+  K_STRINGIFY_OPTION
+} from './libs/storage/framework/typeorm/Constants';
 export {TypeOrmEntityRef} from './libs/storage/framework/typeorm/schema/TypeOrmEntityRef';
 export {TypeOrmPropertyRef} from './libs/storage/framework/typeorm/schema/TypeOrmPropertyRef';
 export {TypeOrmEntityRegistry} from './libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry';
@@ -90,3 +95,8 @@ export {IValueProvider} from './libs/tasks/decorators/IValueProvider';
 export {IIncomingOptions} from './libs/tasks/decorators/IIncomingOptions';
 export {IOutgoingOptions} from './libs/tasks/decorators/IOutgoingOptions';
 
+export {TaskEvent} from './libs/tasks/worker/TaskEvent';
+export {TaskRunnerEvent} from './libs/tasks/TaskRunnerEvent';
+
+export {ITaskRunnerResult} from './libs/tasks/ITaskRunnerResult';
+export {ITaskExectorOptions} from './libs/tasks/ITaskExectorOptions';

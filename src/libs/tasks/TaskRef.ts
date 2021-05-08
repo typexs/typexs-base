@@ -391,7 +391,10 @@ export class TaskRef extends AbstractRef implements IEntityRef {
   // }
 
   toJsonSchema(withProperties: boolean = true) {
-    const json = JsonSchema.serialize(this);
+    const json = JsonSchema.serialize(this, {
+      namespace: this.namespace,
+      allowKeyOverride: true
+    });
     // add task specific stuff
     return json;
   }

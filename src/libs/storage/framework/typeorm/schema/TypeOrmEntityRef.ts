@@ -1,8 +1,8 @@
-import {defaults} from 'lodash';
+import {defaults, has} from 'lodash';
 import {TableMetadataArgs} from 'typeorm/browser/metadata-args/TableMetadataArgs';
 import {ClassRef, DefaultEntityRef, IEntityOptions, JsonSchema, METATYPE_PROPERTY} from '@allgemein/schema-api';
-import {REGISTRY_TYPEORM} from './TypeOrmConstants';
 import {IJsonSchemaSerializeOptions} from '@allgemein/schema-api/lib/json-schema/IJsonSchemaSerializeOptions';
+import {REGISTRY_TYPEORM} from '../Constants';
 
 export interface ITypeOrmEntityOptions extends IEntityOptions {
   metadata: TableMetadataArgs;
@@ -17,6 +17,10 @@ export class TypeOrmEntityRef extends DefaultEntityRef /*extends AbstractRef imp
       target: options.metadata.target,
       name: ClassRef.getClassName(options.metadata.target)
     }));
+    if (has(options, 'metadata.new')) {
+      delete options.metadata['new'];
+    }
+
     this.setOptions(options);
   }
 
@@ -31,7 +35,11 @@ export class TypeOrmEntityRef extends DefaultEntityRef /*extends AbstractRef imp
 
   toJsonSchema(options: IJsonSchemaSerializeOptions = {}) {
     options = options || {};
-    return JsonSchema.serialize(this, {...options, namespace: this.namespace, allowKeyOverride: true});
+    return JsonSchema.serialize(this, {
+      ...options,
+      namespace: this.namespace,
+      allowKeyOverride: true,
+    });
   }
 
 

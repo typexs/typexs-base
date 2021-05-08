@@ -1,4 +1,4 @@
-import {capitalize, defaults, get, isArray, isBoolean, isEmpty, isFunction, isNumber, isString} from 'lodash';
+import {capitalize, defaults, get, isArray, isBoolean, isEmpty, isFunction, isNumber, isString, has} from 'lodash';
 
 import {ColumnMetadataArgs} from 'typeorm/browser/metadata-args/ColumnMetadataArgs';
 import {RelationMetadataArgs} from 'typeorm/browser/metadata-args/RelationMetadataArgs';
@@ -7,7 +7,7 @@ import {ClassUtils, NotYetImplementedError} from '@allgemein/base';
 import {DefaultPropertyRef, IBuildOptions, IClassRef, IPropertyOptions, METATYPE_PROPERTY} from '@allgemein/schema-api';
 import {TypeOrmEntityRef} from './TypeOrmEntityRef';
 import {TypeOrmUtils} from '../TypeOrmUtils';
-import {REGISTRY_TYPEORM} from './TypeOrmConstants';
+import {REGISTRY_TYPEORM} from '../Constants';
 
 export interface ITypeOrmPropertyOptions extends IPropertyOptions {
   metadata: ColumnMetadataArgs | RelationMetadataArgs | EmbeddedMetadataArgs;
@@ -35,8 +35,8 @@ export class TypeOrmPropertyRef extends DefaultPropertyRef /*AbstractRef impleme
       target: options.metadata.target,
       propertyName: options.metadata.propertyName
     }));
-    if (options && options.new) {
-      delete options.new;
+    if (has(options, 'metadata.new')) {
+      delete options.metadata['new'];
     }
     this.setOptions(options);
     if (this.ormtype === 'column') {
@@ -64,9 +64,9 @@ export class TypeOrmPropertyRef extends DefaultPropertyRef /*AbstractRef impleme
       if ((isFunction(this.relation.type) && !isEmpty(this.relation.type.name)) || isString(this.relation.type)) {
         this.targetRef = this.getClassRefFor(this.relation.type, METATYPE_PROPERTY);
       } else if (isFunction(this.relation.type)) {
-        this.targetRef = this.getClassRefFor(this.relation.type(), METATYPE_PROPERTY);
+        const resolveType = this.relation.type();
+        this.targetRef = this.getClassRefFor(resolveType, METATYPE_PROPERTY);
       }
-
       // this.targetRef.isEntity = true;
     }
   }

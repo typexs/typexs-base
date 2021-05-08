@@ -11,7 +11,7 @@ import {Injector} from '../../../libs/di/Injector';
 import {TypeOrmEntityRegistry} from '../../../libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry';
 import {IRuntimeLoader} from '../../../libs/core/IRuntimeLoader';
 import {ClassType, RegistryFactory} from '@allgemein/schema-api';
-import {REGISTRY_TYPEORM} from '../../../libs/storage/framework/typeorm/schema/TypeOrmConstants';
+import {REGISTRY_TYPEORM} from '../../../libs/storage/framework/typeorm/Constants';
 
 useContainer(Injector.getContainer());
 

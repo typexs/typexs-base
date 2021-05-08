@@ -14,11 +14,11 @@ import {
   JsonSchema,
   LookupRegistry,
   METADATA_TYPE,
+  MetadataRegistry,
   METATYPE_ENTITY,
   METATYPE_PROPERTY,
   RegistryFactory,
 } from '@allgemein/schema-api';
-import {REGISTRY_TYPEORM} from './TypeOrmConstants';
 import {ClassUtils, NotSupportedError, NotYetImplementedError} from '@allgemein/base';
 import {ITypeOrmPropertyOptions, TypeOrmPropertyRef} from './TypeOrmPropertyRef';
 import {RelationMetadataArgs} from 'typeorm/browser/metadata-args/RelationMetadataArgs';
@@ -27,6 +27,7 @@ import {MetadataArgsStorage} from 'typeorm/browser/metadata-args/MetadataArgsSto
 import {EmbeddedMetadataArgs} from 'typeorm/browser/metadata-args/EmbeddedMetadataArgs';
 import {TypeOrmUtils} from '../TypeOrmUtils';
 import {isClassRef} from '@allgemein/schema-api/api/IClassRef';
+import {REGISTRY_TYPEORM} from '../Constants';
 
 
 export type TYPEORM_METADATA_KEYS = 'tables' |
@@ -76,7 +77,23 @@ const typeormMetadataKeys: TYPEORM_METADATA_KEYS[] = [
   'inheritances',
   'discriminatorValues'];
 
+
+const MAP_PROP_KEYS = {
+  'identifier': 'primary',
+  'generated': 'generated',
+  'unique': 'unique',
+  'nullable': 'nullable'
+};
+
+
 export class TypeOrmEntityRegistry extends DefaultNamespacedRegistry/*AbstractRegistry /*EventEmitter implements ILookupRegistry*/ {
+
+
+  private static _self: TypeOrmEntityRegistry;
+
+
+  private metadatastore: MetadataArgsStorage = null;
+
 
   constructor(namespace: string = REGISTRY_TYPEORM) {
     super(namespace);
@@ -111,16 +128,13 @@ export class TypeOrmEntityRegistry extends DefaultNamespacedRegistry/*AbstractRe
   }
 
 
-  private static _self: TypeOrmEntityRegistry;
-
-  private metadatastore: MetadataArgsStorage = null;
-
   static $() {
     if (!this._self) {
       this._self = RegistryFactory.get(REGISTRY_TYPEORM) as TypeOrmEntityRegistry; // new TypeOrmEntityRegistry();
     }
     return this._self;
   }
+
 
   static reset() {
     const self = this.$();
@@ -130,20 +144,49 @@ export class TypeOrmEntityRegistry extends DefaultNamespacedRegistry/*AbstractRe
   }
 
   onAdd(context: METADATA_TYPE, options: ITypeOrmEntityOptions | ITypeOrmPropertyOptions | ISchemaOptions | IObjectOptions) {
-    // console.log('');
-    // // super.onAdd(context, options);
-    // if (context === METATYPE_ENTITY) {
-    //   // check if metadata exists for the entry
-    //   const exists = this.metadatastore.tables.find(x => x.target === options.target);
-    //   if (!exists) {
-    //     // this.metadatastore.tables.push(<TableMetadataArgs>{
-    //     //   target: options.target,
-    //     //   type: 'regular'
-    //     // });
-    //   }
-    // } else if (context === METATYPE_PROPERTY) {
-    //   console.log('');
-    // }
+    if (options.namespace) {
+      if (options.namespace !== this.namespace) {
+        // skip not my namespace
+        return;
+      }
+    } else {
+      if (context !== METATYPE_PROPERTY) {
+        // skip if no namespace given
+        return;
+      }
+    }
+
+    if (context === METATYPE_ENTITY) {
+      // check if metadata exists for the entry
+      const exists = this.metadatastore.tables.find(x => x.target === options.target);
+      if (!exists) {
+        const target = options.target;
+        this.create(METATYPE_ENTITY, options as ITypeOrmEntityOptions);
+
+        const properties = MetadataRegistry.$()
+          .getByContextAndTarget(METATYPE_PROPERTY,
+            options.target, 'merge') as ITypeOrmPropertyOptions[];
+        for (const property of properties) {
+          this.onAdd(METATYPE_PROPERTY, property);
+        }
+      }
+
+    } else if (context === METATYPE_PROPERTY) {
+      const exists = [
+        this.metadatastore.columns.find(x => x.target === options.target && x.propertyName === options.propertyName),
+        this.metadatastore.embeddeds.find(x => x.target === options.target && x.propertyName === options.propertyName),
+        this.metadatastore.relations.find(x => x.target === options.target && x.propertyName === options.propertyName)
+      ].find(x => !_.isEmpty(x));
+
+      if (!exists) {
+        const properties = MetadataRegistry.$()
+          .getByContextAndTarget(METATYPE_PROPERTY,
+            options.target, 'merge', options.propertyName) as ITypeOrmPropertyOptions[];
+        for (const property of properties) {
+          this.create(METATYPE_PROPERTY, property);
+        }
+      }
+    }
   }
 
   onUpdate() {
@@ -202,7 +245,26 @@ export class TypeOrmEntityRegistry extends DefaultNamespacedRegistry/*AbstractRe
           }
         }
         break;
+      case 'relations':
+        const relations = args[0] as RelationMetadataArgs;
+
+        if (relations.target) {
+          foundEntity = this._find(relations.target);
+        }
+        if (foundEntity) {
+          const exists = foundEntity.getPropertyRefs()
+            .find(x => x.storingName === relations.propertyName && x.getClassRef().getClass() === relations.target);
+          if (!exists) {
+            this.createPropertyByArgs('relation', relations, true);
+          }
+        }
+        break;
       case 'tables':
+        // const tableMetadataArgs = args[0] as TableMetadataArgs;
+        // foundEntity = this._find(tableMetadataArgs.target);
+        // if (!foundEntity) {
+        //   this.createEntity(tableMetadataArgs);
+        // }
         break;
     }
   }
@@ -264,7 +326,8 @@ export class TypeOrmEntityRegistry extends DefaultNamespacedRegistry/*AbstractRe
         if (!typeOrmOptions) {
           typeOrmOptions = <TableMetadataArgs & { new: boolean }>{
             new: true,
-            target: options.target
+            target: options.target,
+            type: 'regular'
           };
           _.assign(typeOrmOptions, options.metadata ? options.metadata : {});
           options.metadata = typeOrmOptions;
@@ -276,8 +339,36 @@ export class TypeOrmEntityRegistry extends DefaultNamespacedRegistry/*AbstractRe
       return res as any;
     } else if (context === METATYPE_PROPERTY) {
       // remove cardinality is checked by property ref
+
+      let tableType = 'column';
+      const isArray = options.cardinality && options.cardinality !== 1;
+
+      // correct type for typeorm
+      let clsType: Function = options.type;
+      if (_.isString(options.type)) {
+        clsType = TypeOrmUtils.getJsObjectType(options.type);
+        if (!clsType) {
+          tableType = 'relation';
+          const ref = ClassRef.find(options.type);
+          if (ref) {
+            clsType = ref.getClass();
+          } else {
+            clsType = ClassRef.get(options.type, this.namespace).getClass(true);
+          }
+        }
+      } else if (isClassRef(clsType)) {
+        tableType = 'relation';
+        clsType = clsType.getClass();
+      } else {
+        tableType = 'relation';
+        clsType = options.type;
+      }
+
+
+      tableType = _.get(options, 'tableType', tableType);
+      const cardinality = options['cardinality'] ? options['cardinality'] : 1;
       delete options['cardinality'];
-      const tableType = _.get(options, 'tableType', 'column');
+
       switch (tableType) {
         case 'column':
           typeOrmOptions = this.metadatastore.columns.find(x => x.target === options.target && x.propertyName === options.propertyName);
@@ -333,6 +424,31 @@ export class TypeOrmEntityRegistry extends DefaultNamespacedRegistry/*AbstractRe
           typeOrmOptions.type = (type: any) => clsType;
         } else if (tableType === 'column') {
           typeOrmOptions.mode = 'regular';
+        }
+
+        if (typeOrmOptions.new) {
+          if (tableType === 'column') {
+            const _defaults = <ColumnMetadataArgs>{
+              options: {
+                type: clsType as any
+              }
+            };
+
+            for (const x of _.keys(MAP_PROP_KEYS)) {
+              if (_.has(options, x)) {
+                _defaults.options[MAP_PROP_KEYS[x]] = options[x];
+              }
+            }
+            _.defaultsDeep(typeOrmOptions, _defaults);
+          } else if (tableType === 'relation') {
+            _.defaultsDeep(typeOrmOptions, <RelationMetadataArgs>{
+              type: () => clsType,
+              isLazy: false,
+              relationType: !isArray ? 'one-to-one' : 'one-to-many',
+              options: {}
+            });
+
+          }
         }
 
         options.tableType = tableType;
@@ -408,7 +524,6 @@ export class TypeOrmEntityRegistry extends DefaultNamespacedRegistry/*AbstractRe
           properties.push(r);
         }
       });
-
 
     properties.filter(p => p.isReference()).map(p => {
       const classRef = p.getTargetRef();
@@ -507,151 +622,5 @@ export class TypeOrmEntityRegistry extends DefaultNamespacedRegistry/*AbstractRe
     return this.getLookupRegistry().add(context, entry);
   }
 
-
-  // fromJson(orgJson: IEntityRefMetadata): IEntityRef {
-  //   const json = _.cloneDeep(orgJson);
-  //   let classRef = ClassRef.find(json.name, REGISTRY_TYPEORM);
-  //   if (!classRef) {
-  //     classRef = classRefGet(SchemaUtils.clazz(json.name));
-  //   }
-  //   classRef.setSchema(json.schema);
-  //
-  //   const tableMetaData: TableMetadataArgs = json.options;
-  //   let entityRef = this.find(json.name);
-  //   if (!entityRef) {
-  //     tableMetaData.target = classRef.getClass();
-  //     entityRef = new TypeOrmEntityRef(tableMetaData);
-  //     this.register(entityRef);
-  //   }
-  //
-  //   if (entityRef) {
-  //     for (const prop of json.properties) {
-  //       const exists = entityRef.getPropertyRef(prop.name);
-  //       if (exists) {
-  //         continue;
-  //       }
-  //       let targetRef = null;
-  //       const propType = _.get(prop, 'ormtype', false);
-  //       if (propType === 'relation') {
-  //         targetRef = classRefGet(prop.targetRef.className);
-  //         targetRef.setSchema(prop.targetRef.schema);
-  //         const r: RelationMetadataArgs = prop.options;
-  //         (<any>r).target = classRef.getClass();
-  //         (<any>r).type = targetRef.getClass();
-  //         const p = new TypeOrmPropertyRef(r, 'relation');
-  //         this.register(p);
-  //       } else if (propType === 'embedded') {
-  //         targetRef = classRefGet(prop.targetRef.className);
-  //         targetRef.setSchema(prop.targetRef.schema);
-  //         const r: RelationMetadataArgs = prop.options;
-  //         (<any>r).target = classRef.getClass();
-  //         (<any>r).type = targetRef.getClass();
-  //         const p = new TypeOrmPropertyRef(r, 'embedded');
-  //         this.register(p);
-  //       } else {
-  //         const c: ColumnMetadataArgs = prop.options;
-  //         (<any>c).target = classRef.getClass();
-  //
-  //         let type: any = prop.options.type;
-  //         switch (prop.dataType) {
-  //           case 'Number':
-  //             type = Number;
-  //             break;
-  //           case 'String':
-  //             type = String;
-  //             break;
-  //           case 'Boolean':
-  //             type = Boolean;
-  //             break;
-  //           case 'Symbol':
-  //             type = Symbol;
-  //             break;
-  //           case 'Date':
-  //             type = Date;
-  //             break;
-  //
-  //         }
-  //
-  //         if (!type && prop.dataType) {
-  //           type = prop.dataType;
-  //         }
-  //
-  //         (<any>c).options.type = type;
-  //
-  //         const p = new TypeOrmPropertyRef(c, 'column');
-  //         this.register(p);
-  //
-  //       }
-  //       if (prop.validator) {
-  //         prop.validator.forEach(m => {
-  //           const _m = _.clone(m);
-  //           _m.target = classRef.getClass();
-  //           const vma = new ValidationMetadata(_m);
-  //           getMetadataStorage().addValidationMetadata(vma as any);
-  //         });
-  //       }
-  //     }
-  //   }
-  //
-  //   return entityRef;
-  // }
-
-  // list<T>(type: METADATA_TYPE, filter?: (x: any) => boolean): T[] {
-  //   return this.filter(type, filter);
-  // }
-
-
-  // listEntities(fn?: (x: IEntityRef) => boolean): TypeOrmEntityRef[] {
-  //   return this.lookupRegistry.filter(METATYPE_ENTITY, fn);
-  // }
-  //
-  //
-  // listProperties(fn?: (x: IPropertyRef) => boolean): TypeOrmPropertyRef[] {
-  //   return this.lookupRegistry.filter(METATYPE_PROPERTY, fn);
-  // }
-  //
-  // add<T>(context: string, entry: T): T {
-  //   return undefined;
-  // }
-  //
-  // create<T>(context: string, options: any): T {
-  //   return undefined;
-  // }
-  //
-  // filter<T>(context: string, search: any): T[] {
-  //   return [];
-  // }
-  //
-  // find<T>(context: string, search: any): T {
-  //   return undefined;
-  // }
-  //
-  // getEntities(filter?: (x: IEntityRef) => boolean): IEntityRef[] {
-  //   return [];
-  // }
-  //
-  // getLookupRegistry(): LookupRegistry {
-  //   return undefined;
-  // }
-  //
-  // getPropertyRef(ref: IClassRef | IEntityRef, name: string): IPropertyRef {
-  //   return undefined;
-  // }
-  //
-  // getPropertyRefs(ref: IClassRef | IEntityRef): IPropertyRef[] {
-  //   return [];
-  // }
-  //
-  // getSchemaRefs(filter?: (x: ISchemaRef) => boolean): ISchemaRef[] {
-  //   return [];
-  // }
-  //
-  // getSchemaRefsFor(ref: IEntityRef): ISchemaRef[] {
-  //   return [];
-  // }
-  //
-  // remove<T>(context: string, search: any): T[] {
-  //   return [];
-  // }
 
 }

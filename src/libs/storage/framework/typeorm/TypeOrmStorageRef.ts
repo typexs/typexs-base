@@ -10,16 +10,19 @@ import {AbstractSchemaHandler} from '../../AbstractSchemaHandler';
 import {EntitySchema} from 'typeorm/entity-schema/EntitySchema';
 import {Connection, ConnectionOptions, EntityOptions, getConnectionManager, getMetadataArgsStorage} from 'typeorm';
 import {TableMetadataArgs} from 'typeorm/metadata-args/TableMetadataArgs';
-import {ClassRef, ClassType, IClassRef, IEntityRef} from '@allgemein/schema-api';
-import {TypeOrmEntityRegistry} from './schema/TypeOrmEntityRegistry';
+import {ClassRef, ClassType, IClassRef, IEntityRef, RegistryFactory} from '@allgemein/schema-api';
 import {DEFAULT_STORAGEREF_OPTIONS} from '../../Constants';
 import {TypeOrmEntityController} from './TypeOrmEntityController';
 import {TypeOrmConnectionWrapper} from './TypeOrmConnectionWrapper';
 import {StorageRef} from '../../StorageRef';
 import {ICollection} from '../../ICollection';
-import {REGISTRY_TYPEORM} from './schema/TypeOrmConstants';
 import {BaseConnectionOptions} from 'typeorm/connection/BaseConnectionOptions';
-import {EVENT_STORAGE_ENTITY_ADDED, EVENT_STORAGE_REF_PREPARED, EVENT_STORAGE_REF_SHUTDOWN} from './Constants';
+import {
+  EVENT_STORAGE_ENTITY_ADDED,
+  EVENT_STORAGE_REF_PREPARED,
+  EVENT_STORAGE_REF_SHUTDOWN,
+  REGISTRY_TYPEORM
+} from './Constants';
 import {ColumnMetadataArgs} from 'typeorm/metadata-args/ColumnMetadataArgs';
 
 
@@ -272,7 +275,7 @@ export class TypeOrmStorageRef extends StorageRef {
   getEntityRef(name: string | Function): IEntityRef {
     const clazz = this.getEntityClass(name);
     if (clazz) {
-      return TypeOrmEntityRegistry.$().getEntityRefFor(clazz);
+      return RegistryFactory.get(REGISTRY_TYPEORM).getEntityRefFor(clazz);
     }
     return null;
   }

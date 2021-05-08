@@ -9,12 +9,12 @@ import {SelectQueryBuilder} from 'typeorm';
 import {ClassType} from '@allgemein/schema-api';
 import {StorageApi} from '../../../../api/Storage.api';
 import {TypeOrmEntityController} from './TypeOrmEntityController';
-import {REGISTRY_TYPEORM} from './schema/TypeOrmConstants';
 import {Injector} from '../../../di/Injector';
 import {Cache} from '../../../cache/Cache';
 import {TypeOrmConnectionWrapper} from './TypeOrmConnectionWrapper';
 import {convertPropertyValueStringToJson} from './Helper';
 import {TypeOrmUtils} from './TypeOrmUtils';
+import {REGISTRY_TYPEORM} from './Constants';
 
 
 export class FindOp<T> implements IFindOp<T> {

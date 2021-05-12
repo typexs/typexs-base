@@ -143,6 +143,7 @@ export class TypeOrmEntityRegistry extends DefaultNamespacedRegistry/*AbstractRe
     LookupRegistry.reset(REGISTRY_TYPEORM);
   }
 
+
   onAdd(context: METADATA_TYPE, options: ITypeOrmEntityOptions | ITypeOrmPropertyOptions | ISchemaOptions | IObjectOptions) {
     if (options.namespace) {
       if (options.namespace !== this.namespace) {

@@ -499,13 +499,13 @@ class TasksSpec {
   @test
   async 're-add task after reset'() {
     tasks.addTask(SimpleTaskWithRuntimeLog);
-    let entites = tasks.getEntities();
+    let entites = tasks.getEntityRefs();
     expect(entites).to.have.length(1);
     expect(entites[0].getClassRef().getClass()).to.be.eq(SimpleTaskWithRuntimeLog);
 
     tasks.reset();
     tasks.addTask(SimpleTaskWithRuntimeLog);
-    entites = tasks.getEntities();
+    entites = tasks.getEntityRefs();
     expect(entites).to.have.length(1);
     expect(entites[0].getClassRef().getClass()).to.be.eq(SimpleTaskWithRuntimeLog);
   }
@@ -514,7 +514,7 @@ class TasksSpec {
   async 'attach logger to stream'() {
     // Log.options({enable:true})
     const taskRef = tasks.addTask(SimpleTaskWithRuntimeLog);
-    const entites = tasks.getEntities();
+    const entites = tasks.getEntityRefs();
     expect(entites).to.have.length(1);
     expect(entites[0].getClassRef().getClass()).to.be.eq(SimpleTaskWithRuntimeLog);
 

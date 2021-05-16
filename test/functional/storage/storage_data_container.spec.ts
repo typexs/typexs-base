@@ -13,30 +13,31 @@ class StorageDataContainerSpec {
   static before() {
     RegistryFactory.register(REGISTRY_TYPEORM, TypeOrmEntityRegistry);
     RegistryFactory.register(/^typeorm\..*/, TypeOrmEntityRegistry);
+
     Person = require('./entities/Person').Person;
     PersonWithRequired = require('./entities/Person').PersonWithRequired;
   }
 
   @test
-  async 'check empty object without required values'() {
+  async 'check empty object without required values faling'() {
     const p = new Person();
-    const c = new DataContainer(p, TypeOrmEntityRegistry.$());
-    const retCode = await c.validate();
-    expect(retCode).to.be.true;
-    expect(c.hasErrors()).to.be.false;
-    expect(c.errors).to.have.length(0);
-    expect(c.isSuccessValidated).to.be.true;
-    expect(c.isValidated).to.be.true;
-  }
-
-  @test
-  async 'check empty object with required values'() {
-    const p = new PersonWithRequired();
     const c = new DataContainer(p, TypeOrmEntityRegistry.$());
     const retCode = await c.validate();
     expect(retCode).to.be.false;
     expect(c.hasErrors()).to.be.true;
     expect(c.errors).to.have.length(3);
+    expect(c.isSuccessValidated).to.be.false;
+    expect(c.isValidated).to.be.true;
+  }
+
+  @test
+  async 'check empty object with required values failing'() {
+    const p = new PersonWithRequired();
+    const c = new DataContainer(p, TypeOrmEntityRegistry.$());
+    const retCode = await c.validate();
+    expect(retCode).to.be.false;
+    expect(c.hasErrors()).to.be.true;
+    expect(c.errors).to.have.length(6);
     expect(c.isSuccessValidated).to.be.false;
     expect(c.isValidated).to.be.true;
   }

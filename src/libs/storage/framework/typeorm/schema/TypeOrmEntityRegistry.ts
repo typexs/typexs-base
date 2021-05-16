@@ -157,13 +157,13 @@ export class TypeOrmEntityRegistry extends DefaultNamespacedRegistry/*AbstractRe
       }
     }
 
+    const target = options.target;
+    const tableExists = target ? this.metadatastore.tables.find(x => x.target === target) : null;
     if (context === METATYPE_ENTITY) {
       // check if metadata exists for the entry
-      const exists = this.metadatastore.tables.find(x => x.target === options.target);
-      if (!exists) {
-        const target = options.target;
-        this.create(METATYPE_ENTITY, options as ITypeOrmEntityOptions);
 
+      if (!tableExists) {
+        this.create(METATYPE_ENTITY, options as ITypeOrmEntityOptions);
         const properties = MetadataRegistry.$()
           .getByContextAndTarget(METATYPE_PROPERTY,
             options.target, 'merge') as ITypeOrmPropertyOptions[];
@@ -173,18 +173,21 @@ export class TypeOrmEntityRegistry extends DefaultNamespacedRegistry/*AbstractRe
       }
 
     } else if (context === METATYPE_PROPERTY) {
-      const exists = [
-        this.metadatastore.columns.find(x => x.target === options.target && x.propertyName === options.propertyName),
-        this.metadatastore.embeddeds.find(x => x.target === options.target && x.propertyName === options.propertyName),
-        this.metadatastore.relations.find(x => x.target === options.target && x.propertyName === options.propertyName)
-      ].find(x => !_.isEmpty(x));
+      // todo check if table is present, else skip processing
+      if (tableExists) {
+        const exists = [
+          this.metadatastore.columns.find(x => x.target === target && x.propertyName === options.propertyName),
+          this.metadatastore.embeddeds.find(x => x.target === target && x.propertyName === options.propertyName),
+          this.metadatastore.relations.find(x => x.target === target && x.propertyName === options.propertyName)
+        ].find(x => !_.isEmpty(x));
 
-      if (!exists) {
-        const properties = MetadataRegistry.$()
-          .getByContextAndTarget(METATYPE_PROPERTY,
-            options.target, 'merge', options.propertyName) as ITypeOrmPropertyOptions[];
-        for (const property of properties) {
-          this.create(METATYPE_PROPERTY, property);
+        if (!exists) {
+          const properties = MetadataRegistry.$()
+            .getByContextAndTarget(METATYPE_PROPERTY,
+              options.target, 'merge', options.propertyName) as ITypeOrmPropertyOptions[];
+          for (const property of properties) {
+            this.create(METATYPE_PROPERTY, property);
+          }
         }
       }
     }
@@ -552,7 +555,7 @@ export class TypeOrmEntityRegistry extends DefaultNamespacedRegistry/*AbstractRe
   }
 
 
-  getEntityRefFor(instance: Object | string): TypeOrmEntityRef {
+  getEntityRefFor(instance: string | object | Function, skipNsCheck: boolean = false): TypeOrmEntityRef {
     if (!instance) {
       return null;
     }

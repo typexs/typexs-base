@@ -1,6 +1,13 @@
 import {defaults, has} from 'lodash';
 import {TableMetadataArgs} from 'typeorm/browser/metadata-args/TableMetadataArgs';
-import {ClassRef, DefaultEntityRef, IEntityOptions, JsonSchema, METATYPE_PROPERTY} from '@allgemein/schema-api';
+import {
+  ClassRef,
+  DefaultEntityRef,
+  IEntityOptions,
+  IEntityRef,
+  JsonSchema,
+  METATYPE_PROPERTY
+} from '@allgemein/schema-api';
 import {IJsonSchemaSerializeOptions} from '@allgemein/schema-api/lib/json-schema/IJsonSchemaSerializeOptions';
 import {REGISTRY_TYPEORM} from '../Constants';
 
@@ -8,7 +15,7 @@ export interface ITypeOrmEntityOptions extends IEntityOptions {
   metadata: TableMetadataArgs;
 }
 
-export class TypeOrmEntityRef extends DefaultEntityRef /*extends AbstractRef implements IEntityRef*/ {
+export class TypeOrmEntityRef extends DefaultEntityRef  {
 
   constructor(options: ITypeOrmEntityOptions) {
     super(defaults(options, <ITypeOrmEntityOptions>{

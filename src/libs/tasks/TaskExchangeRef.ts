@@ -2,7 +2,8 @@ import {
   AbstractRef,
   ClassRef,
   IClassRef,
-  ILookupRegistry, IMinMax,
+  ILookupRegistry,
+  IMinMax,
   IPropertyRef,
   METADATA_TYPE,
   METATYPE_PROPERTY,
@@ -40,6 +41,10 @@ export class TaskExchangeRef extends AbstractRef implements IPropertyRef {
 
     this.cardinality = _.has(desc, 'cardinality') ? desc.cardinality : 1;
 
+  }
+
+  isAppended(): boolean {
+    throw new Error('Method not implemented.');
   }
 
   isOptional(): boolean {

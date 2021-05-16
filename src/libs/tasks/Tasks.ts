@@ -1,5 +1,4 @@
-import {assign, clone, defaults, get, has,
-  isObject, isArray, isBoolean, isFunction, isUndefined} from 'lodash';
+import {assign, clone, defaults, get, has, isArray, isBoolean, isFunction, isObject, isUndefined} from 'lodash';
 import {TaskRef} from './TaskRef';
 import {MetaArgs, NotYetImplementedError} from '@allgemein/base';
 import {
@@ -411,26 +410,23 @@ export class Tasks extends AbstractRegistry /*implements ILookupRegistry*/ {
     }
   }
 
-  getEntities(filter?: (x: IEntityRef) => boolean): IEntityRef[] {
-    return this.filter(METATYPE_ENTITY, filter);
-  }
 
-  getEntityRefFor(fn: any): TaskRef {
-    throw new NotYetImplementedError();
-  }
+  // getEntityRefFor(fn: string | object | Function, skipNsCheck?: boolean): TaskRef {
+  //   throw new NotYetImplementedError();
+  // }
+  //
+  // getPropertyRefsFor(fn: any): TaskExchangeRef[] {
+  //   throw new NotYetImplementedError();
+  // }
 
-  getPropertyRefsFor(fn: any): TaskExchangeRef[] {
-    throw new NotYetImplementedError();
-  }
-
-  getPropertyRef(ref: IClassRef | IEntityRef, name: string): IPropertyRef {
+  getPropertyRef(ref: IClassRef | IEntityRef, name: string): TaskExchangeRef {
     if (isEntityRef(ref)) {
       return this.find(METATYPE_PROPERTY, (x: IPropertyRef) => x.getClassRef() === ref.getClassRef() && x.name === name);
     }
     return this.find(METATYPE_PROPERTY, (x: IPropertyRef) => x.getClassRef() === ref && x.name === name);
   }
 
-  getPropertyRefs(ref: IClassRef | IEntityRef): IPropertyRef[] {
+  getPropertyRefs(ref: IClassRef | IEntityRef): TaskExchangeRef[] {
     if (isEntityRef(ref)) {
       return this.filter(METATYPE_PROPERTY, (x: IPropertyRef) => x.getClassRef() === ref.getClassRef());
     }

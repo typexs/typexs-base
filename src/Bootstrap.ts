@@ -356,6 +356,7 @@ export class Bootstrap {
 
 
   async activateStorage(): Promise<Bootstrap> {
+
     this.storage = new Storage();
     this.storage.nodeId = this.getNodeId();
 
@@ -500,6 +501,9 @@ export class Bootstrap {
     // update config
     Config.jar(CONFIG_NAMESPACE).set('modules', this.runtimeLoader.getOptions());
     this.addShutdownEvents();
+
+    // load activators on storage,
+    this.getActivators();
     return this;
   }
 

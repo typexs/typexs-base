@@ -102,7 +102,7 @@ class BootstrapGeneralSpec {
     });
     bootstrap = await bootstrap.prepareRuntime();
 
-    expect(bootstrap['_options']).to.be.deep.include({
+    expect(bootstrap.getOptions()).to.be.deep.include({
       app: {
         path: appdir,
         name: 'fake_app'

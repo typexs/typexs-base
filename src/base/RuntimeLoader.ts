@@ -1,20 +1,20 @@
 import * as _ from 'lodash';
 import {ICache, IClassesLoader, IModuleRegistry, ModuleDescriptor, ModuleRegistry} from '@allgemein/moduls';
 import {IRuntimeLoaderOptions} from './IRuntimeLoaderOptions';
-import {DEFAULT_RUNTIME_OPTIONS} from '../Bootstrap';
 import {TYPEXS_NAME} from '../libs/Constants';
 import {CryptUtils, PlatformUtils} from '@allgemein/base';
 import {Log} from './../libs/logging/Log';
 import {MatchUtils} from '../libs/utils/MatchUtils';
 import {ModulRegistryCache} from '../libs/cache/ModulRegistryCache';
 import {IRuntimeLoader} from '../libs/core/IRuntimeLoader';
+import {DEFAULT_RUNTIME_OPTIONS} from '../libs/config/Constants';
 
 
 export class RuntimeLoader implements IRuntimeLoader {
 
   static NAME = 'RuntimeLoader';
 
-  _options: IRuntimeLoaderOptions;
+  options: IRuntimeLoaderOptions;
 
   registry: IModuleRegistry;
 
@@ -31,22 +31,22 @@ export class RuntimeLoader implements IRuntimeLoader {
 
   constructor(options: IRuntimeLoaderOptions) {
     _.defaults(options, _.cloneDeep(DEFAULT_RUNTIME_OPTIONS));
-    this._options = options;
-    const appdir = this._options.appdir || PlatformUtils.pathResolve('.');
+    this.options = options;
+    const appdir = this.options.appdir || PlatformUtils.pathResolve('.');
 
     const cacheDisable = _.get(options, 'disableCache', false);
     if (!cacheDisable) {
       this.cache = new ModulRegistryCache(
-        this._options.cachePath ? this._options.cachePath : '/tmp/.txs/cache',
-        CryptUtils.shorthash(JSON.stringify(this._options) + appdir)
+        this.options.cachePath ? this.options.cachePath : '/tmp/.txs/cache',
+        CryptUtils.shorthash(JSON.stringify(this.options) + appdir)
       );
     }
 
-    if (appdir && this._options.paths.indexOf(appdir) === -1) {
-      this._options.paths.unshift(appdir);
+    if (appdir && this.options.paths.indexOf(appdir) === -1) {
+      this.options.paths.unshift(appdir);
     }
 
-    this._options.paths = this._options.paths.map(p => {
+    this.options.paths = this.options.paths.map(p => {
       if (PlatformUtils.isAbsolute(p)) {
         return p;
       } else {
@@ -61,7 +61,7 @@ export class RuntimeLoader implements IRuntimeLoader {
   }
 
   getOptions() {
-    return this._options;
+    return this.options;
   }
 
   getRegistry() {
@@ -74,13 +74,13 @@ export class RuntimeLoader implements IRuntimeLoader {
 
   async rebuild() {
     let modulePackageJsonKeys = [TYPEXS_NAME];
-    if (this._options.packageKeys) {
-      modulePackageJsonKeys = modulePackageJsonKeys.concat(this._options.packageKeys);
+    if (this.options.packageKeys) {
+      modulePackageJsonKeys = modulePackageJsonKeys.concat(this.options.packageKeys);
     }
-    this._options.packageKeys = modulePackageJsonKeys;
+    this.options.packageKeys = modulePackageJsonKeys;
 
     const modulPaths = [];
-    for (const _path of this._options.paths) {
+    for (const _path of this.options.paths) {
       if (PlatformUtils.fileExist(_path)) {
         modulPaths.push(_path);
       } else {
@@ -95,7 +95,7 @@ export class RuntimeLoader implements IRuntimeLoader {
       },
       module: module,
       paths: modulPaths,
-      pattern: this._options.subModulPattern ? this._options.subModulPattern : [],
+      pattern: this.options.subModulPattern ? this.options.subModulPattern : [],
       cache: this.cache
     });
 
@@ -123,12 +123,12 @@ export class RuntimeLoader implements IRuntimeLoader {
         const modulSettings = this.settings[moduleName];
         if (_.has(modulSettings, 'declareLibs')) {
           for (const s of modulSettings['declareLibs']) {
-            const topicData = _.find(this._options.libs, (lib) => lib.topic === s.topic);
+            const topicData = _.find(this.options.libs, (lib) => lib.topic === s.topic);
             if (topicData) {
               topicData.refs.push(...s.refs);
               topicData.refs = _.uniq(topicData.refs);
             } else {
-              this._options.libs.push(s);
+              this.options.libs.push(s);
             }
           }
         }
@@ -138,16 +138,16 @@ export class RuntimeLoader implements IRuntimeLoader {
       }
     }
 
-    this._options.libs = _.sortBy(this._options.libs, ['topic']);
-    this.classesLoader = await this.registry.createClassesLoader({libs: this._options.libs});
+    this.options.libs = _.sortBy(this.options.libs, ['topic']);
+    this.classesLoader = await this.registry.createClassesLoader({libs: this.options.libs});
   }
 
   isIncluded(modulName: string) {
-    return _.has(this._options.included, modulName);
+    return _.has(this.options.included, modulName);
   }
 
   includeModule(modulName: string) {
-    return _.set(this._options.included, modulName, {enabled: true});
+    return _.set(this.options.included, modulName, {enabled: true});
   }
 
 
@@ -184,16 +184,16 @@ export class RuntimeLoader implements IRuntimeLoader {
 
 
   isEnabledByInclude(modulName: string) {
-    return _.get(this._options.included, modulName + '.enabled', true) === true;
+    return _.get(this.options.included, modulName + '.enabled', true) === true;
   }
 
 
   isEnabledByMatch(name: string) {
-    if (_.has(this._options, 'match')) {
+    if (_.has(this.options, 'match')) {
       // if access empty then
-      let allow = this._options.match.length > 0 ? false : true;
+      let allow = this.options.match.length > 0 ? false : true;
       let count = 0;
-      for (const a of this._options.match) {
+      for (const a of this.options.match) {
         if (_.isUndefined(a.match)) {
           if (/\+|\.|\(|\||\)|\*/.test(a.name)) {
             a.match = a.name;

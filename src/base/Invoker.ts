@@ -1,4 +1,4 @@
-import * as _ from 'lodash';
+import {find, isFunction, isArray, isEmpty} from 'lodash';
 import {IAPIDef} from '../libs/api/IAPIDef';
 import {ClassType} from '@allgemein/schema-api';
 import {Injector} from '../libs/di/Injector';
@@ -13,7 +13,7 @@ export class Invoker {
 
 
   register(api: Function, impl: Function | Function[]) {
-    let def = _.find(this.apiImpls, x => x.api === api);
+    let def = find(this.apiImpls, x => x.api === api);
     if (!def) {
       const invoker = this;
       const obj = {};
@@ -21,7 +21,7 @@ export class Invoker {
       proto.forEach(p => {
         if (p === 'constructor') { return; }
         const desc = Object.getOwnPropertyDescriptor(api.prototype, p);
-        if (_.isFunction(desc.value)) {
+        if (isFunction(desc.value)) {
           obj[p] = function (...args: any[]) {
             return invoker.execute(api, p, ...args);
           };
@@ -30,7 +30,7 @@ export class Invoker {
       def = {api: api, impl: [], handle: obj};
       this.apiImpls.push(def);
     }
-    if (_.isArray(impl)) {
+    if (isArray(impl)) {
       impl.forEach(i => {
         if (def.impl.indexOf(i) === -1) {
           def.impl.push(i);
@@ -44,7 +44,7 @@ export class Invoker {
   }
 
   private async execute(api: Function, method: string, ...args: any[]) {
-    const def = _.find(this.apiImpls, apiImpl => apiImpl.api === api);
+    const def = find(this.apiImpls, apiImpl => apiImpl.api === api);
     const instances = def.impl.map(impl => Injector.get(impl));
     const results = [];
     // TODO maybe parallel
@@ -60,19 +60,19 @@ export class Invoker {
 
 
   has(api: Function) {
-    const c = _.find(this.apiImpls, apiImpl => apiImpl.api === api);
+    const c = find(this.apiImpls, apiImpl => apiImpl.api === api);
     return !!c;
   }
 
 
   hasImpl(api: Function) {
-    const c = _.find(this.apiImpls, apiImpl => apiImpl.api === api);
-    return !_.isEmpty(c.impl);
+    const c = find(this.apiImpls, apiImpl => apiImpl.api === api);
+    return !isEmpty(c.impl);
   }
 
 
   use<API>(api: ClassType<API>): API {
-    const def = _.find(this.apiImpls, apiImpl => apiImpl.api === api);
+    const def = find(this.apiImpls, apiImpl => apiImpl.api === api);
     if (!def) {
       throw new Error('no api implementation found');
     }

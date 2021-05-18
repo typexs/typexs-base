@@ -3,6 +3,9 @@
  */
 import {EventEmitter} from 'events';
 
+/**
+ * TODO move this to sometimes to @allgemein/base
+ */
 export class Semaphore extends EventEmitter {
 
 

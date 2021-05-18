@@ -2,7 +2,6 @@ import {cloneDeep, defaults, filter, has, isFunction, isObject, isString} from '
 import {Log} from './libs/logging/Log';
 import {Config, IConfigOptions, IOptions} from '@allgemein/config';
 import {RuntimeLoader} from './base/RuntimeLoader';
-import {IRuntimeLoaderOptions} from './base/IRuntimeLoaderOptions';
 import {IActivator} from './api/IActivator';
 import {IModule} from './api/IModule';
 import {IStorageOptions, K_STORAGE} from './libs/storage/IStorageOptions';
@@ -14,14 +13,7 @@ import {
   K_CLS_ACTIVATOR,
   K_CLS_API,
   K_CLS_BOOTSTRAP,
-  K_CLS_CACHE_ADAPTER,
   K_CLS_COMMANDS,
-  K_CLS_ENTITIES_DEFAULT,
-  K_CLS_EXCHANGE_MESSAGE,
-  K_CLS_GENERATORS,
-  K_CLS_SCHEDULE_ADAPTER_FACTORIES,
-  K_CLS_STORAGE_SCHEMAHANDLER,
-  K_CLS_STORAGE_TYPES,
   K_CLS_USE_API
 } from './libs/Constants';
 import {IBootstrap} from './api/IBootstrap';
@@ -30,8 +22,6 @@ import {ITypexsOptions} from './libs/ITypexsOptions';
 import {Invoker} from './base/Invoker';
 import {IShutdown} from './api/IShutdown';
 import {System} from './libs/system/System';
-import {K_CLS_WORKERS} from './libs/worker/Constants';
-import {K_CLS_TASKS} from './libs/tasks/Constants';
 import {ICommand} from './libs/commands/ICommand';
 import {LockFactory} from './libs/LockFactory';
 import {Injector} from './libs/di/Injector';
@@ -40,210 +30,41 @@ import {IRuntimeLoader} from './libs/core/IRuntimeLoader';
 import {WinstonLoggerJar} from './libs/logging/WinstonLoggerJar';
 import {DEFAULT_LOGGER_OPTIONS} from './libs/logging/Constants';
 import {RegistryFactory} from '@allgemein/schema-api';
-
-
-/**
- * Search for config files
- * - first look for hostname specific files
- * - then for context specific controlled by startup arguments like 'nodeId' and 'stage'
- */
-const DEFAULT_CONFIG_LOAD_ORDER = [
-  {type: 'file', file: '${argv.configfile}'},
-  {type: 'file', file: '${env.configfile}'},
-  {
-    type: 'file',
-    file: {dirname: './config', filename: 'typexs'},
-    namespace: CONFIG_NAMESPACE,
-    pattern: [
-      'typexs--${os.hostname}',
-      'typexs--${argv.nodeId}',
-      'typexs--${os.hostname}--${argv.nodeId}',
-      '${os.hostname}/typexs',
-      '${os.hostname}/typexs--${argv.nodeId}'
-    ]
-  },
-  {
-    type: 'file',
-    file: {dirname: './config', filename: '${app.name}'},
-    pattern: [
-      'secrets',
-      'secrets--${os.hostname}',
-      'secrets--${argv.nodeId}',
-      'secrets--${app.nodeId}',
-      'secrets--${env.nodeId}',
-      'secrets--${os.hostname}--${argv.nodeId}',
-      'secrets--${os.hostname}--${app.nodeId}',
-      'secrets--${os.hostname}--${env.nodeId}',
-      '${os.hostname}/secrets',
-      '${app.name}--${os.hostname}',
-      '${app.name}--${argv.nodeId}',
-      '${app.name}--${app.nodeId}',
-      '${app.name}--${env.stage}',
-      '${app.name}--${argv.stage}',
-      '${app.name}--${os.hostname}--${argv.stage}',
-      '${app.name}--${os.hostname}--${env.stage}',
-      '${app.name}--${os.hostname}--${argv.nodeId}',
-      '${app.name}--${os.hostname}--${app.nodeId}',
-      '${app.name}--${os.hostname}--${env.stage}--${argv.nodeId}',
-      '${app.name}--${os.hostname}--${env.stage}--${app.nodeId}',
-      '${app.name}--${os.hostname}--${argv.stage}--${argv.nodeId}',
-      '${app.name}--${os.hostname}--${argv.stage}--${argv.nodeId}',
-      '${app.name}/typexs--${os.hostname}--${argv.stage}--${argv.nodeId}',
-      '${app.name}/${os.hostname}/typexs--${argv.stage}--${argv.nodeId}'
-    ]
-  }
-];
+import {DEFAULT_TYPEXS_OPTIONS} from './libs/config/Constants';
+import {ConfigLoadOrder} from './libs/config/ConfigLoadOrder';
 
 /**
- * using default path for caching
+ * Bootstrap controls the stages of application startup. From configuration to full startup for passed command.
+ *
+ * Stages:
+ * - set configuration file load order
+ * - load configuration from config files
+ * - TODO: first schema validation?
+ * - get modules list (paths are passed through initial configuration)
+ * - load config.schema.json or config.schema.js or maybe passed through Activator?
+ * - TODO: extend config schema for validation
+ * - validate current given configuration, if fails abort startup, else proceed to next stage
+ * - initialise Activator's for specific lib startup or other modul specific initialisations
+ * -
  */
-export const DEFAULT_RUNTIME_OPTIONS: IRuntimeLoaderOptions = {
-
-  appdir: '.',
-
-  paths: [],
-
-  included: {},
-
-  subModulPattern: [
-    'packages',
-    'src/packages'
-  ],
-
-  libs: [
-    {
-      topic: K_CLS_ACTIVATOR,
-      refs: [
-        'Activator', 'src/Activator'
-      ]
-    },
-    {
-      topic: K_CLS_BOOTSTRAP,
-      refs: [
-        'Bootstrap', 'src/Bootstrap',
-        'Startup', 'src/Startup'
-      ]
-    },
-    {
-      topic: K_CLS_API,
-      refs: [
-        'api/*.api.*',
-        'src/api/*.api.*'
-      ]
-    },
-    {
-      topic: K_CLS_USE_API,
-      refs: ['extend/*', 'src/extend/*']
-    },
-    {
-      topic: K_CLS_COMMANDS,
-      refs: ['commands', 'src/commands']
-    },
-    {
-      topic: K_CLS_GENERATORS,
-      refs: ['generators', 'src/generators']
-    },
-    {
-      topic: K_CLS_STORAGE_SCHEMAHANDLER,
-      refs: [
-        'adapters/storage/*/*SchemaHandler.*',
-        'src/adapters/storage/*/*SchemaHandler.*'
-      ]
-    },
-    {
-      topic: K_CLS_STORAGE_TYPES,
-      refs: [
-        'adapters/storage/*/*Storage.*',
-        'src/adapters/storage/*/*Storage.*'
-      ]
-    },
-    {
-      topic: K_CLS_CACHE_ADAPTER,
-      refs: [
-        'adapters/cache/*CacheAdapter.*',
-        'src/adapters/cache/*CacheAdapter.*'
-      ]
-    },
-    {
-      topic: K_CLS_SCHEDULE_ADAPTER_FACTORIES,
-      refs: [
-        'adapters/scheduler/*Factory.*',
-        'src/adapters/scheduler/*Factory.*'
-      ]
-    },
-    {
-      topic: K_CLS_ENTITIES_DEFAULT,
-      refs: [
-        'entities', 'src/entities',
-        'shared/entities', 'src/shared/entities',
-        'modules/*/entities', 'src/modules/*/entities'
-      ]
-    },
-    {
-      topic: K_CLS_TASKS,
-      refs: [
-        'tasks', 'tasks/*/*', 'src/tasks', 'src/tasks/*/*'
-      ]
-    },
-    {
-      topic: K_CLS_WORKERS,
-      refs: [
-        'workers', 'workers/*/*', 'src/workers', 'src/workers/*/*'
-      ]
-    },
-    {
-      topic: K_CLS_EXCHANGE_MESSAGE,
-      refs: [
-        'adapters/exchange/*/*Exchange.*', 'src/adapters/exchange/*/*Exchange.*'
-      ]
-    },
-  ]
-};
-
-
-export const DEFAULT_STORAGE_OPTIONS: IStorageOptions = <any & IStorageOptions>{
-  name: 'default',
-  type: 'sqlite',
-  database: ':memory:',
-  synchronize: true,
-  connectOnStartup: false
-};
-
-
-const DEFAULT_OPTIONS: ITypexsOptions = {
-  app: {
-    name: 'app',
-    path: '.'
-  },
-
-  modules: DEFAULT_RUNTIME_OPTIONS,
-
-  logging: {enable: false},
-
-  storage: {
-    'default': DEFAULT_STORAGE_OPTIONS
-  }
-
-};
-
-
 export class Bootstrap {
-
 
   private constructor(options: ITypexsOptions = {}) {
     options = options || {};
-    this._options = defaults(options, cloneDeep(DEFAULT_OPTIONS));
-    const config_load_order = cloneDeep(DEFAULT_CONFIG_LOAD_ORDER);
-    this.setConfigSources(config_load_order);
+    this.options = defaults(options, cloneDeep(DEFAULT_TYPEXS_OPTIONS));
+    this.initConfigSources();
   }
+
 
   private static $self: Bootstrap = null;
 
   private nodeId: string = CryptUtils.shorthash(CryptUtils.random(8));
 
-  private CONFIG_LOADED = false;
+  private options: ITypexsOptions;
 
-  private cfgOptions: IOptions = {};
+  private configOptions: IOptions = {};
+
+  private CONFIG_LOADED = false;
 
   private VERBOSE_DONE = false;
 
@@ -255,10 +76,8 @@ export class Bootstrap {
 
   private storage: Storage;
 
-  private _options: ITypexsOptions;
 
   private running = false;
-
 
   static _(options: ITypexsOptions = {}): Bootstrap {
     if (!this.$self) {
@@ -302,9 +121,9 @@ export class Bootstrap {
 
 
   static addConfigOptions(options: IOptions) {
-    const opts = this._().cfgOptions;
-    this._().cfgOptions = BaseUtils.merge(opts, options);
-    return this._().cfgOptions;
+    const opts = this._().configOptions;
+    this._().configOptions = BaseUtils.merge(opts, options);
+    return this._().configOptions;
   }
 
 
@@ -322,7 +141,6 @@ export class Bootstrap {
     return this._().setConfigSources(sources);
   }
 
-
   static prepareInvoker(i: Invoker, loader: IRuntimeLoader) {
     // lade klassen mit erweiterung, jedoch welche erweiterung implementieren diese
     const apiClasses = loader.getClasses(K_CLS_API);
@@ -334,14 +152,51 @@ export class Bootstrap {
   }
 
 
+  /**
+   * Initialise config sources types and load order.
+   */
+  initConfigSources() {
+    const cs = this.getConfigSources();
+    this.setConfigSources(cs);
+  }
+
+  /**
+   * Check if config file load order is present. Possible passthourgh of the config order is:
+   * - env variable
+   * - load config order json file fi exists
+   *   - like config-load.json oder ./config/config-load.json
+   * - use at least DEFAULT_CONFIG_LOAD_ORDER
+   */
+  getConfigSources() {
+    const configLoadOrder = new ConfigLoadOrder();
+    configLoadOrder.detect();
+    return configLoadOrder.get();
+  }
+
+
+  setConfigSources(sources: IConfigOptions[]) {
+    this.configOptions.configs = sources;
+    return this;
+  }
+
+
   getNodeId() {
     return Bootstrap.getNodeId();
   }
 
+  /**
+   * Returns the typexs options.
+   */
+  getOptions() {
+    return this.options;
+  }
 
+  /**
+   * Activate the logger.
+   */
   activateLogger(): Bootstrap {
     Log.prefix = this.getNodeId() + ' ';
-    Log.options(this._options.logging || {enable: false});
+    Log.options(this.options.logging || {enable: false});
     return this;
   }
 
@@ -399,12 +254,6 @@ export class Bootstrap {
   }
 
 
-  setConfigSources(sources: IConfigOptions[]) {
-    this.cfgOptions.configs = sources;
-    return this;
-  }
-
-
   configure(c: any = null) {
     // set logger class
     Log.DEFAULT_OPTIONS = DEFAULT_LOGGER_OPTIONS;
@@ -416,8 +265,8 @@ export class Bootstrap {
     }
     this.CONFIG_LOADED = true;
 
-    if (this._options.app.path) {
-      this.cfgOptions.workdir = this._options.app.path;
+    if (this.options.app.path) {
+      this.configOptions.workdir = this.options.app.path;
     }
 
     // check if it is an file
@@ -439,7 +288,7 @@ export class Bootstrap {
           }
 
           if (PlatformUtils.fileExist(configfile)) {
-            this.cfgOptions.configs.push({type: 'file', file: configfile});
+            this.configOptions.configs.push({type: 'file', file: configfile});
           } else {
             // INFO that file couldn't be loaded, because it doesn't exist
           }
@@ -448,13 +297,13 @@ export class Bootstrap {
         additionalData = c;
       }
 
-      this.cfgOptions = Config.options(this.cfgOptions);
+      this.configOptions = Config.options(this.configOptions);
 
       if (isObject(additionalData)) {
         Config.jar(CONFIG_NAMESPACE).merge(additionalData);
       }
 
-      this.cfgOptions.configs.forEach(_c => {
+      this.configOptions.configs.forEach(_c => {
         if (_c.state && _c.type !== 'system') {
           Log.debug('Loaded configuration from ' + (isString(_c.file) ? _c.file : _c.file.dirname + '/' + _c.file.filename));
         }
@@ -465,8 +314,8 @@ export class Bootstrap {
       process.exit(1);
     }
     const add = Config.jar(CONFIG_NAMESPACE).get('');
-    this._options = BaseUtils.merge(this._options, add);
-    Config.jar(CONFIG_NAMESPACE).merge(this._options);
+    this.options = BaseUtils.merge(this.options, add);
+    Config.jar(CONFIG_NAMESPACE).merge(this.options);
 
     /**
      * Override nodeId if given
@@ -480,16 +329,16 @@ export class Bootstrap {
 
   async prepareRuntime(): Promise<Bootstrap> {
 
-    this._options.modules.appdir = this._options.app.path;
-    let cachePath = has(this._options.modules, 'cachePath') ?
-      this._options.modules.cachePath :
+    this.options.modules.appdir = this.options.app.path;
+    let cachePath = has(this.options.modules, 'cachePath') ?
+      this.options.modules.cachePath :
       PlatformUtils.join(Config.get('os.tmpdir', '/tmp'), '.txs', 'cache');
     cachePath = PlatformUtils.pathNormAndResolve(cachePath);
     if (!PlatformUtils.fileExist(cachePath)) {
       PlatformUtils.mkdir(cachePath);
     }
-    this._options.modules.cachePath = cachePath;
-    this.runtimeLoader = new RuntimeLoader(this._options.modules);
+    this.options.modules.cachePath = cachePath;
+    this.runtimeLoader = new RuntimeLoader(this.options.modules);
     Injector.set(RuntimeLoader, this.runtimeLoader);
     Injector.set(RuntimeLoader.NAME, this.runtimeLoader);
     await this.runtimeLoader.prepare();
@@ -626,14 +475,6 @@ export class Bootstrap {
     }
     LockFactory.reset();
 
-    // TODO cleanup registry destroys testing with new starts
-    // LookupRegistry.getRegistryNames().map(x => {
-    //   // LookupRegistry.reset(x);
-    //   console.log(x);
-    //   const y = LookupRegistry.$(x).list(METATYPE_ENTITY);
-    //   console.log(y.map(z => z.name));
-    // });
-
     RegistryFactory.getNamespaces().map(x => {
       RegistryFactory.remove(x);
     });
@@ -672,7 +513,7 @@ export class Bootstrap {
 
 
   getAppPath() {
-    return this._options.app.path;
+    return this.options.app.path;
   }
 
 

@@ -85,7 +85,10 @@
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="index.iruntimeloaderoptions.html#appdir" class="tsd-kind-icon">appdir</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="index.iruntimeloaderoptions.html#cachepath" class="tsd-kind-icon">cache<wbr>Path</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="index.iruntimeloaderoptions.html#disablecache" class="tsd-kind-icon">disable<wbr>Cache</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="index.iruntimeloaderoptions.html#disabled" class="tsd-kind-icon">disabled</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="index.iruntimeloaderoptions.html#exclude" class="tsd-kind-icon">exclude</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="index.iruntimeloaderoptions.html#include" class="tsd-kind-icon">include</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="index.iruntimeloaderoptions.html#included" class="tsd-kind-icon">included</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="index.iruntimeloaderoptions.html#libs" class="tsd-kind-icon">libs</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="index.iruntimeloaderoptions.html#match" class="tsd-kind-icon">match</a></li>
@@ -105,7 +108,7 @@
 					<div class="tsd-signature tsd-kind-icon">appdir<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/typexs/typexs-base/blob/a47bb44/src/base/IRuntimeLoaderOptions.ts#L9">src/base/IRuntimeLoaderOptions.ts:9</a></li>
+							<li>Defined in <a href="https://github.com/typexs/typexs-base/blob/623e729/src/base/IRuntimeLoaderOptions.ts#L9">src/base/IRuntimeLoaderOptions.ts:9</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -120,7 +123,7 @@
 					<div class="tsd-signature tsd-kind-icon">cache<wbr>Path<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/typexs/typexs-base/blob/a47bb44/src/base/IRuntimeLoaderOptions.ts#L54">src/base/IRuntimeLoaderOptions.ts:54</a></li>
+							<li>Defined in <a href="https://github.com/typexs/typexs-base/blob/623e729/src/base/IRuntimeLoaderOptions.ts#L64">src/base/IRuntimeLoaderOptions.ts:64</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -130,12 +133,27 @@
 					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="disablecache" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> disable<wbr>Cache</h3>
+					<div class="tsd-signature tsd-kind-icon">disable<wbr>Cache<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/typexs/typexs-base/blob/623e729/src/base/IRuntimeLoaderOptions.ts#L69">src/base/IRuntimeLoaderOptions.ts:69</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Disable cache</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
 					<a name="disabled" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagOptional">Optional</span> disabled</h3>
 					<div class="tsd-signature tsd-kind-icon">disabled<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/typexs/typexs-base/blob/a47bb44/src/base/IRuntimeLoaderOptions.ts#L29">src/base/IRuntimeLoaderOptions.ts:29</a></li>
+							<li>Defined in <a href="https://github.com/typexs/typexs-base/blob/623e729/src/base/IRuntimeLoaderOptions.ts#L39">src/base/IRuntimeLoaderOptions.ts:39</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -145,12 +163,42 @@
 					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="exclude" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> exclude</h3>
+					<div class="tsd-signature tsd-kind-icon">exclude<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/typexs/typexs-base/blob/623e729/src/base/IRuntimeLoaderOptions.ts#L29">src/base/IRuntimeLoaderOptions.ts:29</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Minimatch include definitions for module paths.</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="include" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> include</h3>
+					<div class="tsd-signature tsd-kind-icon">include<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/typexs/typexs-base/blob/623e729/src/base/IRuntimeLoaderOptions.ts#L24">src/base/IRuntimeLoaderOptions.ts:24</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Minimatch include definitions for module paths.</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
 					<a name="included" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagOptional">Optional</span> included</h3>
 					<div class="tsd-signature tsd-kind-icon">included<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{}</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/typexs/typexs-base/blob/a47bb44/src/base/IRuntimeLoaderOptions.ts#L39">src/base/IRuntimeLoaderOptions.ts:39</a></li>
+							<li>Defined in <a href="https://github.com/typexs/typexs-base/blob/623e729/src/base/IRuntimeLoaderOptions.ts#L49">src/base/IRuntimeLoaderOptions.ts:49</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -178,7 +226,7 @@
 					<div class="tsd-signature tsd-kind-icon">libs<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">IClassesLib</span><span class="tsd-signature-symbol">[]</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/typexs/typexs-base/blob/a47bb44/src/base/IRuntimeLoaderOptions.ts#L34">src/base/IRuntimeLoaderOptions.ts:34</a></li>
+							<li>Defined in <a href="https://github.com/typexs/typexs-base/blob/623e729/src/base/IRuntimeLoaderOptions.ts#L44">src/base/IRuntimeLoaderOptions.ts:44</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -193,7 +241,7 @@
 					<div class="tsd-signature tsd-kind-icon">match<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span>enabled<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">; </span>match<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">; </span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>params<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">[]</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/typexs/typexs-base/blob/a47bb44/src/base/IRuntimeLoaderOptions.ts#L49">src/base/IRuntimeLoaderOptions.ts:49</a></li>
+							<li>Defined in <a href="https://github.com/typexs/typexs-base/blob/623e729/src/base/IRuntimeLoaderOptions.ts#L59">src/base/IRuntimeLoaderOptions.ts:59</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -212,7 +260,7 @@
 					<div class="tsd-signature tsd-kind-icon">package<wbr>Keys<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/typexs/typexs-base/blob/a47bb44/src/base/IRuntimeLoaderOptions.ts#L24">src/base/IRuntimeLoaderOptions.ts:24</a></li>
+							<li>Defined in <a href="https://github.com/typexs/typexs-base/blob/623e729/src/base/IRuntimeLoaderOptions.ts#L34">src/base/IRuntimeLoaderOptions.ts:34</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -227,7 +275,7 @@
 					<div class="tsd-signature tsd-kind-icon">paths<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/typexs/typexs-base/blob/a47bb44/src/base/IRuntimeLoaderOptions.ts#L14">src/base/IRuntimeLoaderOptions.ts:14</a></li>
+							<li>Defined in <a href="https://github.com/typexs/typexs-base/blob/623e729/src/base/IRuntimeLoaderOptions.ts#L14">src/base/IRuntimeLoaderOptions.ts:14</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -242,7 +290,7 @@
 					<div class="tsd-signature tsd-kind-icon">sub<wbr>Modul<wbr>Pattern<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/typexs/typexs-base/blob/a47bb44/src/base/IRuntimeLoaderOptions.ts#L19">src/base/IRuntimeLoaderOptions.ts:19</a></li>
+							<li>Defined in <a href="https://github.com/typexs/typexs-base/blob/623e729/src/base/IRuntimeLoaderOptions.ts#L19">src/base/IRuntimeLoaderOptions.ts:19</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -287,7 +335,16 @@
 								<a href="index.iruntimeloaderoptions.html#cachepath" class="tsd-kind-icon">cache<wbr>Path</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="index.iruntimeloaderoptions.html#disablecache" class="tsd-kind-icon">disable<wbr>Cache</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
 								<a href="index.iruntimeloaderoptions.html#disabled" class="tsd-kind-icon">disabled</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="index.iruntimeloaderoptions.html#exclude" class="tsd-kind-icon">exclude</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="index.iruntimeloaderoptions.html#include" class="tsd-kind-icon">include</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
 								<a href="index.iruntimeloaderoptions.html#included" class="tsd-kind-icon">included</a>

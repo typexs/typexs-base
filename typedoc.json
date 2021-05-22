@@ -1,0 +1,4 @@
+{
+  "entryPoints": ["src/index.ts", "src/Bootstrap.ts", "src/Activator.ts", "src/Startup.ts"],
+  "out": "docs/typedoc"
+}

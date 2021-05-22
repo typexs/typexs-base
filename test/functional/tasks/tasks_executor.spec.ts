@@ -18,7 +18,7 @@ import {TaskLog} from '../../../src/entities/TaskLog';
 import {C_STORAGE_DEFAULT} from '../../../src/libs/Constants';
 
 
-const LOG_EVENT = TestHelper.logEnable(true);
+const LOG_EVENT = TestHelper.logEnable(false);
 
 let bootstrap: Bootstrap;
 const p: SpawnHandle[] = [];

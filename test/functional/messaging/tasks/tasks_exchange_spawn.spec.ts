@@ -13,7 +13,7 @@ import {TaskFuture} from '../../../../src/libs/tasks/worker/execute/TaskFuture';
 import {FileSystemExchange} from '../../../../src/adapters/exchange/filesystem/FileSystemExchange';
 
 
-const LOG_EVENT = TestHelper.logEnable(true);
+const LOG_EVENT = TestHelper.logEnable(false);
 
 let bootstrap: Bootstrap;
 let spawned: SpawnHandle;

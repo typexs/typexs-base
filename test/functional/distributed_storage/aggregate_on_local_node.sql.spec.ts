@@ -17,7 +17,7 @@ import {generateSqlDataRows} from './helper';
 import {__CLASS__} from '@allgemein/schema-api';
 
 
-const LOG_EVENT = TestHelper.logEnable(true);
+const LOG_EVENT = TestHelper.logEnable(false);
 
 let bootstrap: Bootstrap;
 

@@ -38,7 +38,11 @@ class MessagingSpec {
         modules: <any>{
           paths: [
             __dirname + '/../../../..'
-          ], disableCache: true
+          ],
+          include: [
+            '**/@typexs{,**/}*'
+          ],
+          disableCache: true
         }
       }
     );
@@ -76,6 +80,7 @@ class MessagingSpec {
     const fileContent = await FileUtils.readFile(filePath);
     expect(data).to.be.eq(fileContent.toString());
   }
+
 
   @test
   async 'read remote file - use relative path'() {

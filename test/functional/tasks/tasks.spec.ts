@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 
-
+import {DateUtils} from '../../../src/libs/utils/DateUtils';
 import {SimpleTask} from './tasks/SimpleTask';
 import {SimpleTaskPromise} from './tasks/SimpleTaskPromise';
 import {SimpleTaskWithArgs} from './tasks/SimpleTaskWithArgs';
@@ -32,7 +32,6 @@ import {TasksHelper} from '../../../src/libs/tasks/TasksHelper';
 import {Injector} from '../../../src/libs/di/Injector';
 import {Config} from '@allgemein/config';
 import {RegistryFactory} from '@allgemein/schema-api';
-import moment = require('moment');
 import {C_TASKS} from '../../../src/libs/tasks/Constants';
 import {TaskRef} from '../../../src/libs/tasks/TaskRef';
 
@@ -512,7 +511,7 @@ class TasksSpec {
 
   @test
   async 'attach logger to stream'() {
-    // Log.options({enable:true})
+    // Log.configOptions({enable:true})
     const taskRef = tasks.addTask(SimpleTaskWithRuntimeLog);
     const entites = tasks.getEntityRefs();
     expect(entites).to.have.length(1);
@@ -656,7 +655,7 @@ class TasksSpec {
 
   @test
   async 'task helper log file path'() {
-    const date = moment().format('YYYY-MM-DD');
+    const date = DateUtils.format('YYYY-MM-DD');
     let path = TasksHelper.getTaskLogFile('123', 'go');
     expect(path).to.be.eq('/tmp/taskmonitor-123-go.log');
     Config.set('tasks.logdir', '/tmp/tasks-%YYYY-%MM-%DD');

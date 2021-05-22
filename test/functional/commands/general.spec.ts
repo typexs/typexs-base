@@ -33,7 +33,7 @@ class GeneralSpec {
     const commands = bootstrap.getCommands();
     expect(commands.length).to.be.gt(0);
 
-    const command = _.find(commands, e => e.command === 'dummy');
+    const command = commands.find(e => e.command === 'dummy');
 
     const result = await command.handler({});
     expect(result).to.deep.include({

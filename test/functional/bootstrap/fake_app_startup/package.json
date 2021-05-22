@@ -1,6 +1,10 @@
 {
   "name": "fake_app",
   "version": "0.0.1",
-  "typexs":{}
-
+  "peerDependencies": {
+    "@typexs/base": "latest"
+  },
+  "typexs": {
+    "name": "fake_app"
+  }
 }

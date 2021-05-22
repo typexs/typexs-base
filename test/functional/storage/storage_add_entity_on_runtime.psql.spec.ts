@@ -32,7 +32,8 @@ class StorageAddEntityOnRuntimeSpec {
           path: appdir
         },
         modules: {
-          paths: [__dirname + '/../../..']
+          paths: [__dirname + '/../../..'],
+          include: []
         },
         storage: {
           default: {

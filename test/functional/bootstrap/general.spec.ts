@@ -16,6 +16,7 @@ import {
 } from '../../../src/libs/Constants';
 import {K_CLS_TASKS} from '../../../src/libs/tasks/Constants';
 import {TestHelper} from '../TestHelper';
+import {PlatformUtils} from '@allgemein/base';
 
 
 @suite('functional/bootstrap/general')
@@ -68,7 +69,8 @@ class BootstrapGeneralSpec {
 
     const p = path.join(__dirname, 'fake_app');
     let loader = new RuntimeLoader({
-      appdir: p
+      appdir: p,
+      include: []
     });
 
     await loader.rebuild();
@@ -95,14 +97,18 @@ class BootstrapGeneralSpec {
 
   @test
   async 'bootstrap app with modules'() {
+    if (PlatformUtils.fileExist('/tmp/.txs/cache')) {
+      await PlatformUtils.deleteDirectory('/tmp/.txs/cache');
+    }
+
     const appdir = path.join(__dirname, 'fake_app');
 
     let bootstrap = Bootstrap.configure({
-      app: {name: 'test', path: appdir}
+      app: {name: 'test', path: appdir}, modules: {include: []}
     });
     bootstrap = await bootstrap.prepareRuntime();
 
-    expect(bootstrap.getOptions()).to.be.deep.include({
+    expect(bootstrap.getConfiguration()).to.be.deep.include({
       app: {
         path: appdir,
         name: 'fake_app'
@@ -110,7 +116,7 @@ class BootstrapGeneralSpec {
 
       modules: {
         appdir: appdir,
-        'cachePath': '/tmp/.txs/cache',
+        cachePath: '/tmp/.txs/cache',
         included: {
           'fake_app': {
             'enabled': true
@@ -121,8 +127,12 @@ class BootstrapGeneralSpec {
           'module3': {
             'enabled': true
           }
-        }
-        ,
+        },
+        'disableCache': false,
+        'include': [],
+        'exclude': [
+          '**/@types{,**/}*'
+        ],
         libs:
           [
             {topic: 'activator.js', refs: ['Activator', 'src/Activator']},
@@ -215,9 +225,7 @@ class BootstrapGeneralSpec {
           appdir
         ],
         'subModulPattern': [
-          'node_modules',
-          'packages',
-          'src/packages'
+          'node_modules'
         ]
       }
     });
@@ -259,6 +267,7 @@ class BootstrapGeneralSpec {
         name: 'test', path: appdir
       },
       modules: {
+        include: [],
         packageKeys: ['pkg']
       }
     });

@@ -25,7 +25,8 @@ class BootstrapGeneralSpec {
 
     const p = path.join(__dirname, 'fake_app');
     let loader = new RuntimeLoader({
-      appdir: p
+      appdir: p,
+      include: []
     });
 
     await loader.rebuild();
@@ -56,6 +57,7 @@ class BootstrapGeneralSpec {
     const p = path.join(__dirname, 'fake_app');
     let loader = new RuntimeLoader({
       appdir: p,
+      include: [],
       included: {
         module1: {
           enabled: false
@@ -79,6 +81,7 @@ class BootstrapGeneralSpec {
     const p = path.join(__dirname, 'fake_app');
     let loader = new RuntimeLoader({
       appdir: p,
+      include: [],
       match: [
         {name: 'module*', enabled: false}
       ]
@@ -98,6 +101,7 @@ class BootstrapGeneralSpec {
     const p = path.join(__dirname, 'fake_app');
     let loader = new RuntimeLoader({
       appdir: p,
+      include: [],
       match: [
         {name: 'module*', enabled: false},
         {name: 'module1', enabled: true},

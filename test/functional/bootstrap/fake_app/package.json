@@ -6,6 +6,8 @@
     "module2": "^0.0.1",
     "module3": "^0.0.1"
   },
-  "typexs":{}
+  "typexs":{
+    "name": "fake_app"
+  }
 
 }

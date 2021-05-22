@@ -98,8 +98,7 @@ class JsonSchemaSupportSpec {
               tableType: 'column'
             },
             car: {
-              type: 'object',
-              '$ref': '#/definitions/Car',
+              $ref: '#/definitions/Car',
               metadata: {
                 propertyName: 'car',
                 relationType: 'many-to-one',

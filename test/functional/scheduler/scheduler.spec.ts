@@ -13,11 +13,11 @@ import {K_CLS_SCHEDULE_ADAPTER_FACTORIES} from '../../../src/libs/Constants';
 import {Invoker} from '../../../src/base/Invoker';
 import {TasksApi} from '../../../src/api/Tasks.api';
 import {Tasks} from '../../../src/libs/tasks/Tasks';
-import * as moment from 'moment';
 import {TaskRunnerRegistry} from '../../../src/libs/tasks/TaskRunnerRegistry';
 import {RegistryFactory} from '@allgemein/schema-api';
 import {Injector} from '../../../src/libs/di/Injector';
 import {C_TASKS} from '../../../src/libs/tasks/Constants';
+import {DateTime} from 'luxon';
 
 let loader: RuntimeLoader = null;
 let factories: IScheduleFactory[] = [];
@@ -75,7 +75,7 @@ class SchedulerSpec {
 
     expect(schedule.name).to.eq('test01');
     expect(schedule.next).to.be.gt(new Date());
-    expect(schedule.next).to.be.lt(moment(new Date()).add(10, 'minutes').toDate());
+    expect(schedule.next).to.be.lt(DateTime.fromJSDate(new Date()).plus({minutes: 10}).toJSDate());
 
     schedule = await scheduler.register({
       name: 'test02',
@@ -84,7 +84,7 @@ class SchedulerSpec {
 
     expect(schedule.name).to.eq('test02');
     expect(schedule.next).to.be.gt(new Date());
-    expect(schedule.next).to.be.lt(moment(new Date()).add(10, 'seconds').toDate());
+    expect(schedule.next).to.be.lt(DateTime.fromJSDate(new Date()).plus({seconds: 10}).toJSDate());
 
     await scheduler.shutdown();
 
@@ -196,7 +196,7 @@ class SchedulerSpec {
 
     expect(schedule.name).to.eq('test01');
     expect(schedule.next).to.be.gt(now);
-    expect(schedule.next).to.be.lte(moment(now).utc().add(5, 'm').toDate());
+    expect(schedule.next).to.be.lte(DateTime.fromJSDate(now).toUTC().plus({minutes: 5}).toJSDate());
 
     schedule = await scheduler.register({
       name: 'test02',
@@ -208,7 +208,7 @@ class SchedulerSpec {
 
     expect(schedule.name).to.eq('test02');
     expect(schedule.next).to.be.gt(now);
-    expect(schedule.next).to.be.lte(moment(now).utc().add(5, 'm').toDate());
+    expect(schedule.next).to.be.lte(DateTime.fromJSDate(now).toUTC().plus({minutes: 5}).toJSDate());
 
 
     schedule = await scheduler.register({
@@ -221,10 +221,10 @@ class SchedulerSpec {
 
     expect(schedule.name).to.eq('test03');
     expect(schedule.next).to.be.gt(now);
-    expect(schedule.next).to.be.lte(moment(now).utc().add(23, 'h').toDate());
+    expect(schedule.next).to.be.lte(DateTime.fromJSDate(now).toUTC().plus({hours: 23}).toJSDate());
 
 
-    const str = moment().add(1, 'd').subtract(1, 'hour').toISOString();
+    const str = DateTime.now().plus({days: 1}).minus({hours: 1}).toISO();
     schedule = await scheduler.register({
       name: 'test04',
       offset: '10m',
@@ -234,8 +234,8 @@ class SchedulerSpec {
     now = new Date();
 
     expect(schedule.name).to.eq('test04');
-    expect(schedule.next).to.be.gte(moment(now).add(1, 'd').subtract(2, 'hour').toDate());
-    expect(schedule.next).to.be.lte(moment(now).add(2, 'd').toDate());
+    expect(schedule.next).to.be.gte(DateTime.fromJSDate(now).plus({days: 1}).minus({hours: 2}).toJSDate());
+    expect(schedule.next).to.be.lte(DateTime.fromJSDate(now).plus({days: 2}).toJSDate());
     await scheduler.shutdown();
 
   }

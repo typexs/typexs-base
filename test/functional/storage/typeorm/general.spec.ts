@@ -60,8 +60,13 @@ class StorageGeneralSpec {
   async 'storage bootstrap'() {
     const appdir = path.join(__dirname, '../fake_app');
     bootstrap = await Bootstrap.configure({
-      app: {path: appdir},
-      modules: {paths: [__dirname + '/../../../..']}
+      app: {
+        path: appdir
+      },
+      modules: {
+        paths: [__dirname + '/../../../..'],
+        include: []
+      }
     }).prepareRuntime();
     bootstrap = await bootstrap.activateStorage();
 

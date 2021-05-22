@@ -108,7 +108,7 @@ class ConfigRedisSpec {
 
     expect(beforeNodes).to.have.length(1);
     expect(afterNodes).to.have.length(2);
-    expect(config.map(x => x.app)).to.deep.eq([
+    expect(config.map((x: any) => x.app)).to.deep.eq([
       {
         'name': 'test',
         'nodeId': 'system',

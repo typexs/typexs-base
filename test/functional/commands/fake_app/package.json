@@ -3,6 +3,8 @@
   "version": "0.0.1",
   "typexs": {
     "name": "fake_app"
+  },
+  "dependencies": {
+    "@typexs/base": "latest"
   }
-
 }

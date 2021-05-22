@@ -3,7 +3,7 @@ import {Utils} from '@allgemein/config';
 import {InterpolationSupport} from '@allgemein/config/supports/InterpolationSupport';
 import {TreeUtils} from '@allgemein/base';
 import {ClassUtils} from '@allgemein/base';
-import {WalkValues} from '@allgemein/base/libs/utils/TreeUtils';
+import {WalkValues} from '@allgemein/base/utils/TreeUtils';
 
 
 export class BaseUtils {

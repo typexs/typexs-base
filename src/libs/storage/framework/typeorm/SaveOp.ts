@@ -16,7 +16,6 @@ export class SaveOp<T> implements ISaveOp<T> {
 
   readonly controller: TypeOrmEntityController;
 
-
   protected options: ISaveOptions;
 
   protected objects: T[] = [];

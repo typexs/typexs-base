@@ -19,6 +19,16 @@ export interface IRuntimeLoaderOptions {
   subModulPattern?: string[];
 
   /**
+   * Minimatch include definitions for module paths.
+   */
+  include?: string[];
+
+  /**
+   * Minimatch include definitions for module paths.
+   */
+  exclude?: string[];
+
+  /**
    * Filter modules which have 'typexs' and here defined keys in package.json definition
    */
   packageKeys?: string[];
@@ -52,4 +62,9 @@ export interface IRuntimeLoaderOptions {
    * Modulcache
    */
   cachePath?: string;
+
+  /**
+   * Disable cache
+   */
+  disableCache?: boolean;
 }

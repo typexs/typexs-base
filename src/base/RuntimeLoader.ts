@@ -1,5 +1,25 @@
-import * as _ from 'lodash';
-import {ICache, IClassesLoader, IModuleRegistry, ModuleDescriptor, ModuleRegistry} from '@allgemein/moduls';
+import {
+  cloneDeep,
+  defaults,
+  find,
+  get,
+  has,
+  intersection,
+  isBoolean,
+  isUndefined,
+  remove,
+  set,
+  sortBy,
+  uniq
+} from 'lodash';
+import {
+  ICache,
+  IClassesLoader,
+  IModuleRegistry,
+  IModuleRegistryOptions,
+  ModuleDescriptor,
+  ModuleRegistry
+} from '@allgemein/moduls';
 import {IRuntimeLoaderOptions} from './IRuntimeLoaderOptions';
 import {TYPEXS_NAME} from '../libs/Constants';
 import {CryptUtils, PlatformUtils} from '@allgemein/base';
@@ -8,6 +28,8 @@ import {MatchUtils} from '../libs/utils/MatchUtils';
 import {ModulRegistryCache} from '../libs/cache/ModulRegistryCache';
 import {IRuntimeLoader} from '../libs/core/IRuntimeLoader';
 import {DEFAULT_RUNTIME_OPTIONS} from '../libs/config/Constants';
+import {IClassesLib} from '@allgemein/moduls/loader/classes/IClassesOptions';
+import {BaseUtils} from '../libs/utils/BaseUtils';
 
 
 export class RuntimeLoader implements IRuntimeLoader {
@@ -30,11 +52,27 @@ export class RuntimeLoader implements IRuntimeLoader {
 
 
   constructor(options: IRuntimeLoaderOptions) {
-    _.defaults(options, _.cloneDeep(DEFAULT_RUNTIME_OPTIONS));
+    const clone = cloneDeep(DEFAULT_RUNTIME_OPTIONS);
+    clone.libs = [];
+    defaults(options, clone);
+    const libsPrev = options.libs;
+    const libsBase = cloneDeep(DEFAULT_RUNTIME_OPTIONS.libs) as IClassesLib[];
+    const libsNew = [];
+    for (const lib of libsBase) {
+      const exists = remove(libsPrev, x => x.topic === lib.topic).shift();
+      if (exists) {
+        libsNew.push(BaseUtils.merge(lib, exists));
+      } else {
+        libsNew.push(lib);
+      }
+    }
+
+    options.libs = libsNew.concat(libsPrev);
+
     this.options = options;
     const appdir = this.options.appdir || PlatformUtils.pathResolve('.');
 
-    const cacheDisable = _.get(options, 'disableCache', false);
+    const cacheDisable = get(options, 'disableCache', false);
     if (!cacheDisable) {
       this.cache = new ModulRegistryCache(
         this.options.cachePath ? this.options.cachePath : '/tmp/.txs/cache',
@@ -88,17 +126,25 @@ export class RuntimeLoader implements IRuntimeLoader {
       }
     }
 
-    // @ts-ignore
-    this.registry = new ModuleRegistry({
+    const moduleRegistryOptions: IModuleRegistryOptions = {
       packageFilter: (json: any) => {
-        return _.intersection(Object.keys(json), modulePackageJsonKeys).length > 0 && this.isEnabled(json.name);
+        return intersection(Object.keys(json), modulePackageJsonKeys).length > 0 && this.isEnabled(json.name);
       },
       module: module,
       paths: modulPaths,
       pattern: this.options.subModulPattern ? this.options.subModulPattern : [],
       cache: this.cache
-    });
+    };
 
+    if (this.options.include) {
+      moduleRegistryOptions.include = this.options.include;
+    }
+
+    if (this.options.exclude) {
+      moduleRegistryOptions.exclude = this.options.exclude;
+    }
+
+    this.registry = new ModuleRegistry(moduleRegistryOptions);
     await this.registry.rebuild();
 
     const settingsLoader = await this.registry.createSettingsLoader({
@@ -121,12 +167,12 @@ export class RuntimeLoader implements IRuntimeLoader {
       if (this.isEnabled(moduleName)) {
         Log.debug('Load settings from module ' + moduleName);
         const modulSettings = this.settings[moduleName];
-        if (_.has(modulSettings, 'declareLibs')) {
+        if (has(modulSettings, 'declareLibs')) {
           for (const s of modulSettings['declareLibs']) {
-            const topicData = _.find(this.options.libs, (lib) => lib.topic === s.topic);
+            const topicData = find(this.options.libs, (lib) => lib.topic === s.topic);
             if (topicData) {
               topicData.refs.push(...s.refs);
-              topicData.refs = _.uniq(topicData.refs);
+              topicData.refs = uniq(topicData.refs);
             } else {
               this.options.libs.push(s);
             }
@@ -138,16 +184,16 @@ export class RuntimeLoader implements IRuntimeLoader {
       }
     }
 
-    this.options.libs = _.sortBy(this.options.libs, ['topic']);
+    this.options.libs = sortBy(this.options.libs, ['topic']);
     this.classesLoader = await this.registry.createClassesLoader({libs: this.options.libs});
   }
 
   isIncluded(modulName: string) {
-    return _.has(this.options.included, modulName);
+    return has(this.options.included, modulName);
   }
 
   includeModule(modulName: string) {
-    return _.set(this.options.included, modulName, {enabled: true});
+    return set(this.options.included, modulName, {enabled: true});
   }
 
 
@@ -184,24 +230,24 @@ export class RuntimeLoader implements IRuntimeLoader {
 
 
   isEnabledByInclude(modulName: string) {
-    return _.get(this.options.included, modulName + '.enabled', true) === true;
+    return get(this.options.included, modulName + '.enabled', true) === true;
   }
 
 
   isEnabledByMatch(name: string) {
-    if (_.has(this.options, 'match')) {
+    if (has(this.options, 'match')) {
       // if access empty then
       let allow = this.options.match.length > 0 ? false : true;
       let count = 0;
       for (const a of this.options.match) {
-        if (_.isUndefined(a.match)) {
+        if (isUndefined(a.match)) {
           if (/\+|\.|\(|\||\)|\*/.test(a.name)) {
             a.match = a.name;
           } else {
             a.match = false;
           }
         }
-        if (_.isBoolean(a.match)) {
+        if (isBoolean(a.match)) {
           if (a.name === name) {
             count++;
             allow = a.enabled;

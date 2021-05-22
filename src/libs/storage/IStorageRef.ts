@@ -15,12 +15,12 @@ export interface IStorageRef {
   getName(): string;
 
   /**
-   * return storage options
+   * return storage framework
    */
   getFramework(): string;
 
   /**
-   * return storage options
+   * return storage type
    */
   getType(): string;
 

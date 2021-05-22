@@ -1,15 +1,34 @@
 import {setTimeout} from 'timers';
 import {Schedule} from '../../libs/schedule/Schedule';
-import * as _ from 'lodash';
+import {get, has, isNumber} from 'lodash';
 import {IScheduleDef} from '../../libs/schedule/IScheduleDef';
 import {IScheduleFactory} from '../../libs/schedule/IScheduleFactory';
 import {Log} from '../../libs/logging/Log';
-import moment = require('moment');
+import {DateUtils} from '../../libs/utils/DateUtils';
 
 export class DefaultScheduleFactory implements IScheduleFactory {
 
 
+  convertUnit(unit: string) {
+    switch (unit) {
+      case 'ms':
+        return 'milliseconds';
+      case 's':
+        return 'seconds';
+      case 'm':
+        return 'minutes';
+      case 'h':
+        return 'hours';
+      case 'd':
+        return 'days';
+      case 'w':
+        return 'weeks';
+    }
+    return unit;
+  }
+
   create(date: Date, offset: number, unit: string) {
+    unit = this.convertUnit(unit);
     return async function () {
       if (!this.offset) {
         this.offset = offset;
@@ -21,7 +40,8 @@ export class DefaultScheduleFactory implements IScheduleFactory {
 
       let next = this.last;
       while (next <= now) {
-        next = moment(next).add(this.offset, this.unit).toDate();
+        const opts = {[this.unit]: this.offset};
+        next = DateUtils.add(opts, next);
       }
       this.next = next;
       const offsetn = next.getTime() - (new Date()).getTime();
@@ -33,8 +53,8 @@ export class DefaultScheduleFactory implements IScheduleFactory {
 
 
   async attach(schedule: Schedule): Promise<boolean> {
-    const offset: string | number = _.get(schedule.options, 'offset', null);
-    const start: string | Date = _.get(schedule.options, 'start', new Date());
+    const offset: string | number = get(schedule.options, 'offset', null);
+    const start: string | Date = get(schedule.options, 'start', new Date());
 
     if (offset && start) {
 
@@ -43,23 +63,27 @@ export class DefaultScheduleFactory implements IScheduleFactory {
         startDate = start;
       } else if (/^\d+(:\d{2})+$/.test(start.trim())) {
         const time = start.trim().split(':');
-        const m = moment();
+        let m = null;
         if (time.length === 2) {
-          m.hour(parseInt(time.shift(), 0));
-          m.minute(parseInt(time.shift(), 0));
-          m.seconds(0);
-          m.milliseconds(0);
-          startDate = m.toDate();
+          m = DateUtils.get({
+            hour: (parseInt(time.shift(), 0)),
+            minute: (parseInt(time.shift(), 0)),
+            second: 0,
+            millisecond: 0
+          });
+          startDate = m.toJSDate();
         } else if (time.length === 3) {
-          m.hours(parseInt(time.shift(), 0));
-          m.minutes(parseInt(time.shift(), 0));
-          m.seconds(parseInt(time.shift(), 0));
-          m.milliseconds(0);
-          startDate = m.toDate();
+          m = DateUtils.get({
+            hour: (parseInt(time.shift(), 0)),
+            minute: (parseInt(time.shift(), 0)),
+            second: (parseInt(time.shift(), 0)),
+            millisecond: 0
+          });
+          startDate = m.toJSDate();
         }
       } else {
         try {
-          startDate = moment(start).toDate();
+          startDate = DateUtils.fromISO(start);
         } catch (err) {
           Log.error('cant parse date from ' + startDate);
         }
@@ -67,7 +91,7 @@ export class DefaultScheduleFactory implements IScheduleFactory {
 
       let unit = 'ms';
       let offsetN: number = null;
-      if (_.isNumber(offset)) {
+      if (isNumber(offset)) {
         offsetN = offset;
       } else if (/^\d+\w+$/.test(offset)) {
         offsetN = parseInt(offset.substr(0, offset.length - 1), 0);
@@ -75,9 +99,10 @@ export class DefaultScheduleFactory implements IScheduleFactory {
       }
 
       if (startDate && offsetN && unit) {
-        const startup = _.get(schedule.options, 'startup', false);
+        const startup = get(schedule.options, 'startup', false);
         if (startup) {
-          startDate = moment().add(1, 'm').toDate();
+          // startDate = DateTime.now().plus({minutes: 1}).toJSDate();
+          startDate = DateUtils.add({minutes: 1});
         }
         schedule.reschedule = this.create(startDate, offsetN, unit);
         return true;
@@ -88,7 +113,7 @@ export class DefaultScheduleFactory implements IScheduleFactory {
 
 
   async detect(opts: IScheduleDef) {
-    return _.has(opts, 'offset');
+    return has(opts, 'offset');
   }
 
 

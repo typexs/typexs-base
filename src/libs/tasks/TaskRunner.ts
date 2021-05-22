@@ -1,4 +1,4 @@
-import * as _ from 'lodash';
+import {clone, defaults, get, isError, isString, isUndefined, orderBy, set, snakeCase} from 'lodash';
 import {EventEmitter} from 'events';
 import {Tasks} from './Tasks';
 import {TaskRun} from './TaskRun';
@@ -18,7 +18,6 @@ import {Bootstrap} from '../../Bootstrap';
 import {Invoker} from '../../base/Invoker';
 import {TasksHelper} from './TasksHelper';
 import {ILoggerApi} from '../logging/ILoggerApi';
-import * as moment from 'moment';
 import {Readable, Writable} from 'stream';
 import {ITaskRunnerOptions} from './ITaskRunnerOptions';
 import {CryptUtils} from '@allgemein/base';
@@ -28,6 +27,7 @@ import {TaskRunnerEvent} from './TaskRunnerEvent';
 import {EventBus} from 'commons-eventbus';
 import {Injector} from '../di/Injector';
 import {StreamLogger} from '../logging/StreamLogger';
+import {DateUtils} from '../utils/DateUtils';
 
 /**
  * Container for single or multiple task execution
@@ -99,7 +99,7 @@ export class TaskRunner extends EventEmitter {
     super();
     const nodeId = options && options.nodeId ? options.nodeId : Bootstrap.getNodeId();
     this.$options = options || <any>{};
-    _.defaults(this.$options, <ITaskRunnerOptions>{
+    defaults(this.$options, <ITaskRunnerOptions>{
       nodeId: nodeId,
       targetIds: [nodeId],
       skipRegistryAddition: false,
@@ -110,8 +110,8 @@ export class TaskRunner extends EventEmitter {
     // id can be overwriten
     this.$start = new Date();
 
-    const dateStr = moment(this.$start).format('YYYYMMDD-HHmmssSSS');
-    this.id = _.get(options, 'id', dateStr + '-' + CryptUtils.shorthash(names.join(';') + Math.random()).substr(1));
+    const dateStr = DateUtils.format('YYYYMMDD-HHmmssSSS', this.$start);
+    this.id = get(options, 'id', dateStr + '-' + CryptUtils.shorthash(names.join(';') + Math.random()).substr(1));
 
     this.$registry = registry;
     this.$parallel = this.$options['parallel'] || 5;
@@ -122,19 +122,19 @@ export class TaskRunner extends EventEmitter {
     this.doneNrs = [];
 
     this.resolveDeps(names);
-    this.$tasks = _.orderBy(this.$tasks, ['$weight', 1]);
+    this.$tasks = orderBy(this.$tasks, ['$weight', 1]);
 
     this.$finished = false;
 
     this.todoNrs = this.$tasks.map(x => x.nr);
     this.loggerName = 'task-runner-' + this.id;
-    const startDate = moment(this.$start).toISOString();
+    const startDate = DateUtils.toISO(this.$start);
 
     this.initStreams();
 
     // const overrideOptions: ILoggerOptions =
     //   Log._().getLoggerOptionsFor(this.loggerName) || {};
-    // _.assign(overrideOptions,
+    // assign(overrideOptions,
     //   {
     //     enable: true,
     //     prefix: this.loggerName,
@@ -225,7 +225,7 @@ export class TaskRunner extends EventEmitter {
     this.event.running = this.$tasks.filter(x => this.runningNrs.includes(x.nr)).map(x => x.getTaskName());
     this.event.finished = this.$tasks.filter(x => this.doneNrs.includes(x.nr)).map(x => x.getTaskName());
 
-    const event = _.clone(this.event);
+    const event = clone(this.event);
     setTimeout(async () => {
       try {
         await EventBus.postAndForget(event);
@@ -237,7 +237,7 @@ export class TaskRunner extends EventEmitter {
 
 
   getOption(key: string, defaultValue?: any) {
-    return _.get(this.$options, key, defaultValue);
+    return get(this.$options, key, defaultValue);
   }
 
   getId() {
@@ -283,9 +283,9 @@ export class TaskRunner extends EventEmitter {
 
 
   async setIncoming(key: string, value: any) {
-    const ref = this.getRequiredIncomings().find(i => i.storingName === _.snakeCase(key));
+    const ref = this.getRequiredIncomings().find(i => i.storingName === snakeCase(key));
     if (ref) {
-      _.set(this.$incoming, ref.storingName, await ref.convert(value));
+      set(this.$incoming, ref.storingName, await ref.convert(value));
     } else {
       this.getLogger().warn('no required incoming parameter found for ' + key);
     }
@@ -308,7 +308,7 @@ export class TaskRunner extends EventEmitter {
   resolveDeps(task_names: TASK_RUNNER_SPEC[], parent?: TaskRun, variant?: 'subs' | 'deps') {
     for (let i = 0; i < task_names.length; i++) {
       const name = task_names[i];
-      const taskRun = _.isString(name) ?
+      const taskRun = isString(name) ?
         this.createTaskRun(name) :
         this.createTaskRun(name.name, name.incomings);
 
@@ -425,7 +425,7 @@ export class TaskRunner extends EventEmitter {
 
     const incoming: any = {};
     taskRun.taskRef().getIncomings().forEach(x => {
-      if (!_.isUndefined(this.$incoming[x.storingName]) || !_.isUndefined(this.$outgoing[x.storingName])) {
+      if (!isUndefined(this.$incoming[x.storingName]) || !isUndefined(this.$outgoing[x.storingName])) {
         incoming[x.name] = this.$incoming[x.storingName] || this.$outgoing[x.storingName];
       } else if (x.hasOption('default')) {
         incoming[x.name] = x.getOptions('default', undefined);
@@ -478,7 +478,7 @@ export class TaskRunner extends EventEmitter {
     return new Promise((resolve, reject) => {
       // TODO timeout?
       this.once(TASKRUN_STATE_FINISH_PROMISE, async (x: any) => {
-        if (_.isError(x)) {
+        if (isError(x)) {
           this.api().onError(this);
           reject(x);
         } else {
@@ -498,7 +498,7 @@ export class TaskRunner extends EventEmitter {
     return new Promise((resolve, reject) => {
       // TODO timeout?
       this.once(TASKRUN_STATE_FINISH_PROMISE, (x: any) => {
-        if (_.isError(x)) {
+        if (isError(x)) {
           reject(x);
         } else {
           resolve(x);

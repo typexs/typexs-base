@@ -5,7 +5,8 @@ import {
   K_CLS_BOOTSTRAP,
   K_CLS_CACHE_ADAPTER,
   K_CLS_COMMANDS,
-  K_CLS_ENTITIES_DEFAULT, K_CLS_EXCHANGE_MESSAGE,
+  K_CLS_ENTITIES_DEFAULT,
+  K_CLS_EXCHANGE_MESSAGE,
   K_CLS_GENERATORS,
   K_CLS_SCHEDULE_ADAPTER_FACTORIES,
   K_CLS_STORAGE_SCHEMAHANDLER,
@@ -20,6 +21,9 @@ import {ITypexsOptions} from '../ITypexsOptions';
 
 
 export const ENV_CONFIG_LOAD_KEY = 'txs-config-load';
+
+
+export const NAMESPACE_CONFIG = 'config';
 
 /**
  * Search for config files
@@ -92,9 +96,19 @@ export const DEFAULT_RUNTIME_OPTIONS: IRuntimeLoaderOptions = {
   included: {},
 
   subModulPattern: [
-    'packages',
-    'src/packages'
+    // 'packages',
+    // 'src/packages'
   ],
+
+  include: [
+    '**/@typexs{,**/}*'
+  ],
+
+  exclude: [
+    '**/@types{,**/}*'
+  ],
+
+  disableCache: false,
 
   libs: [
     {
@@ -202,7 +216,7 @@ export const DEFAULT_TYPEXS_OPTIONS: ITypexsOptions = {
     path: '.'
   },
 
-  modules: DEFAULT_RUNTIME_OPTIONS,
+  modules: {},
 
   logging: {enable: false},
 

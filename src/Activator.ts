@@ -14,10 +14,14 @@ import {ExchangeMessageRegistry} from './libs/messaging/ExchangeMessageRegistry'
 import {C_EXCHANGE_MESSAGE} from './libs/messaging/Constants';
 import {Injector} from './libs/di/Injector';
 import {MetadataRegistry, RegistryFactory} from '@allgemein/schema-api';
+import {CONFIG_SCHEMA} from './config.schema';
 
 
 export class Activator implements IActivator {
 
+  configSchema(): any {
+    return CONFIG_SCHEMA;
+  }
 
   startup(): void {
     MetadataRegistry.$().setMaxListeners(1000);

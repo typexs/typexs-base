@@ -15,8 +15,8 @@ import {TaskRunnerRegistry} from './TaskRunnerRegistry';
 import {IWorkerInfo} from '../worker/IWorkerInfo';
 import {TaskQueueWorker} from '../../workers/TaskQueueWorker';
 import {System} from '../system/System';
-import moment = require('moment');
 import {Injector} from '../di/Injector';
+import {DateUtils} from '../utils/DateUtils';
 
 
 export class TasksHelper {
@@ -111,7 +111,7 @@ export class TasksHelper {
       let res = null;
       while (res = regex.exec(logdir)) {
         try {
-          const part = moment(date).format(res[1]);
+          const part = DateUtils.format(res[1], date);
           logdir = logdir.replace(res[0], part);
         } catch (e) {
 

@@ -1,4 +1,4 @@
-import {cloneDeep, defaults, filter, has, isFunction, isObject, isString} from 'lodash';
+import {cloneDeep, defaults, filter, get, has, isFunction} from 'lodash';
 import {Log} from './libs/logging/Log';
 import {Config, IConfigOptions, IOptions} from '@allgemein/config';
 import {RuntimeLoader} from './base/RuntimeLoader';
@@ -6,7 +6,6 @@ import {IActivator} from './api/IActivator';
 import {IModule} from './api/IModule';
 import {IStorageOptions, K_STORAGE} from './libs/storage/IStorageOptions';
 import {Storage} from './libs/storage/Storage';
-import {BaseUtils} from './libs/utils/BaseUtils';
 import {CryptUtils, MetaArgs, PlatformUtils} from '@allgemein/base';
 import {
   CONFIG_NAMESPACE,
@@ -31,7 +30,7 @@ import {WinstonLoggerJar} from './libs/logging/WinstonLoggerJar';
 import {DEFAULT_LOGGER_OPTIONS} from './libs/logging/Constants';
 import {RegistryFactory} from '@allgemein/schema-api';
 import {DEFAULT_TYPEXS_OPTIONS} from './libs/config/Constants';
-import {ConfigLoadOrder} from './libs/config/ConfigLoadOrder';
+import {ConfigLoader} from './libs/config/ConfigLoader';
 
 /**
  * Bootstrap controls the stages of application startup. From configuration to full startup for passed command.
@@ -51,8 +50,9 @@ export class Bootstrap {
 
   private constructor(options: ITypexsOptions = {}) {
     options = options || {};
-    this.options = defaults(options, cloneDeep(DEFAULT_TYPEXS_OPTIONS));
-    this.initConfigSources();
+    // this.options = defaults(options, cloneDeep(DEFAULT_TYPEXS_OPTIONS));
+    this.configLoader = new ConfigLoader(defaults(options, cloneDeep(DEFAULT_TYPEXS_OPTIONS)));
+    // this.initConfigSources();
   }
 
 
@@ -60,11 +60,7 @@ export class Bootstrap {
 
   private nodeId: string = CryptUtils.shorthash(CryptUtils.random(8));
 
-  private options: ITypexsOptions;
-
-  private configOptions: IOptions = {};
-
-  private CONFIG_LOADED = false;
+  private configLoader: ConfigLoader;
 
   private VERBOSE_DONE = false;
 
@@ -75,7 +71,6 @@ export class Bootstrap {
   private bootstraps: IBootstrap[] = null;
 
   private storage: Storage;
-
 
   private running = false;
 
@@ -121,9 +116,7 @@ export class Bootstrap {
 
 
   static addConfigOptions(options: IOptions) {
-    const opts = this._().configOptions;
-    this._().configOptions = BaseUtils.merge(opts, options);
-    return this._().configOptions;
+    return this._().getConfigLoader().addConfigOptions(options);
   }
 
 
@@ -138,7 +131,8 @@ export class Bootstrap {
 
 
   static setConfigSources(sources: IConfigOptions[]) {
-    return this._().setConfigSources(sources);
+    this._().getConfigLoader().setConfigSources(sources);
+    return this._();
   }
 
   static prepareInvoker(i: Invoker, loader: IRuntimeLoader) {
@@ -152,43 +146,19 @@ export class Bootstrap {
   }
 
 
-  /**
-   * Initialise config sources types and load order.
-   */
-  initConfigSources() {
-    const cs = this.getConfigSources();
-    this.setConfigSources(cs);
-  }
-
-  /**
-   * Check if config file load order is present. Possible passthourgh of the config order is:
-   * - env variable
-   * - load config order json file fi exists
-   *   - like config-load.json oder ./config/config-load.json
-   * - use at least DEFAULT_CONFIG_LOAD_ORDER
-   */
-  getConfigSources() {
-    const configLoadOrder = new ConfigLoadOrder();
-    configLoadOrder.detect();
-    return configLoadOrder.get();
-  }
-
-
-  setConfigSources(sources: IConfigOptions[]) {
-    this.configOptions.configs = sources;
-    return this;
-  }
-
-
   getNodeId() {
     return Bootstrap.getNodeId();
   }
 
   /**
-   * Returns the typexs options.
+   * Returns the typexs declared configuration.
    */
-  getOptions() {
-    return this.options;
+  getConfiguration() {
+    return this.configLoader.getConfiguration();
+  }
+
+  getConfigLoader() {
+    return this.configLoader;
   }
 
   /**
@@ -196,11 +166,13 @@ export class Bootstrap {
    */
   activateLogger(): Bootstrap {
     Log.prefix = this.getNodeId() + ' ';
-    Log.options(this.options.logging || {enable: false});
+    Log.options(this.getConfiguration().logging || {enable: false});
     return this;
   }
 
-
+  /**
+   * Activate error handling for unhandledRejection, uncaughtException and warnings.
+   */
   activateErrorHandling(): Bootstrap {
     process.on('unhandledRejection', this.throwedUnhandledRejection.bind(this));
     process.on('uncaughtException', this.throwedUncaughtException.bind(this));
@@ -209,7 +181,9 @@ export class Bootstrap {
     return this;
   }
 
-
+  /**
+   * Prepare and activate storage.
+   */
   async activateStorage(): Promise<Bootstrap> {
 
     this.storage = new Storage();
@@ -253,95 +227,40 @@ export class Bootstrap {
     return Promise.resolve();
   }
 
-
   configure(c: any = null) {
     // set logger class
     Log.DEFAULT_OPTIONS = DEFAULT_LOGGER_OPTIONS;
     Log.LOGGER_CLASS = WinstonLoggerJar;
-
-    if (this.CONFIG_LOADED) {
-      Log.warn('already configured');
-      return this;
-    }
-    this.CONFIG_LOADED = true;
-
-    if (this.options.app.path) {
-      this.configOptions.workdir = this.options.app.path;
-    }
-
-    // check if it is an file
-    try {
-      let additionalData = null;
-
-      if (isString(c)) {
-        // can be file or JSON with config
-        try {
-          additionalData = JSON.parse(c);
-        } catch (e) {
-
-          let configfile: string = null;
-
-          if (PlatformUtils.isAbsolute(c)) {
-            configfile = PlatformUtils.pathNormalize(c);
-          } else {
-            configfile = PlatformUtils.pathResolveAndNormalize(c);
-          }
-
-          if (PlatformUtils.fileExist(configfile)) {
-            this.configOptions.configs.push({type: 'file', file: configfile});
-          } else {
-            // INFO that file couldn't be loaded, because it doesn't exist
-          }
-        }
-      } else if (isObject(c)) {
-        additionalData = c;
-      }
-
-      this.configOptions = Config.options(this.configOptions);
-
-      if (isObject(additionalData)) {
-        Config.jar(CONFIG_NAMESPACE).merge(additionalData);
-      }
-
-      this.configOptions.configs.forEach(_c => {
-        if (_c.state && _c.type !== 'system') {
-          Log.debug('Loaded configuration from ' + (isString(_c.file) ? _c.file : _c.file.dirname + '/' + _c.file.filename));
-        }
-      });
-
-    } catch (err) {
-      Log.error(err);
-      process.exit(1);
-    }
-    const add = Config.jar(CONFIG_NAMESPACE).get('');
-    this.options = BaseUtils.merge(this.options, add);
-    Config.jar(CONFIG_NAMESPACE).merge(this.options);
-
-    /**
-     * Override nodeId if given
-     */
-
+    this.getConfigLoader().configure(c);
+    //
+    // Override nodeId if given
+    //
     const appNodeId = Config.get('app.nodeId', Config.get('argv.nodeId', null));
     this.nodeId = appNodeId ? appNodeId : this.nodeId;
+
     return this;
   }
 
 
+  /**
+   * Initialise the runtime modul loader through current configuration.
+   */
   async prepareRuntime(): Promise<Bootstrap> {
-
-    this.options.modules.appdir = this.options.app.path;
-    let cachePath = has(this.options.modules, 'cachePath') ?
-      this.options.modules.cachePath :
+    const options = this.getConfiguration();
+    options.modules.appdir = options.app.path;
+    let cachePath = has(options.modules, 'cachePath') ?
+      options.modules.cachePath :
       PlatformUtils.join(Config.get('os.tmpdir', '/tmp'), '.txs', 'cache');
     cachePath = PlatformUtils.pathNormAndResolve(cachePath);
     if (!PlatformUtils.fileExist(cachePath)) {
       PlatformUtils.mkdir(cachePath);
     }
-    this.options.modules.cachePath = cachePath;
-    this.runtimeLoader = new RuntimeLoader(this.options.modules);
+    options.modules.cachePath = cachePath;
+    this.runtimeLoader = new RuntimeLoader(options.modules);
     Injector.set(RuntimeLoader, this.runtimeLoader);
     Injector.set(RuntimeLoader.NAME, this.runtimeLoader);
     await this.runtimeLoader.prepare();
+
 
     const invoker = new Invoker();
     Injector.set(Invoker.NAME, invoker);
@@ -352,7 +271,13 @@ export class Bootstrap {
     this.addShutdownEvents();
 
     // load activators on storage,
-    this.getActivators();
+    const activators = this.getActivators();
+
+    /**
+     * Load schema config
+     */
+    await this.configLoader.loadSchemaByActivators(activators);
+    Injector.set(ConfigLoader.NAME, this.configLoader);
     return this;
   }
 
@@ -513,7 +438,7 @@ export class Bootstrap {
 
 
   getAppPath() {
-    return this.options.app.path;
+    return get(this.getConfiguration(), 'app.path', null);
   }
 
 

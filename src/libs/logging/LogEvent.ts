@@ -1,8 +1,7 @@
-import * as _ from 'lodash';
-
-import * as moment from 'moment';
+import {get, isEmpty, assign, isString, isNumber, isError} from 'lodash';
 import {Log} from './Log';
 import {ILogEntry} from './ILogEntry';
+import {DateUtils} from '../utils/DateUtils';
 
 export class LogEvent {
 
@@ -21,30 +20,30 @@ export class LogEvent {
     if (opts.time) {
       opts.time = new Date();
     }
-    this.prefix = [Log.prefix, _.get(opts, 'prefix', '')]
-      .filter(x => !_.isEmpty(x)).join('__');
+    this.prefix = [Log.prefix, get(opts, 'prefix', '')]
+      .filter(x => !isEmpty(x)).join('__');
     this._message = opts.message;
 
-    _.assign(this, opts);
+    assign(this, opts);
   }
 
 
   message(): string {
     const _msgs: any[] = [];
 
-    if (!_.isEmpty(this._message)) {
+    if (!isEmpty(this._message)) {
       _msgs.push(this._message);
     } else {
       // _msgs.push('')
     }
 
-    if (!_.isEmpty(this.args)) {
+    if (!isEmpty(this.args)) {
       this.args.forEach(x => {
-        if (_.isString(x)) {
+        if (isString(x)) {
           _msgs.push(x);
-        } else if (_.isNumber(x)) {
+        } else if (isNumber(x)) {
           _msgs.push(x + '');
-        } else if (_.isError(x)) {
+        } else if (isError(x)) {
           _msgs.push(x.stack);
         } else {
           _msgs.push(JSON.stringify(x, null, 2));
@@ -58,7 +57,7 @@ export class LogEvent {
 
   fullOut(): string {
     const msg = this.message();
-    return '[' + moment(this.time).format('YYYY.MM.DD HH:mm:ss.SSS') + '] ' + this.prefix + '' + this.level + ' ' + msg;
+    return '[' + DateUtils.format('YYYY.MM.DD HH:mm:ss.SSS', this.time) + '] ' + this.prefix + '' + this.level + ' ' + msg;
   }
 
 }

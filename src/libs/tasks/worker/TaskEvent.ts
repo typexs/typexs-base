@@ -1,10 +1,10 @@
 import {IError} from '../../exceptions/IError';
 import {ITaskRunnerResult} from '../../tasks/ITaskRunnerResult';
-import * as _ from 'lodash';
+import {snakeCase} from 'lodash';
 import {AbstractEvent} from '../../messaging/AbstractEvent';
 import {IQueueWorkload} from '../../../libs/queue/IQueueWorkload';
 import {TASK_RUNNER_SPEC, TASK_STATES} from '../Constants';
-import * as moment from 'moment';
+import {DateUtils} from '../../utils/DateUtils';
 
 /**
  * Id is the runner id
@@ -47,7 +47,7 @@ export class TaskEvent extends AbstractEvent implements IQueueWorkload {
 
   constructor() {
     super();
-    const dateStr = moment(new Date()).format('YYYYMMDD-HHmmssSSS');
+    const dateStr = DateUtils.format('YYYYMMDD-HHmmssSSS');
     this.id = dateStr + '-' + this.id;
   }
 
@@ -55,7 +55,7 @@ export class TaskEvent extends AbstractEvent implements IQueueWorkload {
     if (!this.parameters) {
       this.parameters = {};
     }
-    this.parameters[_.snakeCase(key)] = value;
+    this.parameters[snakeCase(key)] = value;
   }
 
 }

@@ -1,10 +1,9 @@
+import {isEmpty} from 'lodash';
 import {TransformableInfo} from 'logform';
-import * as moment from 'moment';
-import * as _ from 'lodash';
 import {Log} from './Log';
-
 import {MESSAGE} from 'triple-beam';
 import {LogEvent} from './LogEvent';
+import {DateUtils} from '../utils/DateUtils';
 
 export class DefaultFormat {
 
@@ -24,10 +23,10 @@ export class DefaultFormat {
       }
     }
 
-    const _prefix = prefix.filter(x => !_.isEmpty(x)).map(x => x.trim()).join(':');
+    const _prefix = prefix.filter(x => !isEmpty(x)).map(x => x.trim()).join(':');
 
     // @ts-ignore
-    info[MESSAGE] = '[' + moment(Date.now()).format('YYYY.MM.DD HH:mm:ss.SSS') + '] ' +
+    info[MESSAGE] = '[' + DateUtils.format('YYYY.MM.DD HH:mm:ss.SSS') + '] ' +
       ' [' + info.level.toUpperCase() + ']' + ' '.repeat(7 - info.level.length) +
       _prefix + ' | ' +
       (info.message ? info.message : '') +

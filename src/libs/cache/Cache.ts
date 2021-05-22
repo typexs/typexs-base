@@ -13,22 +13,27 @@
  *
  *
  */
-import * as _ from 'lodash';
+import {defaultsDeep, isPlainObject, keys} from 'lodash';
 import {ICacheAdapter} from './ICacheAdapter';
 import {ClassType} from '@allgemein/schema-api';
 import {ICacheConfig} from './ICacheConfig';
 import {ICacheGetOptions, ICacheSetOptions} from './ICacheOptions';
 import {CacheBin} from './CacheBin';
 import {C_DEFAULT} from '@allgemein/base';
+import {CACHE_NAME, ICache} from './ICache';
 
 
 export const DEFAULT_OPTIONS: ICacheConfig = {
-  bins: {default: 'default'}
+
+  bins: {
+    default: 'default'
+  }
+
 };
 
-export class Cache {
+export class Cache implements ICache {
 
-  static NAME = 'Cache';
+  static NAME = CACHE_NAME;
 
   private options: ICacheConfig = DEFAULT_OPTIONS;
 
@@ -48,13 +53,13 @@ export class Cache {
   }
 
 
-  async get(key: string, bin: string = C_DEFAULT, options?: ICacheGetOptions) {
+  async get<T>(key: string, bin: string = C_DEFAULT, options?: ICacheGetOptions): Promise<T> {
     const cacheBin = this.getBin(bin);
     return cacheBin.get(key, bin, options);
   }
 
 
-  async set(key: string, value: any, bin: string = C_DEFAULT, options?: ICacheSetOptions) {
+  async set<T>(key: string, value: T, bin: string = C_DEFAULT, options?: ICacheSetOptions): Promise<T> {
     const cacheBin = this.getBin(bin);
     return cacheBin.set(key, value, bin, options);
   }
@@ -62,13 +67,13 @@ export class Cache {
 
   async configure(nodeId: string, config?: ICacheConfig) {
     this.nodeId = nodeId;
-    if (config && _.isPlainObject(config)) {
-      _.defaultsDeep(config || {}, DEFAULT_OPTIONS);
+    if (config && isPlainObject(config)) {
+      defaultsDeep(config || {}, DEFAULT_OPTIONS);
       this.options = config;
     }
 
 
-    for (const key of _.keys(this.options.adapter)) {
+    for (const key of keys(this.options.adapter)) {
       const adapterConfig = this.options.adapter[key];
       let entry = this.adapterClasses.find(c => c.type === adapterConfig.type);
       let adapter: ICacheAdapter = null;
@@ -97,7 +102,7 @@ export class Cache {
       }
     }
 
-    for (const binKey of _.keys(this.options.bins)) {
+    for (const binKey of keys(this.options.bins)) {
       const adapterKey = this.options.bins[binKey];
       if (this.adapters[adapterKey]) {
         this.bins[binKey] = new CacheBin(binKey, this.adapters[adapterKey]);

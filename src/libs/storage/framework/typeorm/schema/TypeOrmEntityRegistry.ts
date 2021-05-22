@@ -605,14 +605,18 @@ export class TypeOrmEntityRegistry extends DefaultNamespacedRegistry/*AbstractRe
             key: 'type',
             fn: (key, data, options) => {
               const type = ['string', 'number', 'boolean', 'date', 'float', 'array', 'object'];
-              if (type.includes(data[key])) {
-                const cls = TypeOrmUtils.getJsObjectType(data[key]);
+              const value = data[key];
+              if (value && type.includes(value)) {
+                const cls = TypeOrmUtils.getJsObjectType(value);
                 if (cls === String) {
                   if (data['format'] === 'date' || data['format'] === 'date-time') {
                     return Date;
                   }
                 }
                 return cls;
+              } else if (data['$ref']) {
+                const className = data['$ref'].split('/').pop();
+                return ClassRef.get(className, this.namespace).getClass(true);
               }
               return ClassRef.get(data[key], this.namespace).getClass(true);
             }

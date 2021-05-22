@@ -5,7 +5,7 @@ import {ClassLoader} from '@allgemein/base';
 import {C_CONFIG, C_CONFIG_FILTER_KEYS, C_CONFIGURATION_FILTER_KEYS_KEY, C_KEY_SEPARATOR} from '../Constants';
 import {Cache} from '../../libs/cache/Cache';
 import {Injector} from '../../libs/di/Injector';
-import {WalkValues} from '@allgemein/base/libs/utils/TreeUtils';
+import {WalkValues} from '@allgemein/base/utils/TreeUtils';
 export class ConfigUtils {
 
   static getFilteredKeys(filterKeys: string[] = C_CONFIG_FILTER_KEYS) {

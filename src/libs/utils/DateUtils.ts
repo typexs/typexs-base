@@ -10,6 +10,8 @@ export interface DateObject extends WrapperDateObject {
 export class DateUtils {
 
   static format(format: string, date: Date = new Date()) {
+    format = format.replace('YYYY', 'yyyy');
+    format = format.replace('DD', 'dd');
     return DateTime.fromJSDate(date).toFormat(format);
   }
 

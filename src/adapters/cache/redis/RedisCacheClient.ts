@@ -30,6 +30,8 @@ export class RedisCacheClient implements IRedisCacheClient {
         reject(err);
       };
       this.client = createClient(this.options);
+      // unref for not blocking in shutdown
+      this.client.unref();
       this.client.once('error', onError);
       this.client.once('ready', args => {
         clearTimeout(timer);
@@ -128,7 +130,7 @@ export class RedisCacheClient implements IRedisCacheClient {
           throw err;
         });
     }
-    this.connected = false;
+    // this.connected = false;
     return null;
   }
 

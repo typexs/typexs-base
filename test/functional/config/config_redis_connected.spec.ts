@@ -24,6 +24,7 @@ class ConfigRedisSpec {
 
   async before() {
     // TestHelper.typeOrmRestore();
+    await TestHelper.clearCache();
     Bootstrap.reset();
     Config.clear();
   }
@@ -31,37 +32,11 @@ class ConfigRedisSpec {
   async after() {
     if (bootstrap) {
       await bootstrap.shutdown();
+      // await bootstrap.getStorage().shutdown();
+      bootstrap = null;
+
     }
   }
-
-
-  // @test
-  // async 'check own node info'() {
-  //   bootstrap = Bootstrap
-  //     .setConfigSources([{type: 'system'}])
-  //     .configure(<ITypexsOptions & any>{
-  //       app: {name: 'test', nodeId: 'system', path: __dirname + '/fake_app'},
-  //       logging: {enable: LOG_EVENT, level: 'debug', loggers: [{name: '*', level: 'debug', enable: true}]},
-  //       modules: {paths: [__dirname + '/../../..']},
-  //       storage: {default: TEST_STORAGE_OPTIONS},
-  //       cache: {bins: {default: 'redis1'}, adapter: {redis1: {type: 'redis', host: '127.0.0.1', port: 6379}}},
-  //       eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}}
-  //     });
-  //   bootstrap.activateLogger();
-  //   bootstrap.activateErrorHandling();
-  //
-  //   await bootstrap.prepareRuntime();
-  //   bootstrap = await bootstrap.activateStorage();
-  //   bootstrap = await bootstrap.startup();
-  //
-  //   const system: System = Container.get(System.NAME);
-  //   expect(system.node.state).to.eq('idle');
-  //
-  //   await bootstrap.onShutdown();
-  //   expect(system.node.nodeId).to.eq('system');
-  //   expect(system.node.state).to.eq('unregister');
-  // }
-
 
   @test
   async 'node register and unregister'() {
@@ -133,6 +108,35 @@ class ConfigRedisSpec {
       }
     ]);
   }
+
+
+
+  // @test
+  // async 'check own node info'() {
+  //   bootstrap = Bootstrap
+  //     .setConfigSources([{type: 'system'}])
+  //     .configure(<ITypexsOptions & any>{
+  //       app: {name: 'test', nodeId: 'system', path: __dirname + '/fake_app'},
+  //       logging: {enable: LOG_EVENT, level: 'debug', loggers: [{name: '*', level: 'debug', enable: true}]},
+  //       modules: {paths: [__dirname + '/../../..']},
+  //       storage: {default: TEST_STORAGE_OPTIONS},
+  //       cache: {bins: {default: 'redis1'}, adapter: {redis1: {type: 'redis', host: '127.0.0.1', port: 6379}}},
+  //       eventbus: {default: <IEventBusConfiguration>{adapter: 'redis', extra: {host: '127.0.0.1', port: 6379}}}
+  //     });
+  //   bootstrap.activateLogger();
+  //   bootstrap.activateErrorHandling();
+  //
+  //   await bootstrap.prepareRuntime();
+  //   bootstrap = await bootstrap.activateStorage();
+  //   bootstrap = await bootstrap.startup();
+  //
+  //   const system: System = Container.get(System.NAME);
+  //   expect(system.node.state).to.eq('idle');
+  //
+  //   await bootstrap.onShutdown();
+  //   expect(system.node.nodeId).to.eq('system');
+  //   expect(system.node.state).to.eq('unregister');
+  // }
 
 
   // @test

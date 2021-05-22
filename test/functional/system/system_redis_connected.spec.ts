@@ -48,7 +48,7 @@ class SystemRedisConnectedSpec {
   async after() {
     if (bootstrap) {
       await bootstrap.shutdown();
-      await bootstrap.getStorage().shutdown();
+      // await bootstrap.getStorage().shutdown();
       bootstrap = null;
     }
   }

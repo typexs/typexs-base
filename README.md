@@ -5,6 +5,7 @@
 [![Dependency Status](https://david-dm.org/typexs/typexs-base.svg)](https://david-dm.org/typexs/typexs-base)
 
 
+* [Code documentation with typedoc](https://typexs-base.pages.dev) 
 
 * [Documentation](docs/home.adoc)
 

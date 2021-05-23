@@ -3,6 +3,9 @@ import {ICommand} from '../libs/commands/ICommand';
 import {System} from '../libs/system/System';
 import {Log} from '../libs/logging/Log';
 
+/**
+ * config commands ist called by "config"
+ */
 export class ConfigCommand implements ICommand {
 
 

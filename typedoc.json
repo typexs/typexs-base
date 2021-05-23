@@ -1,5 +1,4 @@
 {
   "entryPoints": ["src/index.ts", "src/Bootstrap.ts", "src/Activator.ts", "src/Startup.ts"],
-  "out": "build/typedoc",
-  "media": "/assets"
+  "out": "build/typedoc"
 }

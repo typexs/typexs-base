@@ -16,8 +16,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/typexs/typexs-base.git"
+    "url": "git+https://gitlab.com/typexs/base.git"
   },
+  "bugs": {
+    "url": "https://gitlab.com/typexs/base/-/issues"
+  },  
+  "homepage": "https://gitlab.com/typexs/base",
   "author": "Robert Kania",
   "license": "MIT",
   "devDependencies": {

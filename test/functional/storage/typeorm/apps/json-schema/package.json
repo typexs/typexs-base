@@ -1,8 +1,8 @@
 {
-  "name": "fake_app_handler",
+  "name": "json-schema",
   "version": "0.0.1",
   "typexs": {
-    "name": "fake_app_handler"
+    "name": "json-schema"
   },
   "dependencies": {
     "@typexs/base": "latest"

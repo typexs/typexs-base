@@ -1,18 +1,23 @@
 import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 import {TypeOrmEntityRegistry} from '../../../src/libs/storage/framework/typeorm/schema/TypeOrmEntityRegistry';
-import {DataContainer, IEntityRef, RegistryFactory} from '@allgemein/schema-api';
+import {DataContainer, IEntityRef, IJsonSchema, ILookupRegistry, RegistryFactory} from '@allgemein/schema-api';
 import {REGISTRY_TYPEORM} from '../../../src/libs/storage/framework/typeorm/Constants';
 
 let Person: any;
 let PersonWithRequired: any = null;
 
+
+let registry: ILookupRegistry & IJsonSchema;
+
 @suite('functional/storage/storage_data_container')
 class StorageDataContainerSpec {
 
   static before() {
+    RegistryFactory.remove(REGISTRY_TYPEORM);
     RegistryFactory.register(REGISTRY_TYPEORM, TypeOrmEntityRegistry);
     RegistryFactory.register(/^typeorm\..*/, TypeOrmEntityRegistry);
+    registry = RegistryFactory.get(REGISTRY_TYPEORM);
 
     Person = require('./entities/Person').Person;
     PersonWithRequired = require('./entities/Person').PersonWithRequired;
@@ -21,7 +26,7 @@ class StorageDataContainerSpec {
   @test
   async 'check empty object without required values faling'() {
     const p = new Person();
-    const c = new DataContainer(p, TypeOrmEntityRegistry.$());
+    const c = new DataContainer(p, registry);
     const retCode = await c.validate();
     expect(retCode).to.be.false;
     expect(c.hasErrors()).to.be.true;
@@ -33,7 +38,7 @@ class StorageDataContainerSpec {
   @test
   async 'check empty object with required values failing'() {
     const p = new PersonWithRequired();
-    const c = new DataContainer(p, TypeOrmEntityRegistry.$());
+    const c = new DataContainer(p, registry);
     const retCode = await c.validate();
     expect(retCode).to.be.false;
     expect(c.hasErrors()).to.be.true;
@@ -48,7 +53,7 @@ class StorageDataContainerSpec {
     p.lastName = 'Blacky';
     p.eMail = '';
     p.firstName = '';
-    const c = new DataContainer(p, TypeOrmEntityRegistry.$());
+    const c = new DataContainer(p, registry);
     const retCode = await c.validate();
     expect(retCode).to.be.false;
     expect(c.hasErrors()).to.be.true;
@@ -64,7 +69,7 @@ class StorageDataContainerSpec {
     p.firstName = 'Funny';
     p.lastName = 'Blacky';
     p.eMail = 'world@warcraft.tv';
-    const c = new DataContainer(p, TypeOrmEntityRegistry.$());
+    const c = new DataContainer(p, registry);
     const retCode = await c.validate();
     expect(retCode).to.be.true;
     expect(c.hasErrors()).to.be.false;
@@ -80,7 +85,7 @@ class StorageDataContainerSpec {
     p.firstName = 'Fny';
     p.lastName = 'Bky';
     p.eMail = 'worldwarcrat.tv';
-    const c = new DataContainer(p, TypeOrmEntityRegistry.$());
+    const c = new DataContainer(p, registry);
     const retCode = await c.validate();
     expect(retCode).to.be.false;
     expect(c.hasErrors()).to.be.true;
@@ -145,23 +150,15 @@ class StorageDataContainerSpec {
       },
       '$ref': '#/definitions/Person3'
     };
-    // const regEntityDef = TypeOrmEntityRegistry.$().getEntityRefFor('Person');
-    // const data = regEntityDef.toJsonSchema() as any;
-    // const data_x = JSON.parse(JSON.stringify(data)) as any;
-    //
-    // data_x.definitions.Person3 = data.definitions.Person;
-    // data_x.definitions.Person3.title = 'Person3';
-    // data_x.$ref = '#/definitions/Person3';
-    // delete data_x.definitions['Person'];
 
-    const entityDef2 = await TypeOrmEntityRegistry.$().fromJsonSchema(json) as IEntityRef;
+    const entityDef2 = await registry.fromJsonSchema(json) as IEntityRef;
 
     const p: any = entityDef2.create();
     p.firstName = 'Funny';
     p.lastName = 'Blacky';
     p.eMail = 'world@warcraft.tv';
 
-    const c = new DataContainer(p, TypeOrmEntityRegistry.$());
+    const c = new DataContainer(p, registry);
     const retCode = await c.validate();
     expect(retCode).to.be.true;
     expect(c.hasErrors()).to.be.false;

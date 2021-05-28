@@ -72,7 +72,7 @@ class ConfigSchemaValidateSpec {
       {
         keyword: 'required',
         dataPath: '.app',
-        schemaPath: '#/definitions/App/required',
+        schemaPath: '#/required',
         params: {missingProperty: 'name'},
         message: 'should have required property \'name\''
       }
@@ -105,7 +105,7 @@ class ConfigSchemaValidateSpec {
       {
         keyword: 'required',
         dataPath: '',
-        schemaPath: '#/definitions/App/required',
+        schemaPath: '#/required',
         params: {missingProperty: 'name'},
         message: 'should have required property \'name\''
       }
@@ -141,7 +141,7 @@ class ConfigSchemaValidateSpec {
         {
           keyword: 'required',
           dataPath: '.app',
-          schemaPath: '#/definitions/App/required',
+          'schemaPath': '#/required',
           params: {missingProperty: 'name'},
           message: 'should have required property \'name\''
         }
@@ -169,7 +169,7 @@ class ConfigSchemaValidateSpec {
         {
           keyword: 'required',
           dataPath: '',
-          schemaPath: '#/definitions/App/required',
+          schemaPath: '#/required',
           params: {missingProperty: 'name'},
           message: 'should have required property \'name\''
         }

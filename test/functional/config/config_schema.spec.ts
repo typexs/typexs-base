@@ -64,9 +64,16 @@ class ConfigSchemaSpec {
           'description': 'Name of the application. Also used for additional config file name pattern.',
           'type': 'string'
         },
+        'nodeId': {
+          'description': 'Node id for this instance.',
+          'type': 'string'
+        },
         'path': {
           'description': 'Path to the application, if not the same as the of the installation.',
           'type': 'string'
+        },
+        'system': {
+          '$ref': '#/definitions/System'
         }
       },
       'required': [

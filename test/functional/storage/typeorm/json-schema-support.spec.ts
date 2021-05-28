@@ -12,8 +12,10 @@ import {TypeOrmStorageRef} from '../../../../src/libs/storage/framework/typeorm/
 import {TEST_STORAGE_OPTIONS} from '../../config';
 import {IStorageOptions} from '../../../../src/libs/storage/IStorageOptions';
 import {BaseConnectionOptions} from 'typeorm/connection/BaseConnectionOptions';
+import {TreeUtils} from '@allgemein/base';
 
 let registry: TypeOrmEntityRegistry = null;
+let storageOptions: IStorageOptions & BaseConnectionOptions = null;
 
 @suite('functional/storage/typeorm/json-schema-support')
 class JsonSchemaSupportSpec {
@@ -25,6 +27,10 @@ class JsonSchemaSupportSpec {
 
     const invoker = new Invoker();
     Injector.set(Invoker.NAME, invoker);
+  }
+
+  before() {
+    storageOptions = _.cloneDeep(TEST_STORAGE_OPTIONS) as IStorageOptions & BaseConnectionOptions;
   }
 
 
@@ -131,6 +137,16 @@ class JsonSchemaSupportSpec {
     expect(entityDef2.getPropertyRefs()).to.have.length(3);
     let data2 = entityDef2.toJsonSchema();
     data2 = JSON.parse(JSON.stringify(data2));
+    await TreeUtils.walkAsync(data2, x => {
+      if (x.key === 'options') {
+        delete x.parent[x.key];
+      }
+    });
+    await TreeUtils.walkAsync(data_x, x => {
+      if (x.key === 'options') {
+        delete x.parent[x.key];
+      }
+    });
     expect(data2).to.deep.eq(data_x);
   }
 
@@ -166,7 +182,8 @@ class JsonSchemaSupportSpec {
     const idProperty = properties.find(x => x.name === 'id');
     expect(idProperty.isIdentifier()).to.be.true;
 
-    const storage = new TypeOrmStorageRef(TEST_STORAGE_OPTIONS as IStorageOptions & BaseConnectionOptions);
+    const storage = new TypeOrmStorageRef(storageOptions);
+    await storage.initialize();
     await storage.prepare();
 
     // add annotated class
@@ -181,7 +198,7 @@ class JsonSchemaSupportSpec {
 
     expect(q).has.length(1);
     expect(q[0].sql).to.be.eq(
-      'CREATE TABLE "person_schema" ("id" integer PRIMARY KEY NOT NULL, "firstName" varchar NOT NULL, "lastName" varchar NOT NULL)'
+      'CREATE TABLE "person_schema" ("id" integer PRIMARY KEY NOT NULL, "first_name" varchar NOT NULL, "last_name" varchar NOT NULL)'
     );
   }
 

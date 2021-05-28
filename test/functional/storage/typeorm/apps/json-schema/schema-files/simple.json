@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "Osoba": {
+      "title": "Osoba",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "identifier": true,
+          "generated": true
+        },
+        "firstName": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "$ref": "#/definitions/Osoba"
+}

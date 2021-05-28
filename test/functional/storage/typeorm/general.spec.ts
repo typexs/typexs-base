@@ -19,6 +19,7 @@ import {Injector} from '../../../../src/libs/di/Injector';
 
 
 let bootstrap: Bootstrap;
+let storageOptions: IStorageOptions & BaseConnectionOptions = null;
 
 @suite('functional/storage/typeorm/general')
 class StorageGeneralSpec {
@@ -27,6 +28,7 @@ class StorageGeneralSpec {
   before() {
     Bootstrap.reset();
     Config.clear();
+    storageOptions = _.cloneDeep(TEST_STORAGE_OPTIONS) as IStorageOptions & BaseConnectionOptions;
   }
 
 
@@ -131,7 +133,7 @@ class StorageGeneralSpec {
     const invoker = new Invoker();
     Injector.set(Invoker.NAME, invoker);
 
-    const storage = new TypeOrmStorageRef(TEST_STORAGE_OPTIONS as IStorageOptions & BaseConnectionOptions);
+    const storage = new TypeOrmStorageRef(storageOptions as IStorageOptions & BaseConnectionOptions);
     await storage.prepare();
 
     storage.addTableEntityClass(X, 'xtable');
@@ -154,7 +156,7 @@ class StorageGeneralSpec {
     }
 
     const dbfile = path.join(__dirname, '/tmp/testdb01.sqlite');
-    const opts = _.merge(_.clone(TEST_STORAGE_OPTIONS), {database: dbfile});
+    const opts = _.merge(_.clone(storageOptions), {database: dbfile});
 
 
     const invoker = new Invoker();
@@ -165,7 +167,7 @@ class StorageGeneralSpec {
 
     storage.addTableEntityClass(X, 'xtable');
     await storage.reload();
-    expect(storage['options'].entities).has.length(1);
+    expect(storage.getDeclaredEntities()).has.length(1);
 
     const c = await storage.connect();
     const q = await c.manager.query('SELECT * FROM sqlite_master WHERE type=\'table\';');
@@ -206,7 +208,7 @@ class StorageGeneralSpec {
     const invoker = new Invoker();
     Injector.set(Invoker.NAME, invoker);
 
-    const storage = new TypeOrmStorageRef(TEST_STORAGE_OPTIONS as any);
+    const storage = new TypeOrmStorageRef(storageOptions as any);
     await storage.prepare();
 
     storage.addTableEntityClass(X, 'xtable');
@@ -234,7 +236,7 @@ class StorageGeneralSpec {
 
   @test
   async 'typeorm detect listener on fixed added class'() {
-    const opts = _.merge(_.clone(TEST_STORAGE_OPTIONS), {entities: [X1, Y1]});
+    const opts = _.merge(_.clone(storageOptions), {entities: [X1, Y1]});
 
     const invoker = new Invoker();
     Injector.set(Invoker.NAME, invoker);

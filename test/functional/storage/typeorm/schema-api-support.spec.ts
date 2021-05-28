@@ -23,6 +23,8 @@ let registry: TypeOrmEntityRegistry = null;
 let bootstrap: Bootstrap = null;
 let EntityOfSchemaApi: Function = null;
 
+let storageOptions:IStorageOptions & BaseConnectionOptions = null;
+
 @suite('functional/storage/typeorm/schema-api-support')
 class SchemaApiSupportSpec {
 
@@ -39,6 +41,7 @@ class SchemaApiSupportSpec {
     await import('./data/schema-api/entities/EntityOfSchemaApi').then(x => {
       EntityOfSchemaApi = x.EntityOfSchemaApi;
     });
+    storageOptions = _.cloneDeep(TEST_STORAGE_OPTIONS) as IStorageOptions & BaseConnectionOptions;
   }
 
 
@@ -70,12 +73,14 @@ class SchemaApiSupportSpec {
       'metadata': {
         'mode': 'regular',
         'options': {
+          'name': 'id',
           'primary': true,
           'type': Number,
         },
         'propertyName': 'id',
         target: entityRef.getClass()
       },
+      'name': 'id',
       target: entityRef.getClass(),
       'namespace': 'typeorm',
       'propertyName': 'id',
@@ -110,14 +115,14 @@ class SchemaApiSupportSpec {
     const invoker = new Invoker();
     Injector.set(Invoker.NAME, invoker);
 
-    const storage = new TypeOrmStorageRef(TEST_STORAGE_OPTIONS as IStorageOptions & BaseConnectionOptions);
+    const storage = new TypeOrmStorageRef(storageOptions);
     await storage.prepare();
 
     // add annotated class
     storage.addEntityType(EntityOfSchemaApi);
     // storage.addTableEntityClass(EntityOfSchemaApi, 'schema_api_table');
     await storage.reload();
-    expect(storage['options'].entities).has.length(1);
+    expect(storage.getDeclaredEntities()).has.length(1);
 
     const c = await storage.connect();
     const q = await c.manager.query('SELECT * FROM sqlite_master WHERE type = \'table\' ;');
@@ -125,8 +130,7 @@ class SchemaApiSupportSpec {
 
     expect(q).has.length(1);
     expect(q[0].sql).to.be.eq(
-      'CREATE TABLE "entity_of_schema_api" ' +
-      '("id" integer PRIMARY KEY NOT NULL, "strValue" varchar NOT NULL, "nrValue" integer NOT NULL)'
+      'CREATE TABLE "entity_of_schema_api" ("id" integer PRIMARY KEY NOT NULL, "str_value" varchar NOT NULL, "nr_value" integer NOT NULL)'
     );
   }
 
@@ -151,23 +155,24 @@ class SchemaApiSupportSpec {
     const invoker = new Invoker();
     Injector.set(Invoker.NAME, invoker);
 
-    const storage = new TypeOrmStorageRef(TEST_STORAGE_OPTIONS as IStorageOptions & BaseConnectionOptions);
+    const storage = new TypeOrmStorageRef(storageOptions);
     await storage.prepare();
 
     // add annotated class
+    // TODO correct? adding addition table with same name?
     storage.addTableEntityClass(EntityOfSchemaApi2, 'schema_api_table');
     await storage.reload();
-    expect(storage['options'].entities).has.length(1);
+    expect(storage.getDeclaredEntities().map(x => x.name)).to.include.members(['EntityOfSchemaApi2']);
 
     const c = await storage.connect();
-    const q = await c.manager.query('SELECT * FROM sqlite_master WHERE type = \'table\' ;');
+    const q = await c.manager.query('SELECT * FROM sqlite_master WHERE type = \'table\' and name NOT LIKE \'sqlite%\';');
     await storage.shutdown(true);
 
     expect(q).has.length(2);
     expect(q.map((x: any) => x.sql)).to.be.deep.eq(
       [
-        'CREATE TABLE "entity_of_schema_api2" ("idNr" integer PRIMARY KEY NOT NULL, "strValue" varchar NOT NULL, "nrValue" integer NOT NULL)',
-        'CREATE TABLE "schema_api_table" ("idNr" integer PRIMARY KEY NOT NULL, "strValue" varchar NOT NULL, "nrValue" integer NOT NULL)'
+        'CREATE TABLE "entity_of_schema_api2" ("id_nr" integer PRIMARY KEY NOT NULL, "str_value" varchar NOT NULL, "nr_value" integer NOT NULL)',
+        'CREATE TABLE "schema_api_table" ("id_nr" integer PRIMARY KEY NOT NULL, "str_value" varchar NOT NULL, "nr_value" integer NOT NULL)'
       ]
     );
 
@@ -176,7 +181,7 @@ class SchemaApiSupportSpec {
   @test
   async 'dynamically add annotated entity class to file db '() {
     const dbfile = path.join(os.tmpdir(), 'testdb-schema-api.sqlite');
-    const opts = _.merge(_.clone(TEST_STORAGE_OPTIONS), {database: dbfile});
+    const opts = _.merge(_.clone(storageOptions), {database: dbfile});
 
     const invoker = new Invoker();
     Injector.set(Invoker.NAME, invoker);
@@ -186,7 +191,7 @@ class SchemaApiSupportSpec {
 
     storage.addEntityClass(EntityOfSchemaApi);
     await storage.reload();
-    expect(storage['options'].entities).has.length(1);
+    expect(storage.getDeclaredEntities().map(x => x.name)).to.include.members(['EntityOfSchemaApi']);
 
     const c = await storage.connect();
     const q = await c.manager.query('SELECT * FROM sqlite_master WHERE type=\'table\';');
@@ -199,7 +204,7 @@ class SchemaApiSupportSpec {
     expect(q).has.length(1);
     expect(q[0].sql).to.be.eq(
       'CREATE TABLE "entity_of_schema_api" ' +
-      '("id" integer PRIMARY KEY NOT NULL, "strValue" varchar NOT NULL, "nrValue" integer NOT NULL)'
+      '("id" integer PRIMARY KEY NOT NULL, "str_value" varchar NOT NULL, "nr_value" integer NOT NULL)'
     );
   }
 
@@ -232,7 +237,7 @@ class SchemaApiSupportSpec {
     const invoker = new Invoker();
     Injector.set(Invoker.NAME, invoker);
 
-    const storage = new TypeOrmStorageRef(TEST_STORAGE_OPTIONS as any);
+    const storage = new TypeOrmStorageRef(storageOptions);
     await storage.prepare();
 
     storage.addTableEntityClass(X, 'xtable');
@@ -260,7 +265,7 @@ class SchemaApiSupportSpec {
 
   @test
   async 'typeorm detect listener on fixed added class'() {
-    const opts = _.merge(_.clone(TEST_STORAGE_OPTIONS), {entities: [X1, Y1]});
+    const opts = _.merge(_.clone(storageOptions), {entities: [X1, Y1]});
 
     const invoker = new Invoker();
     Injector.set(Invoker.NAME, invoker);

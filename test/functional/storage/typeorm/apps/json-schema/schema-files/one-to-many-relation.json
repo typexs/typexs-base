@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "Product": {
+      "title": "Product",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "identifier": true,
+          "generated": true
+        },
+        "name": {
+          "type": "string"
+        },
+        "dealers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Dealer"
+          }
+        }
+      }
+    },
+    "Dealer": {
+      "$id": "Dealer",
+      "title": "Dealer",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "identifier": true,
+          "generated": true
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "$ref": "#/definitions/Product"
+}

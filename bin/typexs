@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 "use strict";
 Object.defineProperty(exports, "__esModule", {value: true});
+require("reflect-metadata");
 const fs = require("fs");
 const path = require("path");
 const current = process.cwd();
@@ -13,7 +14,7 @@ if (fs.existsSync(path.join(current, 'tsconfig.json'))) {
   });
 }
 
-require("reflect-metadata");
+
 if (fs.existsSync(path.join(current, 'package.json'))) {
   var json = require(path.join(current, 'package.json'));
   if (json.name === '@typexs/base') {

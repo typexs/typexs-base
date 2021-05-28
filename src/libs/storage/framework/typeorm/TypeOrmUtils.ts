@@ -1,9 +1,8 @@
 import {TypeOrmEntityRef} from './schema/TypeOrmEntityRef';
-import {ColumnType} from 'typeorm/browser';
+import {ColumnType, QueryBuilder} from 'typeorm';
 import * as _ from 'lodash';
 import {TypeOrmEntityRegistry} from './schema/TypeOrmEntityRegistry';
 import {JS_DATA_TYPES} from '@allgemein/schema-api';
-import {QueryBuilder} from 'typeorm';
 
 
 export class TypeOrmUtils {

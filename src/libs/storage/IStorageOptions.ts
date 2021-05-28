@@ -31,5 +31,5 @@ export interface IStorageOptions {
   /**
    * Entities handled by this storage
    */
-  readonly entities?: ((Function | any | string))[];
+  entities?: ((Function | any | string))[];
 }

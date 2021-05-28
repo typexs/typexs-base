@@ -1,4 +1,4 @@
-import * as _ from 'lodash';
+import {defaults, get, has, isArray, isEmpty, keys, map, remove} from 'lodash';
 import {ISaveOp} from '../ISaveOp';
 import {ISaveOptions} from '../ISaveOptions';
 import {TypeOrmUtils} from './TypeOrmUtils';
@@ -9,6 +9,8 @@ import {TypeOrmEntityController} from './TypeOrmEntityController';
 import {DataContainer, IEntityRef} from '@allgemein/schema-api';
 import {convertPropertyValueJsonToString, convertPropertyValueStringToJson} from './Helper';
 
+
+const saveOptionsKeys = ['data', 'listeners', 'transaction', 'chunk', 'reload'];
 
 export class SaveOp<T> implements ISaveOp<T> {
 
@@ -44,9 +46,9 @@ export class SaveOp<T> implements ISaveOp<T> {
   }
 
   async run(object: T[] | T, options?: ISaveOptions): Promise<T[] | T> {
-    _.defaults(options, {validate: false, raw: false});
+    defaults(options, {validate: false, raw: false});
     this.options = options;
-    this.isArray = _.isArray(object);
+    this.isArray = isArray(object);
     this.objects = this.prepare(object);
 
     const jsonPropertySupport = this.controller.storageRef.getSchemaHandler().supportsJson();
@@ -54,20 +56,24 @@ export class SaveOp<T> implements ISaveOp<T> {
     await this.controller.invoker.use(StorageApi).doBeforeSave(this.objects, this);
 
     let objectsValid = true;
-    if (_.get(options, 'validate', false)) {
+    if (get(options, 'validate', false)) {
       objectsValid = await this.validate();
     }
 
+    const saveOptions = {};
+    saveOptionsKeys.filter(k => has(this.options, k)).map(k => {
+      saveOptions[k] = this.options[k];
+    });
 
     if (objectsValid) {
       const promises: Promise<any>[] = [];
       const resolveByEntityRef = TypeOrmUtils.resolveByEntityRef(this.objects);
-      const entityNames = _.keys(resolveByEntityRef);
+      const entityNames = keys(resolveByEntityRef);
 
       // load before connect
       const refs: { [k: string]: IEntityRef } = {};
       for (const entityName of entityNames) {
-        refs[entityName] = TypeOrmEntityRegistry.$().getEntityRefFor(entityName);
+        refs[entityName] = this.controller.getStorageRef().getRegistry().getEntityRefFor(entityName);
         // await this.controller.invoker.use(StorageApi).prepareEntities(this.objects, this);
         if (!jsonPropertySupport) {
           convertPropertyValueJsonToString(refs[entityName], resolveByEntityRef[entityName]);
@@ -85,17 +91,17 @@ export class SaveOp<T> implements ISaveOp<T> {
             if (idPropertyRefs.length === 0) {
               throw new Error('no id property found for ' + entityName);
             }
-            const _idRef = _.remove(idPropertyRefs, x => x.name === '_id').shift();
+            const _idRef = remove(idPropertyRefs, x => x.name === '_id').shift();
 
             resolveByEntityRef[entityName].forEach((entity: any) => {
               // if no _id is set then generate one
               if (!entity._id) {
-                entity._id = idPropertyRefs.map(x => _.get(entity, x.name)).join('--');
-                if (_.isEmpty(entity._id)) {
+                entity._id = idPropertyRefs.map(x => get(entity, x.name)).join('--');
+                if (isEmpty(entity._id)) {
                   throw new Error('no id could be generate for ' + entityName + ' with properties ' + idPropertyRefs.map(x => x.name).join(', '));
                 }
               }
-              _.keys(entity).filter(x => /^$/.test(x)).map(x => delete entity[x]);
+              keys(entity).filter(x => /^$/.test(x)).map(x => delete entity[x]);
             });
 
             if (options.raw) {
@@ -106,11 +112,11 @@ export class SaveOp<T> implements ISaveOp<T> {
               });
               promises.push(bulk.execute());
             } else {
-              const p = repo.save(resolveByEntityRef[entityName])
+              const p = repo.save(resolveByEntityRef[entityName], saveOptions)
                 .then((x: any) => {
                   resolveByEntityRef[entityName].forEach((entity: any) => {
                     if (!entity._id) {
-                      entity._id = idPropertyRefs.map(x => _.get(entity, x.name)).join('--');
+                      entity._id = idPropertyRefs.map(x => get(entity, x.name)).join('--');
                     }
                   });
                 });
@@ -126,7 +132,7 @@ export class SaveOp<T> implements ISaveOp<T> {
 
           if (options.noTransaction) {
             for (const entityName of entityNames) {
-              const p = connection.manager.getRepository(entityName).save(resolveByEntityRef[entityName]);
+              const p = connection.manager.getRepository(entityName).save(resolveByEntityRef[entityName], saveOptions);
               promises.push(p);
             }
           } else {
@@ -138,7 +144,7 @@ export class SaveOp<T> implements ISaveOp<T> {
                 if (!jsonPropertySupport) {
                   convertPropertyValueStringToJson(refs[entityName], resolveByEntityRef[entityName]);
                 }
-                const p = em.getRepository(entityName).save(resolveByEntityRef[entityName]);
+                const p = em.getRepository(entityName).save(resolveByEntityRef[entityName], saveOptions);
                 _promises.push(p);
               }
               return Promise.all(_promises);
@@ -182,7 +188,7 @@ export class SaveOp<T> implements ISaveOp<T> {
 
   prepare(object: T | T[]): T[] {
     let objs: T[] = [];
-    if (_.isArray(object)) {
+    if (isArray(object)) {
       objs = object;
     } else {
       objs.push(object);
@@ -193,7 +199,7 @@ export class SaveOp<T> implements ISaveOp<T> {
 
   private async validate() {
     let valid = true;
-    await Promise.all(_.map(this.objects, o => new DataContainer(o, TypeOrmEntityRegistry.$())).map(async c => {
+    await Promise.all(map(this.objects, o => new DataContainer(o, TypeOrmEntityRegistry.$())).map(async c => {
       valid = valid && await c.validate();
       if (!this.isMongoDB()) {
         c.applyState();

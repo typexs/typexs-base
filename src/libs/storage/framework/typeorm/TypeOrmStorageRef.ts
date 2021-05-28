@@ -1,7 +1,7 @@
 import {IStorageOptions} from '../../IStorageOptions';
 import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
-import * as _ from 'lodash';
-import {ClassUtils, PlatformUtils, TodoException} from '@allgemein/base';
+import {assign, defaults, has, isArray, isEmpty, isFunction, isObjectLike, isString, remove, snakeCase} from 'lodash';
+import {ClassUtils, NotYetImplementedError, PlatformUtils, TodoException} from '@allgemein/base';
 import {Config} from '@allgemein/config';
 import {K_WORKDIR} from '../../../Constants';
 import {BaseUtils} from '../../../utils/BaseUtils';
@@ -10,7 +10,7 @@ import {AbstractSchemaHandler} from '../../AbstractSchemaHandler';
 import {EntitySchema} from 'typeorm/entity-schema/EntitySchema';
 import {Connection, ConnectionOptions, EntityOptions, getConnectionManager, getMetadataArgsStorage} from 'typeorm';
 import {TableMetadataArgs} from 'typeorm/metadata-args/TableMetadataArgs';
-import {ClassRef, ClassType, IClassRef, IEntityRef, RegistryFactory} from '@allgemein/schema-api';
+import {ClassRef, ClassType, IClassRef, IEntityRef, IJsonSchema, RegistryFactory} from '@allgemein/schema-api';
 import {DEFAULT_STORAGEREF_OPTIONS} from '../../Constants';
 import {TypeOrmEntityController} from './TypeOrmEntityController';
 import {TypeOrmConnectionWrapper} from './TypeOrmConnectionWrapper';
@@ -24,9 +24,15 @@ import {
   REGISTRY_TYPEORM
 } from './Constants';
 import {ColumnMetadataArgs} from 'typeorm/metadata-args/ColumnMetadataArgs';
+import {isEntityRef} from '@allgemein/schema-api/api/IEntityRef';
 
 
 export class TypeOrmStorageRef extends StorageRef {
+
+  // private reloadTimout: NodeJS.Timeout;
+  get dbType(): string {
+    return this.getOptions().type;
+  }
 
   // if memory then on connection must be permanent
   private singleConnection = false;
@@ -48,12 +54,10 @@ export class TypeOrmStorageRef extends StorageRef {
   private _isActive = false;
 
   private namespace = REGISTRY_TYPEORM;
-  //
-  // private reloadTimout: NodeJS.Timeout;
 
 
   constructor(options: IStorageOptions & BaseConnectionOptions) {
-    super(options);
+    super(defaults(options, {entities: []}));
 
     // Apply some unchangeable and fixed options
     // options = Utils.merge(options, FIX_STORAGE_OPTIONS);
@@ -63,7 +67,7 @@ export class TypeOrmStorageRef extends StorageRef {
       const opts = <SqliteConnectionOptions & IStorageOptions>options;
 
       if (opts.database !== ':memory:' &&
-        !_.isEmpty(opts.database) &&
+        !isEmpty(opts.database) &&
         !PlatformUtils.isAbsolute(opts.database)) {
         // TODO check if file exists
 
@@ -87,7 +91,7 @@ export class TypeOrmStorageRef extends StorageRef {
       }
     }
 
-    this.setOptions(_.assign({}, DEFAULT_STORAGEREF_OPTIONS, options));
+    this.setOptions(assign({}, DEFAULT_STORAGEREF_OPTIONS, options));
 
     if (this.getOptions().type === 'sqlite') {
       this.singleConnection = true;
@@ -102,19 +106,13 @@ export class TypeOrmStorageRef extends StorageRef {
       if (['type', 'logging', 'database', 'dialect', 'synchronize', 'name'].indexOf(x) === -1) {
         continue;
       }
-      if (_.isString(this.getOptions()[x])) {
+      if (isString(this.getOptions()[x])) {
         out += '\t' + x + ' = ' + this.getOptions()[x] + '\n';
       }
     }
     Log.debug(`storage: use ${this.getOptions().type} for storage with options:\n${out} `);
     this.controller = new TypeOrmEntityController(this);
 
-    // register used entities, TODO better way to register with annotation @Entity (from typeorm)
-    if (_.has(this.getOptions(), 'entities') && _.isArray(this.getOptions().entities)) {
-      this.getOptions().entities.map((type: any) => {
-        this.registerEntityRef(type);
-      });
-    }
 
     // this.on(EVENT_STORAGE_ENTITY_ADDED, () => {
     //   clearTimeout(this.reloadTimout);
@@ -125,18 +123,56 @@ export class TypeOrmStorageRef extends StorageRef {
   }
 
 
-  get dbType(): string {
-    return this.getOptions().type;
-  }
-
-
   private static getClassName(x: string | EntitySchema | Function) {
     return ClassUtils.getClassName(x instanceof EntitySchema ? x.options.target : x);
   }
 
 
   private static machineName(x: string | EntitySchema | Function) {
-    return _.snakeCase(this.getClassName(x));
+    return snakeCase(this.getClassName(x));
+  }
+
+  async initialize(): Promise<boolean> {
+    // const tables: TableMetadataArgs[] = getMetadataArgsStorage().tables;
+    // options.entities = tables
+    //   .filter(t => options.entities.indexOf(<Function>t.target) !== -1)
+    //   .map(t => <Function>t.target);
+
+    // register used entities, TODO better way to register with annotation @Entity (from typeorm)
+    if (has(this.getOptions(), 'entities') && isArray(this.getDeclaredEntities())) {
+      const removeIdx = [];
+
+      for (let i = 0; i < this.getDeclaredEntities().length; i++) {
+        const type = this.getDeclaredEntities()[i];
+        if (isObjectLike(type)) {
+          if (has(type, '$schema')) {
+            // parse as json schema
+            // const namesBefore = this.getRegistry().getEntityRefs().map(x => x.name);
+            const entities = await (<IJsonSchema>this.getRegistry()).fromJsonSchema(type, {return: 'entity-refs'});
+            // const entities = this.getRegistry().getEntityRefs().filter(x => !namesBefore.includes(x.name));
+            if (isArray(entities)) {
+              const clazzes = [];
+              for (const e of entities) {
+                if (isEntityRef(e)) {
+                  const clazz = e.getClassRef().getClass(true);
+                  // replace with class representing the entity
+                  this.registerEntityRef(e);
+                  clazzes.push(clazz);
+                }
+              }
+              this.getDeclaredEntities().splice(i, 1, ...clazzes);
+            } else {
+              throw new NotYetImplementedError('');
+            }
+          } else {
+            throw new NotYetImplementedError('');
+          }
+        } else {
+          this.registerEntityRef(type);
+        }
+      }
+    }
+    return true;
   }
 
 
@@ -151,7 +187,7 @@ export class TypeOrmStorageRef extends StorageRef {
 
   applyObjectToStringifiedJsonConversion(columns: ColumnMetadataArgs[]) {
     columns.map(x => {
-      if (_.isFunction(x.options.type)) {
+      if (isFunction(x.options.type)) {
         if (x.options.type.name === Object.name) {
           x.options.type = String;
           (<any>x.options).stringify = true;
@@ -164,8 +200,12 @@ export class TypeOrmStorageRef extends StorageRef {
   }
 
 
-  registerEntityRef(type: string | Function | EntitySchema) {
-    const entityRef = this.getEntityRef(type instanceof EntitySchema ? type.options.target : type);
+  registerEntityRef(type: string | Function | EntitySchema | IEntityRef) {
+    let entityRef: IEntityRef = type as IEntityRef;
+    if (!isEntityRef(type)) {
+      entityRef = this.getEntityRef(type instanceof EntitySchema ? type.options.target : type);
+    }
+
     const cls = entityRef.getClassRef().getClass();
     const columns = getMetadataArgsStorage().filterColumns(cls);
     // convert unknown types
@@ -190,7 +230,7 @@ export class TypeOrmStorageRef extends StorageRef {
       }
 
     } else {
-      _.remove(getMetadataArgsStorage().columns, x =>
+      remove(getMetadataArgsStorage().columns, x =>
         x.target === cls && x.mode === 'objectId' && x.propertyName === '_id');
     }
   }
@@ -223,7 +263,7 @@ export class TypeOrmStorageRef extends StorageRef {
 
 
   populateToExtended(type: EntitySchema | Function) {
-    if (!_.isEmpty(this.getExtendedStorageRef())) {
+    if (!isEmpty(this.getExtendedStorageRef())) {
       for (const ref of this.getExtendedStorageRef() as TypeOrmStorageRef[]) {
         ref.addEntityType(type);
       }
@@ -250,14 +290,14 @@ export class TypeOrmStorageRef extends StorageRef {
       entities: []
     };
 
-    if (this.getOptions().entities) {
-      opts.entities = this.getOptions().entities;
+    if (this.getDeclaredEntities()) {
+      opts.entities = this.getDeclaredEntities();
     }
 
     const exists = opts.entities.indexOf(type);
     if (exists < 0) {
       opts.entities.push(type);
-      this.setOptions(_.assign(this.getOptions(), opts));
+      this.setOptions(assign(this.getOptions(), opts));
       // NOTE create an class ref entry to register class usage in registry
       this.registerEntityRef(type);
     }
@@ -271,18 +311,26 @@ export class TypeOrmStorageRef extends StorageRef {
     this.emit(EVENT_STORAGE_ENTITY_ADDED, type);
   }
 
+  getDeclaredEntities() {
+    return this.getOptions().entities;
+  }
+
 
   getEntityRef(name: string | Function): IEntityRef {
     const clazz = this.getEntityClass(name);
     if (clazz) {
-      return RegistryFactory.get(REGISTRY_TYPEORM).getEntityRefFor(clazz);
+      return this.getRegistry().getEntityRefFor(clazz);
     }
     return null;
   }
 
+  getRegistry() {
+    return RegistryFactory.get(REGISTRY_TYPEORM);
+  }
+
 
   getEntityRefs(): IEntityRef[] {
-    return this.getOptions().entities.map(x => this.getEntityRef(x));
+    return this.getDeclaredEntities().map(x => this.getEntityRef(x));
   }
 
 
@@ -322,14 +370,14 @@ export class TypeOrmStorageRef extends StorageRef {
 
 
   getEntityClass(ref: IClassRef | string | Function | ClassType<any>) {
-    if (_.isString(ref)) {
-      const _ref = _.snakeCase(ref);
-      return this.getOptions().entities.find((x: any) => _ref === TypeOrmStorageRef.machineName(x));
-    } else if (_.isFunction(ref)) {
+    if (isString(ref)) {
+      const _ref = snakeCase(ref);
+      return this.getDeclaredEntities().find((x: any) => _ref === TypeOrmStorageRef.machineName(x));
+    } else if (isFunction(ref)) {
       const _ref = ClassRef.get(ref, this.namespace);
-      return this.getOptions().entities.find((x: any) => _ref.machineName === TypeOrmStorageRef.machineName(x));
+      return this.getDeclaredEntities().find((x: any) => _ref.machineName === TypeOrmStorageRef.machineName(x));
     } else {
-      return this.getOptions().entities.find((x: any) => (<IClassRef>ref).machineName === TypeOrmStorageRef.machineName(x));
+      return this.getDeclaredEntities().find((x: any) => (<IClassRef>ref).machineName === TypeOrmStorageRef.machineName(x));
     }
   }
 
@@ -415,13 +463,13 @@ export class TypeOrmStorageRef extends StorageRef {
 
 
   async remove(wrapper: TypeOrmConnectionWrapper) {
-    _.remove(this.connections, {inc: wrapper.inc});
+    remove(this.connections, {inc: wrapper.inc});
 
   }
 
 
   async closeConnection() {
-    if (_.isEmpty(this.connections) && !this.isOnlyMemory()) {
+    if (isEmpty(this.connections) && !this.isOnlyMemory()) {
       if (getConnectionManager().has(this.name) && getConnectionManager().get(this.name).isConnected) {
         try {
           await getConnectionManager().get(this.name).close();
@@ -461,7 +509,7 @@ export class TypeOrmStorageRef extends StorageRef {
 
   private removeFromConnectionManager() {
     const name = this.name;
-    _.remove(getConnectionManager()['connections'], (connection) => {
+    remove(getConnectionManager()['connections'], (connection) => {
       return connection.name === name;
     });
   }

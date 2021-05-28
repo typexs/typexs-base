@@ -13,6 +13,10 @@ export const CONFIG_SCHEMA = {
           'type': 'string',
           'description': 'Name of the application. Also used for additional config file name pattern.'
         },
+        'nodeId': {
+          'type': 'string',
+          'description': 'Node id for this instance.'
+        },
         'path': {
           'type': 'string',
           'description': 'Path to the application, if not the same as the of the installation.'
@@ -20,6 +24,15 @@ export const CONFIG_SCHEMA = {
         'enableShutdownOnUncaughtException': {
           'type': 'boolean',
           'description': 'TODO'
+        },
+        'system': {
+          'type': 'object',
+          'properties': {
+            'distributed': {
+              'type': 'boolean',
+              'description': 'Defines if this node instance is distributed and should communicate with other nodes.'
+            }
+          }
         }
       }
     }

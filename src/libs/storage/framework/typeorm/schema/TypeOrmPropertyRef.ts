@@ -1,8 +1,8 @@
-import {capitalize, defaults, get, isArray, isBoolean, isEmpty, isFunction, isNumber, isString, has} from 'lodash';
+import {capitalize, defaults, get, has, isArray, isBoolean, isEmpty, isFunction, isNumber, isString} from 'lodash';
 
-import {ColumnMetadataArgs} from 'typeorm/browser/metadata-args/ColumnMetadataArgs';
-import {RelationMetadataArgs} from 'typeorm/browser/metadata-args/RelationMetadataArgs';
-import {EmbeddedMetadataArgs} from 'typeorm/browser/metadata-args/EmbeddedMetadataArgs';
+import {ColumnMetadataArgs} from 'typeorm/metadata-args/ColumnMetadataArgs';
+import {RelationMetadataArgs} from 'typeorm/metadata-args/RelationMetadataArgs';
+import {EmbeddedMetadataArgs} from 'typeorm/metadata-args/EmbeddedMetadataArgs';
 import {ClassUtils, NotYetImplementedError} from '@allgemein/base';
 import {DefaultPropertyRef, IBuildOptions, IClassRef, IPropertyOptions, METATYPE_PROPERTY} from '@allgemein/schema-api';
 import {TypeOrmEntityRef} from './TypeOrmEntityRef';

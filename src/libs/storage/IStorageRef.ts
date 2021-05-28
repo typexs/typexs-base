@@ -1,6 +1,6 @@
 import {IEntityController} from './IEntityController';
 import {IStorageOptions} from './IStorageOptions';
-import {ClassType, IClassRef, IEntityRef} from '@allgemein/schema-api';
+import {ClassType, IClassRef, IEntityRef, ILookupRegistry} from '@allgemein/schema-api';
 import {IConnection} from './IConnection';
 import {ICollection} from './ICollection';
 
@@ -30,9 +30,20 @@ export interface IStorageRef {
   getController(): IEntityController;
 
   /**
+   * Return lookup registry
+   */
+  getRegistry(): ILookupRegistry;
+
+  /**
    * return storage options
    */
   getOptions(): IStorageOptions;
+
+
+  /**
+   * implements initialisation for storage ref, called after constructor
+   */
+  initialize?(): boolean | Promise<boolean>;
 
   /**
    * implements initialisation for storage ref, called after constructor

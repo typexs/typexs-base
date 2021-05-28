@@ -73,6 +73,10 @@ export class ConfigLoader {
     return this.configuration;
   }
 
+  getConfigOptions() {
+    return this.configOptions;
+  }
+
 
   addConfigOptions(options: IOptions) {
     const opts = this.configOptions;
@@ -124,11 +128,7 @@ export class ConfigLoader {
     }
   }
 
-  async validateFunction(part: string = null) {
-    await this.loadRequirements();
-    if (!ajv) {
-      throw new Error('Validator \'ajv\'  not found');
-    }
+  async getConfigSchema(part: string = null) {
     const lookupFor = part ? snakeCase(part) : 'config';
 
     const cacheKey = 'schema-' + lookupFor;
@@ -151,8 +151,17 @@ export class ConfigLoader {
         await cache.set(cacheKey, schema, BIN_CONFIG_SCHEMA);
       }
     }
+    return schema;
+  }
+
+  async validateFunction(part: string = null) {
+    await this.loadRequirements();
+    if (!ajv) {
+      throw new Error('Validator \'ajv\'  not found');
+    }
+    const schema = await this.getConfigSchema(part);
     if (!schema) {
-      throw new Error('Can\'t create/load schema for ' + lookupFor);
+      throw new Error('Can\'t create/load schema for ' + part);
     }
     const _ajv = new ajv();
     return _ajv.compile(schema);
@@ -163,6 +172,10 @@ export class ConfigLoader {
     const fn = await this.validateFunction(path);
     const result = fn(data);
     return {valid: result, errors: fn.errors};
+  }
+
+  async validateConfig(path: string = null) {
+    return this.validate(this.getConfiguration(), path);
   }
 
 

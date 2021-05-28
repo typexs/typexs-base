@@ -1,5 +1,5 @@
 import {defaults, has} from 'lodash';
-import {TableMetadataArgs} from 'typeorm/browser/metadata-args/TableMetadataArgs';
+import {TableMetadataArgs} from 'typeorm/metadata-args/TableMetadataArgs';
 import {ClassRef, DefaultEntityRef, IEntityOptions, JsonSchema, METATYPE_PROPERTY} from '@allgemein/schema-api';
 import {IJsonSchemaSerializeOptions} from '@allgemein/schema-api/lib/json-schema/IJsonSchemaSerializeOptions';
 import {REGISTRY_TYPEORM} from '../Constants';

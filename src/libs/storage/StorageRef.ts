@@ -1,7 +1,7 @@
 import {IStorageOptions} from './IStorageOptions';
 import {IStorageRef} from './IStorageRef';
 import {IEntityController} from './IEntityController';
-import {ClassType, IClassRef, IEntityRef} from '@allgemein/schema-api';
+import {ClassType, IClassRef, IEntityRef, ILookupRegistry} from '@allgemein/schema-api';
 import {IConnection} from './IConnection';
 import {ICollection} from './ICollection';
 import {EventEmitter} from 'events';
@@ -41,6 +41,8 @@ export abstract class StorageRef extends EventEmitter implements IStorageRef {
 
   abstract addEntityClass(type: Function | IClassRef | ClassType<any>, options?: any): void;
 
+  abstract getRegistry(): ILookupRegistry;
+
   abstract getEntityRef(name: string | Function): IEntityRef;
 
   abstract getEntityRefs(): IEntityRef[];
@@ -75,6 +77,11 @@ export abstract class StorageRef extends EventEmitter implements IStorageRef {
     this.options = options;
   }
 
+
+  /**
+   * implements initialisation for storage ref, called after constructor
+   */
+  abstract initialize?(): boolean | Promise<boolean>;
 
   abstract prepare(): boolean | Promise<boolean>;
 

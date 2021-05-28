@@ -1,13 +1,14 @@
 import {IStorageOptions, K_STORAGE} from './IStorageOptions';
-import * as _ from 'lodash';
+import {has, isArray, isEmpty, isFunction, isObjectLike, isString, keys, merge, values} from 'lodash';
 import {K_CLS_STORAGE_TYPES} from '../Constants';
-import {IClassRef} from '@allgemein/schema-api';
+import {ClassType, IClassRef} from '@allgemein/schema-api';
 import {IStorage} from './IStorage';
 import {Config} from '@allgemein/config';
 import {IStorageRef} from './IStorageRef';
 import {Log} from '../../libs/logging/Log';
 import {IRuntimeLoader} from '../core/IRuntimeLoader';
-import {ClassType} from '@allgemein/schema-api';
+import {StringUtils} from '../utils/StringUtils';
+import {NotSupportedError, NotYetImplementedError, PlatformUtils} from '@allgemein/base';
 
 
 export class Storage {
@@ -59,53 +60,132 @@ export class Storage {
     }
 
     // keys starting with undercore or dollar are reserved for generic configuration
-    const storageNames = _.keys(config).filter(x => !/^(_|\$)/.test(x));
+    const storageNames = keys(config).filter(x => !/^(_|\$)/.test(x));
 
     // const storageRefs = [];
     // iterate over storage configurations
     for (const name of storageNames) {
-      const settings: any = config[name];
+      const settings: IStorageOptions = config[name];
+
       let entities: Function[] = [];
       if (loader) {
         // load entities handled by storage
         entities = loader.getClasses(['entity', name].join('.'));
         // check if classes are realy for typeorm
-        if (_.has(settings, 'extends')) {
+        if (has(settings, 'extends')) {
           // if extends property is set
           let _extends = [];
-          if (_.isString(settings.extends)) {
+          if (isString(settings.extends)) {
             _extends.push(settings.extends);
           } else {
             _extends = settings.extends;
           }
           _extends.forEach((x: string) => {
-            const __entities = loader.getClasses(['entity', x].join('.'));
-            if (__entities.length > 0) {
-              entities.push(...__entities);
+            const classEntitiesAdditional = loader.getClasses(['entity', x].join('.'));
+            if (classEntitiesAdditional.length > 0) {
+              entities.push(...classEntitiesAdditional);
             }
           });
         }
       }
 
-      const _settings: IStorageOptions = _.merge(settings, {entities: entities}, {name: name});
+      const replace = {};
+      const declaredEntities = settings.entities || [];
+      for (let i = 0; i < declaredEntities.length; i++) {
+        // check if is file path
+        // check if is http
+        // check if is glob -> remove -> add matched files
+        // if function add
+        const entry = declaredEntities[i];
+
+        if (isString(entry)) {
+          let object = null;
+          if (/^\s*{/.test(entry) && /}\s*$/.test(entry)) {
+            try {
+              object = JSON.parse(entry);
+            } catch (e) {
+              Log.error(e);
+            }
+          } else {
+            const type = StringUtils.checkIfPathLocation(entry);
+            switch (type) {
+              case 'url':
+              case 'unknown':
+              case 'glob':
+                throw new NotYetImplementedError('TODO');
+                break;
+              case 'relative':
+              case 'absolute':
+                try {
+                  const path = type === 'relative' ? PlatformUtils.pathResolveAndNormalize(entry) : entry;
+                  if (/\.json$/.test(entry)) {
+                    // json
+                    const content = (await PlatformUtils.readFile(path)).toString('utf-8');
+                    object = JSON.parse(content);
+                  } else if (/\.(t|j)s$/.test(path)) {
+                    // require
+                    const mod = require(path.replace(/\.(t|j)s$/, ''));
+                    object = [];
+                    keys(mod).map(x => {
+                      const value = mod[x];
+                      if (isFunction(value)) {
+                        object.push(value);
+                      } else if (isObjectLike(value)) {
+                        object.push(value);
+                      }
+                    });
+                  } else {
+                    throw new NotSupportedError('path or content not supported');
+                  }
+
+
+                } catch (e) {
+                  Log.error(e);
+                }
+                break;
+            }
+          }
+          if (object) {
+            replace[entry] = object;
+          }
+        }
+      }
+
+
+      keys(replace).map(k => {
+        const index = declaredEntities.findIndex(v => v === k);
+        declaredEntities.splice(index, 1);
+        if (isArray(replace[k])) {
+          entities.push(...replace[k]);
+        } else {
+          entities.push(replace[k]);
+        }
+      });
+
+      const _settings: IStorageOptions = merge(settings, {entities: entities}, {name: name});
       Log.debug('storage register ' + name + ' with ' + entities.length + ' entities');
       const storageRef = await this.register(name, _settings);
+
+      // if initialize method is present then run it
+      if (storageRef.initialize) {
+        await storageRef.initialize();
+      }
+
       if (storageRef.getOptions().connectOnStartup) {
         await storageRef.prepare();
       }
-
     }
 
     for (const ref of this.getRefs()) {
       let _extended = [];
       const extended = ref.getOptions().extends;
-      if (_.isString(extended)) {
+      if (isString(extended)) {
         _extended.push(extended);
       } else {
         _extended = extended;
       }
 
-      if (!_.isEmpty(_extended)) {
+      if (!isEmpty(_extended)) {
         for (const ext of _extended) {
           const extRef = this.get(ext);
           extRef.addExtendedStorageRef(ref);
@@ -114,6 +194,9 @@ export class Storage {
       }
     }
 
+  }
+
+  fromPath() {
 
   }
 
@@ -137,21 +220,21 @@ export class Storage {
   }
 
   getRefs(): IStorageRef[] {
-    return _.values(this.storageRefs);
+    return values(this.storageRefs);
   }
 
 
   getNames() {
-    return _.keys(this.storageRefs);
+    return keys(this.storageRefs);
   }
 
 
   getAllOptions() {
-    return _.values(this.storageRefs).map(ref => ref.getOptions());
+    return values(this.storageRefs).map(ref => ref.getOptions());
   }
 
   async shutdown() {
-    const ps = _.values(this.storageRefs).map(async x => {
+    const ps = values(this.storageRefs).map(async x => {
       try {
         await x.shutdown();
       } catch (e) {
@@ -160,7 +243,7 @@ export class Storage {
     });
     const res = await Promise.all(ps);
 
-    for (const f of _.values(this.storageFramework)) {
+    for (const f of values(this.storageFramework)) {
       try {
         if (f.shutdown) {
           await f.shutdown();

@@ -70,7 +70,7 @@ export class RuntimeLoader implements IRuntimeLoader {
     options.libs = libsNew.concat(libsPrev);
 
     this.options = options;
-    const appdir = this.options.appdir || PlatformUtils.pathResolve('.');
+    const appdir = PlatformUtils.pathResolve(this.options.appdir || '.');
 
     const cacheDisable = get(options, 'disableCache', false);
     if (!cacheDisable) {
@@ -143,15 +143,12 @@ export class RuntimeLoader implements IRuntimeLoader {
     if (this.options.exclude) {
       moduleRegistryOptions.exclude = this.options.exclude;
     }
-
     this.registry = new ModuleRegistry(moduleRegistryOptions);
     await this.registry.rebuild();
-
     const settingsLoader = await this.registry.createSettingsLoader({
       ref: 'package.json',
       path: 'typexs'
     });
-
     this.settings = settingsLoader.getSettings();
     // todo enable all, check against storage
 

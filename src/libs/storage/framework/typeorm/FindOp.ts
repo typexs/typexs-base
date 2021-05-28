@@ -5,7 +5,7 @@ import {XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '../../../Constants';
 import {TypeOrmSqlConditionsBuilder} from './TypeOrmSqlConditionsBuilder';
 import {TypeOrmEntityRegistry} from './schema/TypeOrmEntityRegistry';
 import {ClassUtils, TreeUtils} from '@allgemein/base';
-import {SelectQueryBuilder} from 'typeorm';
+import {getMetadataArgsStorage, SelectQueryBuilder} from 'typeorm';
 import {ClassType} from '@allgemein/schema-api';
 import {StorageApi} from '../../../../api/Storage.api';
 import {TypeOrmEntityController} from './TypeOrmEntityController';
@@ -109,7 +109,7 @@ export class FindOp<T> implements IFindOp<T> {
       // const repo = connection.manager.getRepository(entityType);
       // const qb = repo.createQueryBuilder() as SelectQueryBuilder<T>;
       let qb: SelectQueryBuilder<T> = null;
-      const entityRef = TypeOrmEntityRegistry.$().getEntityRefFor(entityType);
+      const entityRef = this.controller.getStorageRef().getRegistry().getEntityRefFor(entityType);
       // connect only when type is already loaded
       connection = await this.controller.connect();
       if (findConditions && !_.isEmpty(findConditions)) {
@@ -118,6 +118,35 @@ export class FindOp<T> implements IFindOp<T> {
         qb = builder.getQueryBuilder() as SelectQueryBuilder<T>;
       } else {
         qb = connection.manager.getRepository(entityType).createQueryBuilder() as SelectQueryBuilder<T>;
+      }
+
+      if (this.options.eager) {
+        const refs = entityRef.getPropertyRefs().filter(x => x.isReference());
+        for (const ref of refs) {
+          const joinColumn = getMetadataArgsStorage().joinColumns
+            .find(x => x.target === entityRef.getClass() && x.propertyName === ref.name);
+          if (joinColumn) {
+            qb.leftJoinAndSelect(
+              [qb.alias, joinColumn.propertyName].join('.'),
+              joinColumn.propertyName
+            );
+          } else {
+            const relation = getMetadataArgsStorage().relations
+              .find(x => x.target === entityRef.getClass() && x.propertyName === ref.name);
+            if (relation) {
+              if (
+                relation.relationType === 'many-to-many' ||
+                relation.relationType === 'many-to-one' ||
+                relation.relationType === 'one-to-many') {
+                qb.leftJoinAndSelect(
+                  [qb.alias, relation.propertyName].join('.'),
+                  relation.propertyName
+                );
+              }
+            }
+
+          }
+        }
       }
 
       const recordCount = await qb.getCount();
@@ -141,6 +170,8 @@ export class FindOp<T> implements IFindOp<T> {
           qb.addOrderBy(TypeOrmUtils.aliasKey(qb, sortKey), <'ASC' | 'DESC'>v.toUpperCase());
         });
       }
+
+      const q = qb.getSql();
 
       results = this.options.raw ? await qb.getRawMany() : await qb.getMany();
       results[XS_P_$COUNT] = recordCount;

@@ -19,6 +19,16 @@ import {K_CLS_WORKERS} from '../worker/Constants';
 import {IStorageOptions} from '../storage/IStorageOptions';
 import {ITypexsOptions} from '../ITypexsOptions';
 
+/**
+ * Command options
+ */
+export const LOAD_ORDER_ONLY = 'load-order-only';
+export const USED_FILES_ONLY = 'used-files-only';
+export const USED_SOURCES_ONLY = 'used-sources-only';
+export const OPTIONS_ONLY = 'options-only';
+export const VALIDATE_ONLY = 'validate-only';
+export const SCHEMA_ONLY = 'schema-only';
+
 
 export const ENV_CONFIG_LOAD_KEY = 'txs-config-load';
 

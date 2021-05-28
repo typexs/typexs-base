@@ -1,6 +1,24 @@
-import * as _ from 'lodash';
+import {
+  assign,
+  camelCase,
+  concat,
+  defaults,
+  defaultsDeep,
+  get,
+  has,
+  isEmpty,
+  isFunction,
+  isNumber,
+  isObjectLike,
+  isPlainObject,
+  isString,
+  isUndefined,
+  keys,
+  map,
+  snakeCase
+} from 'lodash';
 import {ITypeOrmEntityOptions, TypeOrmEntityRef} from './TypeOrmEntityRef';
-import {TableMetadataArgs} from 'typeorm/browser/metadata-args/TableMetadataArgs';
+import {TableMetadataArgs} from 'typeorm/metadata-args/TableMetadataArgs';
 import {
   AbstractRef,
   ClassRef,
@@ -8,7 +26,9 @@ import {
   IClassRef,
   IEntityOptions,
   IEntityRef,
+  IJsonSchemaUnserializeOptions,
   IObjectOptions,
+  IParseOptions,
   IPropertyOptions,
   ISchemaOptions,
   JsonSchema,
@@ -21,13 +41,17 @@ import {
 } from '@allgemein/schema-api';
 import {ClassUtils, NotSupportedError, NotYetImplementedError} from '@allgemein/base';
 import {ITypeOrmPropertyOptions, TypeOrmPropertyRef} from './TypeOrmPropertyRef';
-import {RelationMetadataArgs} from 'typeorm/browser/metadata-args/RelationMetadataArgs';
-import {ColumnMetadataArgs} from 'typeorm/browser/metadata-args/ColumnMetadataArgs';
-import {MetadataArgsStorage} from 'typeorm/browser/metadata-args/MetadataArgsStorage';
-import {EmbeddedMetadataArgs} from 'typeorm/browser/metadata-args/EmbeddedMetadataArgs';
+import {RelationMetadataArgs} from 'typeorm/metadata-args/RelationMetadataArgs';
+import {ColumnMetadataArgs} from 'typeorm/metadata-args/ColumnMetadataArgs';
+import {MetadataArgsStorage} from 'typeorm/metadata-args/MetadataArgsStorage';
+import {EmbeddedMetadataArgs} from 'typeorm/metadata-args/EmbeddedMetadataArgs';
 import {TypeOrmUtils} from '../TypeOrmUtils';
 import {isClassRef} from '@allgemein/schema-api/api/IClassRef';
 import {REGISTRY_TYPEORM} from '../Constants';
+import {isEntityRef} from '@allgemein/schema-api/api/IEntityRef';
+import {GeneratedMetadataArgs} from 'typeorm/metadata-args/GeneratedMetadataArgs';
+import {Log} from '../../../../logging/Log';
+import {getMetadataArgsStorage} from 'typeorm';
 
 
 export type TYPEORM_METADATA_KEYS = 'tables' |
@@ -80,9 +104,11 @@ const typeormMetadataKeys: TYPEORM_METADATA_KEYS[] = [
 
 const MAP_PROP_KEYS = {
   'identifier': 'primary',
-  'generated': 'generated',
+  // 'generated': 'generated',
   'unique': 'unique',
-  'nullable': 'nullable'
+  'nullable': 'nullable',
+  'cascade': 'cascade',
+  'eager': 'eager'
 };
 
 
@@ -99,9 +125,8 @@ export class TypeOrmEntityRegistry extends DefaultNamespacedRegistry/*AbstractRe
     super(namespace);
     this.setMaxListeners(1000);
 
-    // this.lookupRegistry = LookupRegistry.$(REGISTRY_TYPEORM);
     try {
-      this.metadatastore = this.getGlobal()['typeormMetadataArgsStorage'];
+      this.metadatastore = getMetadataArgsStorage();
       const self = this;
       for (const key of typeormMetadataKeys) {
         if (this.metadatastore[key]['__txs']) {
@@ -119,11 +144,10 @@ export class TypeOrmEntityRegistry extends DefaultNamespacedRegistry/*AbstractRe
           return result;
         };
       }
-
       this.on('metadata_push', this.onMetaDataPush.bind(this));
       this.on('metadata_splice', this.onMetaDataSplice.bind(this));
     } catch (e) {
-
+      Log.error(e);
     }
   }
 
@@ -179,7 +203,7 @@ export class TypeOrmEntityRegistry extends DefaultNamespacedRegistry/*AbstractRe
           this.metadatastore.columns.find(x => x.target === target && x.propertyName === options.propertyName),
           this.metadatastore.embeddeds.find(x => x.target === target && x.propertyName === options.propertyName),
           this.metadatastore.relations.find(x => x.target === target && x.propertyName === options.propertyName)
-        ].find(x => !_.isEmpty(x));
+        ].find(x => !isEmpty(x));
 
         if (!exists) {
           const properties = MetadataRegistry.$()
@@ -307,18 +331,19 @@ export class TypeOrmEntityRegistry extends DefaultNamespacedRegistry/*AbstractRe
 
   private _findTableMetadataArgs(fn: any) {
     let cName: TableMetadataArgs = null;
-    if (_.isString(fn)) {
-      cName = this.findTable(table => _.isString(table.target) ? table.target === fn : table.target.name === fn);
-    } else if (_.isFunction(fn)) {
+    if (isString(fn)) {
+      cName = this.findTable(table => isString(table.target) ? table.target === fn : table.target.name === fn);
+    } else if (isFunction(fn)) {
       cName = this.findTable(table => table.target === fn);
-    } else if (_.isPlainObject(fn)) {
+    } else if (isPlainObject(fn)) {
       cName = this.findTable(table => table.target === fn.prototype.constructor);
-    } else if (_.isObjectLike(fn)) {
-      const construct = fn.prototype ? fn.prototype.constructor : fn.__proto__.constructor;
+    } else if (isObjectLike(fn)) {
+      const construct = ClassUtils.getFunction(fn);
       cName = this.findTable(table => table.target === construct);
     }
     return cName;
   }
+
 
   create<T>(context: string, options: ITypeOrmPropertyOptions | ITypeOrmEntityOptions): T {
     let update = false;
@@ -333,7 +358,7 @@ export class TypeOrmEntityRegistry extends DefaultNamespacedRegistry/*AbstractRe
             target: options.target,
             type: 'regular'
           };
-          _.assign(typeOrmOptions, options.metadata ? options.metadata : {});
+          assign(typeOrmOptions, options.metadata ? options.metadata : {});
           options.metadata = typeOrmOptions;
           this.metadatastore.tables.push(typeOrmOptions);
         }
@@ -344,23 +369,29 @@ export class TypeOrmEntityRegistry extends DefaultNamespacedRegistry/*AbstractRe
     } else if (context === METATYPE_PROPERTY) {
       // remove cardinality is checked by property ref
 
+      let generated: GeneratedMetadataArgs = null;
       let tableType = 'column';
-      const isArray = options.cardinality && options.cardinality !== 1;
+      let isArray = !isUndefined(options.cardinality) && isNumber(options.cardinality) && options.cardinality !== 1;
 
       // correct type for typeorm
+      let clsRef: IClassRef = null;
       let clsType: Function = options.type;
-      if (_.isString(options.type)) {
+      if (isString(options.type)) {
         clsType = TypeOrmUtils.getJsObjectType(options.type);
         if (!clsType) {
           tableType = 'relation';
-          const ref = ClassRef.find(options.type);
-          if (ref) {
-            clsType = ref.getClass();
+          clsRef = ClassRef.find(options.type);
+          if (clsRef) {
+            clsType = clsRef.getClass();
           } else {
-            clsType = ClassRef.get(options.type, this.namespace).getClass(true);
+            clsRef = ClassRef.get(options.type, this.namespace);
+            clsType = clsRef.getClass(true);
           }
+        } else if (clsType === Array) {
+          isArray = true;
         }
-      } else if (isClassRef(clsType)) {
+      } else if (isClassRef(clsType) || isEntityRef(clsType)) {
+        clsRef = isEntityRef(clsType) ? clsType.getClassRef() : clsType;
         tableType = 'relation';
         clsType = clsType.getClass();
       } else {
@@ -369,8 +400,8 @@ export class TypeOrmEntityRegistry extends DefaultNamespacedRegistry/*AbstractRe
       }
 
 
-      tableType = _.get(options, 'tableType', tableType);
-      const cardinality = options['cardinality'] ? options['cardinality'] : 1;
+      tableType = get(options, 'tableType', tableType);
+      // const cardinality = options['cardinality'] ? options['cardinality'] : 1;
       delete options['cardinality'];
 
       switch (tableType) {
@@ -396,36 +427,36 @@ export class TypeOrmEntityRegistry extends DefaultNamespacedRegistry/*AbstractRe
           };
 
           if (options.metadata) {
-            _.defaults(typeOrmOptions, options.metadata);
+            defaults(typeOrmOptions, options.metadata);
           }
-
           update = true;
-        }
-
-        // correct type for typeorm
-        let clsType: Function = options.type;
-        if (_.isString(options.type)) {
-          clsType = TypeOrmUtils.getJsObjectType(options.type);
-          if (!clsType) {
-            clsType = ClassRef.get(options.type, this.namespace).getClass(true);
-          }
-        } else if (isClassRef(clsType)) {
-          clsType = clsType.getClass();
         }
 
         if (!typeOrmOptions.options) {
           typeOrmOptions.options = {};
         }
         typeOrmOptions.options.type = clsType;
+        typeOrmOptions.options.name = snakeCase(typeOrmOptions.propertyName);
 
-
-        _.defaults(typeOrmOptions, {
+        defaults(typeOrmOptions, {
           propertyName: options.propertyName,
           target: options.target
         });
 
+        let reversePropName = null;
+        let refIdName = null;
         if (tableType === 'relation' && !typeOrmOptions.type) {
           typeOrmOptions.type = (type: any) => clsType;
+          const ids = clsRef.getPropertyRefs().filter(x => x.isIdentifier());
+          if (ids.length === 1) {
+            refIdName = ids.shift().name;
+            reversePropName = camelCase([(options.target as any).name, options.propertyName].join('_'));
+            typeOrmOptions.inverseSideProperty = function (reversePropName) {
+              return (x: any) => x[reversePropName];
+            }(reversePropName);
+          } else {
+            throw new NotYetImplementedError('TODO');
+          }
         } else if (tableType === 'column') {
           typeOrmOptions.mode = 'regular';
         }
@@ -437,21 +468,29 @@ export class TypeOrmEntityRegistry extends DefaultNamespacedRegistry/*AbstractRe
                 type: clsType as any
               }
             };
-
-            for (const x of _.keys(MAP_PROP_KEYS)) {
-              if (_.has(options, x)) {
+            for (const x of keys(MAP_PROP_KEYS)) {
+              if (has(options, x)) {
                 _defaults.options[MAP_PROP_KEYS[x]] = options[x];
               }
             }
-            _.defaultsDeep(typeOrmOptions, _defaults);
+            defaultsDeep(typeOrmOptions, _defaults);
+            if (options.generated) {
+              generated = {
+                target: options.target,
+                propertyName: options.propertyName,
+                strategy: 'increment'
+              };
+            }
           } else if (tableType === 'relation') {
-            _.defaultsDeep(typeOrmOptions, <RelationMetadataArgs>{
+            defaultsDeep(typeOrmOptions, <RelationMetadataArgs>{
               type: () => clsType,
               isLazy: false,
-              relationType: !isArray ? 'one-to-one' : 'one-to-many',
-              options: {}
+              relationType: !isArray ? 'one-to-one' : 'many-to-many',
+              options: {
+                cascade: true,
+                eager: true
+              }
             });
-
           }
         }
 
@@ -462,12 +501,60 @@ export class TypeOrmEntityRegistry extends DefaultNamespacedRegistry/*AbstractRe
           switch (tableType) {
             case 'column':
               this.metadatastore.columns.push(typeOrmOptions);
+              if (generated) {
+                this.metadatastore.generations.push(generated);
+              }
               break;
             case 'embedded':
               this.metadatastore.embeddeds.push(typeOrmOptions);
               break;
             case 'relation':
               this.metadatastore.relations.push(typeOrmOptions);
+              if ((<RelationMetadataArgs>typeOrmOptions).relationType === 'one-to-one') {
+                this.metadatastore.joinColumns.push({
+                  target: options.target,
+                  propertyName: options.propertyName,
+                  name: [options.propertyName, refIdName].map(x => snakeCase(x)).join('_')
+                });
+              } else if ((<RelationMetadataArgs>typeOrmOptions).relationType === 'many-to-many') {
+                // const revPropName = camelCase([(options.target as any).name, options.propertyName].join('_'));
+                const ids = this.metadatastore.columns.filter(x => x.target === options.target && x.options.primary);
+                let idName = null;
+                if (ids.length === 1) {
+                  idName = ids.shift().propertyName;
+                } else {
+                  throw new NotYetImplementedError('TODO');
+                }
+                const joinTable = {
+                  name: snakeCase([(options.target as any).name, options.propertyName].join('_')),
+                  target: options.target,
+                  propertyName: options.propertyName,
+                  joinColumns: [{
+                    propertyName: options.propertyName,
+                    target: options.target,
+                    referencedColumnName: idName
+                  }],
+                  inverseJoinColumns: [{
+                    target: clsType,
+                    propertyName: reversePropName,
+                    referencedColumnName: refIdName
+                  }]
+                };
+                this.metadatastore.joinTables.push(joinTable);
+                // this.metadatastore.relations.push({
+                //   relationType: 'many-to-one',
+                //   target: clsType,
+                //   propertyName: reversePropName,
+                //   type: () => options.target,
+                //   inverseSideProperty: function (orgPropName) {
+                //     return (x: any) => x[orgPropName];
+                //   }(options.propertyName),
+                //   isLazy: false,
+                //   options: {
+                //     nullable: true,
+                //   }
+                // });
+              }
               break;
           }
         }
@@ -512,15 +599,15 @@ export class TypeOrmEntityRegistry extends DefaultNamespacedRegistry/*AbstractRe
       metadata: fn
     };
     const entity = this.create<TypeOrmEntityRef>(METATYPE_ENTITY, entityOptions);
-    const properties: TypeOrmPropertyRef[] = <TypeOrmPropertyRef[]>_.concat(
-      _.map(this.metadatastore.columns
+    const properties: TypeOrmPropertyRef[] = <TypeOrmPropertyRef[]>concat(
+      map(this.metadatastore.columns
           .filter(c => c.target === fn.target),
         c => this.createPropertyByArgs('column', c)),
-      _.map(this.metadatastore.filterRelations(fn.target),
+      map(this.metadatastore.filterRelations(fn.target),
         c => this.createPropertyByArgs('relation', c))
     );
 
-    _.map(this.metadatastore.filterEmbeddeds(fn.target),
+    map(this.metadatastore.filterEmbeddeds(fn.target),
       c => {
         const exists = properties.find(x => x.storingName === c.propertyName && x.getClass() === c.target);
         if (!exists) {
@@ -550,7 +637,7 @@ export class TypeOrmEntityRegistry extends DefaultNamespacedRegistry/*AbstractRe
 
   getEntityRefByName(name: string): TypeOrmEntityRef {
     return this.find(METATYPE_ENTITY, (e: TypeOrmEntityRef) => {
-      return e.machineName === _.snakeCase(name);
+      return e.machineName === snakeCase(name);
     });
   }
 
@@ -596,14 +683,15 @@ export class TypeOrmEntityRegistry extends DefaultNamespacedRegistry/*AbstractRe
     }
   }
 
-  fromJsonSchema(json: any) {
-    return JsonSchema.unserialize(json, {
+
+  fromJsonSchema(json: any, options?: IJsonSchemaUnserializeOptions) {
+    return JsonSchema.unserialize(json, defaults(options || {}, {
         namespace: this.namespace,
         collector: [
           {
             type: METATYPE_PROPERTY,
             key: 'type',
-            fn: (key, data, options) => {
+            fn: (key: string, data: any, options: IParseOptions) => {
               const type = ['string', 'number', 'boolean', 'date', 'float', 'array', 'object'];
               const value = data[key];
               if (value && type.includes(value)) {
@@ -622,7 +710,7 @@ export class TypeOrmEntityRegistry extends DefaultNamespacedRegistry/*AbstractRe
             }
           }
         ]
-      }
+      })
     );
   }
 

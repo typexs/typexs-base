@@ -30,10 +30,6 @@ export class TypeOrmStorage implements IStorage {
 
 
   create(name: string, options: IStorageOptions & any) {
-    const tables: TableMetadataArgs[] = getMetadataArgsStorage().tables;
-    options.entities = tables
-      .filter(t => options.entities.indexOf(<Function>t.target) !== -1)
-      .map(t => <Function>t.target);
 
 
     const ref = new TypeOrmStorageRef(options);

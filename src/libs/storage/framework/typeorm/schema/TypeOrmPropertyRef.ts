@@ -3,7 +3,7 @@ import {capitalize, defaults, get, has, isArray, isBoolean, isEmpty, isFunction,
 import {ColumnMetadataArgs} from 'typeorm/metadata-args/ColumnMetadataArgs';
 import {RelationMetadataArgs} from 'typeorm/metadata-args/RelationMetadataArgs';
 import {EmbeddedMetadataArgs} from 'typeorm/metadata-args/EmbeddedMetadataArgs';
-import {ClassUtils, NotYetImplementedError} from '@allgemein/base';
+import {ClassUtils, NotSupportedError, NotYetImplementedError} from '@allgemein/base';
 import {DefaultPropertyRef, IBuildOptions, IClassRef, IPropertyOptions, METATYPE_PROPERTY} from '@allgemein/schema-api';
 import {TypeOrmEntityRef} from './TypeOrmEntityRef';
 import {TypeOrmUtils} from '../TypeOrmUtils';
@@ -81,6 +81,9 @@ export class TypeOrmPropertyRef extends DefaultPropertyRef /*AbstractRef impleme
     return this.identifier;
   }
 
+  isPattern(): boolean {
+    throw new NotSupportedError('isPattern is not supported');
+  }
 
   getTargetRef(): IClassRef {
     return this.targetRef;

@@ -43,6 +43,10 @@ export class TaskExchangeRef extends AbstractRef implements IPropertyRef {
 
   }
 
+  isPattern(): boolean {
+    throw new Error('Method not implemented.');
+  }
+
   isAppended(): boolean {
     throw new Error('Method not implemented.');
   }

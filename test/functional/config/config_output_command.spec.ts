@@ -4,6 +4,7 @@ import {expect} from 'chai';
 import {Bootstrap, ICommand} from '../../../src';
 import {Config} from '@allgemein/config';
 import {join} from 'path';
+import {hostname} from 'os';
 import {keys, uniqBy} from 'lodash';
 import {ConfigOutputCommand} from '../../../src/commands/ConfigOutputCommand';
 import {Console} from '../../../src/libs/logging/Console';
@@ -162,11 +163,11 @@ class ConfigOutputCommandSpec {
           },
           namespace: 'typexs',
           pattern: [
-            'typexs--thinkbaer',
+            'typexs--' + hostname() + '',
             'typexs--${argv.nodeId}',
-            'typexs--thinkbaer--${argv.nodeId}',
-            'thinkbaer/typexs',
-            'thinkbaer/typexs--${argv.nodeId}'
+            'typexs--' + hostname() + '--${argv.nodeId}',
+            '' + hostname() + '/typexs',
+            '' + hostname() + '/typexs--${argv.nodeId}'
           ],
           standalone: false,
           interpolate: true,
@@ -180,29 +181,29 @@ class ConfigOutputCommandSpec {
           },
           pattern: [
             'secrets',
-            'secrets--thinkbaer',
+            'secrets--' + hostname() + '',
             'secrets--${argv.nodeId}',
             'secrets--${app.nodeId}',
             'secrets--${env.nodeId}',
-            'secrets--thinkbaer--${argv.nodeId}',
-            'secrets--thinkbaer--${app.nodeId}',
-            'secrets--thinkbaer--${env.nodeId}',
-            'thinkbaer/secrets',
-            'config-commands--thinkbaer',
+            'secrets--' + hostname() + '--${argv.nodeId}',
+            'secrets--' + hostname() + '--${app.nodeId}',
+            'secrets--' + hostname() + '--${env.nodeId}',
+            '' + hostname() + '/secrets',
+            'config-commands--' + hostname() + '',
             'config-commands--${argv.nodeId}',
             'config-commands--${app.nodeId}',
             'config-commands--${env.stage}',
             'config-commands--${argv.stage}',
-            'config-commands--thinkbaer--${argv.stage}',
-            'config-commands--thinkbaer--${env.stage}',
-            'config-commands--thinkbaer--${argv.nodeId}',
-            'config-commands--thinkbaer--${app.nodeId}',
-            'config-commands--thinkbaer--${env.stage}--${argv.nodeId}',
-            'config-commands--thinkbaer--${env.stage}--${app.nodeId}',
-            'config-commands--thinkbaer--${argv.stage}--${argv.nodeId}',
-            'config-commands--thinkbaer--${argv.stage}--${argv.nodeId}',
-            'config-commands/typexs--thinkbaer--${argv.stage}--${argv.nodeId}',
-            'config-commands/thinkbaer/typexs--${argv.stage}--${argv.nodeId}'
+            'config-commands--' + hostname() + '--${argv.stage}',
+            'config-commands--' + hostname() + '--${env.stage}',
+            'config-commands--' + hostname() + '--${argv.nodeId}',
+            'config-commands--' + hostname() + '--${app.nodeId}',
+            'config-commands--' + hostname() + '--${env.stage}--${argv.nodeId}',
+            'config-commands--' + hostname() + '--${env.stage}--${app.nodeId}',
+            'config-commands--' + hostname() + '--${argv.stage}--${argv.nodeId}',
+            'config-commands--' + hostname() + '--${argv.stage}--${argv.nodeId}',
+            'config-commands/typexs--' + hostname() + '--${argv.stage}--${argv.nodeId}',
+            'config-commands/' + hostname() + '/typexs--${argv.stage}--${argv.nodeId}'
           ],
           state: false
         }

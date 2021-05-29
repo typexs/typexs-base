@@ -218,9 +218,7 @@ class StorageSqlConditionsBuilderSpec {
   async 'build join conditions for one-to-many typeorm relation'() {
     const query = await getQuery({'driver.id': 1}, CarCond, 'car');
     expect(query).to.deep.eq([
-
-      'SELECT "car"."id" AS "car_id", "car"."name" AS "car_name" FROM "car_cond" "car" LEFT JOIN "driver_cond" "driver_cond_1" ON ' +
-      'driver_cond_1.carId = "car"."id" WHERE "driver_cond_1"."id" = $1',
+      'SELECT "car"."id" AS "car_id", "car"."name" AS "car_name" FROM "car_cond" "car" LEFT JOIN "driver_cond" "driver_cond_1" ON "driver_cond_1"."carId" = "car"."id" WHERE "driver_cond_1"."id" = $1',
       [
         1
       ]
@@ -233,9 +231,7 @@ class StorageSqlConditionsBuilderSpec {
     const query = await getQuery({'car.id': 1}, DriverCond, 'driver');
     expect(query).to.deep.eq(
       [
-        'SELECT "driver"."id" AS "driver_id", "driver"."firstName" AS "driver_firstName", ' +
-        '"driver"."lastName" AS "driver_lastName", "driver"."carId" AS "driver_carId" FROM "driver_cond" "driver" ' +
-        'LEFT JOIN "car_cond" "car_cond_1" ON "car_cond_1"."id" = driver.carId WHERE "car_cond_1"."id" = $1',
+        'SELECT "driver"."id" AS "driver_id", "driver"."firstName" AS "driver_firstName", "driver"."lastName" AS "driver_lastName", "driver"."carId" AS "driver_carId" FROM "driver_cond" "driver" LEFT JOIN "car_cond" "car_cond_1" ON "car_cond_1"."id" = "driver"."carId" WHERE "car_cond_1"."id" = $1',
         [
           1
         ]
@@ -249,9 +245,7 @@ class StorageSqlConditionsBuilderSpec {
     const query = await getQuery({'car.id': null}, DriverCond, 'driver');
     expect(query).to.deep.eq(
       [
-        'SELECT "driver"."id" AS "driver_id", "driver"."firstName" AS "driver_firstName", "driver"."lastName" AS "driver_lastName", ' +
-        '"driver"."carId" AS "driver_carId" FROM "driver_cond" "driver" ' +
-        'LEFT JOIN "car_cond" "car_cond_1" ON "car_cond_1"."id" = driver.carId WHERE "car_cond_1"."id" = $1',
+        'SELECT "driver"."id" AS "driver_id", "driver"."firstName" AS "driver_firstName", "driver"."lastName" AS "driver_lastName", "driver"."carId" AS "driver_carId" FROM "driver_cond" "driver" LEFT JOIN "car_cond" "car_cond_1" ON "car_cond_1"."id" = "driver"."carId" WHERE "car_cond_1"."id" = $1',
         [
           null
         ]
@@ -265,9 +259,7 @@ class StorageSqlConditionsBuilderSpec {
     const query = await getQuery({'car.id': {$ne: null}}, DriverCond, 'driver');
     expect(query).to.deep.eq(
       [
-        'SELECT "driver"."id" AS "driver_id", "driver"."firstName" AS "driver_firstName", "driver"."lastName" AS "driver_lastName", ' +
-        '"driver"."carId" AS "driver_carId" FROM "driver_cond" "driver" ' +
-        'LEFT JOIN "car_cond" "car_cond_1" ON "car_cond_1"."id" = driver.carId WHERE "car_cond_1"."id" <> $1',
+        'SELECT "driver"."id" AS "driver_id", "driver"."firstName" AS "driver_firstName", "driver"."lastName" AS "driver_lastName", "driver"."carId" AS "driver_carId" FROM "driver_cond" "driver" LEFT JOIN "car_cond" "car_cond_1" ON "car_cond_1"."id" = "driver"."carId" WHERE "car_cond_1"."id" <> $1',
         [
           null
         ]
@@ -281,9 +273,7 @@ class StorageSqlConditionsBuilderSpec {
     const query = await getQuery({'car.id': {$isNull: null}}, DriverCond, 'driver');
     expect(query).to.deep.eq(
       [
-        'SELECT "driver"."id" AS "driver_id", "driver"."firstName" AS "driver_firstName", "driver"."lastName" AS "driver_lastName", ' +
-        '"driver"."carId" AS "driver_carId" FROM "driver_cond" "driver" ' +
-        'LEFT JOIN "car_cond" "car_cond_1" ON "car_cond_1"."id" = driver.carId WHERE "car_cond_1"."id" IS NULL',
+        'SELECT "driver"."id" AS "driver_id", "driver"."firstName" AS "driver_firstName", "driver"."lastName" AS "driver_lastName", "driver"."carId" AS "driver_carId" FROM "driver_cond" "driver" LEFT JOIN "car_cond" "car_cond_1" ON "car_cond_1"."id" = "driver"."carId" WHERE "car_cond_1"."id" IS NULL',
         []
       ]
     );
@@ -296,9 +286,7 @@ class StorageSqlConditionsBuilderSpec {
     const query = await getQuery({'car.id': {$isNotNull: null}}, DriverCond, 'driver');
     expect(query).to.deep.eq(
       [
-        'SELECT "driver"."id" AS "driver_id", "driver"."firstName" AS "driver_firstName", "driver"."lastName" AS "driver_lastName", ' +
-        '"driver"."carId" AS "driver_carId" FROM "driver_cond" "driver" ' +
-        'LEFT JOIN "car_cond" "car_cond_1" ON "car_cond_1"."id" = driver.carId WHERE "car_cond_1"."id" IS NOT NULL',
+        'SELECT "driver"."id" AS "driver_id", "driver"."firstName" AS "driver_firstName", "driver"."lastName" AS "driver_lastName", "driver"."carId" AS "driver_carId" FROM "driver_cond" "driver" LEFT JOIN "car_cond" "car_cond_1" ON "car_cond_1"."id" = "driver"."carId" WHERE "car_cond_1"."id" IS NOT NULL',
         []
       ]
     );
@@ -310,9 +298,7 @@ class StorageSqlConditionsBuilderSpec {
     const query = await getQuery({'car.id': true}, DriverCond, 'driver');
     expect(query).to.deep.eq(
       [
-        'SELECT "driver"."id" AS "driver_id", "driver"."firstName" AS "driver_firstName", "driver"."lastName" AS "driver_lastName", ' +
-        '"driver"."carId" AS "driver_carId" FROM "driver_cond" "driver" ' +
-        'LEFT JOIN "car_cond" "car_cond_1" ON "car_cond_1"."id" = driver.carId WHERE "car_cond_1"."id" = $1',
+        'SELECT "driver"."id" AS "driver_id", "driver"."firstName" AS "driver_firstName", "driver"."lastName" AS "driver_lastName", "driver"."carId" AS "driver_carId" FROM "driver_cond" "driver" LEFT JOIN "car_cond" "car_cond_1" ON "car_cond_1"."id" = "driver"."carId" WHERE "car_cond_1"."id" = $1',
         [true]
       ]
     );
@@ -324,9 +310,7 @@ class StorageSqlConditionsBuilderSpec {
     const query = await getQuery({'car.id': false}, DriverCond, 'driver');
     expect(query).to.deep.eq(
       [
-        'SELECT "driver"."id" AS "driver_id", "driver"."firstName" AS "driver_firstName", "driver"."lastName" AS "driver_lastName", ' +
-        '"driver"."carId" AS "driver_carId" FROM "driver_cond" "driver" ' +
-        'LEFT JOIN "car_cond" "car_cond_1" ON "car_cond_1"."id" = driver.carId WHERE "car_cond_1"."id" = $1',
+        'SELECT "driver"."id" AS "driver_id", "driver"."firstName" AS "driver_firstName", "driver"."lastName" AS "driver_lastName", "driver"."carId" AS "driver_carId" FROM "driver_cond" "driver" LEFT JOIN "car_cond" "car_cond_1" ON "car_cond_1"."id" = "driver"."carId" WHERE "car_cond_1"."id" = $1',
         [false]
       ]
     );
@@ -348,7 +332,7 @@ class StorageSqlConditionsBuilderSpec {
     await connection.close();
     expect(query2).to.deep.eq(
       [
-        'SELECT SUM(id) AS "soneHavingField", firstName FROM "driver_cond" "driver"  GROUP BY firstName HAVING soneHavingField > $1',
+        'SELECT SUM(id) AS "soneHavingField", firstName FROM "driver_cond" "driver" GROUP BY firstName HAVING soneHavingField > $1',
         [0]
       ]
     );

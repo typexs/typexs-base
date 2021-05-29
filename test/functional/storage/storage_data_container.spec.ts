@@ -6,8 +6,6 @@ import {REGISTRY_TYPEORM} from '../../../src/libs/storage/framework/typeorm/Cons
 
 let Person: any;
 let PersonWithRequired: any = null;
-
-
 let registry: ILookupRegistry & IJsonSchema;
 
 @suite('functional/storage/storage_data_container')

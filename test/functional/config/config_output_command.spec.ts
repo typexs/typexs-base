@@ -156,7 +156,7 @@ class ConfigOutputCommandSpec {
         {
           type: 'file',
           file: {
-            dirname: '/home/cezaryrk/Projekte/node-typexs/typexs-base/test/functional/config/app/commands/config',
+            dirname:  join(appdir, 'config'),
             filename: 'typexs',
             type: 'yml'
           },
@@ -175,7 +175,7 @@ class ConfigOutputCommandSpec {
         {
           type: 'file',
           file: {
-            dirname: '/home/cezaryrk/Projekte/node-typexs/typexs-base/test/functional/config/app/commands/config',
+            dirname: join(appdir, 'config'),
             filename: 'config-commands'
           },
           pattern: [

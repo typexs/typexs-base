@@ -127,11 +127,10 @@ export {TaskRuntime} from './libs/tasks/decorators/TaskRuntime';
 export {TaskState} from './libs/tasks/TaskState';
 export {TaskRunnerRegistry} from './libs/tasks/TaskRunnerRegistry';
 export {TaskExecutor} from './libs/tasks/TaskExecutor';
+export {TasksHelper} from './libs/tasks/TasksHelper';
 
-export {Workers} from './libs/worker/Workers';
-export {IWorkerConfig} from './libs/worker/IWorkerConfig';
-export {IWorker} from './libs/worker/IWorker';
 export * from './libs/worker/Constants';
+export {Workers} from './libs/worker/Workers';
 export {WorkerRef} from './libs/worker/WorkerRef';
 
 

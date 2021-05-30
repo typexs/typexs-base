@@ -26,6 +26,7 @@ import {
   IClassRef,
   IEntityOptions,
   IEntityRef,
+  IJsonSchema,
   IJsonSchemaUnserializeOptions,
   IObjectOptions,
   IParseOptions,
@@ -52,6 +53,7 @@ import {isEntityRef} from '@allgemein/schema-api/api/IEntityRef';
 import {GeneratedMetadataArgs} from 'typeorm/metadata-args/GeneratedMetadataArgs';
 import {Log} from '../../../../logging/Log';
 import {getMetadataArgsStorage} from 'typeorm';
+import {IJsonSchemaSerializeOptions} from '@allgemein/schema-api/lib/json-schema/IJsonSchemaSerializeOptions';
 
 
 export type TYPEORM_METADATA_KEYS = 'tables' |
@@ -112,7 +114,7 @@ const MAP_PROP_KEYS = {
 };
 
 
-export class TypeOrmEntityRegistry extends DefaultNamespacedRegistry/*AbstractRegistry /*EventEmitter implements ILookupRegistry*/ {
+export class TypeOrmEntityRegistry extends DefaultNamespacedRegistry implements IJsonSchema {
 
 
   private static _self: TypeOrmEntityRegistry;
@@ -683,6 +685,10 @@ export class TypeOrmEntityRegistry extends DefaultNamespacedRegistry/*AbstractRe
     }
   }
 
+  add<T>(context: string, entry: T): T {
+    return this.getLookupRegistry().add(context, entry);
+  }
+
 
   fromJsonSchema(json: any, options?: IJsonSchemaUnserializeOptions) {
     return JsonSchema.unserialize(json, defaults(options || {}, {
@@ -714,9 +720,11 @@ export class TypeOrmEntityRegistry extends DefaultNamespacedRegistry/*AbstractRe
     );
   }
 
-  add<T>(context: string, entry: T): T {
-    return this.getLookupRegistry().add(context, entry);
+  toJsonSchema(options?: IJsonSchemaSerializeOptions): any {
+    const serializer = JsonSchema.getSerializer(options);
+    for (const entityRef of this.getEntityRefs()) {
+      serializer.serialize(entityRef);
+    }
+    return serializer.getJsonSchema();
   }
-
-
 }

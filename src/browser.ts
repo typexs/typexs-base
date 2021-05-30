@@ -24,6 +24,7 @@ export {IHttpHeaders} from './libs/IHttpHeaders';
 export {IKeyValuePair} from './libs/IKeyValuePair';
 export {IUrlBase} from './libs/IUrlBase';
 
+export {IError} from './libs/exceptions/IError';
 
 export {SystemNodeInfo} from './entities/SystemNodeInfo';
 export {TaskLog} from './entities/TaskLog';
@@ -61,6 +62,8 @@ export {StorageRef} from './libs/storage/StorageRef';
 
 export {IFindOptions} from './libs/storage/framework/IFindOptions';
 export {IUpdateOptions} from './libs/storage/framework/IUpdateOptions';
+export {IDeleteOptions} from './libs/storage/framework/IDeleteOptions';
+export {IAggregateOptions} from './libs/storage/framework/IAggregateOptions';
 export {ISaveOptions} from './libs/storage/framework/ISaveOptions';
 export {IConditionJoin} from './libs/storage/framework/IConditionJoin';
 
@@ -98,5 +101,15 @@ export {IOutgoingOptions} from './libs/tasks/decorators/IOutgoingOptions';
 export {TaskEvent} from './libs/tasks/worker/TaskEvent';
 export {TaskRunnerEvent} from './libs/tasks/TaskRunnerEvent';
 
+
+
 export {ITaskRunnerResult} from './libs/tasks/ITaskRunnerResult';
 export {ITaskExectorOptions} from './libs/tasks/ITaskExectorOptions';
+
+/**
+ * Worker interfaces
+ */
+export {IWorker} from './libs/worker/IWorker';
+export {IWorkerInfo} from './libs/worker/IWorkerInfo';
+export {IWorkerConfig} from './libs/worker/IWorkerConfig';
+export {IWorkerStatisitic} from './libs/worker/IWorkerStatisitic';

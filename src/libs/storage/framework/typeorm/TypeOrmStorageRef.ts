@@ -1,7 +1,7 @@
 import {IStorageOptions} from '../../IStorageOptions';
 import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
 import {assign, defaults, has, isArray, isEmpty, isFunction, isObjectLike, isString, remove, snakeCase} from 'lodash';
-import {ClassUtils, NotYetImplementedError, PlatformUtils, TodoException} from '@allgemein/base';
+import {C_DEFAULT, ClassUtils, NotYetImplementedError, PlatformUtils, TodoException} from '@allgemein/base';
 import {Config} from '@allgemein/config';
 import {K_WORKDIR} from '../../../Constants';
 import {BaseUtils} from '../../../utils/BaseUtils';
@@ -25,6 +25,7 @@ import {
 } from './Constants';
 import {ColumnMetadataArgs} from 'typeorm/metadata-args/ColumnMetadataArgs';
 import {isEntityRef} from '@allgemein/schema-api/api/IEntityRef';
+import {TypeOrmEntityRegistry} from './schema/TypeOrmEntityRegistry';
 
 
 export class TypeOrmStorageRef extends StorageRef {
@@ -204,6 +205,14 @@ export class TypeOrmStorageRef extends StorageRef {
     let entityRef: IEntityRef = type as IEntityRef;
     if (!isEntityRef(type)) {
       entityRef = this.getEntityRef(type instanceof EntitySchema ? type.options.target : type);
+    }
+
+    // apply storage name as schema
+    if (this.name !== C_DEFAULT) {
+      (this.getRegistry() as TypeOrmEntityRegistry).addSchemaToEntityRef(this.name, entityRef, {
+        override: true,
+        onlyDefault: true
+      });
     }
 
     const cls = entityRef.getClassRef().getClass();

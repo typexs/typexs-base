@@ -134,7 +134,7 @@ export class TaskRef extends AbstractRef implements IEntityRef {
       if (i.name) {
         return i.name;
       } else {
-        return _.snakeCase(ClassUtils.getClassName(x));
+        return _.snakeCase(ClassRef.getClassName(x));
       }
     } else if (_.isPlainObject(x)) {
       if (_.has(x, 'name')) {

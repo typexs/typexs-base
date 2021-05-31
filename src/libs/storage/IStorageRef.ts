@@ -1,6 +1,6 @@
 import {IEntityController} from './IEntityController';
 import {IStorageOptions} from './IStorageOptions';
-import {ClassType, IClassRef, IEntityRef, ILookupRegistry} from '@allgemein/schema-api';
+import {ClassType, IClassRef, IEntityRef, ILookupRegistry, ISchemaRef} from '@allgemein/schema-api';
 import {IConnection} from './IConnection';
 import {ICollection} from './ICollection';
 
@@ -105,6 +105,18 @@ export interface IStorageRef {
    * Return all handled entities
    */
   getEntityRefs(): IEntityRef[];
+
+  /**
+   * Returns used SchemaRef if supported by this storage ref
+   *
+   * @param name
+   */
+  getSchemaRef(name: string): ISchemaRef;
+
+  /**
+   * Returns used SchemaRefs by this storage
+   */
+  getSchemaRefs(): ISchemaRef[];
 
   /**
    * Return all handled entity ames

@@ -32,15 +32,18 @@ import {
   IParseOptions,
   IPropertyOptions,
   ISchemaOptions,
+  ISchemaRef,
   JsonSchema,
   LookupRegistry,
   METADATA_TYPE,
   MetadataRegistry,
+  METATYPE_EMBEDDABLE,
   METATYPE_ENTITY,
   METATYPE_PROPERTY,
+  METATYPE_SCHEMA,
   RegistryFactory,
 } from '@allgemein/schema-api';
-import {ClassUtils, NotSupportedError, NotYetImplementedError} from '@allgemein/base';
+import {C_DEFAULT, ClassUtils, NotSupportedError, NotYetImplementedError} from '@allgemein/base';
 import {ITypeOrmPropertyOptions, TypeOrmPropertyRef} from './TypeOrmPropertyRef';
 import {RelationMetadataArgs} from 'typeorm/metadata-args/RelationMetadataArgs';
 import {ColumnMetadataArgs} from 'typeorm/metadata-args/ColumnMetadataArgs';
@@ -193,6 +196,7 @@ export class TypeOrmEntityRegistry extends DefaultNamespacedRegistry implements 
         const properties = MetadataRegistry.$()
           .getByContextAndTarget(METATYPE_PROPERTY,
             options.target, 'merge') as ITypeOrmPropertyOptions[];
+
         for (const property of properties) {
           this.onAdd(METATYPE_PROPERTY, property);
         }
@@ -214,6 +218,17 @@ export class TypeOrmEntityRegistry extends DefaultNamespacedRegistry implements 
           for (const property of properties) {
             this.create(METATYPE_PROPERTY, property);
           }
+        }
+      }
+    } else if (context === METATYPE_SCHEMA) {
+      let find: ISchemaRef = this.find(context, (c: ISchemaRef) => c.name === options.name);
+      if (!find) {
+        find = this.create(context, options as any);
+      }
+      if (options.target) {
+        const entityRef = this.find(METATYPE_ENTITY, (c: IEntityRef) => c.getClass() === options.target) as IEntityRef;
+        if (find && entityRef) {
+          this.addSchemaToEntityRef(find, entityRef);
         }
       }
     }
@@ -367,6 +382,16 @@ export class TypeOrmEntityRegistry extends DefaultNamespacedRegistry implements 
       }
       const res = new TypeOrmEntityRef(options as ITypeOrmEntityOptions);
       this.register(res);
+      const metaSchemaOptionsForEntity = MetadataRegistry.$()
+        .getByContextAndTarget(METATYPE_SCHEMA, res.getClass());
+
+      if (metaSchemaOptionsForEntity.length > 0) {
+        for (const schemaOptions of metaSchemaOptionsForEntity) {
+          this.addSchemaToEntityRef(schemaOptions.name, res);
+        }
+      } else {
+        this.addSchemaToEntityRef(C_DEFAULT, res);
+      }
       return res as any;
     } else if (context === METATYPE_PROPERTY) {
       // remove cardinality is checked by property ref
@@ -543,19 +568,6 @@ export class TypeOrmEntityRegistry extends DefaultNamespacedRegistry implements 
                   }]
                 };
                 this.metadatastore.joinTables.push(joinTable);
-                // this.metadatastore.relations.push({
-                //   relationType: 'many-to-one',
-                //   target: clsType,
-                //   propertyName: reversePropName,
-                //   type: () => options.target,
-                //   inverseSideProperty: function (orgPropName) {
-                //     return (x: any) => x[orgPropName];
-                //   }(options.propertyName),
-                //   isLazy: false,
-                //   options: {
-                //     nullable: true,
-                //   }
-                // });
               }
               break;
           }
@@ -565,6 +577,10 @@ export class TypeOrmEntityRegistry extends DefaultNamespacedRegistry implements 
       const propRef = new TypeOrmPropertyRef(options as ITypeOrmPropertyOptions);
       this.register(propRef);
       return propRef as any;
+    } else if (context === METATYPE_EMBEDDABLE) {
+      return this.createEmbeddableForOptions(options as any) as any;
+    } else if (context === METATYPE_SCHEMA) {
+      return this.createSchemaForOptions(options as any) as any;
     }
     throw new NotSupportedError('');
   }

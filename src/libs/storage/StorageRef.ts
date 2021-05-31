@@ -1,10 +1,11 @@
 import {IStorageOptions} from './IStorageOptions';
 import {IStorageRef} from './IStorageRef';
 import {IEntityController} from './IEntityController';
-import {ClassType, IClassRef, IEntityRef, ILookupRegistry} from '@allgemein/schema-api';
+import {ClassType, IClassRef, IEntityRef, ILookupRegistry, ISchemaRef} from '@allgemein/schema-api';
 import {IConnection} from './IConnection';
 import {ICollection} from './ICollection';
 import {EventEmitter} from 'events';
+import {isArray, uniqBy} from 'lodash';
 
 export abstract class StorageRef extends EventEmitter implements IStorageRef {
 
@@ -46,6 +47,21 @@ export abstract class StorageRef extends EventEmitter implements IStorageRef {
   abstract getEntityRef(name: string | Function): IEntityRef;
 
   abstract getEntityRefs(): IEntityRef[];
+
+  getSchemaRef(name: string): ISchemaRef {
+    return this.getSchemaRefs().find(x => x.name === name);
+  }
+
+  getSchemaRefs(): ISchemaRef[] {
+    // TODO impl caching
+    try {
+      const schemas = [].concat(...this.getEntityRefs().map(x => x.getSchemaRefs()).map(x => isArray(x) ? x : [x]));
+      return uniqBy(schemas, (x: ISchemaRef) => x.name);
+    } catch (e) {
+      return [];
+    }
+
+  }
 
   abstract getEntityNames(): string[];
 

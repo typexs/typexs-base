@@ -4,7 +4,7 @@ export const CONFIG_SCHEMA = {
   'description': 'Root configuration description for @typexs/base and theirs settings. Configuration of other moduls will be added by defaultsDeep functionality. \nSo base settings can not be overridden, only extending is possible.',
   'properties': {
     'app': {
-      '$id': 'App',
+      '$id': '#App',
       'type': 'object',
       'required': ['name'],
       'additionalProperties': false,

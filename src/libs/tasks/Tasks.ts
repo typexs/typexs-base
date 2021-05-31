@@ -6,6 +6,7 @@ import {
   ClassRef,
   IClassRef,
   IEntityRef,
+  IJsonSchema,
   IPropertyRef,
   JsonSchema,
   METADATA_TYPE,
@@ -24,9 +25,10 @@ import {Binding} from '@allgemein/schema-api/lib/registry/Binding';
 import {AbstractRegistry} from '@allgemein/schema-api/lib/registry/AbstractRegistry';
 import {isEntityRef} from '@allgemein/schema-api/api/IEntityRef';
 import {isClassRef} from '@allgemein/schema-api/api/IClassRef';
+import {IJsonSchemaSerializeOptions} from '@allgemein/schema-api/lib/json-schema/IJsonSchemaSerializeOptions';
 
 
-export class Tasks extends AbstractRegistry /*implements ILookupRegistry*/ {
+export class Tasks extends AbstractRegistry implements IJsonSchema {
 
 
   static NAME = Tasks.name;
@@ -351,51 +353,25 @@ export class Tasks extends AbstractRegistry /*implements ILookupRegistry*/ {
   }
 
 
-  toJsonSchema() {
+  async toJsonSchema(options?: IJsonSchemaSerializeOptions) {
     const entities = this.getEntries(true);
-    const serializer = JsonSchema.getSerializer({
+    const serializer = JsonSchema.getSerializer(defaults(options || {}, {
       namespace: this.namespace,
       allowKeyOverride: true
-    });
+    }));
     entities.map(x => serializer.serialize(x));
     return serializer.getJsonSchema();
   }
 
 
-  reset() {
-    super.reset();
-  }
+  // reset() {
+  //   super.reset();
+  // }
 
 
   fromJsonSchema(orgJson: any): Promise<TaskRef | TaskRef[]> {
     return JsonSchema.unserialize(orgJson, {namespace: this.namespace}) as Promise<TaskRef | TaskRef[]>;
   }
-
-  // fromJson(orgJson: IEntityRefMetadata): TaskRef {
-  //   const json = cloneDeep(orgJson);
-  //
-  //   let entityRef: TaskRef = this.getEntries(true).find(x => x.name === json.name);
-  //   if (!entityRef) {
-  //     entityRef = TaskRef.fromJson(json);
-  //     this.register(entityRef);
-  //   }
-  //
-  //   if (entityRef) {
-  //     for (const prop of json.properties) {
-  //       const classRef = entityRef.getClassRef();
-  //       let propRef: TaskExchangeRef = this.registry.find(METATYPE_PROPERTY,
-  //         (x: TaskExchangeRef) => x.name === prop.name && x.getClassRef() === classRef);
-  //       if (!propRef) {
-  //         const desc: ITaskPropertyRefOptions = (<any>prop).descriptor;
-  //         desc.target = classRef.getClass();
-  //         propRef = new TaskExchangeRef(desc);
-  //         this.register(propRef);
-  //       }
-  //     }
-  //   }
-  //
-  //   return entityRef;
-  // }
 
 
   register(xsdef: AbstractRef | Binding): AbstractRef | Binding {
@@ -410,14 +386,6 @@ export class Tasks extends AbstractRegistry /*implements ILookupRegistry*/ {
     }
   }
 
-
-  // getEntityRefFor(fn: string | object | Function, skipNsCheck?: boolean): TaskRef {
-  //   throw new NotYetImplementedError();
-  // }
-  //
-  // getPropertyRefsFor(fn: any): TaskExchangeRef[] {
-  //   throw new NotYetImplementedError();
-  // }
 
   getPropertyRef(ref: IClassRef | IEntityRef, name: string): TaskExchangeRef {
     if (isEntityRef(ref)) {
@@ -445,5 +413,39 @@ export class Tasks extends AbstractRegistry /*implements ILookupRegistry*/ {
     }
     return ClassRef.get(object as string | Function, this.namespace, type === METATYPE_PROPERTY);
   }
+
+  // getEntityRefFor(fn: string | object | Function, skipNsCheck?: boolean): TaskRef {
+  //   throw new NotYetImplementedError();
+  // }
+  //
+  // getPropertyRefsFor(fn: any): TaskExchangeRef[] {
+  //   throw new NotYetImplementedError();
+  // }
+
+  // fromJson(orgJson: IEntityRefMetadata): TaskRef {
+  //   const json = cloneDeep(orgJson);
+  //
+  //   let entityRef: TaskRef = this.getEntries(true).find(x => x.name === json.name);
+  //   if (!entityRef) {
+  //     entityRef = TaskRef.fromJson(json);
+  //     this.register(entityRef);
+  //   }
+  //
+  //   if (entityRef) {
+  //     for (const prop of json.properties) {
+  //       const classRef = entityRef.getClassRef();
+  //       let propRef: TaskExchangeRef = this.registry.find(METATYPE_PROPERTY,
+  //         (x: TaskExchangeRef) => x.name === prop.name && x.getClassRef() === classRef);
+  //       if (!propRef) {
+  //         const desc: ITaskPropertyRefOptions = (<any>prop).descriptor;
+  //         desc.target = classRef.getClass();
+  //         propRef = new TaskExchangeRef(desc);
+  //         this.register(propRef);
+  //       }
+  //     }
+  //   }
+  //
+  //   return entityRef;
+  // }
 
 }

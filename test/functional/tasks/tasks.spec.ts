@@ -370,13 +370,13 @@ class TasksSpec {
     tasks.addTask(SimpleTaskWithArgs);
     tasks.addTask(SimpleTaskWithRuntimeLog);
 
-    const out = tasks.toJsonSchema();
+    const out = await tasks.toJsonSchema();
     // console.log(inspect(out, false, 10));
     expect(out).to.be.deep.eq(
       {
         '$schema': 'http://json-schema.org/draft-07/schema#',
         definitions: {
-          simple_task_ungrouped_01: {
+          SimpleTaskUngrouped01: {
             'nodeInfos': [
               {
                 'hasWorker': false,
@@ -385,6 +385,7 @@ class TasksSpec {
             ],
             title: 'SimpleTaskUngrouped01',
             type: 'object',
+            $id: '#simple_task_ungrouped_01',
             taskName: 'simple_task_ungrouped_01',
             taskType: 1,
             properties: {
@@ -392,7 +393,7 @@ class TasksSpec {
               content: {type: 'string', default: 'test'}
             }
           },
-          simple_task_ungrouped_02: {
+          SimpleTaskUngrouped02: {
             'nodeInfos': [
               {
                 'hasWorker': false,
@@ -402,13 +403,14 @@ class TasksSpec {
             title: 'SimpleTaskUngrouped02',
             type: 'object',
             taskName: 'simple_task_ungrouped_02',
+            $id: '#simple_task_ungrouped_02',
             taskType: 1,
             properties: {
               name: {type: 'string', default: 'simple_task_ungrouped_02'},
               content: {type: 'string', default: 'test'}
             }
           },
-          simple_task_with_args: {
+          SimpleTaskWithArgs: {
             'nodeInfos': [
               {
                 'hasWorker': false,
@@ -418,6 +420,7 @@ class TasksSpec {
             title: 'SimpleTaskWithArgs',
             type: 'object',
             taskName: 'simple_task_with_args',
+            $id: '#simple_task_with_args',
             taskType: 1,
             properties: {
               runtime: {type: 'object', propertyType: 'runtime'},
@@ -432,7 +435,7 @@ class TasksSpec {
               name: {type: 'string', default: 'simple_task_with_args'}
             }
           },
-          simple_task_with_runtime_log: {
+          SimpleTaskWithRuntimeLog: {
             'nodeInfos': [
               {
                 'hasWorker': false,
@@ -442,15 +445,24 @@ class TasksSpec {
             title: 'SimpleTaskWithRuntimeLog',
             type: 'object',
             taskName: 'simple_task_with_runtime_log',
+            $id: '#simple_task_with_runtime_log',
             taskType: 1,
             properties: {runtime: {type: 'object', propertyType: 'runtime'}}
           }
         },
-        anyOf: [
-          {'$ref': '#/definitions/simple_task_ungrouped_01'},
-          {'$ref': '#/definitions/simple_task_ungrouped_02'},
-          {'$ref': '#/definitions/simple_task_with_args'},
-          {'$ref': '#/definitions/simple_task_with_runtime_log'}
+        'anyOf': [
+          {
+            '$ref': '#/definitions/SimpleTaskUngrouped01'
+          },
+          {
+            '$ref': '#/definitions/SimpleTaskUngrouped02'
+          },
+          {
+            '$ref': '#/definitions/SimpleTaskWithArgs'
+          },
+          {
+            '$ref': '#/definitions/SimpleTaskWithRuntimeLog'
+          }
         ]
       }
     );
@@ -461,7 +473,7 @@ class TasksSpec {
     const properties = [].concat(...(taskList as TaskRef[]).map(x => x.getPropertyRefs()));
     expect(properties).to.have.length(10);
 
-    const out2 = tasks.toJsonSchema();
+    const out2 = await tasks.toJsonSchema();
     expect(out).to.be.deep.eq(out2);
 
     const task01 = taskList.shift();

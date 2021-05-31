@@ -1,0 +1,10 @@
+{
+  "name": "fake_app_handler",
+  "version": "0.0.1",
+  "typexs": {
+    "name": "fake_app_handler"
+  },
+  "dependencies": {
+    "@typexs/base": "latest"
+  }
+}

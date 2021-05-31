@@ -48,9 +48,13 @@ class JsonSchemaSupportSpec {
       $schema: 'http://json-schema.org/draft-07/schema#',
       definitions: {
         Car: {
+          $id: '#Car',
           title: 'Car',
           type: 'object',
           metadata: {type: 'regular'},
+          'schema': [
+            'default'
+          ],
           properties: {
             id: {
               type: 'number',
@@ -80,9 +84,13 @@ class JsonSchemaSupportSpec {
           }
         },
         Driver: {
+          $id: '#Driver',
           title: 'Driver',
           type: 'object',
           metadata: {type: 'regular'},
+          'schema': [
+            'default'
+          ],
           properties: {
             id: {
               type: 'number',
@@ -130,6 +138,7 @@ class JsonSchemaSupportSpec {
 
     data_x.definitions['Car2'] = _.cloneDeep(data_x.definitions['Car']);
     data_x.definitions['Car2'].title = 'Car2';
+    data_x.definitions['Car2'].$id = '#Car2';
     // delete data_x.definitions['Car'];
     data_x.$ref = '#/definitions/Car2';
 

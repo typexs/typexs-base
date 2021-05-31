@@ -1,0 +1,12 @@
+app:
+  name: schema
+
+storage:
+  default:
+    synchronize: true
+    type: sqlite
+    database: ':memory:'
+  fake:
+    synchronize: true
+    type: sqlite
+    database: ':memory:'

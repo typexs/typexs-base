@@ -18,6 +18,8 @@ class ConfigSchemaValidateSpec {
 
 
   static async before() {
+    RegistryFactory.remove(NAMESPACE_CONFIG);
+
     const activator = new Activator();
     configLoader = new ConfigLoader();
     await configLoader.applySchema(activator.configSchema()) as IClassRef;

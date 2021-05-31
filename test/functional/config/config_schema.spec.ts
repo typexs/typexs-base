@@ -54,6 +54,7 @@ class ConfigSchemaSpec {
     expect(entities.map(x => x.name)).to.have.members(['App']);
     const res = JsonSchema.serialize(result);
     expect(res.definitions.App).to.deep.eq({
+      '$id': '#App',
       'additionalProperties': false,
       'properties': {
         'enableShutdownOnUncaughtException': {
@@ -101,6 +102,7 @@ class ConfigSchemaSpec {
     expect(entities.map(x => x.name)).to.have.members(['App', 'Great']);
     const res = JsonSchema.serialize(result);
     expect(res.definitions.Great).to.deep.eq({
+      '$id': '#Great',
       title: 'Great',
       type: 'object',
       properties: {

@@ -376,7 +376,7 @@ class TasksSpec {
       {
         '$schema': 'http://json-schema.org/draft-07/schema#',
         definitions: {
-          SimpleTaskUngrouped01: {
+          simple_task_ungrouped_01: {
             'nodeInfos': [
               {
                 'hasWorker': false,
@@ -393,7 +393,7 @@ class TasksSpec {
               content: {type: 'string', default: 'test'}
             }
           },
-          SimpleTaskUngrouped02: {
+          simple_task_ungrouped_02: {
             'nodeInfos': [
               {
                 'hasWorker': false,
@@ -410,7 +410,7 @@ class TasksSpec {
               content: {type: 'string', default: 'test'}
             }
           },
-          SimpleTaskWithArgs: {
+          simple_task_with_args: {
             'nodeInfos': [
               {
                 'hasWorker': false,
@@ -435,7 +435,7 @@ class TasksSpec {
               name: {type: 'string', default: 'simple_task_with_args'}
             }
           },
-          SimpleTaskWithRuntimeLog: {
+          simple_task_with_runtime_log: {
             'nodeInfos': [
               {
                 'hasWorker': false,
@@ -452,16 +452,16 @@ class TasksSpec {
         },
         'anyOf': [
           {
-            '$ref': '#/definitions/SimpleTaskUngrouped01'
+            '$ref': '#/definitions/simple_task_ungrouped_01'
           },
           {
-            '$ref': '#/definitions/SimpleTaskUngrouped02'
+            '$ref': '#/definitions/simple_task_ungrouped_02'
           },
           {
-            '$ref': '#/definitions/SimpleTaskWithArgs'
+            '$ref': '#/definitions/simple_task_with_args'
           },
           {
-            '$ref': '#/definitions/SimpleTaskWithRuntimeLog'
+            '$ref': '#/definitions/simple_task_with_runtime_log'
           }
         ]
       }

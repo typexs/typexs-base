@@ -12,7 +12,7 @@ import {
   METADATA_TYPE,
   METATYPE_ENTITY,
   METATYPE_PROPERTY,
-  RegistryFactory
+  RegistryFactory, SchemaUtils
 } from '@allgemein/schema-api';
 import {
   C_TASKS,
@@ -151,7 +151,7 @@ export class TaskRef extends AbstractRef implements IEntityRef {
     if (_.isString(name)) {
       if (_.isNull(fn)) {
         // return anonymus dummy function
-        return new Function();
+        return SchemaUtils.clazz(name);
       }
       return _.isFunction(fn) ? fn : fn.constructor;
     } else {

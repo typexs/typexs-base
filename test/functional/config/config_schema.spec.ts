@@ -51,7 +51,7 @@ class ConfigSchemaSpec {
     expect(isClassRef(result)).to.be.true;
     expect(result.name).to.be.eq('Config');
     const entities = configLoader.getRegistry().listEntities();
-    expect(entities.map(x => x.name)).to.have.members(['App']);
+    expect(entities.map(x => x.name)).to.include.members(['App']);
     const res = JsonSchema.serialize(result);
     expect(res.definitions.App).to.deep.eq({
       '$id': '#App',
@@ -93,13 +93,13 @@ class ConfigSchemaSpec {
     let result = await configLoader.applySchema(activator.configSchema()) as IClassRef;
     expect(result).to.not.be.null;
     let entities = configLoader.getRegistry().listEntities();
-    expect(entities).to.have.length(1);
+    expect(entities).to.have.length.gte(1);
     result = await configLoader.applySchema(CONFIG_SCHEMA_FOR_GREAT_STUFF) as IClassRef;
     expect(isClassRef(result)).to.be.true;
     expect(result.name).to.be.eq('Config');
     entities = configLoader.getRegistry().listEntities();
-    expect(entities).to.have.length(2);
-    expect(entities.map(x => x.name)).to.have.members(['App', 'Great']);
+    expect(entities).to.have.length.gte(2);
+    expect(entities.map(x => x.name)).to.include.members(['App', 'Great']);
     const res = JsonSchema.serialize(result);
     expect(res.definitions.Great).to.deep.eq({
       '$id': '#Great',

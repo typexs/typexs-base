@@ -689,6 +689,20 @@ class JsonSchemaSupportSpec {
 
   }
 
+  @test
+  async 'integrate json schema by glob'() {
+    const appdir = join(__dirname, 'apps', 'json-schema');
+    const storage = await this.boot(appdir, [
+      './schema-glob/*.json'
+    ]);
+
+    const processType = storage.getRegistry().getEntityRefFor('Process');
+    const lawyerType = storage.getRegistry().getEntityRefFor('Lawyer');
+
+    expect(storage.getRegistry().getEntityRefs()).to.have.length(4);
+    expect(processType.getPropertyRef('autor').getTargetRef().getClass()).to.be.eq(lawyerType.getClassRef().getClass());
+
+  }
 
   @test.skip
   async 'integrate json schema with references to already existing entities'() {

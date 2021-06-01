@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "Process": {
+      "$id": "#Process",
+      "title": "Process",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "identifier": true,
+          "generated": true
+        },
+        "label": {
+          "type": "string"
+        },
+        "autor": {
+          "$ref": "./lawyer.json"
+        }
+      }
+    }
+  },
+  "$ref": "#/definitions/Process"
+}

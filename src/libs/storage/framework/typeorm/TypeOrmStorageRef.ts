@@ -145,11 +145,23 @@ export class TypeOrmStorageRef extends StorageRef {
 
       for (let i = 0; i < this.getDeclaredEntities().length; i++) {
         const type = this.getDeclaredEntities()[i];
+
         if (isObjectLike(type)) {
           if (has(type, '$schema')) {
+            const SOURCE = type['__SOURCE__'];
+            let cwd = process.cwd();
+            if (SOURCE) {
+              try {
+                cwd = PlatformUtils.dirname(SOURCE);
+              } catch (e) {
+              }
+            }
             // parse as json schema
             // const namesBefore = this.getRegistry().getEntityRefs().map(x => x.name);
-            const entities = await (<IJsonSchema>this.getRegistry()).fromJsonSchema(type, {return: 'entity-refs'});
+            const entities = await (<IJsonSchema>this.getRegistry()).fromJsonSchema(type, {
+              return: 'entity-refs',
+              cwd: cwd
+            });
             // const entities = this.getRegistry().getEntityRefs().filter(x => !namesBefore.includes(x.name));
             if (isArray(entities)) {
               const clazzes = [];

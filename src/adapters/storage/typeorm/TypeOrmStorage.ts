@@ -1,6 +1,5 @@
 import {IStorage} from '../../../libs/storage/IStorage';
-import {getMetadataArgsStorage, useContainer} from 'typeorm';
-import {TableMetadataArgs} from 'typeorm/metadata-args/TableMetadataArgs';
+import {useContainer} from 'typeorm';
 import {DefaultSchemaHandler} from './DefaultSchemaHandler';
 import {__DEFAULT__, K_CLS_STORAGE_SCHEMAHANDLER} from '../../../libs/Constants';
 import {IStorageOptions} from '../../../libs/storage/IStorageOptions';
@@ -30,10 +29,7 @@ export class TypeOrmStorage implements IStorage {
 
 
   create(name: string, options: IStorageOptions & any) {
-
-
     const ref = new TypeOrmStorageRef(options);
-
     let type = __DEFAULT__;
     if (_.has(this.schemaHandler, options.type)) {
       type = options.type;
@@ -41,9 +37,9 @@ export class TypeOrmStorage implements IStorage {
     const schemaHandler: AbstractSchemaHandler = Reflect.construct(this.schemaHandler[type], [ref]);
     schemaHandler.prepare();
     ref.setSchemaHandler(schemaHandler);
-
     return ref;
   }
+
 
   registerSchemaHandler<T extends AbstractSchemaHandler>(cls: ClassType<T> | Function): T {
     const obj = <AbstractSchemaHandler>Reflect.construct(cls, []);
@@ -52,6 +48,7 @@ export class TypeOrmStorage implements IStorage {
     }
     return obj as any;
   }
+
 
   /**
    * Implmentation of IStorage.onStartup

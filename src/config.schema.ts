@@ -35,6 +35,104 @@ export const CONFIG_SCHEMA = {
           }
         }
       }
+    },
+    modules: {
+      $id: '#Modules',
+      type: 'object',
+      description: 'IRuntimeLoaderOptions',
+      properties: {
+        appdir: {
+          type: 'string'
+        },
+        cachePath: {
+          type: 'string'
+        },
+        paths: {
+          type: 'array',
+          items: {
+            type: 'string'
+          }
+        },
+        subModulPattern: {
+          description: 'Lookup directory pattern for included submodules. (Default: \'node_modules\')',
+          type: 'array',
+          items: {
+            type: 'string'
+          }
+        },
+        include: {
+          type: 'array',
+          items: {
+            type: 'string'
+          }
+        },
+        exclude: {
+          type: 'array',
+          items: {
+            type: 'string'
+          }
+        },
+        packageKeys: {
+          type: 'array',
+          items: {
+            type: 'string'
+          }
+        },
+        disabled: {
+          type: 'array',
+          items: {
+            type: 'string'
+          }
+        },
+        libs: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              topic: {
+                type: 'string'
+              },
+              refs: {
+                type: 'array',
+                items: {
+                  type: 'string'
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    storage: {
+      $id: '#Storage',
+      type: 'object',
+      properties: {
+        _defaultFramework: {
+          type: 'string',
+          default: 'typeorm'
+        }
+      },
+      patternProperties: {
+        '\w+': {
+          $id: '#StorageRef',
+          type: 'object',
+          title: 'StorageRef',
+          properties: {
+            name: {
+              type: 'string'
+            },
+            type: {
+              type: 'string'
+            },
+            database: {
+              type: 'string'
+            },
+            synchronize: {
+              type: 'boolean'
+            },
+          }
+        }
+      }
     }
   }
 };

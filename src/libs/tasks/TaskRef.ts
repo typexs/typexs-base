@@ -12,7 +12,8 @@ import {
   METADATA_TYPE,
   METATYPE_ENTITY,
   METATYPE_PROPERTY,
-  RegistryFactory, SchemaUtils
+  RegistryFactory,
+  SchemaUtils
 } from '@allgemein/schema-api';
 import {
   C_TASKS,
@@ -22,7 +23,7 @@ import {
   XS_TYPE_BINDING_TASK_DEPENDS_ON,
   XS_TYPE_BINDING_TASK_GROUP
 } from './Constants';
-import {ClassUtils, NotSupportedError, NotYetImplementedError} from '@allgemein/base';
+import {NotSupportedError, NotYetImplementedError} from '@allgemein/base';
 import {TaskExchangeRef} from './TaskExchangeRef';
 import {ITaskRefOptions} from './ITaskRefOptions';
 import {ITaskInfo} from './ITaskInfo';
@@ -195,6 +196,7 @@ export class TaskRef extends AbstractRef implements IEntityRef {
     }
     return this;
   }
+
 
   prepare(name: string | object | Function, fn: object | Function = null) {
     const options = this.getOptions();

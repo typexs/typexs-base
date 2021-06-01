@@ -1,6 +1,6 @@
 import {IStorageOptions, K_STORAGE} from './IStorageOptions';
-import {has, isArray, isEmpty, isFunction, isObjectLike, isString, keys, merge, values} from 'lodash';
-import {K_CLS_STORAGE_TYPES} from '../Constants';
+import {assign, has, isArray, isEmpty, isFunction, isObjectLike, isString, keys, values} from 'lodash';
+import {C_ENTITY, K_CLS_STORAGE_TYPES} from '../Constants';
 import {ClassType, IClassRef} from '@allgemein/schema-api';
 import {IStorage} from './IStorage';
 import {Config} from '@allgemein/config';
@@ -8,7 +8,7 @@ import {IStorageRef} from './IStorageRef';
 import {Log} from '../../libs/logging/Log';
 import {IRuntimeLoader} from '../core/IRuntimeLoader';
 import {StringUtils} from '../utils/StringUtils';
-import {NotSupportedError, NotYetImplementedError, PlatformUtils} from '@allgemein/base';
+import {FileUtils, NotSupportedError, NotYetImplementedError, PlatformUtils} from '@allgemein/base';
 
 
 export class Storage {
@@ -70,7 +70,7 @@ export class Storage {
       let entities: Function[] = [];
       if (loader) {
         // load entities handled by storage
-        entities = loader.getClasses(['entity', name].join('.'));
+        entities = loader.getClasses([C_ENTITY, name].join('.'));
         // check if classes are realy for typeorm
         if (has(settings, 'extends')) {
           // if extends property is set
@@ -81,12 +81,18 @@ export class Storage {
             _extends = settings.extends;
           }
           _extends.forEach((x: string) => {
-            const classEntitiesAdditional = loader.getClasses(['entity', x].join('.'));
+            const classEntitiesAdditional = loader
+              .getClasses([C_ENTITY, x].join('.'));
             if (classEntitiesAdditional.length > 0) {
               entities.push(...classEntitiesAdditional);
             }
           });
         }
+
+        // const x = loader.getRegistry().createSettingsLoader({
+        //   ref: ''
+        // });
+
       }
 
       const replace = {};
@@ -96,7 +102,7 @@ export class Storage {
         // check if is http
         // check if is glob -> remove -> add matched files
         // if function add
-        const entry = declaredEntities[i];
+        let entry = declaredEntities[i];
 
         if (isString(entry)) {
           let object = null;
@@ -111,37 +117,32 @@ export class Storage {
             switch (type) {
               case 'url':
               case 'unknown':
-              case 'glob':
                 throw new NotYetImplementedError('TODO');
-                break;
-              case 'relative':
-              case 'absolute':
+              case 'glob':
                 try {
-                  const path = type === 'relative' ? PlatformUtils.pathResolveAndNormalize(entry) : entry;
-                  if (/\.json$/.test(entry)) {
-                    // json
-                    const content = (await PlatformUtils.readFile(path)).toString('utf-8');
-                    object = JSON.parse(content);
-                  } else if (/\.(t|j)s$/.test(path)) {
-                    // require
-                    const mod = require(path.replace(/\.(t|j)s$/, ''));
-                    object = [];
-                    keys(mod).map(x => {
-                      const value = mod[x];
-                      if (isFunction(value)) {
-                        object.push(value);
-                      } else if (isObjectLike(value)) {
-                        object.push(value);
-                      }
-                    });
-                  } else {
-                    throw new NotSupportedError('path or content not supported');
+                  const appdir = loader.getOptions().appdir;
+                  if (!PlatformUtils.isAbsolute(entry)) {
+                    entry = PlatformUtils.join(appdir, entry);
                   }
-
-
+                  const paths = await FileUtils.glob(entry);
+                  const entries = [];
+                  for (const path of paths) {
+                    object = await this.fromPath(path);
+                    if (isArray(object)) {
+                      entries.push(...object);
+                    } else {
+                      entries.push(object);
+                    }
+                  }
+                  object = entries;
                 } catch (e) {
                   Log.error(e);
                 }
+                break;
+              case 'relative':
+              case 'absolute':
+                const path = type === 'relative' ? PlatformUtils.pathResolveAndNormalize(entry) : entry;
+                object = await this.fromPath(path);
                 break;
             }
           }
@@ -162,7 +163,7 @@ export class Storage {
         }
       });
 
-      const _settings: IStorageOptions = merge(settings, {entities: entities}, {name: name});
+      const _settings: IStorageOptions = assign(settings, {entities: entities}, {name: name});
       Log.debug('storage register ' + name + ' with ' + entities.length + ' entities');
       const storageRef = await this.register(name, _settings);
 
@@ -193,10 +194,36 @@ export class Storage {
         }
       }
     }
-
   }
 
-  fromPath() {
+  async fromPath(path: string) {
+    let object = null;
+    try {
+      if (/\.json$/.test(path)) {
+        // json
+        const content = (await PlatformUtils.readFile(path)).toString('utf-8');
+        object = JSON.parse(content);
+        Object.defineProperty(object, '__SOURCE__', {value: path});
+      } else if (/\.(t|j)s$/.test(path)) {
+        // require
+        const mod = require(path.replace(/\.(t|j)s$/, ''));
+        object = [];
+        keys(mod).map(x => {
+          const value = mod[x];
+          Object.defineProperty(value, '__SOURCE__', {value: path});
+          if (isFunction(value)) {
+            object.push(value);
+          } else if (isObjectLike(value)) {
+            object.push(value);
+          }
+        });
+      } else {
+        throw new NotSupportedError('path or content not supported');
+      }
+    } catch (e) {
+      Log.error(e);
+    }
+    return object;
 
   }
 

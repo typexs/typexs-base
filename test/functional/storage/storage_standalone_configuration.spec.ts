@@ -52,7 +52,7 @@ class StorageStandaloneConfigurationSpec {
     await _storage.prepare(config);
     const storage = _storage.get();
 
-    expect(storage.getOptions().entities).to.be.length(1);
+    expect(storage.getDeclaredEntities()).to.be.length(1);
 
     const testEntity = new TestEntity();
     testEntity.id = 1;

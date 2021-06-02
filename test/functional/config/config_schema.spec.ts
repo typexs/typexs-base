@@ -85,6 +85,7 @@ class ConfigSchemaSpec {
     });
   }
 
+
   @test
   async 'aggregate multiple schemas'() {
     const activator = new Activator();

@@ -134,14 +134,8 @@ export class TypeOrmStorageRef extends StorageRef {
   }
 
   async initialize(): Promise<boolean> {
-    // const tables: TableMetadataArgs[] = getMetadataArgsStorage().tables;
-    // options.entities = tables
-    //   .filter(t => options.entities.indexOf(<Function>t.target) !== -1)
-    //   .map(t => <Function>t.target);
-
     // register used entities, TODO better way to register with annotation @Entity (from typeorm)
     if (has(this.getOptions(), 'entities') && isArray(this.getDeclaredEntities())) {
-      const removeIdx = [];
 
       for (let i = 0; i < this.getDeclaredEntities().length; i++) {
         const type = this.getDeclaredEntities()[i];
@@ -179,7 +173,12 @@ export class TypeOrmStorageRef extends StorageRef {
             throw new NotYetImplementedError('');
           }
         } else {
-          this.registerEntityRef(type);
+          // check if correctly annotated
+          const entryExists = getMetadataArgsStorage().tables.find(x => x.target === type);
+          if (!!entryExists) {
+            this.registerEntityRef(type);
+          }
+
         }
       }
     }

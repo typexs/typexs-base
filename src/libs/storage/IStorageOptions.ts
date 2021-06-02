@@ -1,6 +1,3 @@
-import {StringOrFunction} from '@allgemein/base';
-
-
 export const K_STORAGE = 'storage';
 
 
@@ -16,7 +13,7 @@ export interface IStorageOptions {
    */
   framework?: string;
 
-  baseClass?: StringOrFunction;
+  // baseClass?: StringOrFunction;
 
   /**
    * Connect on startup to check or create entities in tables
@@ -32,4 +29,9 @@ export interface IStorageOptions {
    * Entities handled by this storage
    */
   entities?: ((Function | any | string))[];
+
+  /**
+   * Set store location for schema extensions, to reuse this on reload add location to entities option.
+   */
+  storeLocation?: string;
 }

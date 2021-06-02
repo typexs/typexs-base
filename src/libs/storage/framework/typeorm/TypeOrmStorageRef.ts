@@ -157,12 +157,10 @@ export class TypeOrmStorageRef extends StorageRef {
               }
             }
             // parse as json schema
-            // const namesBefore = this.getRegistry().getEntityRefs().map(x => x.name);
             const entities = await (<IJsonSchema>this.getRegistry()).fromJsonSchema(type, {
               return: 'entity-refs',
               cwd: cwd
             });
-            // const entities = this.getRegistry().getEntityRefs().filter(x => !namesBefore.includes(x.name));
             if (isArray(entities)) {
               const clazzes = [];
               for (const e of entities) {
@@ -283,7 +281,7 @@ export class TypeOrmStorageRef extends StorageRef {
   }
 
 
-  populateToExtended(type: EntitySchema | Function) {
+  private populateToExtended(type: EntitySchema | Function) {
     if (!isEmpty(this.getExtendedStorageRef())) {
       for (const ref of this.getExtendedStorageRef() as TypeOrmStorageRef[]) {
         ref.addEntityType(type);

@@ -66,6 +66,7 @@ export interface IStorageRef {
    */
   addEntityClass(type: Function | IClassRef | ClassType<any>, options?: any): void;
 
+
   /**
    * Open a direct connection
    */
@@ -122,6 +123,7 @@ export interface IStorageRef {
    * Return configured entities
    */
   getDeclaredEntities(): Function[];
+
   /**
    * Return all handled entity ames
    */
@@ -153,4 +155,9 @@ export interface IStorageRef {
    */
   isActive(): boolean;
 
+  // /**
+  //  *
+  //  * @param location
+  //  */
+  // attachSchema(type: string, location: string): void;
 }

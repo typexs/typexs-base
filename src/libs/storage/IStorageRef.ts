@@ -119,6 +119,10 @@ export interface IStorageRef {
   getSchemaRefs(): ISchemaRef[];
 
   /**
+   * Return configured entities
+   */
+  getDeclaredEntities(): Function[];
+  /**
    * Return all handled entity ames
    */
   getEntityNames(): string[];

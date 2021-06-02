@@ -149,6 +149,8 @@ export class Storage {
           if (object) {
             replace[entry] = object;
           }
+        } else if (isFunction(entry)) {
+          entities.push(entry);
         }
       }
 

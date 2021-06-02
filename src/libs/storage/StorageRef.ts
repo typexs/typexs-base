@@ -48,6 +48,13 @@ export abstract class StorageRef extends EventEmitter implements IStorageRef {
 
   abstract getEntityRefs(): IEntityRef[];
 
+  /**
+   * Impl. of IStorageRef interface method
+   */
+  getDeclaredEntities(): Function[] {
+    return this.getOptions().entities;
+  }
+
   getSchemaRef(name: string): ISchemaRef {
     return this.getSchemaRefs().find(x => x.name === name);
   }

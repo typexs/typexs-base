@@ -373,7 +373,7 @@ class JsonSchemaSupportSpec {
         {
           'name': 'product_dealers',
           'rootpage': 23,
-          'sql': 'CREATE TABLE "product_dealers" ("productId" integer NOT NULL, "dealerId" integer NOT NULL, CONSTRAINT "FK_386ad987e614cd494739e814ff9" FOREIGN KEY ("productId") REFERENCES "product" ("id") ON DELETE CASCADE ON UPDATE NO ACTION, CONSTRAINT "FK_994714d513d1082f4636b4b9205" FOREIGN KEY ("dealerId") REFERENCES "dealer" ("id") ON DELETE CASCADE ON UPDATE NO ACTION, PRIMARY KEY ("productId", "dealerId"))',
+          'sql': 'CREATE TABLE "product_dealers" ("productId" integer NOT NULL, "dealerId" integer NOT NULL, CONSTRAINT "FK_386ad987e614cd494739e814ff9" FOREIGN KEY ("productId") REFERENCES "product" ("id") ON DELETE CASCADE ON UPDATE CASCADE, CONSTRAINT "FK_994714d513d1082f4636b4b9205" FOREIGN KEY ("dealerId") REFERENCES "dealer" ("id") ON DELETE CASCADE ON UPDATE CASCADE, PRIMARY KEY ("productId", "dealerId"))',
           'tbl_name': 'product_dealers',
           'type': 'table'
         }

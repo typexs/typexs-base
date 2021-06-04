@@ -1,14 +1,14 @@
-import {IStorageOptions, K_STORAGE} from './IStorageOptions';
+import {IStorageOptions} from './IStorageOptions';
 import {assign, has, isArray, isEmpty, isFunction, isObjectLike, isString, keys, values} from 'lodash';
-import {C_ENTITY, K_CLS_STORAGE_TYPES} from '../Constants';
+import {K_DEFAULT_FRAMEWORK, C_ENTITY, K_CLS_STORAGE_TYPES} from '../Constants';
 import {ClassType, IClassRef} from '@allgemein/schema-api';
 import {IStorage} from './IStorage';
-import {Config} from '@allgemein/config';
 import {IStorageRef} from './IStorageRef';
 import {Log} from '../../libs/logging/Log';
 import {IRuntimeLoader} from '../core/IRuntimeLoader';
 import {StringUtils} from '../utils/StringUtils';
 import {FileUtils, NotSupportedError, NotYetImplementedError, PlatformUtils} from '@allgemein/base';
+import {REGISTRY_TYPEORM} from './framework/typeorm/Constants';
 
 
 export class Storage {
@@ -19,6 +19,8 @@ export class Storage {
 
   storageFramework: { [key: string]: IStorage } = {};
 
+  defaultFramework = REGISTRY_TYPEORM;
+
   private storageRefs: { [key: string]: IStorageRef } = {};
 
 
@@ -26,7 +28,7 @@ export class Storage {
    * return the name of the default framework to use
    */
   getDefaultFramework() {
-    return Config.get(K_STORAGE + '._defaultFramework', 'typeorm');
+    return this.defaultFramework;
   }
 
 
@@ -57,6 +59,10 @@ export class Storage {
       for (const cls of classes) {
         await this.registerFramework(cls, loader);
       }
+    }
+
+    if (config[K_DEFAULT_FRAMEWORK]) {
+      this.defaultFramework = (config as any)[K_DEFAULT_FRAMEWORK];
     }
 
     // keys starting with undercore or dollar are reserved for generic configuration

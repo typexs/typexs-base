@@ -23,6 +23,7 @@ export const K_CLS_EXCHANGE_MESSAGE = 'exchange.messages';
 export const C_EVENTBUS = 'eventbus';
 export const C_CONFIG = 'config';
 export const C_ENTITY = 'entity';
+export const K_DEFAULT_FRAMEWORK = '_defaultFramework';
 
 
 export const APP_SYSTEM_DISTRIBUTED = 'app.system.distributed';

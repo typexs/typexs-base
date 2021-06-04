@@ -126,20 +126,10 @@ class JsonSchemaSupportSpec {
       },
       '$ref': '#/definitions/Car'
     });
-    // TreeUtils.walk(data_x, (v: WalkValues) => {
-    //   if (v.value === 'Car') {
-    //     v.parent[v.key] = 'Car2';
-    //   } else if (_.isString(v.value) && /car/.test(v.value)) {
-    //     v.parent[v.key] = v.value.replace('car', 'car2');
-    //   } else if (_.isFunction(v.value)) {
-    //   }
-    // });
-    // data_x.machineName = 'car_2';
 
     data_x.definitions['Car2'] = _.cloneDeep(data_x.definitions['Car']);
     data_x.definitions['Car2'].title = 'Car2';
     data_x.definitions['Car2'].$id = '#Car2';
-    // delete data_x.definitions['Car'];
     data_x.$ref = '#/definitions/Car2';
 
     const entityDef2 = await registry.fromJsonSchema(_.cloneDeep(data_x)) as TypeOrmEntityRef;

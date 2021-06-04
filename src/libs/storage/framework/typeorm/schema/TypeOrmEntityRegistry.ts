@@ -57,6 +57,7 @@ import {GeneratedMetadataArgs} from 'typeorm/metadata-args/GeneratedMetadataArgs
 import {Log} from '../../../../logging/Log';
 import {getMetadataArgsStorage} from 'typeorm';
 import {IJsonSchemaSerializeOptions} from '@allgemein/schema-api/lib/json-schema/IJsonSchemaSerializeOptions';
+import {K_IDENTIFIER, K_NULLABLE} from '../../../Constants';
 
 
 export type TYPEORM_METADATA_KEYS = 'tables' |
@@ -108,10 +109,10 @@ const typeormMetadataKeys: TYPEORM_METADATA_KEYS[] = [
 
 
 const MAP_PROP_KEYS = {
-  'identifier': 'primary',
+  [K_IDENTIFIER]: 'primary',
   // 'generated': 'generated',
   'unique': 'unique',
-  'nullable': 'nullable',
+  [K_NULLABLE]: K_NULLABLE,
   'cascade': 'cascade',
   'eager': 'eager'
 };

@@ -26,6 +26,7 @@ export const C_ENTITY = 'entity';
 export const K_DEFAULT_FRAMEWORK = '_defaultFramework';
 
 
+
 export const APP_SYSTEM_DISTRIBUTED = 'app.system.distributed';
 export const APP_SYSTEM_UPDATE_INTERVAL = 'app.system.updateInterval';
 

@@ -1,7 +1,7 @@
 import {Container, ObjectType, ServiceIdentifier, ServiceMetadata, Token} from 'typedi';
 import {MissingProvidedServiceTypeError} from 'typedi/error/MissingProvidedServiceTypeError';
 import {ServiceNotFoundError} from 'typedi/error/ServiceNotFoundError';
-import {ClassType} from '@allgemein/schema-api';
+import {ClassType, T_STRING} from '@allgemein/schema-api';
 
 export class Injector {
 
@@ -72,7 +72,7 @@ export class Injector {
     // this means service was not pre-registered and we throw an exception
     if ((!service || !service.type) &&
       (!service || !service.factory) &&
-      (typeof identifier === 'string' || identifier instanceof Token)) {
+      (typeof identifier === T_STRING|| identifier instanceof Token)) {
       throw new ServiceNotFoundError(identifier);
     }
 

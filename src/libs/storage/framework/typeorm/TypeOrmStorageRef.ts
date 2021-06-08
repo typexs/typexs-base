@@ -348,7 +348,9 @@ export class TypeOrmStorageRef extends StorageRef {
 
 
   getEntityRefs(): IEntityRef[] {
-    return this.getDeclaredEntities().map(x => this.getEntityRef(x));
+    return this.getDeclaredEntities()
+      .map(x => this.getEntityRef(x))
+      .filter(x => x && isEntityRef(x));
   }
 
 
